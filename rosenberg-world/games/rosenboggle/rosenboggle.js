@@ -57,7 +57,7 @@
     const walk = (i, w) => {
       w += faceText(b[i]);
       if (!hasPrefix(w)) return;
-      if (w.length >= 3 && DICT.has(w)) found.add(w);
+      if (w.length >= 2 && DICT.has(w)) found.add(w);
       used[i] = true;
       for (const n of ADJ[i]) if (!used[n]) walk(n, w);
       used[i] = false;
@@ -188,7 +188,7 @@
     ribbon.className = "ribbon";
     const w = currentWord();
     S.path.forEach((i) => { const m = document.createElement("span"); m.className = "mini"; m.innerHTML = faceHTML(S.board[i]); ribbon.appendChild(m); });
-    if (w.length >= 3) {
+    if (w.length >= 2) {
       const h = document.createElement("span"); h.className = "hint";
       if (S.foundSet.has(w)) { ribbon.classList.add("dup"); h.textContent = "got it"; }
       else if (DICT.has(w)) { ribbon.classList.add("ok"); h.textContent = "+" + points(w.length); }
@@ -322,7 +322,7 @@
     drawPath();
     if (S.phase !== "play" || !idx.length) return;
     if (idx.length === 1) return;
-    if (w.length < 3) { toast("Words need 3 letters or more", "dup"); sfx.dup(); return; }
+    if (w.length < 2) { toast("Words need 2 letters or more", "dup"); sfx.dup(); return; }
     const W = w.toUpperCase();
     if (S.foundSet.has(w)) { toast(`<b>${W}</b> is already on your pad`, "dup"); flash(idx, "dupe", 500); sfx.dup(); return; }
     if (!DICT.has(w)) { toast(`<b>${W}</b> isn't in the dictionary`, "no"); flash(idx, "bad", 460); sfx.bad(); return; }
