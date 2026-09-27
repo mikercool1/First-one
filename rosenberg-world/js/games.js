@@ -127,6 +127,17 @@
     icon: "🔤",
   });
 
+  G.register({
+    id: "splashDown",
+    title: "Splash Down",
+    subtitle: "Inner-tube water slides: lean into the turns!",
+    destination: "waterworld",
+    unlocked: true,
+    entry: "games/water-slide/index.html",
+    color: "#1E9FD9",
+    icon: "🛟",
+  });
+
   // ---------------- future game slots ----------------
   // Each is already placed in the world with a locked building, gate or cabinet.
 
@@ -137,11 +148,10 @@
     ["futureGame04", "arcade", "🕹️"],
     ["futureGame05", "raceway", "🏎️"],
     ["futureGame06", "woods-cave", "🔦"],
-    ["futureGame07", "waterworld", "🌊"],
-    ["futureGame08", "beach-dock", "⛵"],
-    ["futureGame09", "gondola", "🏔️"],
-    ["futureGame10", "island", "🏝️"],
-    ["futureGame11", "plaza-lot", "🚧"],
+    ["futureGame07", "beach-dock", "⛵"],
+    ["futureGame08", "gondola", "🏔️"],
+    ["futureGame09", "island", "🏝️"],
+    ["futureGame10", "plaza-lot", "🚧"],
   ];
   future.forEach(([id, destination, icon]) => G.register({ id, title: "", destination, unlocked: false, icon }));
 })();

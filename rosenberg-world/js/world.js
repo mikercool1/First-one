@@ -1218,7 +1218,8 @@
         c.fillStyle = "#3CC3E8"; A.rr(c, -w / 2, -64, w, 9, 4); c.fill(); A.rr(c, -w / 2, -26, w, 7, 3); c.fill();
       }, { kind: "fence" });
     }
-    staticProp(3550, fy + 2, [-200, -280, 200, 10], (c) => B.waterGate(c), { kind: "gate", tap: portalTap("waterworld"), solid: [{ r: [-172, -12, 172, 6] }] });
+    const wwOpen = world.destStatus(DEST.waterworld) !== "locked";
+    staticProp(3550, fy + 2, [-200, -280, 200, 10], (c) => B.waterGate(c, wwOpen), { kind: "gate", tap: portalTap("waterworld"), solid: [{ r: [-172, -12, 172, 6] }] });
     staticProp(3240, 2960, [-130, -220, 150, 10], (c) => { c.scale(0.78, 0.78); B.slides(c); }, { kind: "slides" });
     staticProp(3870, 2990, [-150, -220, 130, 10], (c) => { c.scale(-0.78, 0.78); B.slides(c); }, { kind: "slides" });
     // tipping splash bucket
@@ -1235,7 +1236,7 @@
       },
       update(e, dt) { e.t0 += dt; const cyc = e.t0 % 7; e.tip = cyc > 5.5 ? Math.min(1, (cyc - 5.5) * 3) : Math.max(0, e.tip - dt * 2); },
     });
-    sign(3330, 2700, ["POOL • SLIDES", "LAZY RIVER", "SPLASH ZONE"], { size: 15, board: "#EAF6FF", edge: "#1E8FC4", ink: "#156A99" });
+    sign(3330, 2700, ["SPLASH DOWN", "WATER SLIDES"], { size: 15, board: "#EAF6FF", edge: "#1E8FC4", ink: "#156A99" });
   }
 
   // ---------------------------------------------------------------------

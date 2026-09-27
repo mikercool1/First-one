@@ -379,7 +379,7 @@
   };
 
   // Water World gate arch
-  B.waterGate = (c) => {
+  B.waterGate = (c, open) => {
     [-150, 150].forEach((x) => {
       c.fillStyle = lin(c, x - 22, 0, x + 22, 0, ["#3CC3E8", "#1E8FC4"]); rr(c, x - 22, -200, 44, 200, 12); c.fill();
       c.fillStyle = "#FFFFFF"; for (let y = -180; y < -10; y += 30) { rr(c, x - 22, y, 44, 8, 4); c.fill(); }
@@ -389,6 +389,18 @@
     for (let i = 0; i <= 8; i++) c.quadraticCurveTo(-180 + (i - 0.5) * 45, -258 - (i % 2) * 14, -180 + i * 45, -236);
     c.lineTo(180, -190); c.closePath(); c.fill();
     text(c, "WATER WORLD", 0, -222, 32, "#FFFFFF", { weight: 700, stroke: "#156A99", strokeW: 6 });
+    if (open) {
+      // gates swung open, with a welcome plate for the slide game
+      [-1, 1].forEach((k) => {
+        c.save(); c.translate(k * 128, 0); c.scale(k * 0.35, 1);
+        c.fillStyle = "#EAF6FF";
+        for (let x = 0; x <= 126; x += 18) { rr(c, -x - 3, -150, 6, 150, 3); c.fill(); }
+        rr(c, -130, -154, 130, 8, 4); c.fill(); rr(c, -130, -70, 130, 8, 4); c.fill();
+        c.restore();
+      });
+      plate(c, "OPEN!", 0, -170, 16, "#2EB872", "#FFFFFF");
+      return;
+    }
     // gate bars
     c.fillStyle = "#EAF6FF";
     for (let x = -126; x <= 126; x += 18) rr(c, x - 3, -150, 6, 150, 3), c.fill();

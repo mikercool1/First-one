@@ -41,6 +41,8 @@
     finish: function (result) { return send(pack("rosenberg-world:finish", result)); },
     exit: function () { return send({ type: "rosenberg-world:exit" }); },
   };
+  // Lets a game's CSS make room for the hub's close button: .rw-in-world .hud { ... }
+  if (inWorld) document.documentElement.classList.add("rw-in-world");
   function wire() {
     if (!inWorld) return;
     var els = document.querySelectorAll("[data-rw-back]");
