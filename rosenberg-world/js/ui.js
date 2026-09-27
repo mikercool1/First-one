@@ -180,6 +180,11 @@
   $("#who").addEventListener("click", () => { RW.sfx.play("tap"); if (E.player && E.player.lock) return; E.mode = "select"; show(hud, false); show(portalCard, false); openSelect(true); });
   const soundBtn = $("#sound");
   const setSoundIcon = () => { soundBtn.innerHTML = RW.store.muted ? "🔇" : "🔊"; soundBtn.setAttribute("aria-label", RW.store.muted ? "Sound off" : "Sound on"); };
+  // after pinching, a button to snap back to the normal view
+  const zoomBtn = $("#zoomBtn");
+  zoomBtn.innerHTML = "🔍 <span>NORMAL</span>";
+  RW.bus.on("zoom", (m) => { zoomBtn.hidden = m === 1; });
+  zoomBtn.addEventListener("click", () => { RW.sfx.play("tap"); E.setUserZoom(1); });
   soundBtn.addEventListener("click", () => { RW.sfx.unlock(); RW.sfx.setMuted(!RW.store.muted); setSoundIcon(); RW.sfx.play("tap"); });
   setSoundIcon();
 

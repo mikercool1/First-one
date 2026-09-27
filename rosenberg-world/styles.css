@@ -44,6 +44,7 @@ body:not(.ready) #title { opacity: 0; }
 }
 .round:active { transform: translateY(3px) scale(.96); box-shadow: 0 2px 0 rgba(30,42,90,.18), 0 5px 12px rgba(30,42,90,.2); }
 .round.small { width: 48px; height: 48px; font-size: 22px; }
+.zoom-btn { display: flex; width: auto !important; padding: 0 14px; gap: 4px; font-size: 16px !important; font-weight: 700; color: #2B6CB0; }
 .btn {
   font: 700 18px var(--font); letter-spacing: .02em;
   border-radius: 999px; padding: 15px 26px; min-height: 56px;

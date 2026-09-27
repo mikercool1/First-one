@@ -429,10 +429,12 @@
 
   // ---------- chunk cache ----------
   const CH = 512;
-  const chunks = new Map();
-  let chunkScale = 0;
+  // one chunk cache per detail level, so pinching out to see the whole world uses small chunks
+  const caches = new Map();
   L.drawGround = (c, vx0, vy0, vx1, vy1, scale, budget = 3) => {
-    if (scale !== chunkScale) { chunks.clear(); chunkScale = scale; }
+    let cache = caches.get(scale);
+    if (!cache) { cache = { chunks: new Map(), used: 0 }; caches.set(scale, cache); }
+    const chunks = cache.chunks;
     const cx0 = Math.floor(vx0 / CH), cy0 = Math.floor(vy0 / CH), cx1 = Math.floor(vx1 / CH), cy1 = Math.floor(vy1 / CH);
     const now = performance.now();
     for (let cy = cy0; cy <= cy1; cy++) for (let cx = cx0; cx <= cx1; cx++) {
@@ -454,6 +456,8 @@
       else { c.fillStyle = "#8CD06A"; c.fillRect(cx * CH, cy * CH, CH + 1, CH + 1); }
     }
     if (chunks.size > 40) for (const [k, ch] of chunks) if (now - ch.used > 8000) chunks.delete(k);
+    cache.used = now;
+    for (const [sc, other] of caches) if (other !== cache && now - other.used > 8000) caches.delete(sc);
   };
   L.warmGround = (x0, y0, x1, y1, scale) => {
     // pre-build chunks (used during the title screen)

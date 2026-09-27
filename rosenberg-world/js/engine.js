@@ -32,7 +32,16 @@
   }
   window.addEventListener("resize", resize);
   resize();
-  E.zoomFor = (mode) => baseZoom * (mode === "title" ? 0.88 : 1);
+  // E.userZoom is the kid's own pinch zoom on top of the normal view (1 = normal)
+  E.userZoom = 1;
+  const zoomLimits = () => [Math.min(1, Math.max(W / (WORLD.W + 220), H / (WORLD.H + 420)) / baseZoom), 1.5];
+  E.setUserZoom = (m) => {
+    const [lo, hi] = zoomLimits();
+    E.userZoom = U.clamp(m, lo, hi);
+    if (Math.abs(E.userZoom - 1) < 0.04) E.userZoom = 1;
+    RW.bus.emit("zoom", E.userZoom);
+  };
+  E.zoomFor = (mode) => baseZoom * (mode === "title" ? 0.88 : mode === "play" ? E.userZoom : 1);
   E.screenSize = () => ({ W, H });
 
   // ---------- timers ----------
@@ -360,14 +369,30 @@
     }
     return null;
   }
+  // two fingers = pinch to zoom in and out
+  const touches = new Map();
+  let pinch = null;
+  const pinchDist = () => { const [a, b] = [...touches.values()]; return Math.max(20, Math.hypot(a.x - b.x, a.y - b.y)); };
   cv.addEventListener("pointerdown", (ev) => {
     RW.sfx.unlock();
     if (E.mode === "title") { RW.bus.emit("titleTap"); return; }
+    touches.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    if (touches.size >= 2 && E.mode === "play") {
+      // second finger down: stop walking, start pinching
+      if (touches.size === 2) pinch = { d0: pinchDist(), z0: E.userZoom };
+      ptr.id = null; ptr.drag = false;
+      try { cv.setPointerCapture(ev.pointerId); } catch (e) { /* ignore */ }
+      return;
+    }
+    if (pinch) return;
     if (ptr.id != null) return;
     ptr.id = ev.pointerId; ptr.sx = ptr.x = ev.clientX; ptr.sy = ptr.y = ev.clientY; ptr.t0 = performance.now(); ptr.drag = false;
     try { cv.setPointerCapture(ev.pointerId); } catch (e) { /* ignore */ }
   });
   cv.addEventListener("pointermove", (ev) => {
+    const tch = touches.get(ev.pointerId);
+    if (tch) { tch.x = ev.clientX; tch.y = ev.clientY; }
+    if (pinch && touches.size >= 2) { E.setUserZoom(pinch.z0 * pinchDist() / pinch.d0); return; }
     if (ev.pointerId !== ptr.id) return;
     ptr.x = ev.clientX; ptr.y = ev.clientY;
     const dx = ptr.x - ptr.sx, dy = ptr.y - ptr.sy, l = Math.hypot(dx, dy);
@@ -376,12 +401,23 @@
     if (l > 70) { ptr.sx = ptr.x - (dx / l) * 70; ptr.sy = ptr.y - (dy / l) * 70; }
   });
   const endPtr = (ev) => {
+    touches.delete(ev.pointerId);
+    // stay in pinch mode until every finger is up, so the last finger doesn't start walking
+    if (pinch) { if (!touches.size) pinch = null; else if (touches.size >= 2) pinch = { d0: pinchDist(), z0: E.userZoom }; return; }
     if (ev.pointerId !== ptr.id) return;
     if (!ptr.drag && E.mode === "play") handleTap(ptr.x, ptr.y);
     ptr.id = null; ptr.drag = false;
   };
   cv.addEventListener("pointerup", endPtr);
-  cv.addEventListener("pointercancel", (ev) => { if (ev.pointerId === ptr.id) { ptr.id = null; ptr.drag = false; } });
+  cv.addEventListener("pointercancel", (ev) => { touches.delete(ev.pointerId); if (!touches.size) pinch = null; if (ev.pointerId === ptr.id) { ptr.id = null; ptr.drag = false; } });
+  // mouse wheel / trackpad pinch on a computer
+  cv.addEventListener("wheel", (ev) => {
+    if (E.mode !== "play") return;
+    ev.preventDefault();
+    E.setUserZoom(E.userZoom * Math.exp(-ev.deltaY * (ev.ctrlKey ? 0.01 : 0.0015)));
+  }, { passive: false });
+  // stop iPad Safari from zooming the whole page instead
+  for (const g of ["gesturestart", "gesturechange"]) document.addEventListener(g, (ev) => ev.preventDefault(), { passive: false });
   window.addEventListener("keydown", (ev) => {
     if (ev.target && /INPUT|TEXTAREA/.test(ev.target.tagName)) return;
     const k = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
@@ -652,7 +688,7 @@
   function updateCamera(dt) {
     const cam = E.cam;
     cam.tz = E.zoomFor(E.mode);
-    cam.z = U.lerp(cam.z, cam.tz, Math.min(1, dt * 2.5));
+    cam.z = pinch ? cam.tz : U.lerp(cam.z, cam.tz, Math.min(1, dt * (E.mode === "play" && E.userZoom !== 1 ? 10 : 2.5)));
     let tx = cam.x, ty = cam.y;
     if (E.mode === "play" && E.player) {
       const P = E.player;
@@ -667,6 +703,7 @@
     cam.x = U.clamp(cam.x, -160 + hw, WORLD.W + 60 - hw);
     cam.y = U.clamp(cam.y, -420 + hh, WORLD.H - hh);
     if (hw * 2 > WORLD.W + 220) cam.x = WORLD.W / 2;
+    if (hh * 2 > WORLD.H + 420) cam.y = (WORLD.H - 420) / 2;
     cam.shake = Math.max(0, cam.shake - dt * 30);
   }
 
@@ -685,7 +722,9 @@
 
     // ground (cached)
     const gy0 = Math.max(v.y0, 300);
-    RW.layout.drawGround(c, v.x0, gy0, v.x1, v.y1, A.spriteScale, E.mode === "title" ? 1 : 3);
+    // zoomed far out, the ground uses lower-detail chunks (a whole world of full-size chunks is too big)
+    const zr = z / baseZoom, gScale = zr < 0.35 ? A.spriteScale / 4 : zr < 0.7 ? A.spriteScale / 2 : A.spriteScale;
+    RW.layout.drawGround(c, v.x0, gy0, v.x1, v.y1, gScale, E.mode === "title" ? 1 : zr < 0.7 ? 6 : 3);
     // sky + distant scenery above the northern tree line
     if (v.y0 < 420 && RW.world.drawBackdrop) {
       c.save(); c.beginPath(); c.rect(v.x0, v.y0 - 10, v.w, 392 - v.y0); c.clip();
@@ -773,6 +812,7 @@
     // screen space: cloud light, vignette, joystick, telescope
     c.setTransform(DPR, 0, 0, DPR, 0, 0);
     drawVignette();
+    if (E.mode === "play" && zr < 0.8) drawZoomedOut(v, z, Math.min(1, (0.8 - zr) / 0.2));
     if (ptr.id != null && ptr.drag && E.mode === "play") {
       c.fillStyle = "rgba(255,255,255,.18)"; c.strokeStyle = "rgba(255,255,255,.6)"; c.lineWidth = 3;
       c.beginPath(); c.arc(ptr.sx, ptr.sy, 46, 0, TAU); c.fill(); c.stroke();
@@ -780,6 +820,36 @@
       c.fillStyle = "rgba(255,255,255,.85)"; c.beginPath(); c.arc(ptr.sx + Math.cos(a) * l, ptr.sy + Math.sin(a) * l, 22, 0, TAU); c.fill();
     }
     if (E.scope.on) drawScope();
+  }
+
+  // Zoomed out: big place names, and a bouncing YOU arrow over the player so you can find yourself.
+  function drawZoomedOut(v, z, a) {
+    c.save();
+    c.globalAlpha = a;
+    const labels = RW.world.mapLabels ? RW.world.mapLabels() : [];
+    const fs = U.clamp(13 + z * 14, 13, 19);
+    c.font = `700 ${fs}px Fredoka, system-ui, sans-serif`;
+    for (const l of labels) {
+      const sx = (l.x - v.x0) * z, sy = (l.y - v.y0) * z;
+      if (sx < -100 || sx > W + 100 || sy < -40 || sy > H + 40) continue;
+      const str = l.icon + " " + l.name, w = c.measureText(str).width + 18, h = fs + 12;
+      c.fillStyle = l.color; A.rr(c, sx - w / 2, sy - h / 2, w, h, h / 2); c.fill();
+      c.strokeStyle = "rgba(255,255,255,.9)"; c.lineWidth = 2; c.stroke();
+      c.fillStyle = "#FFFFFF"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(str, sx, sy + 1);
+    }
+    const P = E.player;
+    if (P) {
+      const sx = (P.x - v.x0) * z, sy = (P.y - 40 - P.lift - v.y0) * z;
+      const pulse = (E.t * 1.4) % 1;
+      c.strokeStyle = `rgba(255,226,92,${1 - pulse})`; c.lineWidth = 4;
+      c.beginPath(); c.arc(sx, sy + 30 * z, 14 + pulse * 30, 0, TAU); c.stroke();
+      const bob = Math.sin(E.t * 5) * 5, ty = sy - 60 * z - 18 + bob;
+      c.fillStyle = "#FFE25C"; c.strokeStyle = "#E0662A"; c.lineWidth = 3;
+      c.beginPath(); c.moveTo(sx, ty + 14); c.lineTo(sx - 13, ty - 2); c.lineTo(sx - 6, ty - 2); c.lineTo(sx - 6, ty - 16); c.lineTo(sx + 6, ty - 16); c.lineTo(sx + 6, ty - 2); c.lineTo(sx + 13, ty - 2); c.closePath(); c.fill(); c.stroke();
+      c.font = "700 16px Fredoka, system-ui, sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
+      c.lineWidth = 4; c.strokeStyle = "#E0662A"; c.strokeText("YOU", sx, ty - 28); c.fillStyle = "#FFFFFF"; c.fillText("YOU", sx, ty - 28);
+    }
+    c.restore();
   }
 
   let vignette = null, vigKey = "";

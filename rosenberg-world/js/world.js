@@ -89,6 +89,26 @@
     sled:     { name: "SLED HILL", icon: "🛷", color: "#E8453C", go: "sledhill", zone: [460, 2800, 860, 3060] },
     icemtn:   { name: "ICE MOUNTAIN", icon: "❄️", color: "#4A90D9", go: [720, 2430], zone: [100, 2340, 900, 3070] },
   };
+  // Names shown over the world when you pinch out (the engine draws them).
+  let labelCache = null;
+  world.mapLabels = () => {
+    if (labelCache) return labelCache;
+    const out = [];
+    const skip = { home: 0, ski: 1, sled: 1, icemtn: 0 };
+    for (const k in PLACES) {
+      const pl = PLACES[k];
+      if (!pl.zone || skip[k]) continue;
+      const z = pl.zone;
+      out.push({ x: (z[0] + z[2]) / 2, y: k === "beach" ? 1600 : (z[1] + z[3]) / 2, name: pl.name, icon: pl.icon, color: pl.color });
+    }
+    const I = RW.layout.island;
+    out.push({ x: I.x, y: I.y - I.ry + 40, name: "BAHA MAR", icon: "🏝️", color: PLACES.bahamar.color });
+    for (const k of ["splash", "lazyriver"]) {
+      const d = DESTINATIONS.find((x) => x.id === PLACES[k].go);
+      if (d) out.push({ x: d.portal[0] + (k === "splash" ? -30 : 0), y: d.portal[1] + (k === "splash" ? 330 : -160), name: PLACES[k].name, icon: PLACES[k].icon, color: PLACES[k].color });
+    }
+    return (labelCache = out);
+  };
   world.zoneAt = (x, y) => {
     if (E && E.onIsland(x, y)) {
       for (const k of ["hotel", "icecream"]) { const z = PLACES[k].zone; if (x > z[0] && x < z[2] && y > z[1] && y < z[3]) return PLACES[k]; }
