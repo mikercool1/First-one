@@ -379,7 +379,7 @@
 
   function dadThink(d, dt) {
     d.thinkT -= dt; d.distractT -= dt; d.greedT -= dt;
-    if (d.greedT <= 0) { d.greedy = Math.random() < 0.65; d.greedT = rand(3, 7); }
+    if (d.greedT <= 0) { d.greedy = Math.random() < 0.45; d.greedT = rand(3, 7); }
     if (d.thinkT > 0) return;
     d.thinkT = 0.18;
     if (d.distractT > 0) return;
@@ -396,7 +396,7 @@
         const w = 1 - ahead / 450;
         const pts = r.dbl ? [r.x - 26 * Math.cos(r.rot), r.x + 26 * Math.cos(r.rot)] : [r.x];
         for (const px of pts) { const dx = Math.abs(px - x); if (dx < 46) cost += (46 - dx) * 3 * w; }
-        if (r.loot && d.greedy && Math.abs(r.x + r.lootSide * (r.dbl ? 60 : 33) - x) < 14) cost -= 45 * w;
+        if (r.loot && d.greedy && Math.abs(r.x + r.lootSide * (r.dbl ? 60 : 33) - x) < 14) cost -= 30 * w;
       }
       eachObj(d.s - 20, d.s + 320, (o) => {
         const dx = Math.abs(o.x - x);

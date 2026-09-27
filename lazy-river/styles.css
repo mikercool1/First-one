@@ -33,7 +33,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .pill.score b.bump { animation: bump .35s ease; }
 @keyframes bump { 40% { transform: scale(1.25); color: var(--coral); } }
 .pill.lap { font: 800 15px/1 var(--display); padding: 0 11px; }
-.pill.race { flex: 1; min-width: 0; justify-content: center; overflow: hidden; font-size: 15px; font-variant-numeric: tabular-nums; }
+.pill.race { flex: 1; min-width: 0; justify-content: center; overflow: hidden; padding: 0 8px; font-size: 13px; font-variant-numeric: tabular-nums; }
 .pill.race b { font: 800 19px/1 var(--display); margin-right: 2px; }
 .pill.race.first { background: var(--sun); }
 .zone-tag { align-self: center; padding: 4px 12px; border-radius: 999px; background: rgba(255, 252, 244, .85); font: 800 12px/1.2 var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); box-shadow: 0 3px 10px rgba(3, 40, 60, .2); transition: background .4s, color .4s; }
