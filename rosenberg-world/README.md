@@ -35,11 +35,12 @@ they walk out of that game's door and the stars they earned fly into the total.
 
 The bottom-left corner of the world is **Ice Mountain**: snow on the ground, snowy pines, a frozen
 stream you can walk across, falling snow and a snowman, reached by the snowy trail past the
-treehouse (the ICE MOUNTAIN arch marks the way in). Cocoa Party and Max's Bunny Hill are open; one place waits for its game:
+treehouse (the ICE MOUNTAIN arch marks the way in). Cocoa Party and Max's Bunny Hill are open; two places wait for their games:
 
 | Place | Game id in `js/games.js` | Destination |
 | --- | --- | --- |
-| Ski Run (a big snowy peak with slalom flags and a moving ski lift) | `skiRun` | `skirun` |
+| Ice Rink (bottom-left corner: boards, hockey lines, goals and kids skating) | `iceHockey` | `icerink` |
+| Ski Run (a big snowy peak with slalom flags and a moving ski lift) | `skiRun` | `skirun` | (hidden until it's unlocked)
 
 Switch one on: copy the game into `games/<name>/` (with the bridge lines) and in `js/games.js` set
 `unlocked: true` and `entry`. The ribbon then shows the game's title, and it appears on the map and

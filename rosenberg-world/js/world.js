@@ -28,6 +28,7 @@
     // Ice Mountain: winter games on their way
     { id: "hotchoc", name: "Cocoa Party", icon: "☕", kind: "game", portal: [820, 2612], portalR: 70, arrive: [820, 2630], map: [820, 2480] },
     { id: "skirun", name: "Ski Run", icon: "⛷️", kind: "game", portal: [300, 2742], portalR: 80, arrive: [300, 2760], map: [280, 2560] },
+    { id: "icerink", name: "Ice Rink", icon: "🏒", kind: "game", portal: [250, 2842], portalR: 80, arrive: [250, 2830], map: [250, 2930] },
     { id: "sledhill", name: "Max's Bunny Hill", icon: "🐰", kind: "game", portal: [660, 2992], portalR: 80, arrive: [660, 3010], map: [660, 2880] },
     { id: "garden", name: "Grampa Simon's Garden", icon: "🍅", kind: "game", portal: [1070, 1442], portalR: 80, arrive: [1070, 1464], map: [1040, 1240] },
     { id: "shop", name: "Star Shop", icon: "⭐", kind: "shop", portal: [3690, 2186], portalR: 80, arrive: [3690, 2206], map: [3690, 2040] },
@@ -87,6 +88,7 @@
     hotchoc:  { name: "COCOA PARTY", icon: "☕", color: "#8A5A3C", go: "hotchoc", zone: [700, 2400, 900, 2640] },
     ski:      { name: "SKI RUN", icon: "⛷️", color: "#2F6BD6", go: "skirun", zone: [100, 2400, 470, 2800] },
     sled:     { name: "MAX'S BUNNY HILL", icon: "🐰", color: "#E8453C", go: "sledhill", zone: [460, 2800, 860, 3060] },
+    rink:     { name: "ICE RINK", icon: "🏒", color: "#2F6BD6", go: [250, 2830], zone: [110, 2800, 410, 3060] },
     icemtn:   { name: "ICE MOUNTAIN", icon: "❄️", color: "#4A90D9", go: [720, 2430], zone: [100, 2340, 900, 3070] },
   };
   // Names shown over the world when you pinch out (the engine draws them).
@@ -1377,7 +1379,7 @@
   function buildSignposts() {
     signpost(2590, 1992, [["home", "U"], ["shop", "R"], ["arcade", "D"]]);        // boulevard, below the house
     signpost(1236, 1992, [["kitchen", "U"], ["icemtn", "L"], ["sports", "D"]]);   // boulevard, west of the sports gate
-    signpost(560, 2470, [["hotchoc", "R"], ["sled", "D"]]);                      // Ice Mountain, as the trail comes in
+    signpost(560, 2470, [["hotchoc", "R"], ["sled", "D"], ["rink", "L"]]);                      // Ice Mountain, as the trail comes in
     signpost(3392, 1992, [["plaza", "U"], ["shop", "R"], ["bahamar", "R"]]);      // boulevard at the plaza
     signpost(4150, 1995, [["beach", "U"], ["bahamar", "D"]]);                    // on the sand, where the trail heads south
     signpost(1880, 900, [["academy", "L"], ["raceway", "L"], ["baseball", "R"]]); // north lane, west of the ballpark
@@ -1578,6 +1580,48 @@
       },
       tap: portalTap("sledhill"),
     });
+    // Ice Rink (bottom-left): for the ice hockey game on its way
+    const RK = { x: 250, y: 2935, hw: 135, hh: 72 };
+    staticProp(RK.x, RK.y, [-RK.hw - 12, -RK.hh - 16, RK.hw + 12, RK.hh + 14], (c) => {
+      const { hw, hh } = RK;
+      c.fillStyle = "rgba(90,120,160,.25)"; A.rr(c, -hw - 8, -hh - 2, hw * 2 + 16, hh * 2 + 12, 44); c.fill();
+      // boards
+      c.fillStyle = "#FFFFFF"; A.rr(c, -hw - 8, -hh - 10, hw * 2 + 16, hh * 2 + 16, 44); c.fill();
+      c.fillStyle = "#E8453C"; A.rr(c, -hw - 8, hh - 2, hw * 2 + 16, 8, 4); c.fill();
+      // ice
+      c.fillStyle = A.lin(c, 0, -hh, 0, hh, ["#F4FBFF", "#D6ECFA"]); A.rr(c, -hw, -hh, hw * 2, hh * 2, 38); c.fill();
+      c.fillStyle = "rgba(255,255,255,.7)"; c.beginPath(); c.ellipse(-50, -30, 60, 10, -0.2, 0, TAU); c.fill();
+      // center red line, blue lines, face-off circle
+      c.fillStyle = "rgba(232,69,60,.8)"; c.fillRect(-2, -hh, 4, hh * 2);
+      c.fillStyle = "rgba(47,107,214,.75)"; c.fillRect(-48, -hh, 5, hh * 2); c.fillRect(43, -hh, 5, hh * 2);
+      c.strokeStyle = "rgba(47,107,214,.75)"; c.lineWidth = 3; c.beginPath(); c.ellipse(0, 0, 26, 18, 0, 0, TAU); c.stroke();
+      c.fillStyle = "rgba(232,69,60,.8)"; c.beginPath(); c.arc(0, 0, 4, 0, TAU); c.fill();
+      // goal creases and nets
+      [[-1], [1]].forEach(([d]) => {
+        c.fillStyle = "rgba(90,160,230,.35)"; c.beginPath(); c.ellipse(d * (hw - 22), 0, 16, 18, 0, d > 0 ? Math.PI / 2 : -Math.PI / 2, d > 0 ? Math.PI * 1.5 : Math.PI / 2); c.fill();
+        c.strokeStyle = "#E8453C"; c.lineWidth = 3; A.rr(c, d * (hw - 16) - (d > 0 ? 0 : 12), -12, 12, 24, 3); c.stroke();
+        c.strokeStyle = "rgba(255,255,255,.9)"; c.lineWidth = 1; for (let k = -10; k <= 10; k += 5) { c.beginPath(); c.moveTo(d * (hw - 16), k); c.lineTo(d * (hw - 4), k); c.stroke(); }
+      });
+    }, { kind: "rink", layer: "ground", solid: [{ r: [-RK.hw - 8, -RK.hh - 10, RK.hw + 8, RK.hh + 8] }], tap: portalTap("icerink") });
+    // skaters looping round the ice, and the ribbon
+    add({
+      kind: "skaters", x: RK.x, y: RK.y - RK.hh, box: [-RK.hw, -140, RK.hw, RK.hh * 2], sortY: RK.y - RK.hh,
+      draw(c, E2) {
+        const t = E2.t;
+        [["#E8453C", 0], ["#2F6BD6", 2.1], ["#FFD23F", 4.2]].forEach(([col, ph]) => {
+          const a = t * 0.7 + ph, sx = Math.cos(a) * (RK.hw - 40), sy = RK.hh + Math.sin(a) * (RK.hh - 26);
+          c.fillStyle = "rgba(60,90,130,.2)"; A.ell(c, sx, sy + 2, 12, 4); c.fill();
+          c.fillStyle = col; A.rr(c, sx - 7, sy - 30, 14, 20, 5); c.fill();
+          c.fillStyle = "#2B2F3A"; c.fillRect(sx - 6, sy - 12, 4, 11); c.fillRect(sx + 2, sy - 12, 4, 11);
+          c.fillStyle = "#FFD8BE"; c.beginPath(); c.arc(sx, sy - 38, 7, 0, TAU); c.fill();
+          c.fillStyle = col; c.beginPath(); c.arc(sx, sy - 41, 7, Math.PI, TAU); c.fill();
+          A.line(c, sx + 6, sy - 22, sx + 18 * Math.sign(Math.cos(a + 1.6) || 1), sy - 2, 2.5, "#7A5236"); // hockey stick
+        });
+        c.save(); c.translate(0, -40); comingRibbon(c, "icerink", 0, "#2F6BD6"); c.restore();
+      },
+      tap: portalTap("icerink"),
+    });
+
     // a welcome sign and an arch where the trail enters the snow
     staticProp(730, 2375, [-110, -170, 110, 10], (c) => {
       [-86, 86].forEach((x) => { c.fillStyle = A.lin(c, x - 10, 0, x + 10, 0, ["#E4F6FF", "#A8D8F5"]); A.rr(c, x - 10, -140, 20, 140, 8); c.fill(); });
@@ -1586,7 +1630,7 @@
       A.text(c, "❄ ICE MOUNTAIN ❄", 0, -148, 19, "#FFFFFF", { weight: 700 });
     }, { kind: "arch", solid: [{ r: [-96, -6, -76, 4] }, { r: [76, -6, 96, 4] }] });
     // snowy pines and a snowman
-    const pines = [[180, 2440], [880, 2700], [150, 2880], [880, 3030]];
+    const pines = [[180, 2440], [880, 2700], [880, 3030], [130, 2760]];
     if (world.destStatus(DEST.skirun) === "locked") pines.push([230, 2660], [360, 2720]); // a couple of pines where the Ski Run will go
     pines.forEach(([x, y], i) => tree(x, y, "snowpine", 0.95 + (i % 3) * 0.1));
     staticProp(430, 2600, [-30, -90, 30, 6], (c) => {

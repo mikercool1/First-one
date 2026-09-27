@@ -54,6 +54,7 @@
       { w: 52, pts: [[620, 1900], [680, 2060], [700, 2200]], kind: "dirt" },
       // Ice Mountain: a snowy trail on from the treehouse, over the frozen stream to the ski run
       { w: 60, pts: [[700, 2200], [730, 2380], [690, 2540], [600, 2700], [470, 2790], [330, 2770]], kind: "snow" },
+      { w: 56, pts: [[330, 2770], [260, 2800], [250, 2840]], kind: "snow" }, // down to the ice rink
       { w: 50, pts: [[330, 1540], [200, 1400], [110, 1330], [-120, 1300]], kind: "dirt" },
       // raceway gate
       { w: 70, pts: [[640, 1030], [640, 960]], kind: "stone" },

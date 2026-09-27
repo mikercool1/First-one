@@ -285,6 +285,7 @@
     color: "#E8453C",
     icon: "🐰",
   });
+  G.register({ id: "iceHockey", title: "Ice Hockey", subtitle: "", destination: "icerink", unlocked: false, entry: null, color: "#2F6BD6", icon: "🏒" });
   G.register({ id: "skiRun", title: "Ski Run", subtitle: "", destination: "skirun", unlocked: false, entry: null, color: "#2F6BD6", icon: "⛷️" });
 
   G.register({
