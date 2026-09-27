@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script src="../rw-bridge.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fish Friday</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,700&family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+:root {
+  --ink: #16182A; --cream: #F6F1E7; --gold: #E9C77B; --gold-2: #C9A24E;
+  --glass: rgba(18, 20, 36, .62); --glass-edge: rgba(255, 255, 255, .14);
+  --serif: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --sans: "Manrope", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: #0E1433; color: var(--cream); font: 600 15px/1.35 var(--sans); overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.stage { position: fixed; inset: 0; }
+#cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* HUD */
+.hud { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 16px; right: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; pointer-events: none; }
+.chip { background: var(--glass); backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); border: 1px solid var(--glass-edge); border-radius: 999px; padding: 5px 14px; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+#goal { font: 600 22px/1.1 var(--serif); color: #fff; font-variant-numeric: tabular-nums; min-width: 112px; text-align: center; }
+.goal-chip { position: relative; padding-bottom: 9px; }
+#goal small { font: 700 10px var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); margin-right: 4px; vertical-align: 3px; }
+#goal span { color: rgba(255,255,255,.55); font-size: 16px; }
+.goal-track { position: absolute; left: 14px; right: 14px; bottom: 5px; height: 3px; border-radius: 3px; background: rgba(255,255,255,.15); }
+#goalBar { display: block; height: 100%; width: 0; border-radius: 3px; background: var(--gold); transition: width .4s ease; }
+#combo { flex: 1; text-align: center; font: 700 13px var(--sans); letter-spacing: .14em; text-transform: uppercase; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.5); transition: transform .2s, color .2s; }
+#combo.hot { color: var(--gold); transform: scale(1.12); }
+.right { display: flex; gap: 8px; align-items: center; }
+#lives { display: flex; gap: 3px; padding: 5px 10px; }
+#lives span { width: 24px; height: 24px; display: block; transition: opacity .3s, filter .3s; }
+#lives svg { width: 100%; height: 100%; display: block; }
+#lives .gone { filter: grayscale(1); opacity: .25; }
+#lives b { font: 700 13px var(--sans); color: var(--gold); align-self: center; margin-left: 2px; }
+.icon-btn { pointer-events: auto; border: 1px solid var(--glass-edge); background: var(--glass); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: #fff; width: 38px; height: 38px; border-radius: 50%; font-size: 16px; cursor: pointer; }
+
+#mikeSays { position: absolute; left: 16px; bottom: 260px; max-width: min(240px, 62vw); background: rgba(255,255,255,.96); color: var(--ink); border-radius: 16px 16px 16px 4px; padding: 8px 13px; font: 700 14px/1.3 var(--sans); box-shadow: 0 10px 30px rgba(0,0,0,.25); pointer-events: none; }
+#mikeSays.pop { animation: pop .32s cubic-bezier(.2,.9,.3,1.3); }
+@keyframes pop { from { transform: translateY(6px) scale(.8); opacity: 0; } }
+
+/* Lox buttons: a frosted tray */
+.bar { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 10px); transform: translateX(-50%); width: min(calc(180px * var(--n, 4)), calc(100% - 20px)); display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); gap: 8px; padding: 8px; border-radius: 26px; background: var(--glass); backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%); border: 1px solid var(--glass-edge); box-shadow: 0 18px 50px rgba(0,0,0,.35); transition: transform .4s cubic-bezier(.2,.9,.3,1), opacity .3s; }
+.bar.off { transform: translate(-50%, 30%); opacity: 0; pointer-events: none; }
+.lox-btn { position: relative; border: 0; border-radius: 19px; padding: 8px 4px 9px; background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)); color: #fff; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: transform .08s, background .2s; overflow: hidden; }
+.lox-btn::after { content: ""; position: absolute; left: 22%; right: 22%; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--c); }
+.plate { width: clamp(48px, 13vw, 64px); aspect-ratio: 1; max-width: 100%; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #FFFFFF, #ECE6DA 70%, #D9D0C0); box-shadow: 0 4px 10px rgba(0,0,0,.3), inset 0 -2px 0 rgba(0,0,0,.08); display: grid; place-items: center; }
+.plate img { width: 84%; height: auto; }
+.nm { font: 700 clamp(11.5px, 3.2vw, 14px)/1 var(--sans); letter-spacing: .02em; white-space: nowrap; }
+.lox-btn kbd { position: absolute; top: 6px; right: 9px; font: 700 10px var(--sans); opacity: .45; }
+.lox-btn:active, .lox-btn.hit { transform: scale(.94); background: linear-gradient(180deg, color-mix(in srgb, var(--c) 45%, transparent), rgba(255,255,255,.04)); }
+.lox-btn:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+@media (hover: none) { .lox-btn kbd { display: none; } }
+
+/* Title + end screens */
+.overlay { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: radial-gradient(120% 80% at 50% 40%, rgba(8,10,24,.05), rgba(8,10,24,.55)); }
+.panel { width: min(430px, 100%); text-align: center; background: rgba(16,18,32,.74); backdrop-filter: blur(22px) saturate(150%); -webkit-backdrop-filter: blur(22px) saturate(150%); border: 1px solid var(--glass-edge); border-radius: 30px; padding: 26px 22px 22px; box-shadow: 0 30px 80px rgba(0,0,0,.4); animation: rise .6s cubic-bezier(.2,.9,.3,1.1); }
+@keyframes rise { from { transform: translateY(18px); opacity: 0; } }
+.kicker { margin: 0; font: 700 11px var(--sans); letter-spacing: .28em; text-transform: uppercase; color: var(--gold); }
+.logo { margin: 6px 0 2px; font: italic 700 clamp(56px, 16vw, 84px)/.95 var(--serif); letter-spacing: -.02em; color: var(--cream); }
+.logo em { font-style: italic; color: var(--gold); }
+.sub { margin: 0 0 18px; font: 500 15px var(--sans); color: rgba(246,241,231,.78); }
+.legend { list-style: none; padding: 0; margin: 0 0 18px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.legend li { display: flex; flex-direction: column; align-items: center; gap: 6px; font: 700 12px var(--sans); }
+.legend .plate { width: 58px; }
+.legend li > span:nth-child(2) { border-bottom: 2px solid var(--c); padding-bottom: 1px; }
+.legend small { font: 700 10px var(--sans); letter-spacing: .1em; text-transform: uppercase; color: rgba(246,241,231,.55); }
+.new-lox { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 16px 0 6px; font: 500 17px var(--sans); }
+.new-lox .plate { width: 72px; }
+.new-lox b { color: var(--gold); }
+.faster { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: rgba(233,199,123,.15); color: var(--gold); font: 700 36px/1 var(--serif); }
+.row { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.link-btn { border: 0; background: none; color: rgba(246,241,231,.75); font: 600 14px var(--sans); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.shabbos { font: italic 700 clamp(40px, 12vw, 58px)/1 var(--serif); color: var(--gold); margin: 6px 0 4px; }
+.how { margin: 0 0 20px; font: 500 14px/1.5 var(--sans); color: rgba(246,241,231,.85); }
+.how b { color: #fff; }
+.go { border: 0; cursor: pointer; font: 700 16px var(--sans); letter-spacing: .06em; color: var(--ink); background: linear-gradient(180deg, #F5DDA0, var(--gold) 55%, var(--gold-2)); padding: 15px 34px; border-radius: 999px; box-shadow: 0 10px 30px rgba(233,199,123,.35), inset 0 1px 0 rgba(255,255,255,.6); transition: transform .1s; }
+.go:active { transform: scale(.97); }
+.best { margin: 12px 0 0; font: 600 12px var(--sans); letter-spacing: .06em; color: rgba(246,241,231,.6); min-height: 1em; }
+h2 { margin: 6px 0 0; font: italic 600 32px/1 var(--serif); }
+.big-tips { font: 600 68px/1 var(--serif); color: var(--gold); margin: 6px 0 0; font-variant-numeric: tabular-nums; }
+.stats { list-style: none; margin: 14px 0; text-align: left; border-top: 1px solid var(--glass-edge); padding: 0; }
+.stats li { display: flex; justify-content: space-between; padding: 9px 2px; border-bottom: 1px solid var(--glass-edge); font-weight: 600; }
+.stats b { font: 600 17px var(--serif); color: #fff; }
+.quote { font: italic 500 16px var(--serif); color: rgba(246,241,231,.9); margin: 0 0 18px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="stage">
+  <canvas id="cv" aria-label="Mike driving a black Mazda CX-50 through Wilmot Woods, tossing lox to neighbors"></canvas>
+
+  <div class="hud" id="hud">
+    <div class="chip goal-chip"><div id="goal"></div><span class="goal-track"><i id="goalBar"></i></span></div>
+    <div id="combo" aria-live="polite"></div>
+    <div class="right"><div class="chip" id="lives" aria-label="Bagels left"></div><button class="icon-btn" id="muteBtn" type="button"></button></div>
+  </div>
+
+  <div id="mikeSays" hidden></div>
+
+  <div class="bar off" id="bar" aria-label="Choose the lox to toss"></div>
+
+  <div class="overlay" id="title">
+    <div class="panel">
+      <p class="kicker">Wilmot Woods &middot; Friday</p>
+      <h1 class="logo">Fish <em>Friday</em></h1>
+      <p class="sub">Deliver the lox. How far can you get?</p>
+      <ul class="legend" id="legend"></ul>
+      <p class="how">Orders appear over the houses. <b>Tap the matching lox</b> and Mike tosses it to the door. Level 1 is 4 houses, and every level after is a bit faster. You start with one bagel: a wrong lox or a missed house costs it, and every 5 in a row earns another.</p>
+      <button class="go" id="startBtn" type="button">START THE ROUTE</button>
+      <p class="best" id="bestLine"></p>
+    </div>
+  </div>
+
+  <div class="overlay" id="levelUp" hidden>
+    <div class="panel">
+      <p class="kicker" id="lvlKicker">Level 1 complete</p>
+      <h2 id="lvlTitle">Level 2</h2>
+      <div class="new-lox" id="lvlNew"></div>
+      <p class="how" id="lvlGoal"></p>
+      <button class="go" id="lvlBtn" type="button">KEEP DRIVING</button>
+      <button type="button" class="link-btn" data-rw-back hidden>BACK TO ROSENBERG WORLD</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="over" hidden>
+    <div class="panel">
+      <p class="kicker" id="overLevel">Level 1</p>
+      <p class="shabbos">Oy vey.</p>
+      <p class="sub">Out of bagels.</p>
+      <ul class="stats" id="overStats"></ul>
+      <div class="row">
+        <button class="go" id="retryBtn" type="button">TRY AGAIN</button>
+        <button class="link-btn" id="restartBtn" type="button">Start over from level 1</button>
+        <button type="button" class="go" data-rw-back hidden>BACK TO ROSENBERG WORLD</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="friends.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#5DB6F2">
+<title>Rosenberg World</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<canvas id="world" aria-label="Rosenberg World"></canvas>
+
+<!-- TITLE -->
+<section class="screen" id="title">
+  <div class="title-inner">
+    <h1 id="logo" class="logo" aria-label="Rosenberg World"><span class="l1"></span><span class="l2"></span></h1>
+    <div class="names"><span class="n r">REUBEN</span><i>•</i><span class="n j">JONAH</span><i>•</i><span class="n e">ELLIE</span></div>
+  </div>
+  <div class="tap-enter">TAP TO ENTER</div>
+</section>
+
+<!-- CHARACTER SELECT -->
+<section class="screen" id="select" hidden>
+  <button class="round back" id="selectBack" type="button" aria-label="Back">←</button>
+  <h2 class="sel-title">WHO'S PLAYING?</h2>
+  <button class="round stats-btn" id="selectStats" type="button" aria-label="Family stats">📊</button>
+  <div class="cards" id="cards"></div>
+</section>
+
+<!-- HUD -->
+<div id="hud" hidden>
+  <button id="who" class="chip" type="button" aria-label="Change player"><canvas id="face" width="96" height="96"></canvas><span id="whoName">REUBEN</span></button>
+  <div class="hud-right">
+    <button id="sound" class="round small" type="button">🔊</button>
+    <div id="stars" class="pill"><svg viewBox="0 0 24 24" class="star-ico" aria-hidden="true"><path d="M12 2.2l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.3 1.3-6.6L2.5 9.1l6.6-.8z"/></svg><span id="starCount">0</span></div>
+  </div>
+  <button id="mapBtn" class="round big hud-map" type="button" aria-label="Map">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 11l12-5 14 5 12-5v31l-12 5-14-5-12 5z" fill="#FFF6DD" stroke="#2B6CB0" stroke-width="3" stroke-linejoin="round"/><path d="M17 6v31M31 11v31" stroke="#2B6CB0" stroke-width="3"/><path d="M9 26c4-4 7 2 11-1s6-6 10-2 6 3 9-1" stroke="#2EB872" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="36" cy="18" r="4" fill="#E8453C"/></svg>
+    <span>MAP</span>
+  </button>
+  <button id="allBtn" class="round big hud-all" type="button" aria-label="All games">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="6" width="16" height="16" rx="5" fill="#FF5C8A"/><rect x="26" y="6" width="16" height="16" rx="5" fill="#FFD23F"/><rect x="6" y="26" width="16" height="16" rx="5" fill="#2EB872"/><rect x="26" y="26" width="16" height="16" rx="5" fill="#2F9BFF"/><path d="M12 14l3-3 3 3-3 3z" fill="#fff"/><circle cx="34" cy="14" r="3.2" fill="#fff"/><path d="M11 34h8M15 30v8" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M31 31l6 6M37 31l-6 6" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>
+    <span>ALL GAMES</span>
+  </button>
+  <button id="bookBtn" class="round big hud-book" type="button" aria-label="Collection book">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 8h14a4 4 0 014 4v28a3 3 0 00-3-3H8z" fill="#FFF6DD" stroke="#7B3FE4" stroke-width="3" stroke-linejoin="round"/><path d="M40 8H28a4 4 0 00-4 4v28a3 3 0 013-3h13z" fill="#FFFFFF" stroke="#7B3FE4" stroke-width="3" stroke-linejoin="round"/><path d="M32 16l1.6 3.4 3.6.4-2.7 2.5.7 3.6L32 24l-3.2 1.9.7-3.6-2.7-2.5 3.6-.4z" fill="#FFD23F"/></svg>
+    <span>COLLECTION</span>
+  </button>
+</div>
+
+<!-- door card -->
+<div id="portal" class="portal-card" hidden></div>
+
+<!-- toast -->
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- MAP -->
+<section class="overlay" id="map" hidden>
+  <div class="map-frame">
+    <div class="map-head"><span>ROSENBERG WORLD</span><button class="round small" id="mapClose" type="button" aria-label="Close map">✕</button></div>
+    <div class="map-body"><canvas id="mapCanvas"></canvas><div id="pins"></div></div>
+  </div>
+</section>
+
+<!-- ALL GAMES: jump straight into any game -->
+<section class="overlay" id="allgames" hidden>
+  <div class="all-frame">
+    <div class="book-head all-head"><span>ALL GAMES</span><button class="round small" id="allClose" type="button" aria-label="Close">✕</button></div>
+    <div class="all-grid" id="allGrid"></div>
+  </div>
+</section>
+
+<!-- FAMILY STATS -->
+<section class="overlay" id="stats" hidden>
+  <div class="stats-frame">
+    <div class="book-head stats-head"><span>FAMILY STATS</span><button class="round small" id="statsClose" type="button" aria-label="Close">✕</button></div>
+    <div class="stats-body" id="statsBody"></div>
+    <p class="stats-note">Saved on this device. Each kid's stars, games and time are kept separately.</p>
+  </div>
+</section>
+
+<!-- COLLECTION BOOK -->
+<section class="overlay" id="book" hidden>
+  <div class="book-frame">
+    <div class="book-head"><span>COLLECTION BOOK</span><button class="round small" id="bookClose" type="button" aria-label="Close">✕</button></div>
+    <div class="book-body" id="bookBody"></div>
+  </div>
+</section>
+
+<!-- GAME HOST: mini-games run in here -->
+<section class="overlay host" id="host" hidden>
+  <div id="gameMount"></div>
+  <button class="round small host-exit" id="hostExit" type="button" aria-label="Back to Rosenberg World">✕</button>
+</section>
+
+<!-- RESULTS -->
+<section class="overlay" id="results" hidden>
+  <div class="res-box" id="resBox"></div>
+</section>
+
+<div id="wipe" hidden></div>
+<div id="fx"></div>
+
+<script src="js/core.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/art.js"></script>
+<script src="js/registry.js"></script>
+<script src="js/games.js"></script>
+<script src="js/ground.js"></script>
+<script src="js/buildings.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/world.js"></script>
+<script src="js/life.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Star Catch (template game)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&display=swap">
+<style>
+  /* A tiny example mini-game showing how a game talks to Rosenberg World.
+     Copy this folder, replace the game, keep the RosenbergBridge calls. */
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body { background: radial-gradient(120% 90% at 50% 20%, #7FC8FF, #2F6BD6); font: 700 18px "Fredoka", system-ui, sans-serif; color: #1E2A5A; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+  .hud { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; }
+  .hud div { background: #FFFFFF; border-radius: 999px; padding: 8px 18px; box-shadow: 0 4px 0 rgba(0,0,0,.15); font-variant-numeric: tabular-nums; }
+  .star { position: fixed; width: 76px; height: 76px; border: 0; background: none; font-size: 64px; line-height: 1; cursor: pointer; transition: transform .1s; }
+  .star:active { transform: scale(.85); }
+  .done { position: fixed; inset: 0; display: grid; place-items: center; }
+  .done div { background: #FFFFFF; border-radius: 30px; padding: 24px 30px; text-align: center; box-shadow: 0 8px 0 rgba(0,0,0,.2); }
+  button.go { font: inherit; border: 0; border-radius: 999px; padding: 14px 26px; background: #2EB872; color: #FFFFFF; font-size: 20px; margin-top: 12px; box-shadow: 0 5px 0 #1E8F57; }
+</style>
+</head>
+<body>
+<div class="hud"><div>⭐ <span id="score">0</span></div><div>⏱ <span id="time">15</span></div></div>
+<div class="done" id="done" hidden><div><div id="msg"></div><button class="go" id="again" type="button">Play again</button></div></div>
+<script src="../rw-bridge.js"></script>
+<script>
+  let score = 0, time = 15, timer = null;
+  const scoreEl = document.getElementById("score"), timeEl = document.getElementById("time");
+  function spawn() {
+    const b = document.createElement("button");
+    b.className = "star"; b.textContent = "⭐"; b.type = "button";
+    b.style.left = (10 + Math.random() * 75) + "vw"; b.style.top = (18 + Math.random() * 65) + "vh";
+    b.onclick = () => { score++; scoreEl.textContent = score; b.remove(); spawn(); };
+    document.body.appendChild(b);
+    setTimeout(() => { if (b.isConnected) { b.remove(); spawn(); } }, 1400);
+  }
+  function start() {
+    score = 0; time = 15; scoreEl.textContent = 0; timeEl.textContent = 15;
+    document.getElementById("done").hidden = true;
+    spawn();
+    timer = setInterval(() => {
+      time--; timeEl.textContent = time;
+      if (time <= 0) {
+        clearInterval(timer);
+        document.querySelectorAll(".star").forEach((s) => s.remove());
+        const stars = Math.min(5, Math.floor(score / 4));
+        // ↓ This is the only line a game needs to hand its result back to Rosenberg World.
+        if (!RosenbergBridge.finish({ score, stars })) {
+          // Standalone (not inside the hub): show our own end screen.
+          document.getElementById("msg").textContent = `You caught ${score} stars!`;
+          document.getElementById("done").hidden = false;
+        }
+      }
+    }, 1000);
+  }
+  document.getElementById("again").onclick = start;
+  start();
+</script>
+</body>
+</html>
