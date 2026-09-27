@@ -42,11 +42,15 @@ h1 .t{display:inline-grid;place-items:center;width:1.05em;height:1.05em;margin-l
 .score div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px 10px;text-align:center;min-width:64px}
 .score b{display:block;font:800 20px/1.1 var(--display)}
 .score span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-.cats{display:flex;flex-wrap:wrap;gap:8px}
+.cats{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-inline:-16px;padding-inline:16px;scrollbar-width:thin}
+.chip{flex:none}
+.chip.own{border-style:dashed;border-color:var(--accent);color:var(--accent)}
+.chip.own[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .chip{font:600 14px var(--body);border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 13px;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.custom{display:flex;gap:8px}
+.custom{display:flex;flex-wrap:wrap;gap:8px}
 .custom input{flex:1;min-width:0}
+.custom p{flex-basis:100%;margin:0;font-size:13px;color:var(--muted)}
 .board{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px;min-height:260px}
 .board-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-bottom:1px dashed var(--line);padding-bottom:8px}
 .board-head h2{font:800 20px/1.2 var(--display);margin:0}
@@ -92,15 +96,16 @@ input[type=text]:focus-visible,button:focus-visible{outline:3px solid var(--acce
   <header>
     <h1>The Word Gam<span class="t">E</span></h1>
     <div class="score" aria-label="Score">
-      <div><b id="sYou">0</b><span>You</span></div>
-      <div><b id="sCpu">0</b><span>Computer</span></div>
+      <div><b id="sYou">0</b><span id="lYou">You</span></div>
+      <div><b id="sCpu">0</b><span id="lCpu">Computer</span></div>
     </div>
   </header>
 
   <div class="cats" id="cats" role="group" aria-label="Category"></div>
   <form class="custom" id="customForm" hidden>
-    <input type="text" id="customInput" placeholder="Any category, e.g. Disney movies" autocomplete="off" aria-label="Custom category">
-    <button class="btn ghost" type="submit">Play it</button>
+    <input type="text" id="customInput" placeholder="Any category, e.g. Dinosaurs" autocomplete="off" aria-label="Your own category">
+    <button class="btn primary" type="submit">Play it</button>
+    <p id="customHint"></p>
   </form>
 
   <section class="board" aria-live="polite">
@@ -133,7 +138,7 @@ input[type=text]:focus-visible,button:focus-visible{outline:3px solid var(--acce
     </div>
   </div>
 
-  <p class="rules">Each answer has to start with the last letter of the one before it. No repeats. For people, the first name has to start with the letter, and the last letter of the last name is the next letter. You can type just a last name, like "Jordan" for Michael Jordan.</p>
+  <p class="rules">Each answer has to start with the last letter of the one before it. No repeats, and a leading "The" doesn't count. Tap Choose your own to play any category you like. For people, the first name has to start with the letter, and the last letter of the last name is the next letter. You can type just a last name, like "Jordan" for Michael Jordan.</p>
 </div>
 
 <script>
@@ -141,19 +146,40 @@ const CATS = {
   "Fruit": ["Apple","Apricot","Avocado","Acai","Ackee","Banana","Bilberry","Blackberry","Blackcurrant","Blueberry","Boysenberry","Breadfruit","Cantaloupe","Carambola","Cherimoya","Cherry","Clementine","Cloudberry","Coconut","Cranberry","Currant","Damson","Date","Dragon fruit","Durian","Elderberry","Feijoa","Fig","Finger lime","Gooseberry","Grape","Grapefruit","Guava","Honeydew","Honeyberry","Huckleberry","Jackfruit","Jabuticaba","Jujube","Kiwi","Kiwano","Kumquat","Lemon","Lime","Lingonberry","Loganberry","Longan","Loquat","Lychee","Mandarin","Mango","Mangosteen","Marionberry","Medlar","Melon","Mulberry","Nance","Nectarine","Noni","Olive","Orange","Oroblanco","Papaya","Passion fruit","Peach","Pear","Persimmon","Physalis","Pineapple","Plantain","Plum","Pomegranate","Pomelo","Prickly pear","Quince","Rambutan","Raspberry","Redcurrant","Salak","Satsuma","Soursop","Starfruit","Strawberry","Tamarind","Tangelo","Tangerine","Ugli fruit","Watermelon","White currant","Xigua","Yangmei","Yuzu"],
   "Baseball players": ["Aaron Judge","Adrian Beltre","Albert Pujols","Alex Rodriguez","Andrew McCutchen","Babe Ruth","Barry Bonds","Bo Jackson","Bob Gibson","Bryce Harper","Buster Posey","Cal Ripken Jr","Carlton Fisk","Chipper Jones","Clayton Kershaw","Cody Bellinger","Corey Seager","Craig Biggio","Cy Young","Dave Winfield","David Ortiz","Dennis Eckersley","Derek Jeter","Don Mattingly","Duke Snider","Dwight Gooden","Eddie Murray","Edgar Martinez","Elly De La Cruz","Enos Slaughter","Eric Davis","Ernie Banks","Evan Longoria","Fergie Jenkins","Fernando Tatis Jr","Fernando Valenzuela","Francisco Lindor","Frank Thomas","Freddie Freeman","Gary Carter","Gary Sheffield","George Brett","Gerrit Cole","Greg Maddux","Hank Aaron","Harmon Killebrew","Hideki Matsui","Honus Wagner","Hoyt Wilhelm","Ian Kinsler","Ichiro Suzuki","Ivan Rodriguez","Jackie Robinson","Jacob deGrom","Jim Palmer","Jim Thome","Joe DiMaggio","Joey Votto","Johnny Bench","Jose Altuve","Juan Soto","Justin Verlander","Ken Griffey Jr","Kenny Lofton","Kirby Puckett","Kirk Gibson","Kris Bryant","Kyle Schwarber","Larry Walker","Lou Brock","Lou Gehrig","Luis Aparicio","Manny Machado","Mariano Rivera","Mark McGwire","Max Scherzer","Mickey Mantle","Miguel Cabrera","Mike Trout","Mookie Betts","Nap Lajoie","Nelson Cruz","Nick Markakis","Nolan Ryan","Nomar Garciaparra","Omar Vizquel","Orel Hershiser","Ozzie Guillen","Ozzie Smith","Paul Goldschmidt","Paul Molitor","Pedro Martinez","Pete Alonso","Pete Rose","Rafael Devers","Ralph Kiner","Randy Johnson","Reggie Jackson","Rickey Henderson","Roberto Clemente","Rod Carew","Roger Clemens","Ronald Acuna Jr","Ryne Sandberg","Sammy Sosa","Sandy Koufax","Satchel Paige","Shohei Ohtani","Stan Musial","Steve Carlton","Ted Williams","Thurman Munson","Tim Lincecum","Tom Seaver","Tony Gwynn","Trea Turner","Ty Cobb","Ubaldo Jimenez","Ugueth Urbina","Vladimir Guerrero","Vladimir Guerrero Jr","Wade Boggs","Walter Johnson","Warren Spahn","Whitey Ford","Will Clark","Willie Mays","Xander Bogaerts","Yadier Molina","Yoenis Cespedes","Yogi Berra","Yordan Alvarez","Yu Darvish","Zack Greinke","Zack Wheeler"],
   "Basketball players": ["Allen Iverson","Alonzo Mourning","Anthony Davis","Anthony Edwards","Ben Wallace","Bill Russell","Bill Walton","Blake Griffin","Bob Cousy","Bradley Beal","Carmelo Anthony","Charles Barkley","Chris Bosh","Chris Paul","Chris Webber","Clyde Drexler","Damian Lillard","David Robinson","DeMar DeRozan","Dennis Rodman","Derrick Rose","Devin Booker","Dirk Nowitzki","Dominique Wilkins","Donovan Mitchell","Draymond Green","Dwyane Wade","Elgin Baylor","Elton Brand","Elvin Hayes","Evan Mobley","Gary Payton","George Gervin","Giannis Antetokounmpo","Gilbert Arenas","Grant Hill","Hakeem Olajuwon","Horace Grant","Isaiah Thomas","Isiah Thomas","Ja Morant","Jalen Brunson","James Harden","Jason Kidd","Jaylen Brown","Jayson Tatum","Jerry West","Jimmy Butler","Joel Embiid","John Stockton","Julius Erving","Kareem Abdul-Jabbar","Karl Malone","Kawhi Leonard","Kemba Walker","Kevin Durant","Kevin Garnett","Kevin Love","Klay Thompson","Kobe Bryant","Kristaps Porzingis","Kyrie Irving","LaMelo Ball","Larry Bird","LeBron James","Lonzo Ball","Lou Williams","Luka Doncic","Magic Johnson","Manu Ginobili","Metta World Peace","Michael Jordan","Moses Malone","Nate Archibald","Nate Robinson","Nick Van Exel","Nikola Jokic","Oscar Robertson","Otto Porter Jr","Patrick Ewing","Pau Gasol","Paul George","Paul Pierce","Penny Hardaway","Pete Maravich","Quentin Richardson","Rasheed Wallace","Ray Allen","Reggie Miller","Robert Parish","Rudy Gobert","Russell Westbrook","Sam Cassell","Scottie Pippen","Shai Gilgeous-Alexander","Shaquille O'Neal","Spud Webb","Stephen Curry","Steve Nash","Tim Duncan","Tony Parker","Tracy McGrady","Trae Young","Tyrese Haliburton","Tyson Chandler","Udonis Haslem","Victor Wembanyama","Vince Carter","Vlade Divac","Walt Frazier","Wes Unseld","Wilt Chamberlain","Xavier McDaniel","Yao Ming","Zach LaVine","Zion Williamson"],
-  "Animals": ["Aardvark","Albatross","Alligator","Alpaca","Anteater","Antelope","Armadillo","Baboon","Badger","Barracuda","Bat","Bear","Beaver","Bison","Bobcat","Buffalo","Butterfly","Camel","Capybara","Caribou","Cat","Cheetah","Chicken","Chimpanzee","Chinchilla","Cobra","Cougar","Cow","Coyote","Crab","Crocodile","Crow","Deer","Dingo","Dog","Dolphin","Donkey","Dove","Duck","Eagle","Eel","Elephant","Elk","Emu","Falcon","Ferret","Flamingo","Fox","Frog","Gazelle","Gecko","Gerbil","Giraffe","Goat","Goose","Gorilla","Hamster","Hare","Hawk","Hedgehog","Heron","Hippopotamus","Horse","Hyena","Ibex","Ibis","Iguana","Impala","Jackal","Jaguar","Jellyfish","Kangaroo","Kingfisher","Koala","Komodo dragon","Kudu","Lemur","Leopard","Lion","Lizard","Llama","Lobster","Lynx","Macaw","Manatee","Meerkat","Mole","Mongoose","Monkey","Moose","Mouse","Narwhal","Newt","Nightingale","Ocelot","Octopus","Opossum","Orangutan","Ostrich","Otter","Owl","Ox","Panda","Panther","Parrot","Peacock","Pelican","Penguin","Pig","Platypus","Porcupine","Puffin","Python","Quail","Quokka","Rabbit","Raccoon","Rat","Raven","Reindeer","Rhinoceros","Salamander","Salmon","Seal","Shark","Sheep","Skunk","Sloth","Snake","Squirrel","Swan","Tapir","Tiger","Toad","Tortoise","Toucan","Turkey","Turtle","Urchin","Vulture","Wallaby","Walrus","Warthog","Weasel","Whale","Wolf","Wolverine","Wombat","Woodpecker","Yak","Zebra"]
+  "Animals": ["Aardvark","Albatross","Alligator","Alpaca","Anteater","Antelope","Armadillo","Baboon","Badger","Barracuda","Bat","Bear","Beaver","Bison","Bobcat","Buffalo","Butterfly","Camel","Capybara","Caribou","Cat","Cheetah","Chicken","Chimpanzee","Chinchilla","Cobra","Cougar","Cow","Coyote","Crab","Crocodile","Crow","Deer","Dingo","Dog","Dolphin","Donkey","Dove","Duck","Eagle","Eel","Elephant","Elk","Emu","Falcon","Ferret","Flamingo","Fox","Frog","Gazelle","Gecko","Gerbil","Giraffe","Goat","Goose","Gorilla","Hamster","Hare","Hawk","Hedgehog","Heron","Hippopotamus","Horse","Hyena","Ibex","Ibis","Iguana","Impala","Jackal","Jaguar","Jellyfish","Kangaroo","Kingfisher","Koala","Komodo dragon","Kudu","Lemur","Leopard","Lion","Lizard","Llama","Lobster","Lynx","Macaw","Manatee","Meerkat","Mole","Mongoose","Monkey","Moose","Mouse","Narwhal","Newt","Nightingale","Ocelot","Octopus","Opossum","Orangutan","Ostrich","Otter","Owl","Ox","Panda","Panther","Parrot","Peacock","Pelican","Penguin","Pig","Platypus","Porcupine","Puffin","Python","Quail","Quokka","Rabbit","Raccoon","Rat","Raven","Reindeer","Rhinoceros","Salamander","Salmon","Seal","Shark","Sheep","Skunk","Sloth","Snake","Squirrel","Swan","Tapir","Tiger","Toad","Tortoise","Toucan","Turkey","Turtle","Urchin","Vulture","Wallaby","Walrus","Warthog","Weasel","Whale","Wolf","Wolverine","Wombat","Woodpecker","Yak","Zebra"],
+  "Vegetables": ["Acorn squash","Artichoke","Arugula","Asparagus","Bean sprouts","Beet","Bell pepper","Black bean","Bok choy","Broccoli","Brussels sprouts","Butternut squash","Cabbage","Carrot","Cassava","Cauliflower","Celery","Chard","Chayote","Chickpea","Collard greens","Corn","Cucumber","Daikon","Dill","Edamame","Eggplant","Endive","Escarole","Fava bean","Fennel","Garlic","Ginger","Green bean","Horseradish","Iceberg lettuce","Jalapeno","Jicama","Kale","Kidney bean","Kohlrabi","Leek","Lentil","Lettuce","Lima bean","Mushroom","Mustard greens","Napa cabbage","Navy bean","Okra","Olive","Onion","Parsnip","Pea","Pepper","Potato","Pumpkin","Radicchio","Radish","Romaine","Rutabaga","Scallion","Shallot","Snap pea","Spinach","Squash","Sweet potato","Taro","Tomatillo","Tomato","Turnip","Watercress","Water chestnut","Yam","Yellow squash","Zucchini"],
+  "Foods": ["Bacon","Bagel","Brisket","Bread","Brownie","Burger","Burrito","Butter","Cake","Cereal","Challah","Cheese","Chicken nuggets","Chili","Cookie","Corn dog","Cupcake","Donut","Dosa","Dumpling","Egg","Egg roll","Empanada","Enchilada","Fajita","Falafel","French fries","French toast","Fried chicken","Granola","Grilled cheese","Guacamole","Gyro","Hamburger","Hot dog","Hummus","Ice cream","Jam","Jelly","Kebab","Ketchup","Knish","Lasagna","Latke","Lox","Mac and cheese","Matzah","Meatball","Meatloaf","Muffin","Nachos","Noodles","Oatmeal","Omelet","Pancake","Pasta","Pizza","Popcorn","Pretzel","Pudding","Quesadilla","Quiche","Ramen","Ravioli","Ribs","Rice","Salad","Sandwich","Soup","Spaghetti","Steak","Sushi","Taco","Tamale","Tater tots","Toast","Tofu","Tortilla","Tuna","Udon","Waffle","Wrap","Yogurt","Ziti"],
+  "Football players": ["Aaron Donald","Aaron Rodgers","Adrian Peterson","Amon-Ra St. Brown","Barry Sanders","Ben Roethlisberger","Bijan Robinson","Brett Favre","Brian Urlacher","Brock Purdy","Calvin Johnson","Cam Newton","CeeDee Lamb","Christian McCaffrey","Cooper Kupp","Dak Prescott","Dan Marino","Davante Adams","Deion Sanders","Derrick Henry","Drew Brees","Earl Campbell","Ed Reed","Eli Manning","Emmitt Smith","Fran Tarkenton","Frank Gore","Gale Sayers","George Kittle","Herschel Walker","Hines Ward","Howie Long","Isaac Bruce","J.J. Watt","Ja'Marr Chase","Jalen Hurts","Jerry Rice","Jim Brown","Joe Burrow","Joe Montana","Joe Namath","John Elway","Johnny Unitas","Josh Allen","Julian Edelman","Justin Herbert","Justin Jefferson","Kurt Warner","Kyler Murray","LaDainian Tomlinson","Lamar Jackson","Larry Fitzgerald","Lawrence Taylor","Marshawn Lynch","Micah Parsons","Myles Garrett","Nick Bosa","Odell Beckham Jr","Orlando Pace","Patrick Mahomes","Peyton Manning","Quenton Nelson","Quinnen Williams","Randy Moss","Ray Lewis","Reggie White","Rob Gronkowski","Russell Wilson","Saquon Barkley","Stefon Diggs","Steve Young","T.J. Watt","Terry Bradshaw","Tom Brady","Travis Kelce","Troy Aikman","Troy Polamalu","Tyreek Hill","Vince Wilfork","Von Miller","Walter Payton","Warren Moon","Xavier Worthy","Zach Ertz"],
+  "Soccer players": ["Abby Wambach","Achraf Hakimi","Alex Morgan","Andres Iniesta","Antoine Griezmann","Bukayo Saka","Christian Pulisic","Clint Dempsey","Cristiano Ronaldo","David Beckham","Didier Drogba","Diego Forlan","Diego Maradona","Edinson Cavani","Emi Martinez","Enzo Fernandez","Erling Haaland","Fernando Torres","Franz Beckenbauer","Frank Lampard","Gareth Bale","Gianluigi Buffon","Harry Kane","Heung-min Son","Iker Casillas","Ilkay Gundogan","Ivan Perisic","Johan Cruyff","John Terry","Jude Bellingham","Julian Alvarez","Kevin De Bruyne","Kylian Mbappe","Lamine Yamal","Landon Donovan","Lionel Messi","Luis Suarez","Luka Modric","Manuel Neuer","Marco van Basten","Megan Rapinoe","Mia Hamm","Mohamed Salah","Neymar","Nicolo Barella","Oliver Kahn","Olivier Giroud","Ousmane Dembele","Paolo Maldini","Pele","Phil Foden","Philipp Lahm","Riyad Mahrez","Robert Lewandowski","Ronaldinho","Ruud Gullit","Samuel Eto'o","Sergio Aguero","Sergio Ramos","Steven Gerrard","Thierry Henry","Thomas Muller","Tim Howard","Tyler Adams","Vinicius Junior","Virgil van Dijk","Wayne Rooney","Weston McKennie","Xavi","Yaya Toure","Yunus Musah","Zinedine Zidane","Zlatan Ibrahimovic"],
+  "Countries": ["Afghanistan","Albania","Algeria","Andorra","Angola","Argentina","Armenia","Australia","Austria","Bahamas","Bangladesh","Barbados","Belarus","Belgium","Belize","Bhutan","Bolivia","Botswana","Brazil","Bulgaria","Cambodia","Cameroon","Canada","Chad","Chile","China","Colombia","Costa Rica","Croatia","Cuba","Cyprus","Denmark","Djibouti","Dominican Republic","Ecuador","Egypt","El Salvador","Eritrea","Estonia","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kuwait","Laos","Latvia","Lebanon","Liberia","Libya","Lithuania","Luxembourg","Madagascar","Malaysia","Maldives","Mali","Malta","Mexico","Monaco","Mongolia","Morocco","Mozambique","Namibia","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","Norway","Oman","Pakistan","Panama","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Samoa","Saudi Arabia","Senegal","Serbia","Singapore","Slovakia","Somalia","South Africa","South Korea","Spain","Sri Lanka","Sudan","Sweden","Switzerland","Syria","Taiwan","Tanzania","Thailand","Togo","Tonga","Tunisia","Turkey","Uganda","Ukraine","United Kingdom","United States","Uruguay","Uzbekistan","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"],
+  "US states": ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"],
+  "Cities": ["Amsterdam","Athens","Atlanta","Austin","Baltimore","Bangkok","Barcelona","Beijing","Berlin","Boston","Brooklyn","Budapest","Buenos Aires","Cairo","Chicago","Cincinnati","Cleveland","Copenhagen","Dallas","Denver","Detroit","Dubai","Dublin","Edinburgh","El Paso","Florence","Fort Worth","Geneva","Glasgow","Hamburg","Havana","Hong Kong","Honolulu","Houston","Indianapolis","Istanbul","Jakarta","Jerusalem","Johannesburg","Kansas City","Kyoto","Las Vegas","Lima","Lisbon","London","Los Angeles","Madrid","Manchester","Melbourne","Memphis","Mexico City","Miami","Milan","Milwaukee","Minneapolis","Montreal","Moscow","Mumbai","Munich","Nashville","New Orleans","New York","Oakland","Orlando","Osaka","Oslo","Ottawa","Paris","Philadelphia","Phoenix","Pittsburgh","Portland","Prague","Quebec City","Rio de Janeiro","Rome","Sacramento","San Diego","San Francisco","Seattle","Seoul","Shanghai","Stockholm","Sydney","Tampa","Tel Aviv","Tokyo","Toronto","Tucson","Vancouver","Venice","Vienna","Warsaw","Washington","Yonkers","Zurich"],
+  "Sports": ["Archery","Badminton","Baseball","Basketball","Bobsled","Bowling","Boxing","Canoeing","Cricket","Curling","Cycling","Dance","Diving","Dodgeball","Equestrian","Fencing","Field hockey","Football","Four square","Golf","Gymnastics","Handball","Hockey","Hurling","Ice skating","Judo","Karate","Kayaking","Kickball","Lacrosse","Luge","Motocross","Netball","Paddleboarding","Pickleball","Polo","Racquetball","Rock climbing","Rowing","Rugby","Running","Sailing","Skateboarding","Skiing","Snowboarding","Soccer","Softball","Squash","Surfing","Swimming","Table tennis","Taekwondo","Tennis","Tetherball","Track","Triathlon","Ultimate frisbee","Volleyball","Water polo","Weightlifting","Wrestling","Yoga"],
+  "Movies": ["Air Bud","Aladdin","Avatar","Bambi","Beauty and the Beast","Big Hero 6","Brave","Cars","Cinderella","Cloudy with a Chance of Meatballs","Coco","Despicable Me","Dog Man","Dumbo","E.T.","Elemental","Elf","Encanto","Enchanted","Ferdinand","Finding Dory","Finding Nemo","Frozen","Garfield","Ghostbusters","Goonies","Grinch","Happy Feet","Harry Potter","Hercules","Home Alone","Hook","Hotel Transylvania","Ice Age","Incredibles","Inside Out","Jaws","Jumanji","Jurassic Park","Karate Kid","Kung Fu Panda","Lego Movie","Lightyear","Lilo and Stitch","Lion King","Little Mermaid","Luca","Madagascar","Mary Poppins","Matilda","Megamind","Migration","Minions","Moana","Monsters Inc","Mulan","Night at the Museum","Nimona","Onward","Paddington","Planes","Pocahontas","Polar Express","Ponyo","Ratatouille","Rio","Rocky","Rookie of the Year","Sandlot","Shrek","Sing","Smallfoot","Sonic the Hedgehog","Soul","Space Jam","Spider-Man","Star Wars","Storks","Superman","Tangled","Tarzan","Toy Story","Trolls","Turbo","Turning Red","Up","Vivo","WALL-E","Wish","Wizard of Oz","Wonka","Wreck-It Ralph","Yes Day","Zathura","Zootopia"],
+  "Cartoon characters": ["Angelica Pickles","Arthur","Bart Simpson","Ben 10","Bingo","Bluey","Boots","Bugs Bunny","Bullwinkle","Buzz Lightyear","Charlie Brown","Curious George","Daffy Duck","Daphne","Dexter","Donald Duck","Donatello","Dora","Dory","Eeyore","Elmer Fudd","Ferb","Finn","Fred Flintstone","Garfield","George Pig","Goofy","Gumball","Homer Simpson","Huey","Inspector Gadget","Jake","Jerry","Jimmy Neutron","Johnny Bravo","Kim Possible","Leonardo","Lightning McQueen","Linus","Lisa Simpson","Lucy","Marshall","Mater","Michelangelo","Mickey Mouse","Minnie Mouse","Nemo","Odie","Olaf","Olive Oyl","Optimus Prime","Patrick Star","Peppa Pig","Perry the Platypus","Phineas","Piglet","Pikachu","Pink Panther","Pluto","Popeye","Porky Pig","Pumbaa","Raphael","Road Runner","Rubble","Ryder","Scooby-Doo","Scrooge McDuck","Shaggy","Shrek","Simba","Skye","Snoopy","SpongeBob","Squidward","Stitch","Sylvester","Tigger","Timon","Tom","Tommy Pickles","Tweety","Underdog","Velma","Wile E. Coyote","Winnie the Pooh","Woody","Yogi Bear","Yosemite Sam","Zim"],
+  "Superheroes": ["Ant-Man","Aquaman","Batgirl","Batman","Beast","Beast Boy","Black Panther","Black Widow","Blue Beetle","Captain America","Captain Marvel","Cyborg","Cyclops","Daredevil","Deadpool","Doctor Strange","Drax","Elektra","Falcon","Flash","Gambit","Gamora","Green Arrow","Green Lantern","Groot","Hawkeye","Hawkgirl","Hellboy","Hulk","Human Torch","Iceman","Invincible","Invisible Woman","Iron Man","Jean Grey","Jessica Jones","Kid Flash","Kitty Pryde","Luke Cage","Mantis","Martian Manhunter","Miles Morales","Mister Fantastic","Ms. Marvel","Nick Fury","Nightwing","Nova","Omni-Man","Plastic Man","Professor X","Quicksilver","Raven","Robin","Rocket","Scarlet Witch","Shazam","She-Hulk","Silver Surfer","Spider-Gwen","Spider-Man","Star-Lord","Starfire","Storm","Supergirl","Superman","Thing","Thor","Ultraman","Vision","War Machine","Wasp","Winter Soldier","Wolverine","Wonder Woman","Yellowjacket","Zatanna"],
+  "Pokemon": ["Abra","Absol","Aerodactyl","Alakazam","Arcanine","Arceus","Articuno","Bellsprout","Bidoof","Blastoise","Blaziken","Bulbasaur","Celebi","Charizard","Charmander","Charmeleon","Chikorita","Chimchar","Clefairy","Cubone","Cyndaquil","Darkrai","Decidueye","Deoxys","Dialga","Diglett","Ditto","Dragonair","Dragonite","Dratini","Eevee","Electabuzz","Electrode","Entei","Espeon","Exeggutor","Flareon","Froakie","Gardevoir","Garchomp","Gastly","Gengar","Geodude","Giratina","Glaceon","Golbat","Goldeen","Greninja","Groudon","Growlithe","Gyarados","Haunter","Heracross","Hitmonchan","Hitmonlee","Horsea","Hypno","Igglybuff","Incineroar","Infernape","Ivysaur","Jigglypuff","Jirachi","Jolteon","Jynx","Kabuto","Kangaskhan","Kingler","Koffing","Krabby","Kyogre","Lapras","Larvitar","Leafeon","Lickitung","Litten","Lucario","Lugia","Machamp","Magikarp","Magmar","Marowak","Meowth","Metagross","Mew","Mewtwo","Moltres","Mr. Mime","Mudkip","Ninetales","Oddish","Omanyte","Onix","Palkia","Paras","Pichu","Pidgeot","Pidgey","Pikachu","Piplup","Ponyta","Popplio","Porygon","Psyduck","Quagsire","Raichu","Raikou","Rapidash","Rattata","Rayquaza","Rowlet","Sandshrew","Sceptile","Scizor","Scorbunny","Scyther","Slowpoke","Snorlax","Sobble","Squirtle","Starmie","Staryu","Steelix","Suicune","Swampert","Sylveon","Tauros","Tentacool","Togepi","Torchic","Totodile","Treecko","Turtwig","Tyranitar","Umbreon","Vaporeon","Venusaur","Voltorb","Vulpix","Wartortle","Weezing","Wobbuffet","Wooloo","Xatu","Xerneas","Yamper","Yveltal","Zapdos","Zubat","Zygarde"],
+  "Colors": ["Amber","Aqua","Azure","Beige","Black","Blue","Brown","Burgundy","Charcoal","Chartreuse","Coral","Cream","Crimson","Cyan","Denim","Emerald","Fuchsia","Gold","Gray","Green","Hot pink","Indigo","Ivory","Jade","Khaki","Lavender","Lemon","Lilac","Lime","Magenta","Maroon","Mauve","Mint","Navy","Ochre","Olive","Orange","Orchid","Peach","Periwinkle","Pink","Plum","Purple","Red","Rose","Ruby","Rust","Salmon","Sapphire","Scarlet","Sea green","Silver","Sky blue","Tan","Taupe","Teal","Turquoise","Ultramarine","Umber","Vermilion","Violet","White","Yellow"],
+  "Jobs": ["Accountant","Actor","Architect","Artist","Astronaut","Athlete","Baker","Banker","Barber","Builder","Bus driver","Butcher","Carpenter","Cashier","Chef","Chemist","Coach","Dancer","Dentist","Designer","Detective","Doctor","Editor","Electrician","Engineer","Farmer","Firefighter","Fisherman","Florist","Gardener","Geologist","Hairdresser","Illustrator","Inventor","Janitor","Jeweler","Journalist","Judge","Lawyer","Librarian","Lifeguard","Mail carrier","Mechanic","Musician","Nanny","Novelist","Nurse","Oceanographer","Optometrist","Painter","Paramedic","Pharmacist","Photographer","Pilot","Plumber","Police officer","Professor","Programmer","Rancher","Ranger","Referee","Reporter","Sailor","Scientist","Singer","Soldier","Surgeon","Tailor","Taxi driver","Teacher","Truck driver","Tutor","Umpire","Veterinarian","Waiter","Writer","Yoga teacher","Zookeeper"],
+  "Candy and snacks": ["Airheads","Almond Joy","Baby Ruth","Butterfinger","Candy corn","Cheetos","Cheez-Its","Doritos","Dots","Fritos","Fruit snacks","Funyuns","Goldfish","Gummy bears","Gushers","Hot Tamales","Jelly beans","Jolly Rancher","Junior Mints","Kettle corn","KitKat","Lollipop","M&M's","Mike and Ike","Milk Duds","Milky Way","Mounds","Nerds","Nutter Butter","Oreos","PayDay","Pop Rocks","Popcorn","Pretzels","Pringles","Red Vines","Reese's","Ritz crackers","Rolo","Runts","Skittles","Smarties","Snickers","Sour Patch Kids","Starburst","Swedish Fish","Takis","Three Musketeers","Tootsie Roll","Twix","Twizzlers","Warheads","Whoppers","York Peppermint Pattie","Zagnut"]
 };
 const CAT_NAMES = Object.keys(CATS);
-const PEOPLE = new Set(["Baseball players","Basketball players"]);
+const PEOPLE = new Set(["Baseball players","Basketball players","Football players","Soccer players"]);
 
 const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z ]+/g," ").replace(/\s+/g," ").trim();
 const stripSuffix = n => n.replace(/ (jr|sr|ii|iii|iv)$/,"");
-const firstLetter = s => (norm(s).match(/[a-z]/)||[""])[0];
+const dropThe = n => n.replace(/^the (?=.)/,"");
+const key = s => dropThe(stripSuffix(norm(s)));
+const firstLetter = s => (dropThe(norm(s)).match(/[a-z]/)||[""])[0];
 const lastLetter = s => { const n = stripSuffix(norm(s)); return n ? n[n.length-1] : ""; };
 const $ = id => document.getElementById(id);
 
 let sample = null;
-let S = { cat:"Fruit", custom:false, chain:[], used:new Set(), letter:"", over:null, busy:false, score:{you:0,cpu:0}, pending:null };
+let S = { cat:"Fruit", custom:false, two:false, turn:"you", chain:[], used:new Set(), letter:"", over:null, busy:false, score:{you:0,cpu:0}, score2:{you:0,cpu:0}, pending:null };
+let ownOpen = false;
+const NAMES = { you:"Player 1", cpu:"Player 2" };
+const nameOf = who => S.two ? NAMES[who] : (who === "you" ? "You" : "Computer");
+const other = who => who === "you" ? "cpu" : "you";
 
 function listFor(cat){ return CATS[cat] || []; }
 
@@ -166,10 +192,16 @@ function renderCats(){
     b.onclick = () => startRound(c, false);
     box.append(b);
   }
+  const own = document.createElement("button");
+  own.type = "button"; own.className = "chip own"; own.textContent = "✏️ Choose your own";
+  own.setAttribute("aria-pressed", String(ownOpen || S.custom));
+  own.onclick = () => { ownOpen = !ownOpen; setupCustom(); renderCats(); if (ownOpen) $("customInput").focus(); };
+  box.prepend(own);
   if (S.custom){
     const b = document.createElement("button");
     b.type="button"; b.className="chip"; b.textContent=S.cat; b.setAttribute("aria-pressed","true");
-    box.append(b);
+    b.onclick = () => startRound(S.cat, true);
+    own.after(b);
   }
 }
 
@@ -180,7 +212,7 @@ function render(){
   const chain = $("chain"); chain.textContent = "";
   for (const e of S.chain){
     const row = document.createElement("div"); row.className = "row " + e.who;
-    const who = document.createElement("div"); who.className = "who"; who.textContent = e.who === "you" ? "You" : "Computer";
+    const who = document.createElement("div"); who.className = "who"; who.textContent = nameOf(e.who);
     const bub = document.createElement("div"); bub.className = "bubble";
     const w = document.createElement("span"); w.textContent = e.word;
     const t = document.createElement("span"); t.className = "mini"; t.textContent = lastLetter(e.word).toUpperCase();
@@ -195,15 +227,21 @@ function render(){
   const tile = $("bigTile");
   if (tile.textContent !== L){ tile.textContent = L || "?"; tile.classList.remove("pop"); void tile.offsetWidth; tile.classList.add("pop"); }
   const prev = S.chain[S.chain.length-1];
-  $("lead").textContent = S.busy ? "Wait for it…" : `Your turn: starts with ${L}`;
-  $("sub").textContent = prev ? `${prev.word} ends in ${L}` : "";
-  $("answer").placeholder = PEOPLE.has(S.cat) ? `A player whose first name starts with ${L}` : `Something starting with ${L}`;
+  $("lead").textContent = S.busy ? "Wait for it…" : `${S.two ? NAMES[S.turn] + "'s" : "Your"} turn: starts with ${L}`;
+  $("sub").textContent = prev ? `${prev.word} ends in ${L}` : (S.two ? `Any ${S.cat} starting with ${L}. Pass the phone after each answer.` : "");
+  $("answer").placeholder = PEOPLE.has(S.cat) ? `A player whose first name starts with ${L}` : `${S.cat} starting with ${L}`;
   $("answer").disabled = $("goBtn").disabled = $("stuck").disabled = S.busy || !!S.over;
   $("playArea").hidden = !!S.over;
   $("result").hidden = !S.over;
   $("countIt").hidden = !S.pending;
-  $("sYou").textContent = S.score.you; $("sCpu").textContent = S.score.cpu;
-  if (S.over){
+  const sc = S.two ? S.score2 : S.score;
+  $("sYou").textContent = sc.you; $("sCpu").textContent = sc.cpu;
+  $("lYou").textContent = nameOf("you"); $("lCpu").textContent = nameOf("cpu");
+  if (S.over && S.two){
+    $("result").className = "result win";
+    $("resTitle").textContent = `${NAMES[S.over]} wins this round!`;
+    $("resText").textContent = `${NAMES[other(S.over)]} ran out on ${L}. Chain length: ${S.chain.length}.`;
+  } else if (S.over){
     const win = S.over === "you";
     $("result").className = "result " + (win ? "win" : "lose");
     $("resTitle").textContent = win ? "You win this round!" : "Computer wins this round";
@@ -217,12 +255,12 @@ function say(text, kind){ const m = $("msg"); m.textContent = text || ""; m.clas
 
 function add(who, word){
   S.chain.push({who, word});
-  S.used.add(stripSuffix(norm(word)));
+  S.used.add(key(word));
   S.letter = lastLetter(word);
 }
 
 function cpuCandidates(letter){
-  return listFor(S.cat).filter(w => firstLetter(w) === letter && !S.used.has(stripSuffix(norm(w))));
+  return listFor(S.cat).filter(w => firstLetter(w) === letter && !S.used.has(key(w)));
 }
 
 async function askClaudeForWord(letter){
@@ -231,7 +269,7 @@ async function askClaudeForWord(letter){
   try {
     const r = await sample.json(`We're playing a word chain game. Category: "${S.cat}". Name one real, well-known example from this category whose name starts with the letter "${letter.toUpperCase()}" (for people, the first name starts with it). It must not be any of these: ${JSON.stringify(used)}. Reply with only JSON like {"word":"Example"}, or {"word":null} if you can't think of one.`, {modelTier:"quick", cache:false});
     const w = r && typeof r.word === "string" ? r.word.trim() : "";
-    if (w && firstLetter(w) === letter && !S.used.has(stripSuffix(norm(w)))) return w;
+    if (w && firstLetter(w) === letter && !S.used.has(key(w))) return w;
   } catch(e) { if (e && e.code === "not_granted") { sample = null; setupCustom(); } }
   return null;
 }
@@ -251,13 +289,13 @@ async function cpuTurn(){
 }
 
 function matchInList(input){
-  const n = stripSuffix(norm(input));
+  const n = key(input);
   const list = listFor(S.cat);
-  const exact = list.find(w => stripSuffix(norm(w)) === n);
+  const exact = list.find(w => key(w) === n);
   if (exact) return exact;
   if (PEOPLE.has(S.cat)){
-    const bySurname = list.filter(w => { const p = stripSuffix(norm(w)).split(" "); return p.slice(1).join(" ") === n || p[p.length-1] === n; })
-                          .filter(w => firstLetter(w) === S.letter && !S.used.has(stripSuffix(norm(w))));
+    const bySurname = list.filter(w => { const p = key(w).split(" "); return p.slice(1).join(" ") === n || p[p.length-1] === n; })
+                          .filter(w => firstLetter(w) === S.letter && !S.used.has(key(w)));
     if (bySurname.length === 1) return bySurname[0];
   }
   return null;
@@ -275,22 +313,28 @@ async function submit(raw){
   const input = raw.trim();
   if (!input || S.busy || S.over) return;
   S.pending = null;
+  if (S.two){
+    if (firstLetter(input) !== S.letter){ say(`That needs to start with ${S.letter.toUpperCase()}.`, "bad"); render(); return; }
+    if (S.used.has(key(input))){ say(`${input} was already used.`, "bad"); render(); return; }
+    accept(input.replace(/(^|\s)\w/g, c => c.toUpperCase()));
+    return;
+  }
   if (firstLetter(input) !== S.letter){
     // Maybe they typed a last name
     const m = matchInList(input);
     if (!m){ say(`That needs to start with ${S.letter.toUpperCase()}.`, "bad"); render(); return; }
   }
   let word = matchInList(input);
-  if (word && S.used.has(stripSuffix(norm(word)))){ say(`${word} was already used.`, "bad"); render(); return; }
+  if (word && S.used.has(key(word))){ say(`${word} was already used.`, "bad"); render(); return; }
   if (!word){
-    if (S.used.has(stripSuffix(norm(input)))){ say(`${input} was already used.`, "bad"); render(); return; }
+    if (S.used.has(key(input))){ say(`${input} was already used.`, "bad"); render(); return; }
     if (sample){
       S.busy = true; S.busyText = `Checking "${input}"…`; render();
       const v = await judgeWithClaude(input);
       S.busy = false;
       if (v && v.valid){
         word = (v.name && firstLetter(v.name) === S.letter) ? v.name : input;
-        if (S.used.has(stripSuffix(norm(word)))){ say(`${word} was already used.`, "bad"); render(); return; }
+        if (S.used.has(key(word))){ say(`${word} was already used.`, "bad"); render(); return; }
       } else if (v){
         say(`Not accepted: ${v.reason || "that doesn't fit " + S.cat}. Try another.`, "bad"); S.pending = input; render(); return;
       }
@@ -306,14 +350,23 @@ async function submit(raw){
 function accept(word){
   S.pending = null;
   say(`${word} ✓`, "good");
-  add("you", word);
+  add(S.two ? S.turn : "you", word);
   $("answer").value = "";
+  if (S.two){ S.turn = other(S.turn); render(); $("answer").focus({preventScroll:true}); return; }
   cpuTurn();
 }
 
 function startRound(cat, custom){
-  S.cat = cat; S.custom = custom; S.chain = []; S.used = new Set(); S.over = null; S.pending = null; S.hint = null;
+  S.cat = cat; S.custom = custom; S.two = false; S.turn = "you"; S.chain = []; S.used = new Set(); S.over = null; S.pending = null; S.hint = null;
   say("");
+  if (custom && !sample){
+    // No computer brain for a made-up category, so it's a two-player game on the honor system.
+    S.two = true;
+    const letters = "abcdefghlmnprstw";
+    S.letter = letters[Math.floor(Math.random()*letters.length)];
+    render(); $("answer").focus({preventScroll:true});
+    return;
+  }
   if (custom){
     S.busy = true; S.busyText = `Computer is picking a ${cat} word…`; S.letter = ""; render();
     const letters = "abcdefghijklmnoprstw";
@@ -335,6 +388,7 @@ $("playForm").addEventListener("submit", e => { e.preventDefault(); submit($("an
 $("countIt").onclick = () => { if (S.pending && firstLetter(S.pending) === S.letter) accept(S.pending.replace(/\b\w/g, c => c.toUpperCase())); };
 $("stuck").onclick = () => {
   if (S.busy || S.over) return;
+  if (S.two){ S.over = other(S.turn); S.score2[S.over]++; say(""); render(); return; }
   const c = cpuCandidates(S.letter);
   S.hint = c.length ? c[Math.floor(Math.random()*c.length)] : null;
   S.over = "cpu"; S.score.cpu++; say(""); render();
@@ -347,10 +401,19 @@ $("againBtn").onclick = () => startRound(S.cat, S.custom);
 $("customForm").addEventListener("submit", e => {
   e.preventDefault();
   const v = $("customInput").value.trim();
-  if (v && sample){ $("customInput").value = ""; startRound(v.charAt(0).toUpperCase() + v.slice(1), true); }
+  if (!v) return;
+  $("customInput").value = ""; ownOpen = false; setupCustom();
+  const known = CAT_NAMES.find(c => norm(c) === norm(v));
+  if (known) startRound(known, false);
+  else startRound(v.charAt(0).toUpperCase() + v.slice(1), true);
 });
 
-function setupCustom(){ $("customForm").hidden = !sample; }
+function setupCustom(){
+  $("customForm").hidden = !ownOpen;
+  $("customHint").textContent = sample
+    ? "Type any category and the computer will play it with you."
+    : "Type any category. It's a two-player game: take turns and pass the phone. Any answer that fits counts, so play fair!";
+}
 
 startRound(CAT_NAMES[0], false);
 $("answer").focus({preventScroll:true});
