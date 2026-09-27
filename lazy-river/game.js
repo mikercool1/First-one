@@ -16,18 +16,21 @@
   const R = 25;    // tube radius
   const SR = 13;   // swimmer radius
 
+  const Art = window.LRArt;
+
   const store = {
     get(k, d) { try { const v = localStorage.getItem("lazyRiver." + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
     set(k, v) { try { localStorage.setItem("lazyRiver." + k, JSON.stringify(v)); } catch {} },
   };
 
   // ---------- the pirates ----------
+  // Swim looks built from their Backyard Baseball uniforms (heads come from kids.js)
   const KIDS = {
-    reuben: { name: "Reuben", skin: "#F2C29B", hair: "#6B4423", style: "short", suit: "#2563EB", suit2: "#1D3F9E", band: "#E23B3B", dots: "#FFFFFF" },
-    jonah:  { name: "Jonah",  skin: "#EDBB92", hair: "#2B1B12", style: "curly", suit: "#22A35A", suit2: "#146B3A", band: "#1B2430", dots: "#FFFFFF" },
-    ellie:  { name: "Ellie",  skin: "#F6CFAE", hair: "#B7793A", style: "pigtails", suit: "#8B5CF6", suit2: "#6D28D9", band: "#F0529C", dots: "#FFE066" },
+    reuben: { id: "reuben", name: "Reuben", skin: "#FFD8BE", top: "#FFFFFF", pin: "#1F2F6B", num: "99", numCol: "#1F2F6B", shorts: "#1F2F6B", color: "#1F2F6B", tag: "#99 · age 9" },
+    jonah:  { id: "jonah",  name: "Jonah",  skin: "#FFDCC6", top: "#FFFFFF", stripe: "#79C6F2", num: "10", numCol: "#1B1F33", shorts: "#1E2336", color: "#2F93D8", tag: "#10 · age 6" },
+    ellie:  { id: "ellie",  name: "Ellie",  skin: "#FFE1CF", top: "#F28AA8", dots: "#FFB9CB", shorts: "#F28AA8", color: "#E8559B", tag: "age 3", small: true },
   };
-  const DAD = { name: "Dad", skin: "#EAB98F", hair: "#5A4030", style: "short", suit: "#1B2430", suit2: "#111820", stripes: true, adult: true };
+  const DAD = { id: "dad", name: "Dad", skin: "#F4C7A1", top: "#26324F", stripe: "#3E4C73", shorts: "#26324F", color: "#F0643C", adult: true };
   const ORDER = ["reuben", "jonah", "ellie"];
 
   const DAD_LINES = {
@@ -1089,27 +1092,30 @@
 
   // ---------- drawing: swimmers ----------
   function drawSwimmer(c, x, y, sw, opts = {}) {
-    const L = sw.look, t = sw.t, sc = (opts.scale || 1) * (L.adult ? 1.22 : 1), diving = sw.diveT > 0;
+    const L = sw.look, t = sw.t, sc = (opts.scale || 1) * (L.adult ? 1.2 : L.small ? 0.9 : 1), diving = sw.diveT > 0;
     c.save(); c.translate(x, y); c.scale(sc, sc); c.rotate(sw.rot || 0);
-    if (diving) {
-      c.globalAlpha = 0.4;
-    } else if (!opts.still) {
+    if (diving) c.globalAlpha = 0.4;
+    else if (!opts.still) {
       // kick splash
       c.fillStyle = "rgba(255,255,255,.75)";
       for (let k = 0; k < 4; k++) { c.beginPath(); c.arc(Math.sin(t * 14 + k * 1.7) * 6, 30 + k * 5, 3.6 - k * 0.6, 0, TAU); c.fill(); }
     }
     const kick = opts.still ? 0 : Math.sin(t * 14) * 3, ph = opts.still ? 1.2 : t * 6.5;
-    // legs
+    // legs and swim shorts
     c.strokeStyle = L.skin; c.lineWidth = 5.5; c.lineCap = "round";
     c.beginPath(); c.moveTo(-4, 12); c.lineTo(-5 + kick, 28); c.moveTo(4, 12); c.lineTo(5 - kick, 28); c.stroke();
-    c.strokeStyle = L.suit2; c.lineWidth = 7.5; c.lineCap = "butt";
-    c.beginPath(); c.moveTo(-4, 10); c.lineTo(-4.4, 17); c.moveTo(4, 10); c.lineTo(4.4, 17); c.stroke(); c.lineCap = "round";
-    // body
-    c.fillStyle = L.suit; c.beginPath(); c.ellipse(0, 4, 9.5, 12.5, 0, 0, TAU); c.fill();
-    if (L.stripes) {
-      c.save(); c.clip(); c.fillStyle = "#F4F1EA";
-      for (let k = -8; k < 18; k += 5) c.fillRect(-10, k, 20, 2.2);
-      c.restore();
+    c.strokeStyle = L.shorts; c.lineWidth = 7.5; c.lineCap = "butt";
+    c.beginPath(); c.moveTo(-4, 9); c.lineTo(-4.4, L.id === "ellie" ? 13 : 18); c.moveTo(4, 9); c.lineTo(4.4, L.id === "ellie" ? 13 : 18); c.stroke(); c.lineCap = "round";
+    // swim shirt (we see their backs, so the jersey number shows)
+    c.save(); c.beginPath(); c.ellipse(0, 4, 9.5, 12.5, 0, 0, TAU); c.fillStyle = L.top; c.fill(); c.clip();
+    if (L.pin) { c.strokeStyle = L.pin; c.globalAlpha *= 0.45; c.lineWidth = 0.8; for (let k = -8; k <= 8; k += 3.2) { c.beginPath(); c.moveTo(k, -9); c.lineTo(k, 17); c.stroke(); } c.globalAlpha = diving ? 0.4 : 1; }
+    if (L.stripe) { c.fillStyle = L.stripe; for (let k = -7; k <= 7; k += 5) c.fillRect(k - 1.3, -9, 2.6, 26); }
+    if (L.dots) { c.fillStyle = L.dots; for (const [dx, dy] of [[-4, -3], [3, 0], [-2, 6], [5, 8], [0, 12], [-5, 11]]) { c.beginPath(); c.arc(dx, dy, 1.3, 0, TAU); c.fill(); } }
+    c.restore();
+    c.strokeStyle = "rgba(0,0,0,.12)"; c.lineWidth = 0.8; c.beginPath(); c.ellipse(0, 4, 9.5, 12.5, 0, 0, TAU); c.stroke();
+    if (L.num) {
+      c.font = "800 8.5px 'Baloo 2', 'Arial Black', sans-serif"; c.textAlign = "center";
+      c.lineWidth = 2; c.strokeStyle = "#fff"; c.strokeText(L.num, 0, 9); c.fillStyle = L.numCol; c.fillText(L.num, 0, 9);
     }
     // arms: freestyle strokes
     for (const side of [-1, 1]) {
@@ -1120,58 +1126,17 @@
       c.fillStyle = L.skin; c.beginPath(); c.arc(hx, hy, 2.8, 0, TAU); c.fill();
       if (!diving && reach > 0.85 && !opts.still) { c.fillStyle = "rgba(255,255,255,.8)"; c.beginPath(); c.arc(hx, hy - 4, 3.5, 0, TAU); c.arc(hx + side * 4, hy - 1, 2.5, 0, TAU); c.fill(); }
     }
-    // head, bandana (or Dad's captain hat) on top
-    const hr = L.adult ? 9.4 : 8.8;
-    c.fillStyle = L.hair;
-    if (L.style === "pigtails") { c.beginPath(); c.arc(-10, -9, 4.2, 0, TAU); c.arc(10, -9, 4.2, 0, TAU); c.fill(); }
-    c.fillStyle = L.skin; c.beginPath(); c.arc(0, -12, hr, 0, TAU); c.fill();
-    if (L.adult) {
-      c.strokeStyle = "#6B4A34"; c.lineWidth = 2.6; c.beginPath(); c.arc(0, -12, hr - 1, 0.18 * Math.PI, 0.82 * Math.PI); c.stroke();
-      drawSwimFace(c, sw, -11.6, true);
-      c.fillStyle = "#6B4A34"; c.beginPath(); c.moveTo(-5, -8.4); c.quadraticCurveTo(0, -10.4, 5, -8.4); c.quadraticCurveTo(0, -7.6, -5, -8.4); c.fill();
-      c.fillStyle = "#15171C"; c.beginPath(); c.moveTo(-17, -14); c.quadraticCurveTo(-8, -17, 0, -28); c.quadraticCurveTo(8, -17, 17, -14); c.quadraticCurveTo(0, -18.5, -17, -14); c.fill();
-      c.strokeStyle = "#E8B84A"; c.lineWidth = 1.3; c.beginPath(); c.moveTo(-17, -14); c.quadraticCurveTo(0, -18.5, 17, -14); c.stroke();
-      c.fillStyle = "#fff"; c.beginPath(); c.arc(0, -21, 2.6, 0, TAU); c.fill(); c.fillRect(-1.6, -19.2, 3.2, 1.8);
-      c.fillStyle = "#15171C"; c.fillRect(-1.5, -21.8, 1.1, 1.1); c.fillRect(0.4, -21.8, 1.1, 1.1);
-    } else {
-      c.fillStyle = L.hair;
-      if (L.style === "curly") { c.beginPath(); for (const a of [0.97, 1.08, 1.2, 1.8, 1.92, 2.03]) c.arc(Math.cos(a * Math.PI) * hr, -12 + Math.sin(a * Math.PI) * hr, 2.6, 0, TAU); c.fill(); }
-      else { c.beginPath(); c.ellipse(-hr + 1.2, -12.5, 2.2, 3.6, 0, 0, TAU); c.ellipse(hr - 1.2, -12.5, 2.2, 3.6, 0, 0, TAU); c.fill(); }
-      drawSwimFace(c, sw, -11.4, false);
-      // pirate bandana, knot flapping off the side
-      c.fillStyle = L.band; c.beginPath(); c.arc(0, -12, hr + 0.5, Math.PI * 0.97, Math.PI * 2.03); c.quadraticCurveTo(0, -12.5, -hr - 0.5, -11.8); c.fill();
-      const fl = Math.sin(t * 9) * 1.5;
-      c.beginPath(); c.moveTo(hr - 1, -15); c.lineTo(hr + 6, -19 + fl); c.lineTo(hr + 4, -14); c.lineTo(hr + 7, -10 - fl); c.lineTo(hr - 1, -12); c.fill();
-      c.fillStyle = L.dots; for (const [dx, dy] of [[-4.5, -16], [0, -18.5], [4.5, -16], [-1.5, -14.5], [2.8, -13.8]]) { c.beginPath(); c.arc(dx, dy, 0.9, 0, TAU); c.fill(); }
-    }
+    // head, drawn just like their other games
+    const exp = sw.ouchT > 0 || sw.spinT > 0 ? "O" : sw.happyT > 0 ? "happy" : opts.exp || (L.id === "ellie" ? "grin" : L.adult ? "grin" : "determined");
+    c.save(); c.translate(0, -14);
+    if (L.adult) { c.scale(12 / 53, 12 / 53); Art.dadHead(c, exp, t + 0.7); }
+    else { const K = Art.HEADS[L.id]; c.scale(11 / K.R, 11 / K.R); Art.kidHead(c, L.id, exp, t + 1.3); }
+    c.restore();
     c.restore();
     if (diving) {
       c.fillStyle = "rgba(255,255,255,.8)";
       for (let k = 0; k < 4; k++) { const by = y - 10 - ((t * 40 + k * 9) % 34); c.beginPath(); c.arc(x + Math.sin(t * 5 + k * 2) * 8, by, 2 + (k % 2), 0, TAU); c.fill(); }
     }
-  }
-  function drawSwimFace(c, sw, ey, patch) {
-    const ink = "#2A1A12", my = ey + 4;
-    c.fillStyle = "rgba(255,120,120,.35)"; c.beginPath(); c.arc(-5.6, ey + 2.6, 1.9, 0, TAU); c.arc(5.6, ey + 2.6, 1.9, 0, TAU); c.fill();
-    c.strokeStyle = ink; c.fillStyle = ink; c.lineWidth = 1.3; c.lineCap = "round";
-    if (sw.ouchT > 0) {
-      for (const ex of [-3.4, 3.4]) { c.beginPath(); c.moveTo(ex - 1.3, ey - 1.3); c.lineTo(ex + 1.3, ey + 1.3); c.moveTo(ex + 1.3, ey - 1.3); c.lineTo(ex - 1.3, ey + 1.3); c.stroke(); }
-    } else if (sw.spinT > 0) {
-      for (const ex of [-3.4, 3.4]) { c.beginPath(); c.arc(ex, ey, 1.6, sw.t * 12, sw.t * 12 + 4.8); c.stroke(); }
-    } else if (sw.happyT > 0) {
-      for (const ex of [-3.4, 3.4]) { c.beginPath(); c.arc(ex, ey + 0.8, 1.6, Math.PI * 1.1, Math.PI * 1.9); c.stroke(); }
-    } else {
-      c.beginPath(); c.arc(-3.4, ey, 1.4, 0, TAU); c.arc(3.4, ey, 1.4, 0, TAU); c.fill();
-      c.fillStyle = "#fff"; c.beginPath(); c.arc(-2.9, ey - 0.5, 0.5, 0, TAU); c.arc(3.9, ey - 0.5, 0.5, 0, TAU); c.fill();
-    }
-    if (patch) {
-      c.fillStyle = "#15171C"; c.beginPath(); c.ellipse(-3.4, ey, 2.6, 2.3, 0, 0, TAU); c.fill();
-      c.strokeStyle = "#15171C"; c.lineWidth = 0.9; c.beginPath(); c.moveTo(-9, ey - 4); c.lineTo(8.6, ey - 5.5); c.stroke();
-    }
-    c.fillStyle = "#7A2630"; c.strokeStyle = "#7A2630";
-    if (sw.ouchT > 0 || sw.spinT > 0) { c.beginPath(); c.ellipse(0, my + 0.5, 1.8, 2.1, 0, 0, TAU); c.fill(); }
-    else if (sw.happyT > 0 || sw.diveT > 0) { c.beginPath(); c.moveTo(-3.4, my - 0.6); c.quadraticCurveTo(0, my + 4.4, 3.4, my - 0.6); c.closePath(); c.fill(); }
-    else if (!patch) { c.lineWidth = 1.3; c.beginPath(); c.arc(0, my - 1.8, 2.8, 0.2 * Math.PI, 0.8 * Math.PI); c.stroke(); }
   }
 
   // ---------- drawing: rafters and their loot ----------
@@ -1409,7 +1374,18 @@
   }
 
   // ---------- menus ----------
+  // a head-and-shoulders swimmer in a round pool badge
+  function drawPortrait(c, look) {
+    const w = c.canvas.width, m = w / 2;
+    const gr = c.createRadialGradient(m, m * 0.9, 10, m, m, m); gr.addColorStop(0, "#6FE0E6"); gr.addColorStop(1, "#23A6C6");
+    c.fillStyle = gr; c.beginPath(); c.arc(m, m, m - 2, 0, TAU); c.fill();
+    c.save(); c.beginPath(); c.arc(m, m, m - 2, 0, TAU); c.clip();
+    drawSwimmer(c, m, m + w * 0.3, { look, t: 0.3, rot: 0, diveT: 0, ouchT: 0, spinT: 0, happyT: 0 }, { scale: (w / 156) * (look.adult ? 2.6 : 3.1), still: true, exp: "grin" });
+    c.fillStyle = "rgba(56,204,214,.55)"; c.fillRect(0, w * 0.8, w, w);
+    c.restore();
+  }
   function buildMenus() {
+    drawPortrait($("#dadCard").getContext("2d"), DAD);
     const box = $("#riders");
     ORDER.forEach((k) => {
       const b = document.createElement("button");
@@ -1419,8 +1395,9 @@
       const gr = c.createRadialGradient(78, 70, 10, 78, 78, 78); gr.addColorStop(0, "#6FE0E6"); gr.addColorStop(1, "#23A6C6");
       c.fillStyle = gr; c.beginPath(); c.arc(78, 78, 76, 0, TAU); c.fill();
       c.strokeStyle = "rgba(255,255,255,.4)"; c.lineWidth = 3; c.beginPath(); c.arc(78, 84, 66, 0.2, 1.2); c.stroke();
-      drawSwimmer(c, 78, 90, { look: KIDS[k], t: 0.3, rot: 0, diveT: 0, ouchT: 0, spinT: 0, happyT: 1 }, { scale: 2.3, still: true });
-      b.append(cv, document.createTextNode(KIDS[k].name));
+      drawPortrait(c, KIDS[k]);
+      const tag = document.createElement("small"); tag.textContent = KIDS[k].tag;
+      b.append(cv, document.createTextNode(KIDS[k].name), tag);
       b.addEventListener("click", () => {
         G.kid = k; store.set("kid", k);
         box.querySelectorAll(".rider").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.k === k)));

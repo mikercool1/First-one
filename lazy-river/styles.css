@@ -112,3 +112,9 @@ h2.center { text-align: center; }
 .stats dd { margin: 2px 0 0; font: 800 22px/1 var(--display); color: var(--ink); font-variant-numeric: tabular-nums; }
 @media (max-height: 640px) { .howto { display: none; } }
 @media (prefers-reduced-motion: reduce) { .banner { transition: opacity .2s; } }
+.rider small { font: 700 11px/1.1 var(--body); color: var(--ink-soft); letter-spacing: .04em; }
+.vs-dad { display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 8px; border-radius: 16px; background: rgba(27, 36, 48, .07); }
+.vs-dad .vs { font: 800 18px/1 var(--display); color: var(--coral); padding: 0 4px; }
+.vs-dad canvas { position: static; width: 56px; height: 56px; flex: none; }
+.vs-dad b { display: block; font: 800 18px/1.1 var(--display); color: var(--ink); }
+.vs-dad small { font-size: 12.5px; color: var(--ink-soft); }

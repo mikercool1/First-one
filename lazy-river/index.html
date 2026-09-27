@@ -7,7 +7,7 @@
 <title>Lazy River Pirates</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Lilita+One&family=Nunito:wght@500;700;800&display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -53,9 +53,10 @@
       <div class="card">
         <p class="kicker">Dad says we're pirates</p>
         <h1>Lazy River Pirates</h1>
-        <p class="lede">No tubes for pirates! Swim three laps of the lazy river and race Captain Dad to the finish. Weave around the rafters and plunder their stuff as you go.</p>
-        <h2>Who's racing Dad?</h2>
+        <p class="lede">Dad says we're pirates, so pirates don't use tubes. You and Dad <b>swim</b> three laps of the lazy river while everyone else floats on rafts. Weave around them, plunder their stuff, and beat Dad to the finish.</p>
+        <h2>Player 1: who's swimming?</h2>
         <div class="riders" id="riders"></div>
+        <div class="vs-dad"><span class="vs">VS</span><canvas id="dadCard" width="120" height="120"></canvas><div><b>Dad</b><small>Computer player. Captain of the pirates.</small></div></div>
         <ul class="howto">
           <li><b>Steer</b><span>Drag left and right, or use the ← → keys.</span></li>
           <li><b>Plunder</b><span>Swim right beside a rafter's <em>sparkly</em> stuff to grab it.</span></li>
@@ -95,6 +96,7 @@
     </section>
   </div>
 </div>
+<script src="kids.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
