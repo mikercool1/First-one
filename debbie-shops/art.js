@@ -59,7 +59,7 @@ const ART = (() => {
     o += `<circle cx="${hR[0]}" cy="${hR[1] + 2}" r="${6.5 + f}" fill="${skinFlat}"/>`;
     // his right arm (viewer's left) lifts food to his mouth
     const a = s.arm || 0;
-    const hRest = [-bw + 4, 334], hUp = [-7, 236];
+    const hRest = [-bw + 4, 334], hUp = [-9, 232];
     const hand = [lerp(hRest[0], hUp[0], a), lerp(hRest[1], hUp[1], a)];
     const elbow = [lerp(-bw - 7, -bw - 12, a), lerp(300, 284, a)];
     o += `<path d="M${shL[0]} ${shL[1]} Q${elbow[0] - 4} ${elbow[1] - 16} ${elbow[0]} ${elbow[1]} L${hand[0]} ${hand[1]}" stroke="${sweater}" stroke-width="${armW}" stroke-linecap="round" fill="none"/>`;
@@ -156,12 +156,12 @@ const ART = (() => {
     o += `<circle cx="${hd[0]}" cy="${hd[1]}" r="4.5" fill="${skinFlat}"/><circle cx="${hd[0] + 1}" cy="${hd[1] - 3}" r="1.3" fill="#E8C766"/>`;
     // neck + hair back
     o += `<rect x="-5" y="-182" width="10" height="16" rx="4" fill="${skinFlat}"/>`;
-    o += `<path d="M-26 -196 Q-34 -164 -26 -142 Q-18 -148 -16 -170 L16 -170 Q18 -148 26 -142 Q34 -164 26 -196 Z" fill="#C8974E"/>`;
+    o += `<path d="M-26 -196 Q-34 -164 -26 -142 Q-18 -148 -16 -170 L16 -170 Q18 -148 26 -142 Q34 -164 26 -196 Z" fill="#3E2519"/>`;
     // head
     o += `<ellipse cx="0" cy="-194" rx="15" ry="17.5" fill="${skin}"/>`;
     // hair front: glossy blowout with a side sweep
-    o += `<path d="M-17 -190 Q-20 -222 2 -222 Q22 -222 19 -192 Q14 -208 0 -210 Q-6 -200 -17 -190 Z" fill="#D9AE62"/>`;
-    o += `<path d="M-2 -219 Q10 -214 16 -198" stroke="#F1D28E" stroke-width="2" fill="none"/><path d="M-12 -206 Q-4 -214 4 -216" stroke="#F1D28E" stroke-width="1.5" fill="none"/>`;
+    o += `<path d="M-17 -190 Q-20 -222 2 -222 Q22 -222 19 -192 Q14 -208 0 -210 Q-6 -200 -17 -190 Z" fill="#553222"/>`;
+    o += `<path d="M-2 -219 Q10 -214 16 -198" stroke="#8A5A3C" stroke-width="2" fill="none"/><path d="M-12 -206 Q-4 -214 4 -216" stroke="#8A5A3C" stroke-width="1.5" fill="none"/>`;
     // sunglasses perched on her head
     o += `<g transform="translate(0 -214)"><ellipse cx="-7" cy="0" rx="6.5" ry="4" fill="#1A1414"/><ellipse cx="7" cy="0" rx="6.5" ry="4" fill="#1A1414"/><path d="M-1 0 L1 0" stroke="#1A1414" stroke-width="2"/><ellipse cx="-9" cy="-1.5" rx="2" ry="1" fill="#fff" opacity=".4"/></g>`;
     // earrings
@@ -172,7 +172,7 @@ const ART = (() => {
       const x = side * 6;
       if (eyes === "open") o += `<ellipse cx="${x}" cy="-194" rx="2.2" ry="2.8" fill="#2A1A14"/><path d="M${x - 3.5} -197 L${x - 5} -199 M${x + 3.5} -197 L${x + 5} -199" stroke="#2A1A14" stroke-width="1"/>`;
       else o += `<path d="M${x - 3.5} -193 Q${x} -197 ${x + 3.5} -193" stroke="#2A1A14" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M${x + side * 3.5} -194 l${side * 2} -1.5" stroke="#2A1A14" stroke-width="1.1"/>`;
-      o += `<path d="M${x - 4} -201 Q${x} -203 ${x + 4} -201" stroke="#A67B45" stroke-width="1.3" fill="none"/>`;
+      o += `<path d="M${x - 4} -201 Q${x} -203 ${x + 4} -201" stroke="#3A2418" stroke-width="1.3" fill="none"/>`;
     }
     o += `<ellipse cx="-9" cy="-187" rx="3.4" ry="2" fill="#F2A0A0" opacity=".45"/><ellipse cx="9" cy="-187" rx="3.4" ry="2" fill="#F2A0A0" opacity=".45"/>`;
     o += `<path d="M-5 -183 Q0 -178 5 -183 Q0 -181 -5 -183 Z" fill="#B8243F"/>`;

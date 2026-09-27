@@ -53,7 +53,7 @@
   // ---------- positions in the scene (viewBox 400 x 500) ----------
   const DOOR = { x: 352, y: 374, s: 0.8 }, SPOT = { x: 322, y: 454, s: 1 };
   const CART_DX = -78, BILLY_X = 118, STAGE = { x: 200, y: 322 }, TABLE = { x: 190, y: 388 };
-  const MOUTH = { x: BILLY_X - 7, y: 238 };
+  const MOUTH = { x: BILLY_X - 2, y: 224 };
   const SLOTS = [
     { x: 34, y: 500, s: 0.8, r: -6 }, { x: 368, y: 520, s: 0.86, r: 5 }, { x: 88, y: 530, s: 0.82, r: 4 },
     { x: 262, y: 534, s: 0.82, r: -4 }, { x: 390, y: 462, s: 0.66, r: 8 }, { x: 18, y: 440, s: 0.62, r: -3 },
@@ -378,6 +378,9 @@
     $("#tagTier").textContent = T.label;
     $("#tagTier").animate([{ transform: "scale(1.6)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], { duration: 300 * SPEED, easing: "cubic-bezier(.2,.9,.3,1.4)" });
     await wait(520);
+    // tuck the tag away so nothing covers Billy while he eats
+    tag.classList.remove("in", "huge"); tag.classList.add("mini");
+    await wait(300);
     // the food arrives
     await eat(T);
     // Debbie is unbothered
@@ -402,7 +405,7 @@
     // grab it
     Object.assign(billy, { mood: T.food === "cake" ? "defeated" : billy.mood, eyes: "normal", mouth: "open" });
     tween(360, (t) => { billy.arm = t; renderBilly(); });
-    await tween(380, (t) => place(lerp(TABLE.x, MOUTH.x + 6, t), lerp(TABLE.y - 16, MOUTH.y + 8, t) - Math.sin(t * Math.PI) * 30, lerp(0.95, 0.62, t), lerp(0, -12, t)));
+    await tween(380, (t) => place(lerp(TABLE.x, MOUTH.x + 4, t), lerp(TABLE.y - 16, MOUTH.y + 6, t) - Math.sin(t * Math.PI) * 30, lerp(0.95, 0.62, t), lerp(0, -12, t)));
     // three big bites
     const inner = () => $("#foodInner");
     for (let b = 1; b <= 3; b++) {
