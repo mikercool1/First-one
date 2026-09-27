@@ -66,6 +66,19 @@
   // ---------- sound (synthesized, optional) ----------
   let ac = null;
   function actx() { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); } catch { ac = null; } return ac; }
+  // iPhone/iPad Safari keeps audio silent until the audio context is resumed inside a tap,
+  // so unlock it on every tap or key press (cheap once it is running). "playback" lets
+  // sound play even when the phone's silent switch is on; the in-game mute still works.
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {}
+  function unlockAudio() {
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state !== "running") ac.resume();
+      const b = ac.createBuffer(1, 1, 22050), s = ac.createBufferSource();
+      s.buffer = b; s.connect(ac.destination); s.start(0);
+    } catch {}
+  }
+  ["pointerdown", "touchend", "keydown", "click"].forEach((ev) => addEventListener(ev, unlockAudio, { capture: true, passive: true }));
   function tone(f, d, type = "sine", v = 0.06, delay = 0, slide = 0) {
     const a = actx(); if (!a) return;
     const t = a.currentTime + delay, o = a.createOscillator(), g = a.createGain();

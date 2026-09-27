@@ -113,6 +113,14 @@ h2 { margin: 0; font: 900 clamp(24px, 6.5vw, 34px)/1.1 var(--sans); letter-spaci
   .btn { padding: 14px 20px; }
   .grade { font-size: 26px; } h2 { font-size: 22px; }
 }
+.mute {
+  position: absolute; z-index: 6; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  width: 44px; height: 44px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; touch-action: manipulation;
+  background: var(--panel); border: 2px solid var(--line); color: var(--ink);
+}
+.mute svg { width: 22px; height: 22px; }
+.mute:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.mute[aria-pressed="true"] { color: var(--dim); }
 @media (prefers-reduced-motion: reduce) {
   #banner.show, .card.show { animation: none; }
   .cell.bad .v { animation: none; }
@@ -131,6 +139,9 @@ h2 { margin: 0; font: 900 clamp(24px, 6.5vw, 34px)/1.1 var(--sans); letter-spaci
     <div class="cell" id="cHs"><span class="k"><span class="short">H speed</span><span class="long">Horizontal speed</span></span><span class="v" id="hHs">0.0</span></div>
   </header>
   <div id="callout" hidden></div>
+  <button type="button" id="muteBtn" class="mute" aria-pressed="false" aria-label="Sound on">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="currentColor"/><g id="icoOn"><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g><g id="icoOff" style="display:none"><path d="M15.5 9.5l5 5M20.5 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g></svg>
+  </button>
   <div id="banner" hidden><b id="bannerBig"></b><span id="bannerSmall"></span></div>
 
   <section class="overlay" id="startScreen">
@@ -455,6 +466,7 @@ h2 { margin: 0; font: 900 clamp(24px, 6.5vw, 34px)/1.1 var(--sans); letter-spaci
       const a = L.angle * DEG;
       ax += Math.sin(a) * THRUST; ay -= Math.cos(a) * THRUST;
       L.fuel = Math.max(0, L.fuel - cfg.burn * dt);
+      if (L.fuel === 0) sfx.empty();
       exhaust();
     }
     L.vx += ax * dt; L.vy += ay * dt;
@@ -506,6 +518,7 @@ h2 { margin: 0; font: 900 clamp(24px, 6.5vw, 34px)/1.1 var(--sans); letter-spaci
     if (totalScore > best) { best = totalScore; try { localStorage.setItem("lunarLanderBest", String(best)); } catch (e) { /* ignore */ } }
     landing = { y0: L.y, a0: L.angle, vx0: L.vx, grade, rows, score, cfg };
     L.vx = 0; L.vy = 0;
+    sfx.land(q >= .5);
     for (let i = 0; i < 26; i++) dust(L.x + rand(-30, 30), pad.y, rand(-70, 70), rand(-30, -4), .5 + Math.random() * .6);
     showBanner(grade, "Touchdown");
   }
@@ -547,6 +560,7 @@ h2 { margin: 0; font: 900 clamp(24px, 6.5vw, 34px)/1.1 var(--sans); letter-spaci
     breakApart();
     flash = .9; shake = reduced ? 0 : 1;
     ring = { x: L.x, y: L.y + 10, t: 0 };
+    sfx.crash();
   }
 
   function breakApart() {
@@ -941,6 +955,7 @@ h2 { margin: 0; font: 900 clamp(24px, 6.5vw, 34px)/1.1 var(--sans); letter-spaci
     $("startScreen").hidden = true; $("winScreen").hidden = true; $("crashScreen").hidden = true;
     releaseTouch(); keys.thrust = false;
     state = "flying"; stateT = 0;
+    sfx.start();
     showBanner("MISSION " + n, world.cfg.tag, 1700);
     try { document.activeElement && document.activeElement.blur(); } catch (e) { /* ignore */ }
   }
@@ -949,6 +964,102 @@ h2 { margin: 0; font: 900 clamp(24px, 6.5vw, 34px)/1.1 var(--sans); letter-spaci
   $("nextBtn").addEventListener("click", () => startMission(mission + 1));
   $("restartBtn").addEventListener("click", () => startMission(mission));
 
+  const MUTE_KEY = "lunarLanderMuted";
+  // ---------- sound (synthesized; unlocked on the first tap) ----------
+  let ac = null, master = null, noiseBuf = null, muted = false;
+  try { muted = localStorage.getItem(MUTE_KEY) === "1"; } catch (e) { muted = false; }
+  // "playback" lets sound play even when the iPhone silent switch is on; the mute button still works
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) { /* ignore */ }
+  function audio() {
+    if (!ac) {
+      try {
+        ac = new (window.AudioContext || window.webkitAudioContext)();
+        master = ac.createGain(); master.gain.value = muted ? 0 : 1; master.connect(ac.destination);
+        noiseBuf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
+        const ch = noiseBuf.getChannelData(0);
+        for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+      } catch (e) { ac = null; }
+    }
+    return ac;
+  }
+  // iPhone/iPad Safari keeps audio silent until the context is resumed inside a tap
+  function unlockAudio() {
+    const a = audio(); if (!a) return;
+    try {
+      if (a.state !== "running") a.resume();
+      const s = a.createBufferSource(); s.buffer = a.createBuffer(1, 1, 22050); s.connect(a.destination); s.start(0);
+    } catch (e) { /* ignore */ }
+  }
+  ["pointerdown", "touchend", "keydown", "click"].forEach((ev) => window.addEventListener(ev, unlockAudio, { capture: true, passive: true }));
+
+  function tone(f, d, type, v, delay, slide) {
+    const a = audio(); if (!a) return;
+    const t = a.currentTime + (delay || 0), o = a.createOscillator(), g = a.createGain();
+    o.type = type || "sine"; o.frequency.setValueAtTime(f, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(f * slide, t + d);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v || .1, t + .01); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g).connect(master); o.start(t); o.stop(t + d + .05);
+  }
+  function burst(d, v, freq, type, delay) {
+    const a = audio(); if (!a) return;
+    const t = a.currentTime + (delay || 0), s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+    s.buffer = noiseBuf; f.type = type || "lowpass"; f.frequency.value = freq || 800;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    s.connect(f).connect(g).connect(master); s.start(t, Math.random()); s.stop(t + d + .05);
+  }
+  function setMuted(m) {
+    muted = m;
+    try { localStorage.setItem(MUTE_KEY, m ? "1" : "0"); } catch (e) { /* ignore */ }
+    if (master) master.gain.setTargetAtTime(m ? 0 : 1, ac.currentTime, .02);
+    const b = $("muteBtn");
+    b.setAttribute("aria-pressed", m ? "true" : "false");
+    b.setAttribute("aria-label", m ? "Sound off" : "Sound on");
+    $("icoOn").style.display = m ? "none" : ""; $("icoOff").style.display = m ? "" : "none";
+  }
+  $("muteBtn").addEventListener("click", (e) => { e.stopPropagation(); setMuted(!muted); });
+  window.addEventListener("keydown", (e) => { if (e.key === "m" || e.key === "M") setMuted(!muted); });
+  // engine rumble: looping filtered noise plus a low hum, faded in and out with the thrust
+  let engine = null;
+  function engineNodes() {
+    const a = audio(); if (!a) return null;
+    if (engine) return engine;
+    const src = a.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+    const lp = a.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 420; lp.Q.value = .7;
+    const hum = a.createOscillator(); hum.type = "triangle"; hum.frequency.value = 52;
+    const humG = a.createGain(); humG.gain.value = .35;
+    const g = a.createGain(); g.gain.value = 0;
+    src.connect(lp).connect(g); hum.connect(humG).connect(g); g.connect(master);
+    src.start(); hum.start();
+    engine = { g, lp, hum, on: false };
+    return engine;
+  }
+  function soundTick() {
+    const want = state === "flying" && L.thrusting;
+    if (!want && (!engine || !engine.on)) return;
+    const e = engineNodes(); if (!e) return;
+    const t = ac.currentTime;
+    if (want !== e.on) {
+      e.on = want;
+      e.g.gain.cancelScheduledValues(t);
+      e.g.gain.setTargetAtTime(want ? .42 : 0, t, want ? .03 : .02);
+    }
+    if (want) { e.lp.frequency.setTargetAtTime(380 + Math.random() * 120, t, .05); }
+  }
+  const sfx = {
+    start: () => { tone(660, .09, "triangle", .08); tone(880, .12, "triangle", .08, .1); },
+    empty: () => { burst(.08, .25, 500, "lowpass"); burst(.07, .2, 500, "lowpass", .14); burst(.06, .12, 500, "lowpass", .3); },
+    land: (great) => {
+      burst(.25, .3, 300, "lowpass");
+      const notes = great ? [523, 659, 784, 1046] : [523, 659, 784];
+      notes.forEach((f, i) => tone(f, .35, "triangle", .12, .15 + i * .11));
+    },
+    crash: () => {
+      burst(.9, .7, 260, "lowpass"); burst(.35, .35, 2400, "bandpass", .02);
+      tone(110, .7, "sawtooth", .12, 0, .4);
+      [0, .12, .26].forEach((d) => tone(1400 + Math.random() * 900, .06, "square", .03, .15 + d));
+    },
+  };
+
   // ---------- main loop ----------
   let prev = performance.now(), acc = 0;
   function frame(now) {
@@ -956,7 +1067,7 @@ h2 { margin: 0; font: 900 clamp(24px, 6.5vw, 34px)/1.1 var(--sans); letter-spaci
     acc += dt;
     try {
       while (acc >= STEP) { update(STEP); acc -= STEP; }
-      render(); updateHUD();
+      render(); updateHUD(); soundTick();
     } catch (err) { console.error(err); acc = 0; }
     requestAnimationFrame(frame);
   }
@@ -964,6 +1075,7 @@ h2 { margin: 0; font: 900 clamp(24px, 6.5vw, 34px)/1.1 var(--sans); letter-spaci
   function boot(data) {
     data = data || {};
     if (data.mission > 1) { mission = data.mission | 0; totalScore = data.total | 0; $("startMission").textContent = "Mission " + mission; }
+    setMuted(muted);
     resize();
     buildMission(mission);
     window.addEventListener("resize", resize);

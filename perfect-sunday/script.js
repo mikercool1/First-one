@@ -21,6 +21,19 @@
 
   // ---------- sound (tiny synth, starts after first tap) ----------
   let actx = null;
+  // iPhone/iPad Safari keeps audio silent until the audio context is resumed inside a tap,
+  // so unlock it on every tap or key press (cheap once it is running). "playback" lets
+  // sound play even when the phone's silent switch is on; the in-game mute still works.
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {}
+  function unlockAudio() {
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state !== "running") actx.resume();
+      const b = actx.createBuffer(1, 1, 22050), s = actx.createBufferSource();
+      s.buffer = b; s.connect(actx.destination); s.start(0);
+    } catch {}
+  }
+  ["pointerdown", "touchend", "keydown", "click"].forEach((ev) => addEventListener(ev, unlockAudio, { capture: true, passive: true }));
   function audio() {
     if (store.d.muted) return null;
     try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); } catch { return null; }
