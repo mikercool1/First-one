@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Frozenbergs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- shared paint for every cone on the page -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="pWaffle" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="10" height="10" fill="#E9A75B"/>
+      <path d="M0 0H10M0 0V10" stroke="#C47A33" stroke-width="2"/>
+    </pattern>
+    <pattern id="pCup" width="14" height="10" patternUnits="userSpaceOnUse">
+      <rect width="14" height="10" fill="#FFFFFF"/><rect width="7" height="10" fill="#FF8FB1"/>
+    </pattern>
+    <linearGradient id="gSugar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#E4AE68"/><stop offset=".5" stop-color="#F3CB8A"/><stop offset="1" stop-color="#D59A52"/>
+    </linearGradient>
+    <linearGradient id="gCherry" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF5A6E"/><stop offset="1" stop-color="#B8102E"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="app">
+  <header class="topbar">
+    <h1 class="logo">Frozen<span>bergs</span></h1>
+    <div class="stats">
+      <span class="pill" id="dayPill">Day 1</span>
+      <span class="pill" id="queuePill">1 / 8</span>
+      <span class="pill money" id="tipPill">$0.00</span>
+      <button class="icon-btn" id="muteBtn" aria-label="Mute sound" title="Sound">♪</button>
+    </div>
+  </header>
+
+  <section class="stand" aria-label="The ice cream stand">
+    <div class="awning" aria-hidden="true"></div>
+    <div class="scene">
+      <div class="customer-col">
+        <div class="bubble" id="bubble" aria-live="polite"></div>
+        <div class="customer" id="customer"></div>
+        <div class="patience" aria-hidden="true"><i id="patienceBar"></i></div>
+      </div>
+      <div class="build-col">
+        <div class="build-cone" id="buildCone"></div>
+        <div class="float" id="float" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="counter" aria-hidden="true"><span>FROZENBERGS · EST. TODAY</span></div>
+  </section>
+
+  <section class="builder" aria-label="Build your cone">
+    <div class="row">
+      <h2>Cone</h2>
+      <div class="chips" id="coneChips"></div>
+    </div>
+    <div class="row">
+      <h2>Scoops <small id="scoopCount">0 / 4</small></h2>
+      <div class="chips" id="flavorChips"></div>
+    </div>
+    <div class="row">
+      <h2>Sauce</h2>
+      <div class="chips" id="sauceChips"></div>
+    </div>
+    <div class="row">
+      <h2>Toppings</h2>
+      <div class="chips" id="topChips"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" id="undoBtn">Undo scoop</button>
+      <button class="btn ghost" id="resetBtn">Start over</button>
+      <button class="btn primary" id="serveBtn" disabled>Hand it over!</button>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status"></div>
+</div>
+
+<div class="overlay" id="startOverlay">
+  <div class="card">
+    <div class="hero-cone" id="heroCone"></div>
+    <h2 class="big">Frozen<span>bergs</span></h2>
+    <p>You run the sweetest ice cream stand in town. Customers walk up, you build their cone, you hand it over.</p>
+    <ul class="howto">
+      <li>Match the order on their ticket for a big tip.</li>
+      <li>Some folks say <b>“Surprise me!”</b> — go wild with scoops and toppings.</li>
+      <li>Be quick: happy customers tip more.</li>
+    </ul>
+    <button class="btn primary wide" id="startBtn">Open the stand</button>
+  </div>
+</div>
+
+<div class="overlay" id="dayOverlay" hidden>
+  <div class="card">
+    <h2 class="big" id="dayTitle">Day 1 closed!</h2>
+    <p class="rank" id="dayRank"></p>
+    <div class="summary">
+      <div><b id="dayStars">0</b><span>stars</span></div>
+      <div><b id="dayTips">$0</b><span>in tips</span></div>
+      <div><b id="totalTips">$0</b><span>all-time</span></div>
+    </div>
+    <h3>Today's cones</h3>
+    <div class="gallery" id="gallery"></div>
+    <button class="btn primary wide" id="nextDayBtn">Open Day 2</button>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
