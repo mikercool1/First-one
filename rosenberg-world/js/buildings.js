@@ -208,7 +208,7 @@
     c.fillStyle = "#E9E4DA"; rr(c, -96, -8, 102, 12, 3); c.fill();
     gable(c, -104, 14, -132, -184, "#FFFFFF", ROOF);
     c.fillStyle = TRIM; rr(c, -98, -134, 8, 128, 3); c.fill(); rr(c, 0, -134, 8, 128, 3); c.fill();
-    door(c, -45, 58, 104, "#1FA39A", { arch: false });
+    door(c, -45, 58, 104, "#1C1D22", { arch: false });
     plate(c, "51", -45, -150, 11, "#27324A", "#FFFFFF");
     [-82, -8].forEach((x) => { c.fillStyle = "#2B2F3A"; rr(c, x - 4, -98, 8, 14, 3); c.fill(); c.fillStyle = "#FFE9A0"; rr(c, x - 3, -95, 6, 8, 2); c.fill(); });
     steps(c, -45, 78, 2);
