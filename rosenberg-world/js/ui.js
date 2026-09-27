@@ -713,7 +713,8 @@
     RW.sfx.play("pop");
     if (world.destStatus(d) !== "locked" && d.portal) setTimeout(() => enterPortal(d), 350);
   }
-  $("#mapBtn").addEventListener("click", openMap);
+  // the HUD button opens ALL GAMES (the kids' favorite); MAP is the second tab
+  $("#mapBtn").addEventListener("click", openAll);
   RW.bus.on("openMap", () => { if (E.mode === "play" && !RW.host.current) openMap(); });
 
   // Area names: pop up for a moment when you walk into a new neighbourhood

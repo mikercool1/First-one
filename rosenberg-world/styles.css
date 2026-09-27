@@ -160,6 +160,7 @@ body:not(.ready) #title { opacity: 0; }
 .round.big { position: absolute; width: 86px; height: 86px; flex-direction: column; gap: 0; font-size: 11px; letter-spacing: .08em; }
 .round.big svg { width: 46px; height: 46px; }
 .hud-map { left: calc(var(--safe-l) + 16px); bottom: calc(var(--safe-b) + 16px); color: #2B6CB0; box-shadow: 0 6px 0 #2B6CB0, 0 12px 26px rgba(30,42,90,.28) !important; }
+.hud-map.hud-games { color: #E8457C; box-shadow: 0 6px 0 #E8457C, 0 12px 26px rgba(30,42,90,.28) !important; }
 .hud-book { right: calc(var(--safe-r) + 16px); bottom: calc(var(--safe-b) + 16px); color: var(--purple); box-shadow: 0 6px 0 var(--purple), 0 12px 26px rgba(30,42,90,.28) !important; }
 @media (max-width: 700px), (max-height: 500px) {
   .chip { font-size: 16px; } .chip canvas { width: 44px; height: 44px; }

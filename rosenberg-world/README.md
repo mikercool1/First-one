@@ -6,6 +6,22 @@ doors into mini-games.
 
 Open `index.html` in a browser. No install, no server. Landscape iPad is the main target.
 
+## Install it on the iPad (PWA)
+
+Rosenberg World is also an installable web app that works offline.
+
+1. Host this repository on GitHub Pages: on GitHub, **Settings → Pages → Build and deployment →
+   Deploy from a branch**, pick the branch with this folder and `/ (root)`, and save. The app is then at
+   `https://mikercool1.github.io/First-one/rosenberg-world/`.
+2. On the iPad, open that address in **Safari**, tap **Share → Add to Home Screen**, then **Add**.
+3. Open it from the Home Screen icon: it runs full screen, and after the first visit every game
+   works without Wi-Fi.
+
+`manifest.webmanifest` names the app and its icons (`icons/`). `sw.js` is the service worker that keeps
+every file on the iPad; the list it keeps is `sw-files.js`, made by `node tools/build-sw.js`. **Run that
+after changing any file**, so installed iPads pick up the new version (they update the next time the
+app is opened online). The installed app keeps its own saved progress, separate from the claude.ai link.
+
 ## Adding a finished game ("Add this game to Rosenberg World")
 
 1. Copy the game into `games/<game-name>/`.
@@ -16,8 +32,9 @@ Open `index.html` in a browser. No install, no server. Landscape iPad is the mai
    (`RosenbergBridge.finish(...)` hands straight back to the world instead.) All of this does nothing
    when the game is opened on its own, so the same file still works standalone.
 3. In `js/games.js`, set `entry: "games/<game-name>/index.html"` on the game's entry.
+4. Run `node tools/build-sw.js` so the installed iPad app includes the new files.
 
-That's all. The building, sign, map pin, PLAY card, ALL GAMES card, high score and star payout
+That's all. The building, sign, map pin, PLAY card, ALL GAMES card (the HUD's first button), high score and star payout
 already exist. When the player comes back,
 they walk out of that game's door and the stars they earned fly into the total.
 
@@ -66,7 +83,7 @@ It shows up in the Collection Book.
 ## Linked games
 
 Tap a building (or its pin on the map) and you walk in and the game starts. Every game is also
-one tap away from the ALL GAMES tab of the MAP button in the HUD. When you leave a game you walk back out of its
+one tap away from the ALL GAMES button in the HUD. When you leave a game you walk back out of its
 door and the stars you earned fly into your total.
 
 
@@ -141,7 +158,7 @@ button (bottom right) picks what you ride, or walking. Everything is saved per p
   (Baha Mar walks you to the sea plane). Tap the post itself to open the map.
 - **Pinch to zoom** out to see where you are: every place gets a name label and a YOU arrow marks
   you. The NORMAL button snaps back.
-- **MAP** has two tabs: the map with a pin for every game, and ALL GAMES as a list.
+- **ALL GAMES** (bottom-left) opens the list of every game; its second tab is the MAP, with a pin for every game.
 - **Area names** pop up at the bottom of the screen as you walk into a neighbourhood.
 - The neighbourhoods, their colors and where their signs send you are `PLACES` in `js/world.js`;
   the posts are in `buildSignposts()`.
