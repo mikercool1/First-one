@@ -2,122 +2,203 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#3A1F4A">
 <title>Frozenbergs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Fredoka:wght@500;600;700&family=Playfair+Display:ital,wght@1,800&display=swap">
+<style>
+:root {
+  --berry: #3A1F4A; --berry-2: #24122F; --cream: #FFF8F1; --ink: #3B2342; --soft: #7D6883;
+  --pink: #FF4F86; --pink-dk: #D12F63; --mint: #2DBFAE; --mint-dk: #1E9487; --gold: #FFB020; --line: #F1DCE6;
+  --round: "Fredoka", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  --display: "Lilita One", "Fredoka", system-ui, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
+body { background: radial-gradient(120% 80% at 50% 15%, #54305F, var(--berry-2)); color: var(--ink); font: 600 18px/1.25 var(--round);
+  -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+button { font-family: var(--round); cursor: pointer; color: inherit; }
+button:focus-visible { outline: 3px solid #FFD6E4; outline-offset: 3px; }
+
+.app { position: relative; height: 100%; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px calc(env(safe-area-inset-bottom, 0px) + 14px); }
+
+/* ---------- top bar ---------- */
+.top { display: flex; align-items: center; gap: 8px; color: var(--cream); }
+.day { font: 400 22px/1 var(--display); letter-spacing: .02em; white-space: nowrap; }
+.cones { flex: 1; display: flex; gap: 4px; min-width: 0; }
+.cones i { flex: 1; height: 14px; border-radius: 7px; background: rgba(255,255,255,.16); transition: background .3s; }
+.cones i.on { background: linear-gradient(180deg, #FFC1D6, var(--pink)); box-shadow: 0 0 10px rgba(255,120,170,.55); }
+.tips { font: 400 22px/1 var(--display); color: #8AF0DF; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mute { width: 40px; height: 40px; flex: none; border: 0; border-radius: 50%; background: rgba(255,255,255,.14); color: var(--cream); font-size: 18px; }
+.mute.off { opacity: .45; }
+
+/* ---------- stage ---------- */
+.stage { position: relative; flex: 1; min-height: 0; align-self: center; max-width: 100%; border-radius: 26px; overflow: hidden; box-shadow: 0 18px 40px -18px rgba(0,0,0,.7), inset 0 0 0 3px rgba(255,255,255,.08); }
+.stage canvas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: block; }
+
+.go { border: 0; border-radius: 22px; padding: 18px 16px; font: 400 28px/1 var(--display); letter-spacing: .02em; color: #fff;
+  background: linear-gradient(180deg, #FF77A3, var(--pink)); box-shadow: 0 6px 0 var(--pink-dk), 0 14px 26px -10px rgba(255,79,134,.7);
+  transition: transform .1s, box-shadow .1s, opacity .2s, filter .2s; }
+.go:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--pink-dk); }
+.go:disabled { opacity: .45; filter: saturate(.4); cursor: default; }
+.go.mint { background: linear-gradient(180deg, #4FE0CC, var(--mint)); box-shadow: 0 6px 0 var(--mint-dk), 0 14px 26px -10px rgba(45,191,174,.7); }
+.go.mint:active { box-shadow: 0 2px 0 var(--mint-dk); }
+.go.pulse:not(:disabled) { animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { transform: scale(1.03); } }
+
+/* ---------- builder (covers the whole screen) ---------- */
+.builder { position: fixed; inset: 0; z-index: 10; overflow-y: auto; background: linear-gradient(180deg, #FFF3F8 0%, #FFF8F1 45%, #FDEBD9 100%);
+  display: flex; justify-content: center; animation: slideUp .28s cubic-bezier(.2,.9,.3,1.1); }
+@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } }
+.b-in { width: 100%; max-width: 520px; min-height: 100%; height: max-content; max-height: none; display: flex; flex-direction: column; gap: 10px;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px calc(env(safe-area-inset-bottom, 0px) + 14px); }
+
+.order { display: flex; align-items: center; gap: 12px; background: #fff; border: 3px solid var(--line); border-radius: 22px; padding: 8px 14px 8px 8px;
+  box-shadow: 0 8px 18px -12px rgba(120,40,80,.45); }
+.order canvas { width: 64px; height: 92px; flex: none; }
+.order .who { font: 400 22px/1 var(--display); color: var(--pink); margin-bottom: 5px; }
+.order ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 6px; }
+.order li { display: inline-flex; align-items: center; gap: 5px; font: 600 16px/1 var(--round); background: #FFF4F8; border-radius: 99px; padding: 5px 9px 5px 6px; }
+.order li i { width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 -2px 0 rgba(0,0,0,.15); }
+.order li.ok { background: #DDF8F1; }
+.order li.ok::after { content: "✓"; color: var(--mint-dk); font-weight: 700; }
+.order .surprise { font: 600 18px/1.25 var(--round); color: var(--ink); }
+
+.preview { position: relative; flex: 1; min-height: 96px; border-radius: 26px; overflow: hidden;
+  background: radial-gradient(90% 70% at 50% 60%, #FFFFFF, #FFE3EE 60%, #FFD0E0); box-shadow: inset 0 0 0 3px #FFE0EC; }
+.preview canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.step { border: 0; border-radius: 16px; padding: 10px 4px; background: #F6E6EE; font: 600 16px/1 var(--round); color: var(--soft); position: relative; }
+.step b { display: block; font: 400 12px/1 var(--display); letter-spacing: .08em; opacity: .7; margin-bottom: 3px; }
+.step[aria-current="true"] { background: var(--ink); color: #fff; }
+.step.done::after { content: "✓"; position: absolute; top: -6px; right: -3px; width: 22px; height: 22px; border-radius: 50%; background: var(--mint); color: #fff;
+  font: 700 14px/22px var(--round); box-shadow: 0 2px 0 var(--mint-dk); }
+
+.opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.opt { position: relative; border: 3px solid var(--line); border-radius: 20px; background: #fff; padding: 4px 4px 9px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font: 600 17px/1.1 var(--round); color: var(--ink); box-shadow: 0 4px 0 #EFD7E2; transition: transform .1s, border-color .15s, background .15s; }
+.opt canvas { width: 76px; height: 70px; }
+.opt:active { transform: translateY(3px); box-shadow: 0 1px 0 #EFD7E2; }
+.opt[aria-pressed="true"] { border-color: var(--pink); background: #FFF0F5; box-shadow: 0 4px 0 #FFB6CD; }
+.opt .n { position: absolute; top: -9px; right: -6px; min-width: 30px; height: 30px; border-radius: 15px; background: var(--pink); color: #fff;
+  font: 400 18px/30px var(--display); text-align: center; box-shadow: 0 2px 0 var(--pink-dk); }
+
+.b-bottom { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 8px; }
+.soft { border: 3px solid var(--line); border-radius: 20px; background: #fff; font: 600 18px/1 var(--round); padding: 14px 6px; color: var(--ink); white-space: nowrap; }
+.soft:disabled { opacity: .4; }
+.b-bottom .go { font-size: 30px; padding: 14px 10px; }
+
+.toast { position: fixed; left: 50%; bottom: 120px; transform: translate(-50%, 20px); z-index: 40; background: var(--ink); color: #fff; padding: 14px 20px;
+  border-radius: 18px; font: 600 19px/1.2 var(--round); opacity: 0; pointer-events: none; transition: .25s; max-width: calc(100% - 32px); text-align: center; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- start / end cards ---------- */
+.overlay { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 16px; overflow: auto;
+  background: radial-gradient(120% 80% at 50% 15%, rgba(84,48,95,.92), rgba(36,18,47,.96)); }
+.card { width: 100%; max-width: 440px; background: var(--cream); border-radius: 30px; padding: 22px 18px; text-align: center; box-shadow: 0 30px 60px -20px rgba(0,0,0,.6); }
+.logo { font: 400 clamp(44px, 13vw, 60px)/1 var(--display); margin: 0; color: var(--pink); letter-spacing: .01em;
+  text-shadow: 0 3px 0 #fff, 0 6px 0 #F4B7CB, 0 10px 18px rgba(200,60,110,.35); }
+.logo span { color: var(--mint); text-shadow: 0 3px 0 #fff, 0 6px 0 #9BDCD2, 0 10px 18px rgba(30,150,135,.35); }
+.card p { margin: 10px 4px 14px; color: var(--soft); font: 500 18px/1.35 var(--round); }
+.card h3 { font: 400 20px/1 var(--display); letter-spacing: .04em; color: var(--ink); margin: 6px 0 10px; }
+.pickers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.pick { border: 3px solid var(--line); border-radius: 22px; background: #fff; padding: 6px 4px 10px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  box-shadow: 0 4px 0 #EFD7E2; transition: transform .12s, border-color .15s, background .15s; }
+.pick canvas { width: 100%; aspect-ratio: 3 / 4; }
+.pick b { font: 400 22px/1 var(--display); letter-spacing: .02em; }
+.pick[aria-pressed="true"] { border-color: var(--pink); background: #FFF0F5; transform: translateY(-3px); box-shadow: 0 7px 0 #FFB6CD; }
+.card .go { width: 100%; }
+.summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0 8px; }
+.summary div { background: #fff; border-radius: 18px; padding: 12px 4px; }
+.summary b { display: block; font: 400 28px/1 var(--display); color: var(--pink); font-variant-numeric: tabular-nums; }
+.summary span { font: 500 14px/1 var(--round); color: var(--soft); }
+.rank { font: 400 24px/1.1 var(--display) !important; color: var(--ink) !important; margin: 8px 0 !important; }
+.gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 4px 0 18px; }
+.gallery figure { margin: 0; background: #fff; border-radius: 16px; padding: 4px 2px 6px; }
+.gallery canvas { width: 100%; aspect-ratio: 3 / 5; display: block; }
+.gallery figcaption { color: var(--gold); font-size: 15px; letter-spacing: 1px; }
+
+@media (max-height: 760px) {
+  .b-in { gap: 7px; padding-top: calc(env(safe-area-inset-top, 0px) + 8px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px); }
+  .order { padding: 6px 10px 6px 6px; border-radius: 18px; }
+  .order canvas { width: 44px; height: 64px; }
+  .order .who { font-size: 18px; margin-bottom: 3px; }
+  .order li { font-size: 14px; padding: 4px 8px 4px 5px; }
+  .order li i { width: 12px; height: 12px; }
+  .step { padding: 7px 2px; font-size: 14px; }
+  .opt { padding: 2px 2px 6px; font-size: 15px; border-radius: 16px; }
+  .opt canvas { width: 58px; height: 46px; }
+  .soft { font-size: 16px; padding: 11px 4px; }
+  .go { font-size: 24px; padding: 14px; }
+  .b-bottom .go { font-size: 26px; padding: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; } }
+</style>
 </head>
 <body>
-
-<!-- shared paint for every cone on the page -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <pattern id="pWaffle" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-      <rect width="10" height="10" fill="#E9A75B"/>
-      <path d="M0 0H10M0 0V10" stroke="#C47A33" stroke-width="2"/>
-    </pattern>
-    <pattern id="pCup" width="14" height="10" patternUnits="userSpaceOnUse">
-      <rect width="14" height="10" fill="#FFFFFF"/><rect width="7" height="10" fill="#FF8FB1"/>
-    </pattern>
-    <linearGradient id="gSugar" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#E4AE68"/><stop offset=".5" stop-color="#F3CB8A"/><stop offset="1" stop-color="#D59A52"/>
-    </linearGradient>
-    <linearGradient id="gCherry" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#FF5A6E"/><stop offset="1" stop-color="#B8102E"/>
-    </linearGradient>
-  </defs>
-</svg>
-
 <div class="app">
-  <header class="topbar">
-    <h1 class="logo">Frozen<span>bergs</span></h1>
-    <div class="stats">
-      <span class="pill" id="dayPill">Day 1</span>
-      <span class="pill" id="queuePill">1 / 8</span>
-      <span class="pill money" id="tipPill">$0.00</span>
-      <button class="icon-btn" id="muteBtn" aria-label="Mute sound" title="Sound">♪</button>
-    </div>
+  <header class="top">
+    <span class="day" id="dayLbl">Day 1</span>
+    <div class="cones" id="coneDots" aria-label="Customers served today"></div>
+    <span class="tips" id="tipLbl">$0.00</span>
+    <button class="mute" id="muteBtn" aria-label="Mute sound">♪</button>
   </header>
-
-  <section class="stand" aria-label="The ice cream stand">
-    <div class="awning" aria-hidden="true"></div>
-    <div class="scene">
-      <div class="customer-col">
-        <div class="bubble" id="bubble" aria-live="polite"></div>
-        <div class="customer" id="customer"></div>
-        <div class="patience" aria-hidden="true"><i id="patienceBar"></i></div>
-      </div>
-      <div class="build-col">
-        <div class="scooper" id="scooper"></div>
-        <span class="scooper-name" id="scooperName"></span>
-        <div class="build-cone" id="buildCone"></div>
-        <div class="float" id="float" aria-live="polite"></div>
-      </div>
-    </div>
-    <div class="counter" aria-hidden="true"><span>FROZENBERGS · EST. TODAY</span></div>
-  </section>
-
-  <section class="builder" aria-label="Build your cone">
-    <div class="row">
-      <h2>Cone</h2>
-      <div class="chips" id="coneChips"></div>
-    </div>
-    <div class="row">
-      <h2>Scoops <small id="scoopCount">0 / 4</small></h2>
-      <div class="chips" id="flavorChips"></div>
-    </div>
-    <div class="row">
-      <h2>Sauce</h2>
-      <div class="chips" id="sauceChips"></div>
-    </div>
-    <div class="row">
-      <h2>Toppings</h2>
-      <div class="chips" id="topChips"></div>
-    </div>
-    <div class="actions">
-      <button class="btn ghost" id="undoBtn">Undo scoop</button>
-      <button class="btn ghost" id="resetBtn">Start over</button>
-      <button class="btn primary" id="serveBtn" disabled>Hand it over!</button>
-    </div>
-  </section>
-
-  <div class="toast" id="toast" role="status"></div>
+  <main class="stage" id="stage"><canvas id="cv" aria-label="The Frozenbergs ice cream stand"></canvas></main>
+  <button class="go pulse" id="makeBtn" disabled>Make the cone!</button>
 </div>
+
+<section class="builder" id="builder" hidden aria-label="Build the cone">
+  <div class="b-in">
+    <div class="order" id="order">
+      <canvas id="orderCv" width="128" height="184" aria-hidden="true"></canvas>
+      <div><div class="who" id="orderWho">Order</div><div id="orderBody"></div></div>
+    </div>
+    <div class="preview"><canvas id="prevCv" aria-label="Your cone"></canvas></div>
+    <nav class="steps" id="steps"></nav>
+    <div class="opts" id="opts"></div>
+    <div class="b-bottom">
+      <button class="soft" id="undoBtn">↩ Undo</button>
+      <button class="soft" id="nextBtn">Next ▸</button>
+      <button class="go mint" id="doneBtn">Done ✓</button>
+    </div>
+  </div>
+</section>
 
 <div class="overlay" id="startOverlay">
   <div class="card">
-    <div class="hero-cone" id="heroCone"></div>
-    <h2 class="big">Frozen<span>bergs</span></h2>
-    <p>You run the sweetest ice cream stand in town. Customers walk up, you build their cone, you hand it over.</p>
-    <ul class="howto">
-      <li>Match the order on their ticket for a big tip.</li>
-      <li>Some folks say <b>“Surprise me!”</b> — go wild with scoops and toppings.</li>
-      <li>Be quick: happy customers tip more.</li>
-    </ul>
+    <h1 class="logo">Frozen<span>bergs</span></h1>
+    <p>Run the ice cream stand! Make each cone just like the order, then hand it over.</p>
     <h3>Who's scooping today?</h3>
-    <div class="picker" id="picker"></div>
-    <button class="btn primary wide" id="startBtn" disabled>Pick your scooper</button>
+    <div class="pickers" id="pickers"></div>
+    <button class="go" id="startBtn" disabled>Pick a scooper</button>
   </div>
 </div>
 
 <div class="overlay" id="dayOverlay" hidden>
   <div class="card">
-    <h2 class="big" id="dayTitle">Day 1 closed!</h2>
+    <h1 class="logo" id="dayTitle" style="font-size:44px">Day 1 done!</h1>
     <p class="rank" id="dayRank"></p>
-    <p id="dayWho"></p>
     <div class="summary">
-      <div><b id="dayStars">0</b><span>stars</span></div>
-      <div><b id="dayTips">$0</b><span>in tips</span></div>
-      <div><b id="totalTips">$0</b><span>all-time</span></div>
+      <div><b id="sStars">0</b><span>stars</span></div>
+      <div><b id="sTips">$0</b><span>tips today</span></div>
+      <div><b id="sTotal">$0</b><span>all-time</span></div>
     </div>
-    <h3>Today's cones</h3>
     <div class="gallery" id="gallery"></div>
-    <button class="btn primary wide" id="nextDayBtn">Open Day 2</button>
+    <button class="go" id="nextDayBtn">Open Day 2</button>
   </div>
 </div>
 
+<div class="toast" id="toast" role="status"></div>
+
+<script src="art.js"></script>
+<script src="kids.js"></script>
+<script src="cone.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
