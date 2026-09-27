@@ -1034,7 +1034,7 @@ function drawGrill(c, s, t, lid) {
 }
 const EVER_W = 2.3;
 let EVERGREENS = null;
-const evergreens = () => EVERGREENS || (EVERGREENS = Array.from({ length: Math.ceil(2 * FENCE_X / EVER_W) + 1 }, (_, i) => ({ x: -FENCE_X + i * EVER_W, h: 4.3 + ((i * 37) % 7) * 0.12, seed: i })));
+const evergreens = () => EVERGREENS || (EVERGREENS = Array.from({ length: Math.ceil(2 * FENCE_X / EVER_W) + 1 }, (_, i) => ({ x: -FENCE_X + i * EVER_W, h: 4.3 + ((i * 37) % 7) * 0.12, seed: i })).filter(e => Math.abs(e.x) > EVER_GAP));
 function drawEvergreen(c, s, h, t, seed) {
   const k = s / 100; c.save(); c.scale(k, k);
   const w = EVER_W * 100, H2 = h * 100, sway = Math.sin(t * 0.7 + seed) * 3;
@@ -1191,7 +1191,7 @@ function drawDogHouse(c, s) {
 }
 
 // ---------- world state ----------
-const FENCE_Z = 26, FENCE_H = 2.0, FENCE_X = 30, GRAV = 18;
+const FENCE_Z = 26, FENCE_H = 2.0, FENCE_X = 30, GRAV = 18, DOG_X = 4.5, EVER_GAP = 7.2, EVER_Z = FENCE_Z - 1.3;
 const BASES = [[0, 0], [8.5, 8.5], [0, 17], [-8.5, 8.5], [0, 0]];
 const CONTACT = { x: -0.15, y: 0.72, z: 0.15 };
 const RELEASE = { x: 0.35, y: 1.3, z: 8.5 };
@@ -1310,7 +1310,7 @@ function readyPitch() {
 }
 function windup() {
   phase = 'windup'; pitcher.pose = 'windup'; pitcher.w = 0; pitcher.wt = gt;
-  if (Math.random() < 0.3 && dogY.peek < 0.05) { dogY.x = rnd(-8, 8); dogY.tgt = pick([0.22, 0.45, 0.5]); dogY.mouth = 'tongue'; dogY.eyes = 'open'; after(rnd(1.4, 2.2), () => { if (phase !== 'hr' && phase !== 'hrReveal') dogY.tgt = 0; }); }
+  if (Math.random() < 0.3 && dogY.peek < 0.05) { dogY.x = rnd(-DOG_X, DOG_X); dogY.tgt = pick([0.22, 0.45, 0.5]); dogY.mouth = 'tongue'; dogY.eyes = 'open'; after(rnd(1.4, 2.2), () => { if (phase !== 'hr' && phase !== 'hrReveal') dogY.tgt = 0; }); }
   after(0.95, release);
 }
 function release() {
@@ -1391,7 +1391,7 @@ function launch(out, q, special) {
   if (special === 'tree') { const tr = TREES[lx < 0 ? 0 : 1]; lx = tr.x * 0.93; lz = tr.z - 0.5; ty = 3.8 * tr.sc; apex = ty + 3.5; }
   if (special === 'grill') { lx = GRILL.x; lz = GRILL.z; ty = 1.25; apex = 5; }
   if (special === 'sprinkler') { lx = SPRINK.x; lz = SPRINK.z; ty = 0; apex = 6; }
-  if (special === 'dogtease') { lz = FENCE_Z; lx = clamp(lx, -12, 12); ty = FENCE_H + 0.12; apex = 6.5; }
+  if (special === 'dogtease') { lz = FENCE_Z; lx = clamp(lx, -DOG_X, DOG_X); ty = FENCE_H + 0.12; apex = 6.5; }
   if (special === 'window') { lx = 4; lz = 50.5; ty = 4.8; apex = 17; }
   play.ground = ground;
   if (ground) {
@@ -1410,7 +1410,7 @@ function launch(out, q, special) {
     const proj = (pitcher.x - b.x) * ux + (pitcher.z - b.z) * uz;
     pitcher.tx = b.x + ux * proj; pitcher.tz = b.z + uz * proj; pitcher.pose = 'run';
   }
-  if (out === 'hr') { dogY.x = clamp(lx * 0.55, -10, 10); }
+  if (out === 'hr') { dogY.x = clamp(lx * 0.55, -DOG_X, DOG_X); }
   // camera
   if (ground) shot(SHOT.wide(), false, 2.2);
 }
@@ -1529,7 +1529,7 @@ function updBall(dt) {
   if (b.hitT && gt >= b.hitT) { b.hitT = null; specialHit(); }
   // fence
   if (pz < FENCE_Z - 0.15 && b.z >= FENCE_Z - 0.15 && Math.abs(b.x) < FENCE_X && b.vz > 0) {
-    if (b.y < FENCE_H) { b.z = FENCE_Z - 0.16; b.vz *= -0.35; b.vx *= 0.6; fenceShake = 0.6; sfx.thud(); dogY.tgt = Math.max(dogY.tgt, 0.3); dogY.x = clamp(b.x, -12, 12); after(1.2, () => { if (phase === 'play') dogY.tgt = 0; }); }
+    if (b.y < FENCE_H) { b.z = FENCE_Z - 0.16; b.vz *= -0.35; b.vx *= 0.6; fenceShake = 0.6; sfx.thud(); dogY.tgt = Math.max(dogY.tgt, 0.3); dogY.x = clamp(b.x, -DOG_X, DOG_X); after(1.2, () => { if (phase === 'play') dogY.tgt = 0; }); }
     else b.over = true;
   }
   if (Math.abs(b.x) > FENCE_X - 0.2 && b.z < FENCE_Z) { b.x = Math.sign(b.x) * (FENCE_X - 0.2); b.vx *= -0.4; }
@@ -1555,7 +1555,7 @@ function specialHit() {
     grillLid = 1; b.vy = 9; b.vz = -3; b.vx = rnd(-3, 3); sfx.clang(); call2('GRILL SHOT!', 'fun', 1.5);
   } else if (s === 'dogtease') {
     fenceShake = 0.8; b.vz = -Math.abs(b.vz) * 0.35; b.vy = 4; sfx.thud();
-    dogY.x = clamp(b.x, -12, 12); dogY.peek = 0.3; dogY.tgt = 1.25; dogY.mouth = 'open'; dogY.eyes = 'wide'; sfx.snap(); sfx.bark(1);
+    dogY.x = clamp(b.x, -DOG_X, DOG_X); dogY.peek = 0.3; dogY.tgt = 1.25; dogY.mouth = 'open'; dogY.eyes = 'wide'; sfx.snap(); sfx.bark(1);
     after(0.55, () => { dogY.tgt = 0; dogY.mouth = 'tongue'; dogY.eyes = 'open'; });
     call2('DOG TEASE!', 'dog', 1.6);
   } else if (s === 'window') {
@@ -1912,7 +1912,7 @@ function update(dt, rdt) {
   if (sprinklerOn > 0 && mode === 'yard' && Math.random() < rdt * 25) { const a = rt * 3 + rnd(-0.2, 0.2); parts.push({ x: SPRINK.x, y: 0.25, z: SPRINK.z, vx: Math.cos(a) * 3, vy: rnd(4, 5.5), vz: Math.sin(a) * 3, life: 1, max: 1, r: 0.06, type: 'water', grav: 1 }); }
   // dog behind fence
   dogY.peek += (dogY.tgt - dogY.peek) * Math.min(1, rdt * (dogY.tgt > dogY.peek ? 7 : 4));
-  if (phase === 'title' && Math.random() < rdt / 6 && dogY.tgt === 0) { dogY.x = rnd(-9, 9); dogY.tgt = pick([0.25, 0.45, 1]); dogY.mouth = 'tongue'; after(rnd(1.2, 2.2), () => { if (phase === 'title' || phase === 'end') dogY.tgt = 0; }); }
+  if (phase === 'title' && Math.random() < rdt / 6 && dogY.tgt === 0) { dogY.x = rnd(-DOG_X, DOG_X); dogY.tgt = pick([0.25, 0.45, 1]); dogY.mouth = 'tongue'; after(rnd(1.2, 2.2), () => { if (phase === 'title' || phase === 'end') dogY.tgt = 0; }); }
   // particles
   for (const p of parts) { p.life -= rdt; p.x += p.vx * rdt; p.y += p.vy * rdt; p.z += p.vz * rdt; if (p.grav) p.vy -= GRAV * p.grav * rdt; if (p.type === 'dust') { p.vx *= 0.94; p.vz *= 0.94; p.vy *= 0.94; } if (p.type === 'leaf') { p.rot += rdt * 4; p.vx = Math.sin(rt * 3 + p.rot) * 0.8; } if (p.y < 0.03 && p.grav) { p.y = 0.03; p.vy = 0; p.vx *= 0.8; p.vz *= 0.8; } }
   parts = parts.filter(p => p.life > 0);
@@ -2072,8 +2072,8 @@ function renderYard() {
   add(12.5, () => billboard(13, 0, 12.5, () => drawChair(g, 100)));
   add(13.2, () => billboard(17.5, 0, 13.2, () => drawChair(g, 100)));
   add(SPRINK.z, () => billboard(SPRINK.x, 0, SPRINK.z, () => drawSprinkler(g, 100, sprinklerOn > 0, rt)));
-  for (const [x, w, sd] of [[-22, 700, 1], [-13, 600, 2], [9, 700, 3], [19, 600, 4], [27, 400, 5], [-28, 300, 6]]) add(FENCE_Z - 0.6, () => billboard(x, 0, FENCE_Z - 0.6, () => drawFlowers(g, 100, sd, w)));
-  for (const e of evergreens()) add(FENCE_Z + 1.6, () => { const p = P3(e.x, 0, FENCE_Z + 1.6); if (!p) return; g.save(); g.translate(p.x, p.y); drawEvergreen(g, p.s, e.h, rt, e.seed); g.restore(); });
+  for (const [x, w, sd, z] of [[-22, 700, 1, EVER_Z - 1.3], [-12, 600, 2, EVER_Z - 1.3], [0, 900, 7, FENCE_Z - 0.6], [12, 600, 3, EVER_Z - 1.3], [21, 600, 4, EVER_Z - 1.3]]) add(z, () => billboard(x, 0, z, () => drawFlowers(g, 100, sd, w)));
+  for (const e of evergreens()) add(EVER_Z, () => { const p = P3(e.x, 0, EVER_Z); if (!p) return; g.save(); g.translate(p.x, p.y); drawEvergreen(g, p.s, e.h, rt, e.seed); g.restore(); });
   add(FENCE_Z, () => drawFence(FENCE_Z, -FENCE_X, FENCE_X, false));
   // dog behind fence
   add(FENCE_Z + 0.8, () => {
@@ -2243,9 +2243,9 @@ function drawEnd(t) {
   c.setTransform(1, 0, 0, 1, 0, 0);
   c.fillStyle = lgr(c, 0, 0, 0, h, ['#7CC8FF', '#CDEEFF']); c.fillRect(0, 0, w, h);
   c.fillStyle = '#6CC456'; c.beginPath(); c.moveTo(0, h * 0.72); c.quadraticCurveTo(w / 2, h * 0.6, w, h * 0.72); c.lineTo(w, h); c.lineTo(0, h); c.fill();
-  for (let x = -h * 0.08; x < w + h * 0.2; x += h * 0.2) { c.save(); c.translate(x, h * 0.5); drawEvergreen(c, h * 0.087, 4.5, t, x); c.restore(); }
   c.fillStyle = lgr(c, 0, h * 0.44, 0, h * 0.64, ['#B07A4C', '#8C5A33']); c.fillRect(0, h * 0.44, w, h * 0.2);
   c.strokeStyle = 'rgba(70,38,16,.45)'; c.lineWidth = 2; for (let x = 0; x < w; x += h * 0.05) { c.beginPath(); c.moveTo(x, h * 0.44); c.lineTo(x, h * 0.64); c.stroke(); }
+  for (let x = -h * 0.08; x < w + h * 0.2; x += h * 0.2) { c.save(); c.translate(x, h * 0.68); drawEvergreen(c, h * 0.087, 4.5, t, x); c.restore(); }
   const k = h / 300;
   c.save(); c.translate(w * 0.5, h * 0.84); c.scale(k * 1.05, k * 1.05); drawDog(c, { pose: 'sit', mouth: 'ball', eyes: 'happy', wag: 16, slob: 0.6, ears: 0.4 }, t); c.restore();
   const kids = [['reuben', 'shoulder', 0.3], ['jonah', 'glove', 0.5], ['ellie', 'triumph', 0.7]];
