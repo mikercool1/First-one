@@ -160,7 +160,8 @@
     E.later(0.7, () => E.say(E.player, { reuben: "Let's go, Rosenbergs!", jonah: "Race you!", ellie: "Yay! Me turn!", max: "Hehehe! My turn!" }[id], 2));
     E.later(1.2, () => toast(returning ? `Welcome back, ${A.CHARS[id].name}! ⭐ ${RW.save.stars}` : `Hi ${A.CHARS[id].name}! This is your own Rosenberg World.`, "👋"));
     if (firstRun) {
-      E.later(2.2, () => toast("Drag anywhere to walk, or tap where you want to go!", "👆"));
+      const start = [E.player.x, E.player.y], walked = () => Math.hypot(E.player.x - start[0], E.player.y - start[1]) > 80;
+      E.later(2.2, () => toast("Drag anywhere to walk, or tap where you want to go!", "👆", walked));
       E.later(7.5, () => toast("Find hidden Rosenberg Stars all over the world!", "⭐"));
       E.later(13, () => toast("Tap things! Lots of things do something funny.", "✨"));
     }
@@ -228,9 +229,10 @@
   // ---------- toasts ----------
   const toastQ = [];
   let toastBusy = false;
-  function toast(text, icon) { toastQ.push({ text, icon }); if (!toastBusy) nextToast(); }
+  function toast(text, icon, skip) { toastQ.push({ text, icon, skip }); if (!toastBusy) nextToast(); }
   function nextToast() {
-    const t = toastQ.shift();
+    let t = toastQ.shift();
+    while (t && t.skip && t.skip()) t = toastQ.shift();
     if (!t) { toastBusy = false; return; }
     toastBusy = true;
     const n = $("#toast");
@@ -717,11 +719,13 @@
   // Area names: pop up for a moment when you walk into a new neighbourhood
   const zoneEl = $("#zone");
   let zoneNow = null, zoneTimer = 0;
+  RW.bus.on("zoom", (m) => { if (m < 0.8) zoneEl.classList.remove("on"); });
   setInterval(() => {
     const P = E.player;
     if (!P || E.mode !== "play" || RW.host.current || P.hidden) return;
     const z = world.zoneAt(P.x, P.y);
     if (!z || z === zoneNow) { if (!z) zoneNow = null; return; }
+    if (E.userZoom < 0.8) { zoneNow = z; return; } // zoomed out: the place labels already say it
     zoneNow = z;
     zoneEl.style.setProperty("--c", z.color);
     zoneEl.innerHTML = `<span>${z.icon}</span><span>${z.name}</span>`;
@@ -746,7 +750,7 @@
       const b = el("button", "g-card");
       b.type = "button";
       b.style.setProperty("--c", g.color || "#2F6BFF");
-      b.innerHTML = `<span class="g-ico">${g.icon}</span><span class="g-title">${g.title}</span><span class="g-where">${d ? d.name : ""}</span>`
+      b.innerHTML = `<span class="g-ico">${g.icon}</span><span class="g-title">${g.title}</span><span class="g-where">${d && d.name.toLowerCase() !== g.title.toLowerCase() ? d.name : ""}</span>`
         + `<span class="g-rec">${st.plays ? `Best ${st.highScore} · ${st.starsEarned} ${STAR_SVG}` : ""}</span><span class="g-play">PLAY</span>`;
       b.addEventListener("click", () => {
         closeAll(true);
@@ -762,7 +766,13 @@
     show(portalCard, false);
   }
   function closeAll(silent) { allEl.classList.remove("on"); setTimeout(() => show(allEl, false), 260); if (!silent && portalDest) show(portalCard, true); }
-  $("#allBtn").addEventListener("click", openAll);
+  // MAP and ALL GAMES are two tabs of the same button
+  document.querySelectorAll(".tabs .tab").forEach((t) => t.addEventListener("click", () => {
+    const toList = t.dataset.tab === "list";
+    if (toList === !allEl.hidden) return;
+    if (toList) { mapEl.classList.remove("on"); show(mapEl, false); openAll(); }
+    else { closeAll(true); allEl.classList.remove("on"); show(allEl, false); openMap(); }
+  }));
   $("#allClose").addEventListener("click", () => closeAll());
   allEl.addEventListener("click", (ev) => { if (ev.target === allEl) closeAll(); });
 

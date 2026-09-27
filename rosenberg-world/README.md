@@ -66,7 +66,7 @@ It shows up in the Collection Book.
 ## Linked games
 
 Tap a building (or its pin on the map) and you walk in and the game starts. Every game is also
-one tap away from the ALL GAMES button in the HUD. When you leave a game you walk back out of its
+one tap away from the ALL GAMES tab of the MAP button in the HUD. When you leave a game you walk back out of its
 door and the stars you earned fly into your total.
 
 
@@ -135,9 +135,12 @@ button (bottom right) picks what you ride, or walking. Everything is saved per p
 
 ## Finding your way
 
-- **Signposts** stand at the main crossroads. Each arrow board names a neighbourhood (Home, Sports
-  Zone, Baha Mar, Ice Cream…); tap a board and you walk there (Baha Mar walks you to the sea plane).
-  Tap the post itself to open the map.
+- **Signposts** stand at the main crossroads, with at most three big arrow boards each. A board uses
+  the game's own name (Frozenbergs, Checking In, Rosenberg Crossing…); tap it and you walk there
+  (Baha Mar walks you to the sea plane). Tap the post itself to open the map.
+- **Pinch to zoom** out to see where you are: every place gets a name label and a YOU arrow marks
+  you. The NORMAL button snaps back.
+- **MAP** has two tabs: the map with a pin for every game, and ALL GAMES as a list.
 - **Area names** pop up at the bottom of the screen as you walk into a neighbourhood.
 - The neighbourhoods, their colors and where their signs send you are `PLACES` in `js/world.js`;
   the posts are in `buildSignposts()`.
@@ -166,7 +169,7 @@ day. The 📊 button on the character screen (or FAMILY STATS in the Collection 
 "Reset all progress" at the bottom of the Collection Book erases every player on the device.
 
 House upgrades unlock by each player's star total: Dog House 10, Pool 25, Treehouse 40,
-Giant Slide 60, Sport Court 80.
+Giant Slide 60, Sport Court 80. Only built upgrades and the next one to earn are shown in the yard.
 
 Add `?dev` to the URL to get a "Test finish" button on placeholder game screens, which runs
 the full star flow.

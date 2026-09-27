@@ -66,18 +66,18 @@
     baseball: { name: "BASEBALL", icon: "⚾", color: "#2E8B57", go: "baseball", zone: [2020, 600, 2920, 1380] },
     space:    { name: "SPACE ZONE", icon: "🚀", color: "#7B3FE4", go: [3620, 980], zone: [3300, 540, 4150, 1090] },
     academy:  { name: "MATH BLASTER", icon: "✖️", color: "#2F5BEA", go: "mathblaster", zone: [1200, 620, 1820, 1090] },
-    raceway:  { name: "RACEWAY", icon: "🏎️", color: "#E8453C", go: "raceway", zone: [120, 540, 1040, 1160] },
-    kitchen:  { name: "KITCHEN", icon: "🍳", color: "#E8743C", go: "kitchen", zone: [1150, 1480, 1800, 1860] },
+    raceway:  { name: "RACECAR RALLY", icon: "🏎️", color: "#E8453C", go: "raceway", zone: [120, 540, 1040, 1160] },
+    kitchen:  { name: "PASSOVER COOKOUT", icon: "🍳", color: "#E8743C", go: "kitchen", zone: [1150, 1480, 1800, 1860] },
     sports:   { name: "SPORTS ZONE", icon: "⚽", color: "#1F8A4C", go: [1500, 2200], zone: [880, 1960, 2000, 3060] },
     playground: { name: "PLAYGROUND", icon: "🛝", color: "#F2A93B", zone: [2000, 1960, 2270, 2330] },
     arcade:   { name: "ARCADE", icon: "🕹️", color: "#8A3FE4", go: "arcade", zone: [2150, 2380, 2800, 2820] },
-    icecream: { name: "ICE CREAM", icon: "🍦", color: "#E8558A", go: "icecream", zone: [5610, 1200, 5950, 1470] }, // on Baha Mar
+    icecream: { name: "FROZENBERGS", icon: "🍦", color: "#E8558A", go: "icecream", zone: [5610, 1200, 5950, 1470] }, // on Baha Mar
     witch:    { name: "WITCH MOUNTAIN", icon: "🧙", color: "#5E2CA5", go: "witchmtn", zone: [2980, 420, 3380, 770] },
-    hotel:    { name: "BAHA MAR HOTEL", icon: "🏨", color: "#E86A8A", go: "hotel", zone: [6040, 1560, 6560, 2140] },
+    hotel:    { name: "CHECKING IN", icon: "🏨", color: "#E86A8A", go: "hotel", zone: [6040, 1560, 6560, 2140] },
     splash:   { name: "SPLASH DOWN", icon: "🛟", color: "#1E8FC4", go: "waterworld" },
-    lazyriver:{ name: "LAZY RIVER", icon: "🏴‍☠️", color: "#0B8FB0", go: "lazyriver" },
+    lazyriver:{ name: "LAZY RIVER PIRATES", icon: "🏴‍☠️", color: "#0B8FB0", go: "lazyriver" },
     flyhome:  { name: "FLY HOME", icon: "✈️", color: "#18A0B8", go: "seaplane-home" },
-    frogs:    { name: "FROG POND", icon: "🐸", color: "#2E9A4E", go: "frogpond", zone: [1900, 2790, 2260, 3060] },
+    frogs:    { name: "ROSENBERG CROSSING", icon: "🐸", color: "#2E9A4E", go: "frogpond", zone: [1900, 2790, 2260, 3060] },
     garden:   { name: "GRAMPA'S GARDEN", icon: "🍅", color: "#D8342A", go: "garden", zone: [880, 1180, 1260, 1480] },
     shop:     { name: "STAR SHOP", icon: "⭐", color: "#7B3FE4", go: "shop", zone: [3510, 2010, 3860, 2280] },
     plaza:    { name: "PLAZA", icon: "⛲", color: "#6C4AC9", go: [3500, 1880], zone: [3200, 1400, 3800, 2000] },
@@ -114,7 +114,11 @@
       for (const k of ["hotel", "icecream"]) { const z = PLACES[k].zone; if (x > z[0] && x < z[2] && y > z[1] && y < z[3]) return PLACES[k]; }
       return PLACES.bahamar;
     }
-    for (const k in PLACES) { const z = PLACES[k].zone; if (z && x > z[0] && x < z[2] && y > z[1] && y < z[3]) return PLACES[k]; }
+    for (const k in PLACES) {
+      const pl = PLACES[k], z = pl.zone;
+      if (typeof pl.go === "string" && DEST[pl.go] && world.destStatus(DEST[pl.go]) === "locked") continue; // not built yet
+      if (z && x > z[0] && x < z[2] && y > z[1] && y < z[3]) return pl;
+    }
     return null;
   };
   world.goToPlace = (pl) => {
@@ -933,7 +937,6 @@
     // silly warning signs
     sign(3440, 770, ["HOLD YOUR", "NOSE ZONE"], { size: 17, board: "#FFE45C", edge: "#2B2F3A", ink: "#2B2F3A" });
     sign(3995, 860, ["CAUTION:", "LOW-FLYING", "HERO"], { size: 16, board: "#FFE45C", edge: "#2B2F3A", ink: "#2B2F3A" });
-    sign(3930, 1060, ["NO SNIFFING", "PAST THIS POINT"], { size: 15, board: "#FFFFFF", edge: "#E8453C", ink: "#E8453C" });
     // star sculptures
     [[3450, 640], [3990, 700], [3700, 600]].forEach(([x, y], i) => staticProp(x, y, [-30, -140, 30, 6], (c) => {
       A.line(c, 0, 0, 0, -90, 5, "#9AA1B4");
@@ -1334,9 +1337,9 @@
   // ---------------------------------------------------------------------
   // SIGNPOSTS at the crossroads. Each arrow board walks you to its place when tapped.
   // ---------------------------------------------------------------------
-  const BOARD_W = 196, BOARD_H = 34, BOARD_GAP = 8;
+  const BOARD_W = 250, BOARD_H = 46, BOARD_GAP = 8; // big boards, at most 3 per post, so they read on an iPad
   function signpost(x, y, arms) {
-    KEEP_CLEAR.push([x - 210, y - 40, x + 210, y + 110]); // no random trees in front of a signpost
+    KEEP_CLEAR.push([x - BOARD_W - 20, y - 40, x + BOARD_W + 20, y + 110]); // no random trees in front of a signpost
     const top = -(arms.length * (BOARD_H + BOARD_GAP)) - 40;
     const boardY = (i) => top + 14 + i * (BOARD_H + BOARD_GAP);
     const boardX = (dir) => (dir === "L" ? -BOARD_W + 18 : dir === "R" ? -18 : -BOARD_W / 2);
@@ -1359,7 +1362,10 @@
         c.strokeStyle = "rgba(255,255,255,.85)"; c.lineWidth = 2.5; c.stroke();
         const arrow = dir === "U" ? " ↑" : dir === "D" ? " ↓" : "";
         const cx = bx + BOARD_W / 2 + (dir === "R" ? -tip / 2 : dir === "L" ? tip / 2 : 0);
-        A.text(c, `${pl.icon} ${pl.name}${arrow}`, cx, by + BOARD_H / 2 + 1, 15, "#FFFFFF", { weight: 700 });
+        const label = `${pl.icon} ${pl.name}${arrow}`;
+        let fs = 21; c.font = `700 ${fs}px Fredoka, system-ui, sans-serif`;
+        while (fs > 13 && c.measureText(label).width > BOARD_W - tip - 14) { fs--; c.font = `700 ${fs}px Fredoka, system-ui, sans-serif`; }
+        A.text(c, label, cx, by + BOARD_H / 2 + 1, fs, "#FFFFFF", { weight: 700 });
       });
     }, { kind: "signpost", shadow: [30, 8], solid: [{ c: [0, -2, 9] }], sortY: y,
       tap: { reach: "remote", act() { RW.bus.emit("openMap"); } } });
@@ -1370,15 +1376,15 @@
     });
   }
   function buildSignposts() {
-    signpost(2590, 1992, [["home", "U"], ["sports", "L"], ["shop", "R"], ["arcade", "D"]]);        // boulevard, below the house
-    signpost(1236, 1992, [["kitchen", "U"], ["garden", "U"], ["woods", "L"], ["icemtn", "L"], ["sports", "D"]]);   // boulevard, west of the sports gate
-    signpost(560, 2470, [["hotchoc", "R"], ["ski", "L"], ["sled", "D"]]);                            // Ice Mountain, as the trail comes in
-    signpost(3392, 1992, [["plaza", "U"], ["home", "L"], ["shop", "R"], ["bahamar", "R"]]);         // boulevard at the plaza
-    signpost(4150, 1995, [["beach", "U"], ["bahamar", "D"]]);                                        // on the sand, where the trail heads south
-    signpost(1880, 900, [["academy", "L"], ["raceway", "L"], ["baseball", "R"], ["home", "D"]]);  // north lane, west of the ballpark
-    signpost(3080, 1190, [["witch", "U"], ["baseball", "L"], ["space", "R"], ["home", "D"]]);      // north lane, east of the ballpark
-    signpost(5000, 1420, [["icecream", "R"], ["lazyriver", "R"], ["hotel", "R"], ["splash", "D"], ["flyhome", "L"]]);  // on Baha Mar, by the plane
-    signpost(2600, 2735, [["home", "U"], ["frogs", "L"], ["sports", "L"], ["bahamar", "R"]]);      // south street by the arcade
+    signpost(2590, 1992, [["home", "U"], ["shop", "R"], ["arcade", "D"]]);        // boulevard, below the house
+    signpost(1236, 1992, [["kitchen", "U"], ["icemtn", "L"], ["sports", "D"]]);   // boulevard, west of the sports gate
+    signpost(560, 2470, [["hotchoc", "R"], ["sled", "D"]]);                      // Ice Mountain, as the trail comes in
+    signpost(3392, 1992, [["plaza", "U"], ["shop", "R"], ["bahamar", "R"]]);      // boulevard at the plaza
+    signpost(4150, 1995, [["beach", "U"], ["bahamar", "D"]]);                    // on the sand, where the trail heads south
+    signpost(1880, 900, [["academy", "L"], ["raceway", "L"], ["baseball", "R"]]); // north lane, west of the ballpark
+    signpost(3080, 1190, [["witch", "U"], ["space", "R"], ["home", "D"]]);        // north lane, east of the ballpark
+    signpost(5000, 1420, [["lazyriver", "R"], ["hotel", "R"], ["splash", "D"]]); // on Baha Mar, by the plane
+    signpost(2600, 2735, [["home", "U"], ["frogs", "L"], ["bahamar", "R"]]);      // south street by the arcade
   }
 
   // ---------------------------------------------------------------------
@@ -1490,7 +1496,6 @@
       },
       tap: portalTap("witchmtn"),
     });
-    sign(x + 200, y + 50, ["WITCH", "MOUNTAIN"], { size: 18, board: "#3A2A4E", edge: "#7B3FE4", ink: "#E8D8FF", ent: { tap: portalTap("witchmtn") } });
   }
   // ---------------------------------------------------------------------
   // ICE MOUNTAIN (bottom-left): Cocoa Party, Max's Bunny Hill (sledding) and the Ski Run (coming soon)
@@ -1513,8 +1518,6 @@
     c.fillStyle = "#6B3E2A"; A.rr(c, -22, -30, 44, 10, 5); c.fill();
     c.fillStyle = "#FFE6F0"; c.beginPath(); c.arc(-8, -32, 6, 0, TAU); c.arc(6, -34, 6, 0, TAU); c.fill(); // marshmallows
     c.restore();
-    c.fillStyle = "#FFFFFF"; A.rr(c, -86, -30, 172, 26, 8); c.fill();
-    A.text(c, "COCOA PARTY", 0, -17, 17, "#8A5A3C", { weight: 700 });
   }
   function drawSkiPeak(c) {
     // a big snowy peak with a zig-zag ski run and slalom flags
@@ -1539,8 +1542,6 @@
     [-10, 14].forEach((d) => { c.beginPath(); c.moveTo(-40 + d, -130); c.quadraticCurveTo(40 + d, -80, 120 + d, -6); c.stroke(); });
     // sleds parked at the bottom
     [[-150, -6, "#E8453C"], [-110, -4, "#2EB872"]].forEach(([x, y, col]) => { c.fillStyle = col; A.rr(c, x - 22, y - 10, 44, 10, 4); c.fill(); c.strokeStyle = "#3A4252"; c.lineWidth = 2; c.beginPath(); c.moveTo(x - 24, y); c.quadraticCurveTo(x + 20, y + 4, x + 26, y - 8); c.stroke(); });
-    c.fillStyle = "#E8453C"; A.rr(c, 70, -34, 120, 26, 10); c.fill();
-    A.text(c, "🐰 BUNNY HILL", 130, -21, 14, "#FFFFFF", { weight: 700 });
   }
   function buildIceMountain() {
     // Hot Chocolate hut (steam rises from the mug)
@@ -1553,8 +1554,8 @@
       },
       tap: portalTap("hotchoc"),
     });
-    // Ski Run: the peak, with lift chairs gliding up
-    staticProp(280, 2700, [-240, -420, 240, 10], (c) => drawSkiPeak(c), {
+    // Ski Run: the peak, with lift chairs gliding up (hidden until its game arrives)
+    if (world.destStatus(DEST.skirun) !== "locked") staticProp(280, 2700, [-240, -420, 240, 10], (c) => drawSkiPeak(c), {
       kind: "building", occludes: true, shadow: [0, 0], solid: [{ r: [-200, -60, 200, 4] }],
       live(c, E2) {
         c.strokeStyle = "#3A4252"; c.lineWidth = 2; c.beginPath(); c.moveTo(-230, -30); c.lineTo(-30, -380); c.stroke();
@@ -1586,7 +1587,9 @@
       A.text(c, "❄ ICE MOUNTAIN ❄", 0, -148, 19, "#FFFFFF", { weight: 700 });
     }, { kind: "arch", solid: [{ r: [-96, -6, -76, 4] }, { r: [76, -6, 96, 4] }] });
     // snowy pines and a snowman
-    [[180, 2440], [880, 2700], [150, 2880], [880, 3030]].forEach(([x, y], i) => tree(x, y, "snowpine", 0.95 + (i % 3) * 0.1));
+    const pines = [[180, 2440], [880, 2700], [150, 2880], [880, 3030]];
+    if (world.destStatus(DEST.skirun) === "locked") pines.push([230, 2660], [360, 2720]); // a couple of pines where the Ski Run will go
+    pines.forEach(([x, y], i) => tree(x, y, "snowpine", 0.95 + (i % 3) * 0.1));
     staticProp(430, 2600, [-30, -90, 30, 6], (c) => {
       c.fillStyle = "#FFFFFF"; c.beginPath(); c.arc(0, -20, 22, 0, TAU); c.arc(0, -52, 16, 0, TAU); c.arc(0, -76, 12, 0, TAU); c.fill();
       c.fillStyle = "#2B2F3A"; c.beginPath(); c.arc(-4, -79, 2, 0, TAU); c.arc(4, -79, 2, 0, TAU); c.fill(); c.fillRect(-10, -96, 20, 8); c.fillRect(-14, -89, 28, 3);
@@ -1643,7 +1646,6 @@
       c.fillStyle = "#2B2F3A"; c.beginPath(); c.ellipse(0, -114, 13, 9, 0, 0, TAU); c.fill(); c.beginPath(); c.arc(-6, -124, 4, 0, TAU); c.arc(6, -124, 4, 0, TAU); c.fill();
       A.text(c, "FROG XING", 0, -70, 11, "#2B2F3A", { weight: 700 });
     }, { kind: "sign", solid: [{ c: [0, -2, 6] }], shadow: [12, 4], tap: portalTap("frogpond") });
-    sign(x - 150, y - 90, ["FROG POND"], { size: 18, board: "#EFFFF0", edge: "#2E9A4E", ink: "#1F6B36", ent: { tap: portalTap("frogpond") } });
   }
 
   // ---------------------------------------------------------------------
@@ -1766,8 +1768,6 @@
         });
       },
     }, sy + 1);
-    // a little table with a parasol out front
-    sign(sx - 205, sy + 20, ["ICE CREAM", "🍦 OPEN!"], { size: 15, board: "#FFF4E8", edge: "#E8558A", ink: "#B8356A", ent: { tap: portalTap("icecream") } });
   }
 
   // Baha Mar's two water rides, kept well apart so it's obvious which is which:
@@ -1808,7 +1808,6 @@
       tap: portalTap("waterworld"),
       update(e, dt) { e.t0 += dt; const cyc = e.t0 % 7; e.tip = cyc > 5.5 ? Math.min(1, (cyc - 5.5) * 3) : Math.max(0, e.tip - dt * 2); },
     });
-    sign(G - 250, 1630, ["SPLASH DOWN", "WATER SLIDES"], { size: 15, board: "#EAF6FF", edge: "#1E8FC4", ink: "#156A99", ent: { tap: portalTap("waterworld") } });
 
     // ---- Lazy River ----
     const R = L.lazy;
@@ -1820,7 +1819,6 @@
     });
     hotspot(R.x, R.y, [-R.rx - 40, -R.ry - 40, R.rx + 40, R.ry + 40], portalTap("lazyriver"), R.hut[1] - 10); // the river water
     tree(R.x, R.y + 10, "palm", 0.8); // a palm on the little island in the middle
-    sign(R.x + 150, 1640, ["LAZY RIVER", "FLOAT ON IN"], { size: 15, board: "#EAFBF6", edge: "#0B8FB0", ink: "#0B6E88", ent: { tap: portalTap("lazyriver") } });
     // tubes floating round the loop
     const riders = [["#FF5C8A", "#F4D273"], ["#FFB020", "#7B4A26"], ["#2EB872", "#5B2330"], ["#7C5CFF", "#2B2B2B"], ["#FF7A1F", "#C98A4A"]];
     riders.forEach(([col, hair], i) => {
@@ -2315,6 +2313,8 @@
     { id: "court", name: "SPORT COURT", cost: 80, x: 3070, y: 1680, w: 170, h: 100 },
   ];
   world.upgradeUnlocked = (u) => (RW.save.earned || RW.save.stars) >= u.cost; // stars ever earned, so shopping never un-builds anything
+  // Only built upgrades and the very next one to earn are shown, so the yard isn't full of gift boxes.
+  const upgradeShown = (u) => world.upgradeUnlocked(u) || u === UPGRADES.filter((x) => !world.upgradeUnlocked(x)).sort((a, b) => a.cost - b.cost)[0];
   function buildUpgrades() {
     UPGRADES.forEach((u) => {
       // ground pad
@@ -2322,10 +2322,12 @@
         kind: "plot", layer: "ground", x: u.x, y: u.y, box: [-u.w / 2 - 6, -u.h / 2 - 6, u.w / 2 + 6, u.h / 2 + 6], sprite: true,
         spriteKey: () => (world.upgradeUnlocked(u) ? "on" : "off"),
         draw(c) { drawPlotGround(c, u, world.upgradeUnlocked(u)); },
+        update(e) { e.hidden = !upgradeShown(u); },
       });
       add({
         kind: "upgrade", x: u.x, y: u.y + u.h / 2, box: [-u.w / 2 - 10, -u.h - 190, u.w / 2 + 10, 10],
         hit: [-u.w / 2, -u.h - 120, u.w / 2, 0], bubbleH: u.h + 120, u,
+        update(e) { e.hidden = !upgradeShown(u); },
         draw(c, E2, e) { drawUpgrade(c, E2, u, world.upgradeUnlocked(u)); },
         tap: {
           reach: "remote",

@@ -740,9 +740,11 @@
     // gather visible
     const vis = [], ground = [];
     const P = E.player;
+    const far = z / baseZoom < 0.45; // zoomed far out: skip tiny things nobody can see
     for (const e of E.entities) {
       if (e.hidden) continue;
       const b = e.box || [-60, -120, 60, 10];
+      if (far && e.layer !== "ground" && (b[3] - b[1]) < 70 && e.kind !== "tube") continue;
       if (e.x + b[2] < v.x0 - 20 || e.x + b[0] > v.x1 + 20 || e.y + b[3] < v.y0 - 20 || e.y + b[1] > v.y1 + 20) continue;
       (e.layer === "ground" ? ground : vis).push(e);
     }
@@ -750,7 +752,7 @@
     ground.forEach((e) => drawEntity(e));
     if (P && E.mode === "play") vis.push(P);
     // shadows first so they sit under everything
-    for (const e of vis) if (e.shadow) { A.shadow(c, e.x + (e.shadow[2] || 0), e.y + (e.shadow[3] || 0), e.shadow[0], e.shadow[1], e.shadow[4] || 0.22); }
+    if (!far) for (const e of vis) if (e.shadow) { A.shadow(c, e.x + (e.shadow[2] || 0), e.y + (e.shadow[3] || 0), e.shadow[0], e.shadow[1], e.shadow[4] || 0.22); }
     vis.sort((a, b) => (a.sortY != null ? a.sortY : a.y) - (b.sortY != null ? b.sortY : b.y));
     let occluded = false;
     let afterPlayer = false;
@@ -766,7 +768,7 @@
     if (occluded) { c.save(); c.globalAlpha = 0.45; drawPlayer(P, true); c.restore(); }
 
     // particles
-    for (const p of parts) {
+    if (!far) for (const p of parts) {
       const a = Math.min(1, p.life / p.max * 1.6);
       c.globalAlpha = a;
       const x = p.x, y = p.y - p.z;
@@ -830,9 +832,11 @@
     const fs = U.clamp(13 + z * 14, 13, 19);
     c.font = `700 ${fs}px Fredoka, system-ui, sans-serif`;
     for (const l of labels) {
-      const sx = (l.x - v.x0) * z, sy = (l.y - v.y0) * z;
+      let sx = (l.x - v.x0) * z, sy = (l.y - v.y0) * z;
       if (sx < -100 || sx > W + 100 || sy < -40 || sy > H + 40) continue;
       const str = l.icon + " " + l.name, w = c.measureText(str).width + 18, h = fs + 12;
+      // keep labels near the edge fully on screen
+      sx = U.clamp(sx, w / 2 + 8, W - w / 2 - 8); sy = U.clamp(sy, h / 2 + 80, H - h / 2 - 8); // below the top buttons
       c.fillStyle = l.color; A.rr(c, sx - w / 2, sy - h / 2, w, h, h / 2); c.fill();
       c.strokeStyle = "rgba(255,255,255,.9)"; c.lineWidth = 2; c.stroke();
       c.fillStyle = "#FFFFFF"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(str, sx, sy + 1);

@@ -198,8 +198,8 @@ body:not(.ready) #title { opacity: 0; }
 
 /* ---------- toast ---------- */
 #toast {
-  position: fixed; z-index: 60; left: 50%; top: calc(var(--safe-t) + 14px);
-  display: flex; align-items: center; gap: 10px; max-width: min(620px, calc(100vw - 32px));
+  position: fixed; z-index: 60; left: 50%; top: calc(var(--safe-t) + 86px);
+  display: flex; align-items: center; gap: 10px; max-width: min(560px, calc(100vw - 32px));
   padding: 12px 22px; border-radius: 999px; background: rgba(30,42,90,.92); color: #FFFFFF; font-size: 18px;
   box-shadow: 0 12px 30px rgba(10,20,60,.35);
   transform: translate(-50%, -160%); opacity: 0; transition: transform .35s cubic-bezier(.3,1.4,.5,1), opacity .25s ease;
@@ -267,7 +267,7 @@ body:not(.ready) #title { opacity: 0; }
 }
 #zone.on { transform: translate(-50%, 0) scale(1); opacity: 1; }
 body:has(#host:not([hidden])) #zone, body:has(#portal.on) #zone { visibility: hidden; }
-@media (max-width: 900px) { #toast { top: calc(var(--safe-t) + 84px); font-size: 15px; } }
+@media (max-width: 900px) { #toast { top: calc(var(--safe-t) + 76px); font-size: 15px; } }
 
 /* ---------- overlays ---------- */
 .overlay {
@@ -376,6 +376,10 @@ body:has(#host:not([hidden])) #zone, body:has(#portal.on) #zone { visibility: hi
 .all-frame { width: min(94vw, 1000px); max-height: calc(100vh - 40px); display: flex; flex-direction: column; background: var(--cream); border-radius: 30px; padding: 12px; box-shadow: 0 0 0 8px #E8457C inset, 0 14px 50px rgba(0,0,0,.4); transform: scale(.94); transition: transform .3s cubic-bezier(.3,1.4,.5,1); }
 .overlay.on .all-frame { transform: none; }
 .all-head { color: #E8457C; padding: 8px 10px 6px 20px; }
+.tabs { display: flex; gap: 8px; }
+.tabs .tab { font: inherit; font-size: 20px; letter-spacing: .04em; padding: 8px 18px; border-radius: 999px; border: 0; background: #EEF2FA; color: #5A6480; cursor: pointer; }
+.tabs .tab.on { background: #2B6CB0; color: #FFFFFF; box-shadow: 0 3px 0 #1E4F86; }
+@media (max-width: 700px) { .tabs .tab { font-size: 15px; padding: 7px 12px; } }
 .all-grid { overflow-y: auto; padding: 6px 14px 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
 .g-card {
   --c: #2F6BFF;

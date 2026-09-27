@@ -63,7 +63,7 @@
 
   G.register({
     id: "grandpasGarden",
-    title: "Grandpa's Garden",
+    title: "Grampa's Garden",
     subtitle: "Pick Grampa Simon's red tomatoes before they fall!",
     destination: "garden",
     unlocked: true,
