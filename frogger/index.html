@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Frogger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<style>
+:root {
+  --ink: #0E1A14; --cream: #F4F7EC; --lime: #9BE15D; --lime-2: #5DBB3F; --gold: #FFD35C; --red: #FF6B5B;
+  --glass: rgba(10, 22, 16, .66); --glass-edge: rgba(255, 255, 255, .14);
+  --display: "Lilita One", "Arial Rounded MT Bold", system-ui, sans-serif;
+  --sans: "Nunito", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: #0B1410; color: var(--cream); font: 700 15px/1.35 var(--sans); overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: none; user-select: none; -webkit-user-select: none; }
+.app { position: fixed; inset: 0; display: flex; flex-direction: column; padding: calc(env(safe-area-inset-top, 0px) + 8px) 16px calc(env(safe-area-inset-bottom, 0px) + 8px); gap: 8px; }
+
+/* HUD */
+.hud { display: flex; align-items: center; gap: 8px; max-width: 720px; width: 100%; margin: 0 auto; }
+.chip { background: var(--glass); border: 1px solid var(--glass-edge); border-radius: 14px; padding: 4px 12px; display: flex; flex-direction: column; justify-content: center; min-height: 44px; }
+.chip small { font: 900 9.5px var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--lime); }
+.chip b { font: 400 20px/1.05 var(--display); font-variant-numeric: tabular-nums; color: #fff; letter-spacing: .02em; }
+.chip.best small { color: var(--gold); }
+#lives { flex-direction: row; align-items: center; gap: 3px; }
+#lives i { width: 18px; height: 18px; display: block; background: radial-gradient(circle at 35% 30%, #C8F59A, var(--lime-2) 60%, #2F7A22); border-radius: 50% 50% 45% 45%; position: relative; }
+#lives i::before, #lives i::after { content: ""; position: absolute; top: -2px; width: 6px; height: 6px; border-radius: 50%; background: #fff; box-shadow: inset 1px 1px 0 2px #111; }
+#lives i::before { left: 1px; } #lives i::after { right: 1px; }
+.spacer { flex: 1; }
+.icon-btn { border: 1px solid var(--glass-edge); background: var(--glass); color: #fff; width: 44px; height: 44px; border-radius: 14px; font-size: 17px; cursor: pointer; flex: none; }
+.icon-btn:active { transform: scale(.94); }
+button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+.timebar { max-width: 720px; width: 100%; margin: 0 auto; height: 8px; border-radius: 8px; background: rgba(255,255,255,.1); overflow: hidden; }
+#time { height: 100%; width: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--lime-2), var(--lime)); transform-origin: left; }
+#time.low { background: linear-gradient(90deg, #E0452F, var(--red)); }
+
+.stage { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; }
+#cv { display: block; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06); }
+
+/* Touch d-pad */
+.pad { display: none; grid-template-columns: repeat(3, 64px); grid-template-rows: repeat(2, 56px); gap: 6px; justify-content: center; margin: 0 auto; }
+.pad button { border: 1px solid var(--glass-edge); background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04)); color: #fff; border-radius: 16px; font-size: 22px; cursor: pointer; touch-action: none; }
+.pad button:active, .pad button.on { background: linear-gradient(180deg, rgba(155,225,93,.55), rgba(93,187,63,.25)); transform: scale(.95); }
+.pad .up { grid-column: 2; grid-row: 1; }
+.pad .left { grid-column: 1; grid-row: 2; }
+.pad .down { grid-column: 2; grid-row: 2; }
+.pad .right { grid-column: 3; grid-row: 2; }
+@media (max-width: 440px) {
+  .hud { gap: 5px; }
+  .chip { padding: 3px 8px; border-radius: 12px; }
+  .chip b { font-size: 17px; }
+  .chip small { font-size: 8.5px; letter-spacing: .1em; }
+  .icon-btn { width: 40px; height: 40px; border-radius: 12px; font-size: 15px; }
+  .app { padding-left: 10px; padding-right: 10px; }
+}
+@media (pointer: coarse) { .pad { display: grid; } .keys-hint { display: none; } }
+@media (pointer: fine) { .touch-hint { display: none; } }
+
+/* Overlays */
+.overlay { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(6, 12, 9, .55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 5; }
+.panel { width: min(400px, 100%); background: linear-gradient(180deg, #16301F, #0F2016); border: 1px solid rgba(155,225,93,.25); border-radius: 24px; padding: 24px 22px 20px; text-align: center; box-shadow: 0 30px 80px rgba(0,0,0,.55); animation: rise .35s cubic-bezier(.2,.9,.3,1.2); }
+@keyframes rise { from { transform: translateY(14px) scale(.96); opacity: 0; } }
+.panel h1, .panel h2 { font: 400 52px/1 var(--display); margin: 4px 0 6px; color: var(--lime); letter-spacing: .02em; text-shadow: 0 4px 0 #2F6B1F, 0 10px 24px rgba(0,0,0,.4); }
+.panel h2 { font-size: 40px; }
+.panel p { margin: 6px 0; color: rgba(244,247,236,.82); font-weight: 600; }
+.rules { text-align: left; margin: 14px 0 16px; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.05); font-size: 14px; }
+.rules li { margin: 4px 0; }
+.rules ul { margin: 0; padding-left: 18px; }
+.big { font: 400 44px/1 var(--display); color: #fff; margin: 10px 0 2px; font-variant-numeric: tabular-nums; }
+.go { margin-top: 10px; width: 100%; border: 0; border-radius: 16px; padding: 14px 18px; font: 400 22px var(--display); letter-spacing: .04em; color: #10240F; background: linear-gradient(180deg, #B6F07A, #6CCB45); box-shadow: 0 6px 0 #3C8A27, 0 12px 26px rgba(0,0,0,.35); cursor: pointer; }
+.go:active { transform: translateY(4px); box-shadow: 0 2px 0 #3C8A27; }
+.newbest { color: var(--gold); font-weight: 900; letter-spacing: .12em; text-transform: uppercase; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hud">
+    <div class="chip"><small>Score</small><b id="score">0</b></div>
+    <div class="chip best"><small>Best</small><b id="best">0</b></div>
+    <div class="chip"><small>Level</small><b id="level">1</b></div>
+    <div class="spacer"></div>
+    <div class="chip" id="lives" aria-label="Lives"></div>
+    <button class="icon-btn" id="muteBtn" type="button" aria-label="Toggle sound">🔊</button>
+    <button class="icon-btn" id="pauseBtn" type="button" aria-label="Pause">❚❚</button>
+  </div>
+  <div class="timebar" aria-hidden="true"><div id="time"></div></div>
+
+  <div class="stage" id="stage">
+    <canvas id="cv"></canvas>
+
+    <div class="overlay" id="title">
+      <div class="panel">
+        <h1>Frogger</h1>
+        <p>Get five frogs across the highway and the river, safely home.</p>
+        <div class="rules"><ul>
+          <li>Dodge the cars, trucks and bulldozers.</li>
+          <li>Ride the logs and turtles across the river. The water is deadly.</li>
+          <li>Watch the turtles: some of them dive.</li>
+          <li>Land in an empty lily bay. Grab a fly for bonus points.</li>
+          <li class="keys-hint">Arrow keys or WASD to hop, P to pause.</li>
+          <li class="touch-hint">Swipe or tap the pad to hop. A plain tap hops forward.</li>
+        </ul></div>
+        <button class="go" id="startBtn" type="button">HOP IN</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="paused" hidden>
+      <div class="panel">
+        <h2>Paused</h2>
+        <button class="go" id="resumeBtn" type="button">KEEP HOPPING</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="over" hidden>
+      <div class="panel">
+        <h2>Game Over</h2>
+        <div class="big" id="finalScore">0</div>
+        <p id="finalInfo"></p>
+        <div class="newbest" id="newBest" hidden>New best score!</div>
+        <button class="go" id="againBtn" type="button">PLAY AGAIN</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pad" id="pad">
+    <button class="up" data-dir="up" type="button" aria-label="Hop up">▲</button>
+    <button class="left" data-dir="left" type="button" aria-label="Hop left">◀</button>
+    <button class="down" data-dir="down" type="button" aria-label="Hop down">▼</button>
+    <button class="right" data-dir="right" type="button" aria-label="Hop right">▶</button>
+  </div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
