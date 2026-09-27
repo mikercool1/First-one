@@ -20,6 +20,7 @@
     { id: "mathblaster", name: "Math Blaster Academy", icon: "✖️", kind: "game", portal: [1450, 935], portalR: 95, arrive: [1450, 965], map: [1450, 760] },
     { id: "kitchen", name: "Ariel's Kitchen", icon: "🍳", kind: "game", portal: [1570, 1755], portalR: 90, arrive: [1570, 1790], map: [1420, 1570] },
     { id: "car", name: "The Family Car", icon: "🚗", kind: "game", portal: [2712, 1800], portalR: 60, arrive: [2712, 1815], map: [2740, 1790] },
+    { id: "football", name: "Football Field", icon: "🏈", kind: "game", portal: [1350, 2850], portalR: 80, arrive: [1350, 2872], map: [1150, 2790] },
     { id: "soccer", name: "Soccer Field", icon: "⚽", kind: "game", portal: [1425, 2240], portalR: 80, arrive: [1425, 2258], map: [1150, 2210] },
     { id: "volleyball", name: "Beach Volleyball", icon: "🏐", kind: "game", portal: [4120, 2612], portalR: 90, arrive: [4120, 2630], map: [4120, 2530] },
     // places ready for games that are on their way (see "Coming soon" in README.md)
@@ -1144,7 +1145,8 @@
     [[905, 2815], [1395, 2815]].forEach(([x, y]) => staticProp(x, y, [-40, -170, 40, 6], (c) => {
       A.line(c, 0, 0, 0, -70, 6, "#F2C230"); A.line(c, -32, -70, 32, -70, 6, "#F2C230");
       A.line(c, -32, -70, -32, -160, 5, "#F2C230"); A.line(c, 32, -70, 32, -160, 5, "#F2C230");
-    }, { solid: [{ c: [0, -2, 6] }] }));
+    }, { solid: [{ c: [0, -2, 6] }], tap: portalTap("football") }));
+    sign(1290, 2655, ["FIELD", "GOALS"], { size: 16, postH: 22, board: "#FFFFFF", edge: "#F2C230", ink: "#7A5A00", ent: { tap: portalTap("football") } });
     // tennis net
     staticProp(1710, 2497, [-150, -40, 150, 6], (c) => {
       c.fillStyle = "#3A4252"; c.fillRect(-134, -34, 5, 34); c.fillRect(129, -34, 5, 34);

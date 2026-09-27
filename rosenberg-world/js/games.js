@@ -128,6 +128,17 @@
   });
 
   G.register({
+    id: "splitTheUprights",
+    title: "Split the Uprights",
+    subtitle: "Field goals only: longer kicks, stronger wind",
+    destination: "football",
+    unlocked: true,
+    entry: "games/field-goal/index.html",
+    color: "#F2C230",
+    icon: "🏈",
+  });
+
+  G.register({
     id: "backyardSoccer",
     title: "Backyard Soccer",
     subtitle: "One-on-one: pick your kicker",
