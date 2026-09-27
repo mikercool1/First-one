@@ -38,6 +38,7 @@ body { background: #0E1433; color: var(--cream); font: 600 15px/1.35 var(--sans)
 #lives span { width: 24px; height: 24px; display: block; transition: opacity .3s, filter .3s; }
 #lives svg { width: 100%; height: 100%; display: block; }
 #lives .gone { filter: grayscale(1); opacity: .25; }
+#lives b { font: 700 13px var(--sans); color: var(--gold); align-self: center; margin-left: 2px; }
 .icon-btn { pointer-events: auto; border: 1px solid var(--glass-edge); background: var(--glass); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: #fff; width: 38px; height: 38px; border-radius: 50%; font-size: 16px; cursor: pointer; }
 
 #mikeSays { position: absolute; left: 16px; bottom: 260px; max-width: min(240px, 62vw); background: rgba(255,255,255,.96); color: var(--ink); border-radius: 16px 16px 16px 4px; padding: 8px 13px; font: 700 14px/1.3 var(--sans); box-shadow: 0 10px 30px rgba(0,0,0,.25); pointer-events: none; }
@@ -73,6 +74,7 @@ body { background: #0E1433; color: var(--cream); font: 600 15px/1.35 var(--sans)
 .new-lox { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 16px 0 6px; font: 500 17px var(--sans); }
 .new-lox .plate { width: 72px; }
 .new-lox b { color: var(--gold); }
+.faster { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: rgba(233,199,123,.15); color: var(--gold); font: 700 36px/1 var(--serif); }
 .row { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .link-btn { border: 0; background: none; color: rgba(246,241,231,.75); font: 600 14px var(--sans); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .shabbos { font: italic 700 clamp(40px, 12vw, 58px)/1 var(--serif); color: var(--gold); margin: 6px 0 4px; }
@@ -108,9 +110,9 @@ h2 { margin: 6px 0 0; font: italic 600 32px/1 var(--serif); }
     <div class="panel">
       <p class="kicker">Wilmot Woods &middot; Friday</p>
       <h1 class="logo">Fish <em>Friday</em></h1>
-      <p class="sub">Deliver the lox. Get home for Shabbos.</p>
+      <p class="sub">Deliver the lox. How far can you get?</p>
       <ul class="legend" id="legend"></ul>
-      <p class="how">Orders appear over the houses. <b>Tap the matching lox</b> and Mike tosses it to the door. Deliver to 8, then 12, then 15 houses. A wrong lox or a missed house costs a bagel.</p>
+      <p class="how">Orders appear over the houses. <b>Tap the matching lox</b> and Mike tosses it to the door. Level 1 is 4 houses, and every level after is a bit faster. You start with one bagel: a wrong lox or a missed house costs it, and every 5 in a row earns another.</p>
       <button class="go" id="startBtn" type="button">START THE ROUTE</button>
       <p class="best" id="bestLine"></p>
     </div>
@@ -130,22 +132,12 @@ h2 { margin: 6px 0 0; font: italic 600 32px/1 var(--serif); }
     <div class="panel">
       <p class="kicker" id="overLevel">Level 1</p>
       <p class="shabbos">Oy vey.</p>
-      <p class="sub">Out of bagels. The lox will have to wait.</p>
+      <p class="sub">Out of bagels.</p>
       <ul class="stats" id="overStats"></ul>
       <div class="row">
         <button class="go" id="retryBtn" type="button">TRY AGAIN</button>
         <button class="link-btn" id="restartBtn" type="button">Start over from level 1</button>
       </div>
-    </div>
-  </div>
-
-  <div class="overlay" id="win" hidden>
-    <div class="panel">
-      <p class="kicker">Every order delivered</p>
-      <p class="shabbos">Good Shabbos!</p>
-      <p class="sub">Mike made it home before candle lighting.</p>
-      <ul class="stats" id="winStats"></ul>
-      <button class="go" id="winAgainBtn" type="button">PLAY AGAIN</button>
     </div>
   </div>
 </div>
