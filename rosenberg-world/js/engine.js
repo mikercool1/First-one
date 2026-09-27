@@ -107,6 +107,51 @@
     }
     return false;
   }
+  // ---------- jet ski: on the water, the sea is open and land is the wall ----------
+  const nearIsland = (x, y) => { const I = RW.layout.island; return ((x - I.x) / (I.rx + 40)) ** 2 + ((y - I.y) / (I.ry + 34)) ** 2 < 1; };
+  E.isWater = (x, y) => x > RW.layout.shoreX(y) + 30 && x < WORLD.W - 80 && y > 440 && y < WORLD.H - 150 && !onDock(x, y) && !nearIsland(x, y);
+  // where the jet ski waits: its dock on the north beach, or wherever you last hopped off
+  const JS = E.jetski = { home: [4360, 1150], moor: [4440, 1750], x: 4360, y: 1150 };
+  JS.reset = () => { JS.x = JS.home[0]; JS.y = JS.home[1]; };
+  function moveBoat(b, dx, dy) {
+    let moved = false;
+    if (E.isWater(b.x + dx, b.y)) { b.x += dx; moved = true; }
+    if (E.isWater(b.x, b.y + dy)) { b.y += dy; moved = true; }
+    return moved;
+  }
+  E.mountJetski = () => {
+    const P = E.player;
+    P.jetski = true; P.x = JS.x; P.y = JS.y; P.path = null; P.onArrive = null; P.sitOn = null;
+    if (P.pose) endPose(P);
+    E.snapCam = false; E.jump(260);
+    E.burst(P.x, P.y, 0, "splash", 12, { up: 160, sp: 120 });
+    RW.sfx.play("rumble");
+  };
+  // hop off onto the nearest bit of land, preferably towards (tx, ty); the jet ski stays parked
+  function hopOff(tx, ty) {
+    const P = E.player, a0 = Math.atan2(ty - P.y, tx - P.x);
+    for (let r = 40; r <= 230; r += 15) for (const da of [0, 0.35, -0.35, 0.7, -0.7, 1.1, -1.1, 1.6, -1.6]) {
+      const px = P.x + Math.cos(a0 + da) * r, py = P.y + Math.sin(a0 + da) * r;
+      if (E.isWater(px, py) || E.blocked(px, py, 16)) continue;
+      JS.x = P.x; JS.y = P.y;
+      P.jetski = false; P.x = px; P.y = py; P.path = null;
+      E.jump(320); E.burst(JS.x, JS.y, 0, "splash", 12, { up: 160, sp: 120 });
+      RW.sfx.play("whoosh");
+      return true;
+    }
+    return false;
+  }
+  // drive somewhere: straight across the water, and if it's on land, hop off at the shore and walk on
+  function jetTo(x, y, cb) {
+    const P = E.player;
+    P.path = [[x, y]]; P.stopDist = 12; P.replanned = true;
+    E.marker = { x, y, t: 0 };
+    if (E.isWater(x, y)) { P.onArrive = cb || null; return; }
+    P.onArrive = () => {
+      if (!hopOff(x, y)) { E.say(P, "Can't land here!", 1.4); return; }
+      if (Math.hypot(x - P.x, y - P.y) > 30 || cb) E.later(0.45, () => E.walkTo(x, y, cb));
+    };
+  }
   function moveBody(b, dx, dy, r = 16) {
     let moved = false;
     if (!E.blocked(b.x + dx, b.y, r)) { b.x += dx; moved = true; }
@@ -236,6 +281,7 @@
   E.walkTo = (x, y, onArrive, stopDist = 8) => {
     const P = E.player;
     if (!P || P.lock) return;
+    if (P.jetski) { jetTo(x, y, onArrive); return; }
     const f = nearestFree(x, y);
     if (!f) return;
     P.path = findPath(P.x, P.y, f[0], f[1]);
@@ -265,7 +311,10 @@
 
     let vx = 0, vy = 0;
     const rideItem = P.ride && RW.shopItem(P.ride);
-    const sp = rideItem ? rideItem.speed : P.speed;
+    const sp = P.jetski ? 760 : rideItem ? rideItem.speed : P.speed;
+    // back on land without hopping off (e.g. straight into a game from the water): park the jet ski
+    if (P.jetski && !E.isWater(P.x, P.y)) { P.jetski = false; if (P.lastWater) { JS.x = P.lastWater[0]; JS.y = P.lastWater[1]; } }
+    if (P.jetski) P.lastWater = [P.x, P.y];
     if (input && !P.lock) {
       P.path = null; P.onArrive = null; P.target = null;
       if (P.pose === "sit" || P.pose === "look") endPose(P);
@@ -287,12 +336,13 @@
     const moving = vx || vy;
     if (moving) {
       const before = [P.x, P.y];
-      moveBody(P, vx * dt, vy * dt, 15);
+      if (P.jetski) moveBoat(P, vx * dt, vy * dt); else moveBody(P, vx * dt, vy * dt, 15);
       const real = Math.hypot(P.x - before[0], P.y - before[1]);
       P.wheel += real;
       P.move = U.lerp(P.move, real > 0.2 ? 1 : 0, 0.3);
       if (real < 0.1 && P.path) P.stuckT = (P.stuckT || 0) + dt; else P.stuckT = 0;
-      if (P.stuckT > 0.45) {
+      if (P.jetski && P.stuckT > 0.2) { P.stuckT = 0; P.path = null; const cb = P.onArrive; P.onArrive = null; if (cb) cb(); } // reached the shore
+      else if (P.stuckT > 0.45) {
         // wedged on a corner: skip ahead, then re-plan once, then give up
         P.stuckT = 0;
         const goal = P.path[P.path.length - 1];
@@ -308,7 +358,8 @@
       if (P.asleep) { P.asleep = false; E.say(P, U.pick(["Huh? I'm awake!", "I wasn't sleeping!", "Five more minutes..."]), 1.4); }
       P.stillT = 0;
       P.stepT = (P.stepT || 0) - dt;
-      if (P.ride) { if (P.stepT < 0) { P.stepT = 0.09; E.burst(P.x - P.dir * 44, P.y, 0, "dust", 1); } }
+      if (P.jetski) { if (P.stepT < 0) { P.stepT = 0.05; E.burst(P.x - P.dir * 50, P.y, 6, "splash", 2, { up: 90, sp: 60 }); } }
+      else if (P.ride) { if (P.stepT < 0) { P.stepT = 0.09; E.burst(P.x - P.dir * 44, P.y, 0, "dust", 1); } }
       else if (P.id === "max") { if (P.stepT < 0) { P.stepT = 0.12; E.burst(P.x - P.dir * 14, P.y, 0, "dust", 1); } }
       else if (P.stepT < 0) { P.stepT = 0.32; if (U.chance(0.35)) E.burst(P.x, P.y, 0, "dust", 1); }
     } else {
@@ -461,8 +512,8 @@
     if (e) { useEntity(e); return; }
     // tapping Baha Mar from the mainland (or the mainland from Baha Mar) takes the sea plane
     const onI = E.onIsland(P.x, P.y);
-    if (!onI && E.onIsland(wx, wy)) { RW.world.flyTo("bahamar"); return; }
-    if (onI && wx < RW.layout.shoreX(wy) - 30) { RW.world.flyTo("mainland"); return; }
+    if (!P.jetski && !onI && E.onIsland(wx, wy)) { RW.world.flyTo("bahamar"); return; }
+    if (!P.jetski && onI && wx < RW.layout.shoreX(wy) - 30) { RW.world.flyTo("mainland"); return; }
     E.walkTo(wx, wy);
     RW.sfx.play("tap");
   }
@@ -884,21 +935,21 @@
     if (P.hidden) return;
     c.save();
     c.translate(P.x, P.y);
-    if (!ghost) A.shadow(c, 0, 0, 24 * Math.max(0.4, 1 - P.lift / 500), 9, 0.26);
+    if (!ghost && !P.jetski) A.shadow(c, 0, 0, 24 * Math.max(0.4, 1 - P.lift / 500), 9, 0.26);
     const em = U.easeOutBack(P.emerge);
     if (P.emerge < 1) { c.globalAlpha = Math.min(1, P.emerge * 2); c.scale(em, em); }
     c.translate(0, -P.lift);
     if (P.id === "ellie" && P.lift > 300) c.rotate(Math.sin(E.t * 8) * 0.3);
-    const R = P.ride && A.RIDES[P.ride];
+    const rideId = P.jetski ? "jetski" : P.ride, R = rideId && A.RIDES[rideId];
     if (R && !P.pose) {
       // riding: the vehicle, the rider on top, then the handlebars over their hands
       const spin = P.wheel / 14, bump = P.move > 0.5 ? Math.abs(Math.sin(P.wheel / 9)) * 1.5 : 0;
-      c.save(); c.scale(P.dir, 1); A.drawRide(c, P.ride, spin, "back"); c.restore();
+      c.save(); c.scale(P.dir, 1); A.drawRide(c, rideId, spin, "back"); c.restore();
       c.save();
       c.translate(0, -R.seat - bump + (R.stand ? 0 : P.spec.L * 0.45));
       A.drawChar(c, P.spec, { t: P.anim, move: 0, side: 1, dir: P.dir, back: false, pose: R.stand ? null : "sit", pt: 0, blink: P.blink, prop: P.prop, hat: P.hat });
       c.restore();
-      c.save(); c.scale(P.dir, 1); A.drawRide(c, P.ride, spin, "front"); c.restore();
+      c.save(); c.scale(P.dir, 1); A.drawRide(c, rideId, spin, "front"); c.restore();
     } else {
       A.drawChar(c, P.spec, {
         t: P.anim, move: P.move, side: P.side, dir: P.dir, back: P.back && !P.pose,

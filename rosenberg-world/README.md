@@ -163,6 +163,11 @@ Buying something puts it on right away, and everything is saved per player.
 - **Signposts** stand at the main crossroads, with at most three big arrow boards each. A board uses
   the game's own name (Frozenbergs, Checking In, Rosenberg Crossing…); tap it and you walk there
   (Baha Mar walks you to the sea plane). Tap the post itself to open the map.
+- **Jet ski**: it waits at a little dock on the north end of the beach (the beach signpost points to
+  it). Tap it to hop on; drag or tap the water to drive anywhere on the sea. Tap any land (Baha Mar,
+  the beach, a game) to drive to the shore, hop off and walk on; the jet ski stays where you left it,
+  and zips back to meet you if you take the sea plane. `buildJetski()` in `js/world.js`; the water
+  rules (`E.isWater`, `E.mountJetski`) are in `js/engine.js`.
 - **Pinch to zoom** out to see where you are: every place gets a name label and a YOU arrow marks
   you. The NORMAL button snaps back.
 - **ALL GAMES** (bottom-left) opens the list of every game; its second tab is the MAP, with a pin for every game.

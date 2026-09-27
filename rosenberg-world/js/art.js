@@ -481,6 +481,7 @@
     skateboard: { seat: 12, stand: true }, scooter: { seat: 40 }, atv: { seat: 46 }, motorbike: { seat: 44 },
     hoverboard: { seat: 24, stand: true }, golfcart: { seat: 40, h: 150 }, unicorn: { seat: 50, h: 118 },
     gokart: { seat: 18 }, jetpack: { seat: 46, stand: true, h: 100 },
+    jetski: { seat: 30 }, // not sold: it waits at the north beach
   };
   function wheel(c, x, y, r, spin, col = "#2B2F3A") {
     c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
@@ -520,6 +521,23 @@
         c.fillStyle = "#FFF3B0"; c.beginPath(); c.arc(52, -42, 4, 0, TAU); c.fill();
         c.strokeStyle = "#3A4252"; c.lineWidth = 4; c.beginPath(); c.moveTo(22, -46); c.lineTo(28, -68); c.stroke();
       } else { c.strokeStyle = "#1E1E24"; c.lineWidth = 5; c.lineCap = "round"; c.beginPath(); c.moveTo(20, -70); c.lineTo(36, -70); c.stroke(); }
+      return;
+    }
+    if (id === "jetski") {
+      if (part === "back") {
+        const bob = Math.sin(performance.now() / 260) * 1.5;
+        // ripples on the water around the hull
+        c.strokeStyle = "rgba(255,255,255,.55)"; c.lineWidth = 3; c.beginPath(); c.ellipse(0, 2, 62, 10, 0, 0, TAU); c.stroke();
+        c.fillStyle = "rgba(20,90,150,.25)"; c.beginPath(); c.ellipse(0, 2, 56, 8, 0, 0, TAU); c.fill();
+        c.save(); c.translate(0, bob);
+        c.fillStyle = lin(c, 0, -30, 0, 0, ["#FFFFFF", "#DCE8F2"]);
+        c.beginPath(); c.moveTo(-50, -4); c.lineTo(-52, -22); c.lineTo(-10, -26); c.quadraticCurveTo(34, -30, 58, -12); c.quadraticCurveTo(40, 0, -44, 0); c.closePath(); c.fill();
+        c.fillStyle = "#E8453C"; c.beginPath(); c.moveTo(-52, -14); c.lineTo(52, -14); c.quadraticCurveTo(44, -4, -46, -4); c.closePath(); c.fill();
+        c.fillStyle = "#FFD23F"; c.fillRect(-48, -16, 96, 3);
+        c.fillStyle = "#1E1E24"; rr(c, -34, -34, 38, 10, 5); c.fill(); // seat
+        c.fillStyle = "#2F9BFF"; c.beginPath(); c.moveTo(14, -26); c.lineTo(32, -40); c.lineTo(40, -36); c.lineTo(30, -24); c.closePath(); c.fill(); // windshield
+        c.restore();
+      } else { c.strokeStyle = "#1E1E24"; c.lineWidth = 4; c.lineCap = "round"; c.beginPath(); c.moveTo(20, -44); c.lineTo(34, -46); c.stroke(); }
       return;
     }
     if (id === "hoverboard") {

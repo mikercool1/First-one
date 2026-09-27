@@ -82,6 +82,7 @@
     garden:   { name: "GRAMPA'S GARDEN", icon: "🍅", color: "#D8342A", go: "garden", zone: [880, 1180, 1260, 1480] },
     shop:     { name: "STAR SHOP", icon: "⭐", color: "#7B3FE4", go: "shop", zone: [3510, 2010, 3860, 2280] },
     plaza:    { name: "PLAZA", icon: "⛲", color: "#6C4AC9", go: [3500, 1880], zone: [3200, 1400, 3800, 2000] },
+    jetski:   { name: "JET SKI", icon: "🚤", color: "#E8453C", go: [4215, 1150] },
     beach:    { name: "BEACH", icon: "🏖️", color: "#1E8FC4", go: [4100, 2100], zone: [3960, 900, 4320, 3060] },
     bahamar:  { name: "BAHA MAR", icon: "🏝️", color: "#18A0B8", go: "seaplane" },
     woods:    { name: "WOODS", icon: "🌲", color: "#3E7A3A", go: [640, 1900], zone: [110, 1160, 880, 2340] },
@@ -1066,6 +1067,7 @@
 
     buildStarShop();
     buildPet();
+    buildJetski();
     buildGarden();
     buildWitchMountain();
     buildIceMountain();
@@ -1383,7 +1385,7 @@
     signpost(770, 1995, [["witch", "U"], ["icemtn", "D"]]);                     // boulevard, where the woods trails start   // boulevard, west of the sports gate
     signpost(560, 2470, [["hotchoc", "R"], ["sled", "D"], ["rink", "L"]]);                      // Ice Mountain, as the trail comes in
     signpost(3392, 1992, [["plaza", "U"], ["shop", "R"], ["bahamar", "R"]]);      // boulevard at the plaza
-    signpost(4150, 1995, [["beach", "U"], ["bahamar", "D"]]);                    // on the sand, where the trail heads south
+    signpost(4150, 1995, [["beach", "U"], ["jetski", "U"], ["bahamar", "D"]]);                    // on the sand, where the trail heads south
     signpost(1880, 900, [["academy", "L"], ["raceway", "L"], ["baseball", "R"]]); // north lane, west of the ballpark
     signpost(3080, 1190, [["baseball", "L"], ["space", "R"], ["home", "D"]]);        // north lane, east of the ballpark
     signpost(5000, 1420, [["lazyriver", "R"], ["hotel", "R"], ["splash", "D"]]); // on Baha Mar, by the plane
@@ -1757,7 +1759,7 @@
       kind: "pet", x: 0, y: 0, box: [-44, -110, 44, 10], hidden: true, t: 0, moving: false, dir: 1, bubbleH: 70, id: null,
       update(e, dt) {
         const P = E.player, id = RW.save && RW.save.shop && RW.save.shop.pet;
-        e.hidden = !id || !P || P.hidden || E.mode !== "play";
+        e.hidden = !id || !P || P.hidden || P.jetski || E.mode !== "play";
         if (e.hidden) { e.id = null; return; }
         e.t += dt;
         const tx = P.x - P.dir * 62, ty = P.y + 8, dx = tx - e.x, dy = ty - e.y, d = Math.hypot(dx, dy);
@@ -1943,6 +1945,45 @@
   // ---------------------------------------------------------------------
   // BEACH AND DOCK
   // ---------------------------------------------------------------------
+  // A jet ski at the north end of the beach. Hop on, ride anywhere on the water, and hop off at
+  // Baha Mar (or anywhere else) by tapping land. It stays where you leave it.
+  function buildJetski() {
+    const J = E.jetski;
+    // a little wooden dock out to where it waits
+    staticProp(J.home[0] - 70, J.home[1] + 6, [-80, -16, 80, 22], (c) => {
+      c.fillStyle = "#6B4A30"; [-60, -10, 40].forEach((x) => { A.rr(c, x - 4, 6, 8, 16, 3); c.fill(); });
+      c.fillStyle = A.lin(c, 0, -14, 0, 14, ["#D8A870", "#B8834E"]); A.rr(c, -76, -14, 152, 26, 5); c.fill();
+      c.strokeStyle = "rgba(90,60,30,.35)"; c.lineWidth = 2; for (let x = -70; x < 76; x += 14) { c.beginPath(); c.moveTo(x, -14); c.lineTo(x, 12); c.stroke(); }
+    }, { layer: "ground" });
+    sign(J.home[0] - 175, J.home[1] - 40, ["JET SKI", "🌊 RIDE ME!"], { size: 16, board: "#FFFFFF", edge: "#E8453C", ink: "#C2342A", ent: { tap: jetskiTap() } });
+    add({
+      kind: "jetski", x: J.x, y: J.y, box: [-70, -60, 70, 14], hidden: false, sortY: J.y,
+      update(e) {
+        const P = E.player;
+        e.hidden = !!(P && P.jetski);
+        e.x = J.x; e.y = J.y; e.sortY = J.y;
+      },
+      draw(c) { A.drawRide(c, "jetski", 0, "back"); A.drawRide(c, "jetski", 0, "front"); },
+      tap: jetskiTap(),
+    });
+  }
+  function jetskiTap() {
+    return {
+      reach: "remote",
+      act(E2) {
+        const P = E2.player, J = E2.jetski;
+        if (!P || P.jetski || P.lock) return;
+        // parked on the other side of the sea? It's a rental: it zips back to meet you
+        const I = L.island, onI = E2.onIsland(P.x, P.y);
+        const skiByIsland = ((J.x - I.x) / (I.rx + 300)) ** 2 + ((J.y - I.y) / (I.ry + 300)) ** 2 < 1;
+        if (onI !== skiByIsland) [J.x, J.y] = onI ? J.moor : J.home;
+        if (Math.hypot(P.x - J.x, P.y - J.y) < 200) { E2.mountJetski(); return; }
+        const spot = E2.nearestFree(J.x - 110, J.y) || [J.x - 110, J.y];
+        RW.sfx.play("tap");
+        E2.walkTo(spot[0], spot[1], () => { if (Math.hypot(P.x - J.x, P.y - J.y) < 240) E2.mountJetski(); });
+      },
+    };
+  }
   function buildBeach() {
     sign(3985, 1830, ["ROSENBERG", "BEACH"], { size: 20, board: "#FFF4D6", edge: "#2F9BD0", ink: "#1E6B99" });
     [[4040, 1250], [4150, 1420], [4020, 1560], [4040, 2820], [4180, 2950], [4120, 1080]].forEach(([x, y]) => tree(x, y, "palm", 1));
@@ -2146,6 +2187,7 @@
   let flying = false;
   world.flyTo = (to) => {
     const P = E.player;
+    if (P && P.jetski) { E.say(P, "Hop off the jet ski first!", 1.6); return; }
     if (!P || flying || RW.host.current || E.mode !== "play") return;
     const going = to === "bahamar";
     if (going === E.onIsland(P.x, P.y)) return; // already there
