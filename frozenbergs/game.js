@@ -168,18 +168,27 @@
       : `<circle cx="49" cy="67" r="3.6" fill="#3B2342"/><circle cx="71" cy="67" r="3.6" fill="#3B2342"/><circle cx="50" cy="66" r="1.2" fill="#fff"/><circle cx="72" cy="66" r="1.2" fill="#fff"/>`;
     const behind = c.style === "long" || c.style === "bob" ? hair : "";
     const front = behind ? `<path d="M30 60 Q36 44 60 44 Q84 44 90 60 Q80 50 60 50 Q40 50 30 60Z" fill="${c.hair}"/>` : hair;
-    return `<svg viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg" aria-label="${c.name}, a customer">
+    const apron = c.worker ? `<path d="M40 120 Q60 126 80 120 L84 150 L36 150Z" fill="#FFFFFF"/><path d="M40 120 L44 110 M80 120 L76 110" stroke="#FFFFFF" stroke-width="3"/>
+      <text x="60" y="138" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="9" fill="#FF4F86">F</text>` : "";
+    const hat = c.worker ? `<path d="M30 50 L36 26 Q60 18 84 26 L90 50 Q60 42 30 50Z" fill="#FFFFFF" stroke="#E9DDE4" stroke-width="1.5"/>
+      <path d="M33 40 Q60 32 87 40" stroke="#FF7BA5" stroke-width="5" fill="none"/>` : "";
+    return `<svg viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg" aria-label="${c.name}${c.worker ? ", the scooper" : ", a customer"}">
       ${behind}
       <path d="M22 150 Q22 108 60 106 Q98 108 98 150Z" fill="${c.shirt}"/>
-      <path d="M48 108 Q60 118 72 108" stroke="#ffffff66" stroke-width="3" fill="none"/>
+      <path d="M48 108 Q60 118 72 108" stroke="#ffffff66" stroke-width="3" fill="none"/>${apron}
       <rect x="52" y="92" width="16" height="16" rx="6" fill="${c.skin}"/>
       <circle cx="60" cy="68" r="30" fill="${c.skin}"/>
       <circle cx="30" cy="70" r="6" fill="${c.skin}"/><circle cx="90" cy="70" r="6" fill="${c.skin}"/>
-      ${front}${eyes}
+      ${front}${hat}${eyes}
       <circle cx="42" cy="78" r="5" fill="#FF7B8F" opacity=".35"/><circle cx="78" cy="78" r="5" fill="#FF7B8F" opacity=".35"/>
       ${mouth}
     </svg>`;
   }
+
+  const SCOOPERS = {
+    jonah: { name: "Jonah Reuben", first: "Jonah", skin: "#F7D3B5", hair: "#4A2E18", shirt: "#2DBFAE", style: "short", worker: true },
+    ellie: { name: "Ellie", first: "Ellie", skin: "#FBE0CB", hair: "#A8612B", shirt: "#7C6CF2", style: "long", worker: true },
+  };
 
   function makeOrder(day, surprise) {
     if (surprise) return { surprise: true };
@@ -211,6 +220,8 @@
   const starsFor = (s) => (s >= 0.99 ? 3 : s >= 0.7 ? 2 : s >= 0.4 ? 1 : 0);
 
   const LINES = {
+    hi: ["Hi {me}! Can I get…", "Hey {me}! I'll have…", "{me}! My favorite scooper! I'd like…"],
+    thanks: ["Thanks, {me}!", "You're the best, {me}!", "{me}, you did it again!"],
     greet: ["Hi! Can I get…", "Ooh, it's hot out. I'll have…", "One of these, please!", "My usual:", "Hello! I'd love…"],
     surprise: ["Surprise me! Make it wild!", "Chef's choice — go big!", "Dealer's choice! Something fun!", "I can't decide. You pick!"],
     3: ["PERFECT! You're a legend!", "Exactly right. Wow!", "This is a masterpiece!", "Best cone ever!"],
@@ -248,11 +259,14 @@
   };
 
   // ---------- state ----------
+  const me = () => SCOOPERS[state.scooper];
   const state = {
+    scooper: null,
     day: 1, served: 0, tips: 0, dayTips: 0, dayStars: 0, gallery: [],
     customer: null, order: null, patience: 100, busy: true,
     build: { cone: null, scoops: [], sauce: null, tops: [] },
   };
+  try { state.scooper = SCOOPERS[localStorage.getItem("frozenbergs.scooper")] ? localStorage.getItem("frozenbergs.scooper") : null; } catch { /* private mode */ }
   try { state.tips = Number(localStorage.getItem("frozenbergs.tips")) || 0; } catch { /* private mode */ }
 
   // ---------- UI ----------
@@ -327,7 +341,7 @@
   function showOrder() {
     const c = state.customer, o = state.order;
     const text = o.surprise ? `<span class="say">${pick(LINES.surprise)}</span>` : orderLines(o);
-    el.bubble.innerHTML = `<span class="who">${c.name}${o.surprise ? "" : " · " + pick(LINES.greet)}</span>
+    el.bubble.innerHTML = `<span class="who">${c.name}${o.surprise ? "" : " · " + (Math.random() < 0.4 ? pick(LINES.hi) : pick(LINES.greet)).replace("{me}", me().first)}</span>
       <div class="ticket">${coneSVG(o.surprise ? { cone: null, scoops: [], sauce: null, tops: [] } : o, { mystery: o.surprise })}<div>${text}</div></div>`;
     el.bubble.classList.remove("hide");
   }
@@ -344,6 +358,7 @@
     state.build = { cone: null, scoops: [], sauce: null, tops: [] };
     renderBuild(); renderStats();
     el.cone.classList.remove("handoff");
+    if (state.scooper) showScooper();
 
     // Every third-ish customer wants a surprise, never the very first one.
     const surprise = state.served > 0 && Math.random() < 0.28;
@@ -386,7 +401,9 @@
     el.customer.innerHTML = customerSVG(state.customer, stars === 3 ? "wow" : mood);
     el.customer.classList.add("bounce");
     const key = (state.order.surprise ? "s" : "") + stars;
-    say(`<span class="say">${pick(LINES[key])}</span><span class="stars">${"★".repeat(stars)}${"☆".repeat(3 - stars)}</span>`);
+    const thanks = stars >= 2 && Math.random() < 0.5 ? " " + pick(LINES.thanks).replace("{me}", me().first) : "";
+    say(`<span class="say">${pick(LINES[key])}${thanks}</span><span class="stars">${"★".repeat(stars)}${"☆".repeat(3 - stars)}</span>`);
+    showScooper(stars >= 2 ? "happy" : stars === 1 ? "meh" : "sad");
     if (stars === 0) sfx.sad(); else sfx.cash();
 
     state.tips += tip; state.dayTips += tip; state.dayStars += stars;
@@ -413,6 +430,7 @@
   function endDay() {
     const ratio = state.dayStars / (PER_DAY * 3);
     $("#dayTitle").textContent = `Day ${state.day} closed!`;
+    $("#dayWho").textContent = `Great shift, ${me().first}!`;
     $("#dayRank").textContent = RANKS.find(([min]) => ratio >= min)[1];
     $("#dayStars").textContent = `${state.dayStars}/${PER_DAY * 3}`;
     $("#dayTips").textContent = money(state.dayTips);
@@ -450,8 +468,29 @@
     e.currentTarget.setAttribute("aria-label", muted ? "Unmute sound" : "Mute sound");
   });
 
+  function renderPicker() {
+    $("#picker").innerHTML = Object.entries(SCOOPERS).map(([k, c]) =>
+      `<button class="pick" data-scooper="${k}" aria-pressed="${state.scooper === k}">${customerSVG(c, state.scooper === k ? "happy" : "wait")}<b>${c.name}</b></button>`).join("");
+    $("#startBtn").disabled = !state.scooper;
+    $("#startBtn").textContent = state.scooper ? `Open the stand as ${me().first}` : "Pick your scooper";
+  }
+  $("#picker").addEventListener("click", (e) => {
+    const t = e.target.closest("[data-scooper]");
+    if (!t) return;
+    state.scooper = t.dataset.scooper;
+    try { localStorage.setItem("frozenbergs.scooper", state.scooper); } catch { /* ignore */ }
+    sfx.tap(); renderPicker();
+  });
+
+  function showScooper(mood = "wait") {
+    $("#scooper").innerHTML = customerSVG(me(), mood);
+    $("#scooperName").textContent = me().name;
+  }
+
   $("#startBtn").addEventListener("click", () => {
+    if (!state.scooper) return;
     $("#startOverlay").hidden = true;
+    showScooper();
     sfx.ding();
     nextCustomer();
   });
@@ -480,5 +519,5 @@
 
   // ---------- boot ----------
   $("#heroCone").innerHTML = coneSVG({ cone: "waffle", scoops: ["straw", "mint", "choc"], sauce: "fudge", tops: ["sprinkles", "whip", "cherry"] });
-  renderBuild(); renderStats();
+  renderPicker(); renderBuild(); renderStats();
 })();

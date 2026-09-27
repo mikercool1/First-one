@@ -77,7 +77,11 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .patience i.low{background:#F2545B}
 
 .build-col{position:relative;display:flex;justify-content:center;align-items:flex-end;min-width:0}
-.build-cone{width:min(150px,100%);transition:transform .6s cubic-bezier(.5,-.3,.4,1.2),opacity .4s;transform-origin:bottom center}
+.scooper{position:absolute;right:0;bottom:0;width:118px;height:150px;z-index:0}
+.scooper svg{width:100%;height:100%;display:block}
+.scooper-name{position:absolute;right:0;bottom:4px;z-index:2;font:600 10px/1 var(--display);background:var(--surface);color:var(--accent);padding:3px 6px;border-radius:99px;white-space:nowrap}
+.scooper-name:empty{display:none}
+.build-cone{position:relative;z-index:1;margin-right:auto;width:min(150px,100%);transition:transform .6s cubic-bezier(.5,-.3,.4,1.2),opacity .4s;transform-origin:bottom center}
 .build-cone svg{width:100%;height:auto;display:block;overflow:visible}
 .build-cone.handoff{transform:translateX(-95%) translateY(-24px) scale(.8) rotate(-8deg);opacity:0}
 .build-cone.pop{animation:pop .25s ease}
@@ -122,10 +126,16 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .overlay{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(6px);display:grid;place-items:center;padding:16px;z-index:20;overflow:auto}
 .card{background:var(--surface);border:2px solid var(--line);border-radius:26px;padding:22px 20px;max-width:420px;width:100%;text-align:center;box-shadow:0 24px 50px -24px rgba(80,20,60,.5)}
 .card p{margin:10px 0;color:var(--muted)}
-.hero-cone{width:120px;margin:0 auto 6px;animation:bob 2.4s ease-in-out infinite}
+.hero-cone{width:84px;margin:0 auto 6px;animation:bob 2.4s ease-in-out infinite}
 .hero-cone svg{width:100%;height:auto;display:block}
 @keyframes bob{50%{transform:translateY(-6px) rotate(2deg)}}
-.howto{text-align:left;margin:12px 0 18px;padding-left:20px;display:grid;gap:6px}
+.picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.pick{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px 12px;border-radius:18px;border:2.5px solid var(--line);background:var(--chip);transition:transform .1s,border-color .15s,background .15s}
+.pick svg{width:84px;height:105px;display:block}
+.pick b{font:600 16px/1.1 var(--display)}
+.pick[aria-pressed="true"]{border-color:var(--accent);background:var(--chip-on);transform:translateY(-2px)}
+.pick:active{transform:scale(.97)}
+.howto{text-align:left;margin:12px 0 14px;padding-left:20px;display:grid;gap:6px}
 .rank{font:600 18px/1.2 var(--display)!important;color:var(--ink)!important}
 .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
 .summary div{background:var(--chip);border-radius:14px;padding:10px 4px}
@@ -145,7 +155,8 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
   .icon-btn{width:28px;height:28px;font-size:13px}
   .scene{min-height:250px;padding-top:16px}
   .customer{width:96px;height:122px}
-  .build-cone{width:min(124px,100%)}
+  .build-cone{width:min(112px,100%)}
+  .scooper{width:82px;height:104px;right:-10px}
   .awning{height:26px}
   .builder{padding:10px;gap:8px}
   .row h2{margin-bottom:5px;font-size:13px}

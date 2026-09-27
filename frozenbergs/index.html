@@ -50,6 +50,8 @@
         <div class="patience" aria-hidden="true"><i id="patienceBar"></i></div>
       </div>
       <div class="build-col">
+        <div class="scooper" id="scooper"></div>
+        <span class="scooper-name" id="scooperName"></span>
         <div class="build-cone" id="buildCone"></div>
         <div class="float" id="float" aria-live="polite"></div>
       </div>
@@ -94,7 +96,9 @@
       <li>Some folks say <b>“Surprise me!”</b> — go wild with scoops and toppings.</li>
       <li>Be quick: happy customers tip more.</li>
     </ul>
-    <button class="btn primary wide" id="startBtn">Open the stand</button>
+    <h3>Who's scooping today?</h3>
+    <div class="picker" id="picker"></div>
+    <button class="btn primary wide" id="startBtn" disabled>Pick your scooper</button>
   </div>
 </div>
 
@@ -102,6 +106,7 @@
   <div class="card">
     <h2 class="big" id="dayTitle">Day 1 closed!</h2>
     <p class="rank" id="dayRank"></p>
+    <p id="dayWho"></p>
     <div class="summary">
       <div><b id="dayStars">0</b><span>stars</span></div>
       <div><b id="dayTips">$0</b><span>in tips</span></div>
