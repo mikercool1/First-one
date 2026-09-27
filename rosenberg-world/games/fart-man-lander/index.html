@@ -1216,13 +1216,11 @@ h2 { margin: 0; font: 900 clamp(24px, 6.5vw, 34px)/1.1 var(--sans); letter-spaci
     buildMission(mission);
     window.addEventListener("resize", resize);
     window.addEventListener("orientationchange", () => setTimeout(resize, 200));
-    try { window.claude && window.claude.hot && window.claude.hot.snapshot && window.claude.hot.snapshot(() => ({ mission, total: totalScore })); } catch (e) { /* optional */ }
     requestAnimationFrame((t) => { prev = t; frame(t); });
   }
-  try {
-    if (window.claude && window.claude.hot && window.claude.hot.ready) window.claude.hot.ready(boot);
-    else boot(window.claude && window.claude.hot && window.claude.hot.data);
-  } catch (e) { boot({}); }
+  // Start straight away. (This used to wait on a window.claude.hot "ready" signal left over from
+  // where the game was first built; on claude.ai that signal never came, so the game sat on a black screen.)
+  boot({});
 })();
 </script>
 </body>

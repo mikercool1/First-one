@@ -424,7 +424,9 @@ $("answer").focus({preventScroll:true});
 
 // When this runs inside Claude, Claude can referee unknown answers and play any category you type.
 (async () => {
-  try { sample = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch { sample = null; }
+  // never wait more than 2s for it, so "Choose your own" always gets set up
+  const giveUp = new Promise((res) => setTimeout(() => res(null), 2000));
+  try { sample = window.claude && window.claude.use ? await Promise.race([window.claude.use("sample"), giveUp]) : null; } catch { sample = null; }
   setupCustom();
 })();
 </script>
