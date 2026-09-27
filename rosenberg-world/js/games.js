@@ -33,7 +33,7 @@
     subtitle: "Swing for the fence behind the Rosenberg House",
     destination: "baseball",
     unlocked: true,
-    entry: null, // ← e.g. "games/backyard-baseball/index.html"
+    entry: "games/backyard-baseball/index.html",
     color: "#2E8B57",
     icon: "⚾",
     starsFor: (score) => Math.min(5, Math.floor(score / 3)),
@@ -45,7 +45,7 @@
     subtitle: "Land softly. Power responsibly.",
     destination: "fartman",
     unlocked: true,
-    entry: null, // ← e.g. "games/fart-man/index.html"
+    entry: "games/fart-man-lander/index.html",
     color: "#7B3FE4",
     icon: "🚀",
   });
@@ -56,7 +56,7 @@
     subtitle: "Reuben's multiplication mission",
     destination: "mathblaster",
     unlocked: true,
-    entry: null, // ← e.g. "games/math-blaster/index.html"
+    entry: "games/math-blaster/index.html",
     color: "#1FA4E0",
     icon: "✖️",
   });
@@ -67,9 +67,31 @@
     subtitle: "Something smells amazing",
     destination: "kitchen",
     unlocked: true,
-    entry: null, // ← e.g. "games/ariels-cookout/index.html"
+    entry: "games/ariel-passover-cookout/index.html",
     color: "#E8743C",
     icon: "🍳",
+  });
+
+  G.register({
+    id: "fishFriday",
+    title: "Fish Friday",
+    subtitle: "Hop in the car and deliver the lox",
+    destination: "car",
+    unlocked: true,
+    entry: "games/lox-run/index.html",
+    color: "#2F6BD6",
+    icon: "🚗",
+  });
+
+  G.register({
+    id: "buckets",
+    title: "Buckets",
+    subtitle: "8s and 9s times tables: Brunson vs. Wemby",
+    destination: "court",
+    unlocked: true,
+    entry: "games/buckets/index.html",
+    color: "#F58426",
+    icon: "🏀",
   });
 
   // ---------------- future game slots ----------------

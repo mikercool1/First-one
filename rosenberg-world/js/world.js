@@ -17,6 +17,8 @@
     { id: "fartman", name: "Fart Man Landing Zone", icon: "🚀", kind: "game", portal: [3720, 925], portalR: 120, arrive: [3720, 950], map: [3720, 720] },
     { id: "mathblaster", name: "Math Blaster Academy", icon: "✖️", kind: "game", portal: [1450, 935], portalR: 95, arrive: [1450, 965], map: [1450, 760] },
     { id: "kitchen", name: "Ariel's Kitchen", icon: "🍳", kind: "game", portal: [1570, 1755], portalR: 90, arrive: [1570, 1790], map: [1420, 1570] },
+    { id: "car", name: "The Family Car", icon: "🚗", kind: "game", portal: [2892, 1822], portalR: 62, arrive: [2892, 1840], map: [2815, 1760] },
+    { id: "court", name: "Basketball Court", icon: "🏀", kind: "game", portal: [1630, 2175], portalR: 80, arrive: [1630, 2190], map: [1710, 2175] },
     { id: "plaza", name: "Mystery Plaza", icon: "⛲", kind: "place", map: [3500, 1760], arrive: [3500, 1880] },
     { id: "plaza-building", name: "Mystery Building", icon: "❓", kind: "future", portal: [3500, 1535], portalR: 85, arrive: [3500, 1560], map: [3500, 1420] },
     { id: "plaza-lot", name: "Under Construction", icon: "🚧", kind: "future", portal: [3850, 2235], portalR: 95, arrive: [3850, 2250], map: [3850, 2080] },
@@ -238,7 +240,16 @@
         if (e.flash > 0) { c.fillStyle = `rgba(255,250,200,${e.flash})`; c.beginPath(); c.arc(-36, -32, 18, 0, TAU); c.arc(36, -32, 18, 0, TAU); c.fill(); }
       },
       update(e, dt) { e.squash -= dt * 2; e.flash = Math.max(0, e.flash - dt * 2); },
-      tap: { reach: "remote", act(E2, e) { if (e.cool > E2.t) return; e.cool = E2.t + 0.6; e.squash = 1; e.flash = 1; RW.sfx.play("honk"); E2.float(e.x, e.y - 100, "BEEP BEEP!", { size: 24, stroke: "#2F6BD6" }); } },
+      tap: {
+        reach: "remote",
+        act(E2, e) {
+          if (e.cool > E2.t) return; e.cool = E2.t + 0.6; e.squash = 1; e.flash = 1;
+          RW.sfx.play("honk"); E2.float(e.x, e.y - 100, "BEEP BEEP!", { size: 24, stroke: "#2F6BD6" });
+          // the car goes to Fish Friday: walk to the driver's door
+          const d = DEST.car;
+          if (!E2.player.lock && E2.nearPortal !== d) E2.walkTo(d.portal[0], d.portal[1]);
+        },
+      },
     });
     // hoop over the garage + a basketball on the driveway
     const hoop = add({

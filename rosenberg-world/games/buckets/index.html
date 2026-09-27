@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script src="../rw-bridge.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Buckets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@500;700;800&family=Orbitron:wght@700;900&display=swap">
+<style>
+:root {
+  --night: #070B18; --panel: #0F1630; --edge: rgba(255,255,255,.1);
+  --nyk: #1D5FD1; --nyk-2: #F58426; --sas: #C4CED4; --sas-2: #1B1B1F;
+  --led: #FF3B30; --gold: #FFC940; --good: #3DDC84; --text: #F2F5FF;
+  --display: "Bebas Neue", Impact, "Arial Narrow", sans-serif;
+  --ui: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --digits: "Orbitron", "Courier New", monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: radial-gradient(120% 70% at 50% 0%, #1A2450 0%, var(--night) 60%); color: var(--text); font: 700 16px/1.3 var(--ui); overflow: hidden; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+.app { height: 100%; max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px calc(env(safe-area-inset-bottom, 0px) + 12px); }
+
+/* Jumbotron */
+.board { position: relative; overflow: hidden; display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; gap: 8px; background: linear-gradient(180deg, #151D3D, #0B1128); border: 1px solid var(--edge); border-radius: 16px; padding: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.06); }
+.board::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px); mix-blend-mode: multiply; }
+.board::before { content: ""; position: absolute; left: -30%; top: 0; width: 30%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.07), transparent); animation: sweep 6s linear infinite; pointer-events: none; }
+@keyframes sweep { to { left: 130%; } }
+.team { display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; padding: 4px 0 2px; }
+.team.jb { background: linear-gradient(180deg, rgba(29,95,209,.35), rgba(29,95,209,.1)); box-shadow: inset 0 -3px 0 var(--nyk-2); }
+.team.vw { background: linear-gradient(180deg, rgba(196,206,212,.2), rgba(196,206,212,.05)); box-shadow: inset 0 -3px 0 var(--sas); }
+.team .nm { font: 400 18px/1 var(--display); letter-spacing: .08em; opacity: .9; }
+.team .pts { font: 900 40px/1 var(--digits); text-shadow: 0 0 14px currentColor; font-variant-numeric: tabular-nums; }
+.team.jb .pts { color: #FFB066; }
+.team.vw .pts { color: #E6EEF3; }
+.team .pts.bump { animation: bump .5s ease; }
+@keyframes bump { 30% { transform: scale(1.35); } }
+.clock { min-width: 96px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #05070F; border-radius: 10px; border: 1px solid rgba(255,59,48,.25); padding: 4px 8px; }
+.clock small { font: 700 9px var(--ui); letter-spacing: .2em; color: rgba(255,255,255,.5); }
+#clock { font: 900 34px/1 var(--digits); color: var(--led); text-shadow: 0 0 12px rgba(255,59,48,.8); font-variant-numeric: tabular-nums; }
+#clock.low { animation: blink .5s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .35; } }
+.to11 { font: 700 10px var(--ui); letter-spacing: .18em; color: rgba(255,255,255,.45); text-align: center; margin-top: -2px; }
+
+/* Court */
+.court { position: relative; flex: none; aspect-ratio: 400 / 250; width: min(100%, calc(32vh * 1.6)); align-self: center; border-radius: 18px; overflow: hidden; border: 1px solid var(--edge); box-shadow: 0 16px 40px rgba(0,0,0,.45); }
+.court canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.court::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), inset 0 -30px 60px rgba(0,0,0,.25); }
+.call { position: absolute; left: 50%; top: 18%; transform: translate(-50%, 0) rotate(-6deg); font: 400 clamp(38px, 12vw, 64px)/1 var(--display); letter-spacing: .04em; white-space: nowrap; pointer-events: none; opacity: 0; }
+.call.show { animation: call 1.3s cubic-bezier(.2,.9,.3,1.3) forwards; }
+.call.good { color: var(--gold); text-shadow: 0 4px 0 #8A5A00, 0 0 30px rgba(255,201,64,.6); }
+.call.bad { color: #fff; text-shadow: 0 4px 0 #000, 0 0 30px rgba(255,255,255,.4); -webkit-text-stroke: 2px #111; }
+@keyframes call { 0% { opacity: 0; transform: translate(-50%, 10px) rotate(-6deg) scale(2); } 25% { opacity: 1; transform: translate(-50%, 0) rotate(-6deg) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -10px) rotate(-6deg) scale(1); } }
+
+/* Question */
+.q { text-align: center; }
+.fact { font: 400 clamp(64px, 20vw, 104px)/.95 var(--display); letter-spacing: .02em; text-shadow: 0 0 30px rgba(120,150,255,.25), 0 4px 0 rgba(0,0,0,.35); }
+.fact .x { color: var(--nyk-2); padding: 0 .12em; }
+.fact .eq { color: rgba(255,255,255,.35); padding: 0 .1em; }
+#ans { display: inline-block; min-width: 1.3em; border-bottom: 5px solid rgba(255,255,255,.25); color: #fff; }
+#ans.good { color: var(--good); border-color: var(--good); }
+#ans.bad { color: var(--led); border-color: var(--led); text-decoration: line-through; text-decoration-thickness: 4px; }
+.learn { font: 800 18px var(--ui); color: var(--gold); min-height: 1.3em; letter-spacing: .02em; }
+.bar { height: 6px; border-radius: 6px; background: rgba(255,255,255,.08); overflow: hidden; margin-top: 4px; }
+#barFill { height: 100%; width: 100%; background: linear-gradient(90deg, var(--led), #FF8A3D); border-radius: 6px; }
+
+/* Keypad */
+.pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.key { position: relative; overflow: hidden; border: 0; border-radius: 16px; height: clamp(46px, 7vh, 64px); font: 400 32px/1 var(--display); color: #fff; background: linear-gradient(180deg, #25306A 0%, #18204A 52%, #121937 100%); box-shadow: 0 4px 0 #0A0F22, inset 0 1px 0 rgba(255,255,255,.16), inset 0 0 0 1px rgba(120,150,255,.08); cursor: pointer; transition: transform .06s; }
+.key::after { content: ""; position: absolute; left: 8%; right: 8%; top: 3px; height: 40%; border-radius: 12px 12px 30px 30px; background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0)); pointer-events: none; }
+.key:active, .key.hit { transform: translateY(3px); box-shadow: 0 1px 0 #0A0F22; }
+.key.shoot { background: linear-gradient(180deg, #FF9A3D, var(--nyk-2)); color: #1A0E00; box-shadow: 0 4px 0 #A8520E; font-size: 26px; letter-spacing: .06em; }
+.key.del { font-size: 26px; color: rgba(255,255,255,.75); }
+.key:focus-visible, button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+/* Overlays */
+.overlay { position: fixed; inset: 0; display: grid; grid-template-columns: minmax(0, 440px); justify-content: center; align-content: center; padding: 16px; background: rgba(4,6,14,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 5; overflow-y: auto; }
+.card { width: 100%; min-width: 0; overflow: hidden; text-align: center; background: linear-gradient(180deg, #151D3D, #0B1128); border: 1px solid var(--edge); border-radius: 26px; padding: 22px 20px; box-shadow: 0 30px 80px rgba(0,0,0,.5); animation: rise .45s cubic-bezier(.2,.9,.3,1.2); }
+@keyframes rise { from { transform: translateY(20px) scale(.97); opacity: 0; } }
+.kicker { margin: 0; font: 800 12px var(--ui); letter-spacing: .24em; color: var(--nyk-2); text-transform: uppercase; }
+.logo { margin: 4px 0 0; font: 400 clamp(54px, 16vw, 104px)/.85 var(--display); letter-spacing: .02em; background: linear-gradient(180deg, #FFE08A, #FF9A3D 60%, #E0601A); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 5px 0 rgba(0,0,0,.5)); }
+.vs { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 10px 0 6px; font: 400 26px var(--display); letter-spacing: .06em; }
+.vs .a { color: #FFB066; } .vs .b { color: var(--sas); } .vs i { font-style: normal; color: rgba(255,255,255,.4); font-size: 18px; }
+.how { font: 600 15px/1.5 var(--ui); color: rgba(242,245,255,.8); margin: 8px 0 18px; }
+.how b { color: #fff; }
+.go { border: 0; cursor: pointer; font: 400 28px/1 var(--display); letter-spacing: .08em; padding: 14px 40px; border-radius: 999px; color: #1A0E00; background: linear-gradient(180deg, #FFC46B, var(--nyk-2)); box-shadow: 0 6px 0 #A8520E, 0 12px 30px rgba(245,132,38,.35); }
+.go:active { transform: translateY(4px); box-shadow: 0 2px 0 #A8520E; }
+.record { font: 700 13px var(--ui); color: rgba(255,255,255,.5); margin: 12px 0 0; min-height: 1em; }
+.final { font: 900 44px/1 var(--digits); margin: 6px 0 2px; }
+.final .a { color: #FFB066; } .final .b { color: var(--sas); } .final i { font-style: normal; color: rgba(255,255,255,.35); padding: 0 8px; }
+.grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; margin: 14px 0 6px; }
+.grid div { border-radius: 7px; padding: 5px 0 4px; font: 800 11px/1.1 var(--ui); background: rgba(255,255,255,.06); color: rgba(255,255,255,.45); }
+.grid div b { display: block; font: 400 17px/1 var(--display); color: #fff; }
+.grid div.ok { background: rgba(61,220,132,.18); color: #9FF0C4; }
+.grid div.miss { background: rgba(255,59,48,.22); color: #FFB3AE; box-shadow: inset 0 0 0 1.5px rgba(255,59,48,.6); }
+.legend { font: 700 12px var(--ui); color: rgba(255,255,255,.55); margin: 0 0 16px; }
+.mute { position: absolute; top: 8px; right: 8px; z-index: 2; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--edge); background: rgba(15,22,48,.8); color: #fff; cursor: pointer; font-size: 14px; }
+#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 7; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <div>
+    <div class="board" aria-label="Scoreboard">
+      <div class="team jb"><span class="nm">Brunson</span><span class="pts" id="sJB">0</span></div>
+      <div class="clock"><small>SHOT CLOCK</small><span id="clock">5.0</span></div>
+      <div class="team vw"><span class="nm">Wemby</span><span class="pts" id="sVW">0</span></div>
+    </div>
+    <div class="to11">FIRST TO 11</div>
+  </div>
+
+  <div class="court" id="court">
+    <canvas id="cv" role="img" aria-label="Brunson shooting over Wembanyama in a packed arena"></canvas>
+    <div class="call" id="call"></div>
+    <button class="mute" id="mute" type="button" aria-label="Sound on">&#128266;</button>
+  </div>
+
+  <div class="q" aria-live="polite">
+    <div class="fact"><span id="qa">8</span><span class="x">&times;</span><span id="qb">7</span><span class="eq">=</span><span id="ans">&nbsp;</span></div>
+    <div class="learn" id="learn"></div>
+    <div class="bar"><div id="barFill"></div></div>
+  </div>
+
+  <div class="pad" id="pad"></div>
+</div>
+
+<div class="overlay" id="title">
+  <div class="card">
+    <p class="kicker">Reuben's 8s &amp; 9s</p>
+    <h1 class="logo">BUCKETS</h1>
+    <div class="vs"><span class="a">BRUNSON</span><i>vs</i><span class="b">WEMBY</span></div>
+    <p class="how">Answer the times table in <b>5 seconds</b>. Right answer: <b>Brunson scores</b>. Wrong or too slow: <b>Wemby blocks it</b> and scores. First to <b>11</b> wins.</p>
+    <button class="go" id="startBtn" type="button">TIP OFF</button>
+    <p class="record" id="record"></p>
+  </div>
+</div>
+
+<div class="overlay" id="end" hidden>
+  <div class="card">
+    <p class="kicker" id="endKicker">Final</p>
+    <h2 class="logo" id="endTitle" style="font-size:clamp(52px,15vw,76px)">BRUNSON WINS</h2>
+    <p class="final"><span class="a" id="fJB">11</span><i>&ndash;</i><span class="b" id="fVW">4</span></p>
+    <div class="grid" id="grid"></div>
+    <p class="legend" id="legendLine">Green: got it. Red: practice these.</p>
+    <button class="go" id="againBtn" type="button">RUN IT BACK</button>
+    <button type="button" class="go" data-rw-back hidden>BACK TO ROSENBERG WORLD</button>
+  </div>
+</div>
+<canvas id="confetti" hidden></canvas>
+
+<script src="court.js"></script>
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const TARGET = 11, CLOCK = 5000;
+  const FACTS = [];
+  for (const a of [8, 9]) for (let b = 1; b <= 9; b++) FACTS.push({ a, b, key: `${a}x${b}` });
+
+  // saved record + per-fact history
+  let rec = { w: 0, l: 0, facts: {} }, muted = false;
+  try { rec = Object.assign(rec, JSON.parse(localStorage.getItem("buckets.v1") || "{}")); muted = localStorage.getItem("buckets.muted") === "1"; } catch {}
+  const save = () => { try { localStorage.setItem("buckets.v1", JSON.stringify(rec)); } catch {} };
+
+  // ---------- sound ----------
+  let ac = null;
+  function tone(f, d, type = "sine", v = 0.08, delay = 0, slide = 0) {
+    if (muted) return;
+    try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); } catch { return; }
+    const t = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(f * slide, t + d);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + 0.02);
+  }
+  function noise(d, v = 0.12, delay = 0, freq = 900) {
+    if (muted) return;
+    try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); } catch { return; }
+    const len = Math.floor(ac.sampleRate * d), buf = ac.createBuffer(1, len, ac.sampleRate), ch = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 1.5);
+    const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    f.type = "bandpass"; f.frequency.value = freq; f.Q.value = 0.6; g.gain.value = v;
+    src.buffer = buf; src.connect(f).connect(g).connect(ac.destination); src.start(ac.currentTime + delay);
+  }
+  const sfx = {
+    key: () => tone(520, 0.04, "triangle", 0.04),
+    swish: () => { noise(0.35, 0.18, 0, 3000); noise(1.2, 0.1, 0.15, 700); tone(880, 0.12, "sine", 0.05, 0.1); tone(1320, 0.2, "sine", 0.04, 0.18); },
+    block: () => { noise(0.12, 0.35, 0, 200); tone(90, 0.25, "square", 0.08); noise(0.8, 0.06, 0.1, 500); },
+    buzzer: () => tone(220, 0.7, "sawtooth", 0.07),
+    tick: () => tone(1200, 0.03, "square", 0.03),
+    win: () => { noise(2, 0.12, 0, 800); [523, 659, 784, 1046].forEach((f, i) => tone(f, 0.3, "triangle", 0.06, i * 0.12)); },
+  };
+
+  // ---------- keypad ----------
+  const pad = $("#pad");
+  ["1", "2", "3", "4", "5", "6", "7", "8", "9", "del", "0", "shoot"].forEach((k) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "key" + (k === "shoot" ? " shoot" : k === "del" ? " del" : "");
+    b.textContent = k === "del" ? "⌫" : k === "shoot" ? "SHOOT" : k;
+    b.setAttribute("aria-label", k === "del" ? "Delete" : k === "shoot" ? "Shoot" : k);
+    b.dataset.k = k;
+    b.addEventListener("pointerdown", (e) => { e.preventDefault(); press(k); b.classList.add("hit"); setTimeout(() => b.classList.remove("hit"), 90); });
+    b.addEventListener("click", (e) => { if (e.detail === 0) press(k); });
+    pad.append(b);
+  });
+  addEventListener("keydown", (e) => {
+    if (/^[0-9]$/.test(e.key)) press(e.key);
+    else if (e.key === "Backspace") press("del");
+    else if (e.key === "Enter" || e.key === " ") {
+      if (!$("#title").hidden || !$("#end").hidden) { e.preventDefault(); start(); }
+      else press("shoot");
+    }
+  });
+
+  // ---------- game ----------
+  let G = null, typed = "", timer = 0, raf = 0, lastTick = 0;
+
+  function deck() { const d = FACTS.slice(); for (let i = d.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [d[i], d[j]] = [d[j], d[i]]; } return d; }
+
+  function start() {
+    $("#title").hidden = true; $("#end").hidden = true;
+    G = { jb: 0, vw: 0, queue: deck(), q: null, live: false, seen: {} };
+    $("#sJB").textContent = "0"; $("#sVW").textContent = "0"; Court.setScores(0, 0); Court.setClock(5);
+    Court.reset();
+    tone(660, 0.1, "triangle", 0.05); tone(880, 0.2, "triangle", 0.05, 0.1);
+    setTimeout(next, 500);
+  }
+
+  function next() {
+    if (!G.queue.length) G.queue = deck();
+    G.q = G.queue.shift();
+    typed = ""; showAns();
+    $("#ans").className = ""; $("#learn").textContent = "";
+    $("#qa").textContent = G.q.a; $("#qb").textContent = G.q.b;
+    $(".fact").animate([{ transform: "scale(.85)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], { duration: 220, easing: "cubic-bezier(.2,.9,.3,1.3)" });
+    G.live = true; G.t0 = performance.now(); lastTick = 5;
+    cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
+  }
+
+  function tick(now) {
+    if (!G.live) return;
+    const left = Math.max(0, CLOCK - (now - G.t0));
+    $("#clock").textContent = (left / 1000).toFixed(1);
+    Court.setClock(left / 1000);
+    $("#clock").classList.toggle("low", left < 2000);
+    $("#barFill").style.width = (left / CLOCK) * 100 + "%";
+    const sec = Math.ceil(left / 1000);
+    if (sec < lastTick && sec <= 3 && sec > 0) sfx.tick();
+    lastTick = sec;
+    if (left <= 0) { resolve(false, true); return; }
+    raf = requestAnimationFrame(tick);
+  }
+
+  function showAns() { $("#ans").innerHTML = typed || "&nbsp;"; }
+
+  function press(k) {
+    if (!G || !G.live) return;
+    if (k === "del") { typed = typed.slice(0, -1); showAns(); sfx.key(); return; }
+    if (k === "shoot") { if (typed) resolve(+typed === G.q.a * G.q.b, false); return; }
+    if (typed.length >= 2) return;
+    typed += k; showAns(); sfx.key();
+    const answer = String(G.q.a * G.q.b);
+    if (typed.length >= answer.length) resolve(typed === answer, false);
+  }
+
+  function resolve(correct, timeout) {
+    G.live = false; cancelAnimationFrame(raf);
+    const q = G.q, answer = q.a * q.b;
+    const r = (rec.facts[q.key] = rec.facts[q.key] || { ok: 0, miss: 0 });
+    if (correct) r.ok++; else r.miss++;
+    // once missed this game, a fact stays red on the recap
+    G.seen[q.key] = G.seen[q.key] === "miss" || !correct ? "miss" : "ok";
+    save();
+    if (correct) {
+      $("#ans").className = "good";
+      G.jb++;
+      Court.shoot(true, false, () => { score("#sJB", G.jb); call(pick(["BUCKETS!", "SWISH!", "CASH!", "MONEY!"]), true); sfx.swish(); after(1300); });
+    } else {
+      if (timeout) { sfx.buzzer(); typed = ""; $("#ans").textContent = "?"; }
+      $("#ans").className = "bad";
+      $("#learn").textContent = `${q.a} × ${q.b} = ${answer}`;
+      $("#learn").animate([{ transform: "scale(1.4)" }, { transform: "scale(1)" }], { duration: 300 });
+      G.vw++;
+      // missed facts come back a few questions later
+      G.queue.splice(Math.min(3, G.queue.length), 0, q);
+      Court.shoot(false, timeout, () => { score("#sVW", G.vw); call(timeout ? "SHOT CLOCK!" : "REJECTED!", false); sfx.block(); after(1900); });
+    }
+  }
+
+  function score(sel, v) { Court.setScores(G.jb, G.vw); const el = $(sel); el.textContent = v; el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+
+  function after(ms) {
+    setTimeout(() => {
+      if (G.jb >= TARGET || G.vw >= TARGET) finish();
+      else { Court.reset(); next(); }
+    }, ms);
+  }
+
+  // ---------- announcer ----------
+  function call(text, good) {
+    const c = $("#call"); c.textContent = text; c.className = "call " + (good ? "good" : "bad");
+    void c.offsetWidth; c.classList.add("show");
+  }
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+
+  // ---------- end ----------
+  function finish() {
+    const won = G.jb >= TARGET;
+    if (won) rec.w++; else rec.l++;
+    save();
+    if (window.RosenbergBridge) RosenbergBridge.report({ score: G.jb, stars: won ? 3 : G.jb >= 6 ? 1 : 0 });
+    $("#endKicker").textContent = won ? "Final · Brunson takes it" : "Final · Wemby takes it";
+    $("#endTitle").textContent = won ? "BRUNSON WINS" : "WEMBY WINS";
+    $("#fJB").textContent = G.jb; $("#fVW").textContent = G.vw;
+    $("#grid").innerHTML = FACTS.map((f) => `<div class="${G.seen[f.key] || ""}">${f.a}×${f.b}<b>${G.seen[f.key] === "miss" ? f.a * f.b : G.seen[f.key] === "ok" ? "✓" : "–"}</b></div>`).join("");
+    const misses = FACTS.filter((f) => G.seen[f.key] === "miss").length;
+    $("#legendLine").textContent = misses ? `Red ones are the ones to practice (answer shown). Green: got it.` : `Every fact you saw, you got. Unstoppable.`;
+    $("#end").hidden = false;
+    if (won) { sfx.win(); confetti(); } else sfx.buzzer();
+    updateRecord();
+  }
+  function updateRecord() { $("#record").textContent = rec.w + rec.l ? `Record vs. Wemby: ${rec.w}–${rec.l}` : ""; }
+
+  function confetti() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const cv = $("#confetti"), c = cv.getContext("2d");
+    cv.width = innerWidth; cv.height = innerHeight; cv.hidden = false;
+    const cols = ["#F58426", "#1D5FD1", "#FFFFFF", "#FFC940"];
+    const P = Array.from({ length: 170 }, () => ({ x: Math.random() * cv.width, y: -20 - Math.random() * cv.height * 0.5, vx: Math.random() * 2 - 1, vy: 2 + Math.random() * 3.5, r: Math.random() * 6, vr: Math.random() * 0.2 - 0.1, w: 6 + Math.random() * 6, col: cols[Math.floor(Math.random() * 4)] }));
+    const t0 = performance.now();
+    (function f(t) {
+      c.clearRect(0, 0, cv.width, cv.height);
+      for (const p of P) { p.x += p.vx; p.y += p.vy; p.r += p.vr; c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.fillStyle = p.col; c.fillRect(-p.w / 2, -p.w / 4, p.w, p.w / 2); c.restore(); }
+      if (t - t0 < 4000) requestAnimationFrame(f); else cv.hidden = true;
+    })(t0);
+  }
+
+  // ---------- wiring ----------
+  $("#startBtn").onclick = start;
+  $("#againBtn").onclick = start;
+  const syncMute = () => { $("#mute").innerHTML = muted ? "&#128263;" : "&#128266;"; $("#mute").setAttribute("aria-label", muted ? "Sound off" : "Sound on"); };
+  $("#mute").onclick = () => { muted = !muted; try { localStorage.setItem("buckets.muted", muted ? "1" : "0"); } catch {} syncMute(); };
+  syncMute(); updateRecord(); Court.reset();
+  if (location.hash === "#autotest") window.__b = () => G;
+})();
+</script>
+</body>
+</html>

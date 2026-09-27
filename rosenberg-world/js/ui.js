@@ -154,7 +154,9 @@
   // Displayed star count lags behind the bank so stars can fly in and land.
   let shown = RW.save.stars, flying = 0, syncTimer = null;
   function syncStars(force) {
-    if (force || flying === 0) { shown = RW.save.stars; starCount.textContent = shown; }
+    // hold the old number while a game or its results are up, so earned stars can fly in afterwards
+    const holding = RW.host && (RW.host.current || !$("#results").hidden);
+    if (force || (flying === 0 && !holding)) { shown = RW.save.stars; starCount.textContent = shown; }
   }
   RW.bus.on("stars", () => { clearTimeout(syncTimer); syncTimer = setTimeout(() => syncStars(), 3500); });
   function flyStars(sx, sy, n, delay = 0) {
@@ -265,7 +267,7 @@
       RW.sfx.play("whoosh");
       show(portalCard, false); portalCard.classList.remove("on");
       await irisTo(true, sx, sy);
-      current = { game, dest, cleanup: null, frame: null };
+      current = { game, dest, cleanup: null, frame: null, session: { rounds: 0, score: 0, stars: 0, newHigh: false, newItems: [] } };
       E.pause(true);
       RW.sfx.duck(true);
       show(hud, false);
@@ -294,19 +296,29 @@
       show(host, true);
       await irisTo(false, innerWidth / 2, innerHeight / 2);
     },
+    // A round ended but the game stays open (it shows its own end screen). Stars are banked now.
+    report(result) {
+      if (!current) return;
+      const rec = RW.games.record(current.game.id, result || {});
+      const s = current.session;
+      s.rounds++; s.stars += rec.stars; s.score = Math.max(s.score, rec.score);
+      s.newHigh = s.newHigh || rec.newHigh; s.newItems.push(...rec.newItems);
+    },
     finish(result) {
       if (!current) return;
       const { game, dest } = current;
-      const rec = RW.games.record(game.id, result || {});
+      RW.host.report(result);
+      const s = current.session;
       closeGame();
-      showResults(game, dest, rec);
+      showResults(game, dest, s);
     },
     async exit() {
       if (!current) return;
-      const { dest } = current;
+      const { game, dest, session } = current;
       await irisTo(true, innerWidth / 2, innerHeight / 2);
       closeGame();
-      backToWorld(dest, 0);
+      if (session.rounds) { showResults(game, dest, session); irisTo(false, innerWidth / 2, innerHeight / 2); }
+      else backToWorld(dest, 0);
     },
   };
   function closeGame() {
@@ -325,6 +337,7 @@
     return {
       player: P ? { id: P.id, name: A.CHARS[P.id].name } : { id: "reuben", name: "Reuben" },
       stars: RW.save.stars,
+      report: (r) => RW.host.report(r),
       finish: (r) => RW.host.finish(r),
       exit: () => RW.host.exit(),
       // small per-game save slot
@@ -336,11 +349,13 @@
   window.addEventListener("message", (ev) => {
     const d = ev.data;
     if (!d || typeof d !== "object" || !current || !current.frame || ev.source !== current.frame.contentWindow) return;
-    if (d.type === "rosenberg-world:finish") RW.host.finish({ score: d.score, stars: d.stars, collectibles: Array.isArray(d.collectibles) ? d.collectibles : [] });
+    if (d.type === "rosenberg-world:report") RW.host.report({ score: d.score, stars: d.stars, collectibles: Array.isArray(d.collectibles) ? d.collectibles : [] });
+    else if (d.type === "rosenberg-world:finish") RW.host.finish({ score: d.score, stars: d.stars, collectibles: Array.isArray(d.collectibles) ? d.collectibles : [] });
     else if (d.type === "rosenberg-world:exit") RW.host.exit();
   });
   // Same-origin games can also call these directly.
   window.RosenbergWorld = {
+    report: (r) => RW.host.report(r),
     finish: (r) => RW.host.finish(r),
     exit: () => RW.host.exit(),
     get player() { const P = E.player; return P ? { id: P.id, name: A.CHARS[P.id].name } : null; },

@@ -2,18 +2,25 @@
 //
 //   <script src="../rw-bridge.js"></script>
 //
-// Then, when a round is over:
+// When a round ends (the game keeps showing its own end screen):
 //
-//   RosenbergBridge.finish({ score: 1234, stars: 3 });          // stars: 0-10
+//   RosenbergBridge.report({ score: 1234, stars: 3 });          // stars: 0-10, banked right away
+//
+// To hand control back to the world immediately with a result:
+//
+//   RosenbergBridge.finish({ score: 1234, stars: 3 });
 //   RosenbergBridge.finish({ score: 5, stars: 1, collectibles: ["baseball"] });
 //
-// To quit back to the world without a result:
+// To go back to the world (shows the results of anything reported, then the player walks out):
 //
 //   RosenbergBridge.exit();
 //
+// Any element with a data-rw-back attribute (normally a hidden "BACK TO ROSENBERG WORLD"
+// button on the game's end screens) is shown and wired to exit() when running inside the world.
+//
 // RosenbergBridge.inWorld tells you if the game is running inside Rosenberg World,
 // and RosenbergBridge.player is "reuben", "jonah" or "ellie" (or null when standalone).
-// When the game is opened on its own, finish() and exit() do nothing, so the same file
+// When the game is opened on its own, everything here does nothing, so the same file
 // works standalone and inside the hub.
 
 (function () {
@@ -23,13 +30,28 @@
     if (!inWorld) return false;
     try { window.parent.postMessage(msg, "*"); return true; } catch (e) { return false; }
   }
-  window.RosenbergBridge = {
+  function pack(type, result) {
+    result = result || {};
+    return { type: type, score: Number(result.score) || 0, stars: Number(result.stars) || 0, collectibles: result.collectibles || [] };
+  }
+  var bridge = window.RosenbergBridge = {
     inWorld: inWorld,
     player: inWorld ? params.get("player") : null,
-    finish: function (result) {
-      result = result || {};
-      return send({ type: "rosenberg-world:finish", score: Number(result.score) || 0, stars: Number(result.stars) || 0, collectibles: result.collectibles || [] });
-    },
+    report: function (result) { return send(pack("rosenberg-world:report", result)); },
+    finish: function (result) { return send(pack("rosenberg-world:finish", result)); },
     exit: function () { return send({ type: "rosenberg-world:exit" }); },
   };
+  function wire() {
+    if (!inWorld) return;
+    var els = document.querySelectorAll("[data-rw-back]");
+    for (var i = 0; i < els.length; i++) {
+      var b = els[i];
+      b.hidden = false;
+      b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); bridge.exit(); });
+      b.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+      b.addEventListener("touchstart", function (e) { e.stopPropagation(); }, { passive: true });
+    }
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire);
+  else wire();
 })();

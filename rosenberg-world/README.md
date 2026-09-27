@@ -10,8 +10,11 @@ Open `index.html` in a browser. No install, no server. Landscape iPad is the mai
 
 1. Copy the game into `games/<game-name>/`.
 2. In the game's `index.html`, add `<script src="../rw-bridge.js"></script>`. When a round ends, call
-   `RosenbergBridge.finish({ score, stars })`. `RosenbergBridge.exit()` quits without a result.
-   Both do nothing when the game is opened on its own, so the same file still works standalone.
+   `RosenbergBridge.report({ score, stars })`; the game keeps its own end screen and the stars are
+   banked right away. Add a hidden `<button data-rw-back hidden>BACK TO ROSENBERG WORLD</button>`
+   next to the game's Play Again button; the bridge shows it only inside the world.
+   (`RosenbergBridge.finish(...)` hands straight back to the world instead.) All of this does nothing
+   when the game is opened on its own, so the same file still works standalone.
 3. In `js/games.js`, set `entry: "games/<game-name>/index.html"` on the game's entry.
 
 That's all. The building, sign, map pin, PLAY card, results screen (score, stars, Play Again,
@@ -41,6 +44,20 @@ if the game needs to stop timers.
 Register an item with `RW.collection.add({ id, name, icon, hint })` (for example in `games.js`),
 then return it from a game: `RosenbergBridge.finish({ score, stars, collectibles: ["my-item"] })`.
 It shows up in the Collection Book.
+
+## Linked games
+
+| Where in the world | Game | Folder |
+| --- | --- | --- |
+| Backyard Baseball field | Backyard Baseball | `games/backyard-baseball` |
+| The family car in the driveway | Fish Friday | `games/lox-run` |
+| Basketball court (Sports Complex) | Buckets | `games/buckets` |
+| Ariel's Kitchen | Ariel's Passover Cookout | `games/ariel-passover-cookout` |
+| Fart Man Landing Zone | Fart Man Lander | `games/fart-man-lander` |
+| Math Blaster Academy | Reuben's Math Blaster | `games/math-blaster` |
+
+These are copies of each game made for the hub. A later update to a game elsewhere in the repo
+needs copying in here again (keeping its `rw-bridge.js` lines).
 
 ## Files
 
