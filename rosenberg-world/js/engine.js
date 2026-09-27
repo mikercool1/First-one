@@ -180,7 +180,9 @@
     const spec = A.CHARS[id];
     const P = {
       kind: "player", id, spec, x, y, dir: 1, back: false, side: 0, move: 0, anim: 0,
-      speed: id === "jonah" ? 190 : id === "max" ? 195 : id === "ellie" ? 160 : 175,
+      // everyone walks 1.5x their old pace; Max is always running at 2x
+      speed: id === "max" ? 350 : 1.5 * (id === "jonah" ? 190 : id === "ellie" ? 160 : 175),
+      gait: id === "max" ? 1.8 : 1.5, // legs cycle faster to match the speed
       pose: null, poseT: 0, poseDur: 0, lock: false, lift: 0, liftV: 0,
       path: null, target: null, onArrive: null, idleT: 0, blinkT: 2, blink: false,
       quirkT: 6, wrongT: 0, wrongDir: 0, lookT: 0, emerge: 1, prop: null, sitOn: null,
@@ -221,7 +223,7 @@
 
   function updatePlayer(P, dt) {
     const input = inputVector();
-    P.anim += dt;
+    P.anim += dt * (1 + P.move * (P.gait - 1));
     // blink
     P.blinkT -= dt;
     if (P.blinkT < 0) { P.blink = !P.blink; P.blinkT = P.blink ? 0.12 : U.rand(2, 4.5); }
@@ -252,7 +254,7 @@
           const cb = P.onArrive; P.onArrive = null;
           if (cb) cb();
         }
-      } else { vx = (dx / d) * sp; vy = (dy / d) * sp; }
+      } else { const s2 = Math.min(sp, d / Math.max(dt, 1e-3)); vx = (dx / d) * s2; vy = (dy / d) * s2; }
     }
 
     // Ellie: tiny detours. Sometimes she stops for flowers, sometimes she runs the wrong way for a moment.
@@ -292,7 +294,8 @@
       P.back = vy < -Math.abs(vx) * 1.2;
       P.idleT = 0;
       P.stepT = (P.stepT || 0) - dt;
-      if (P.stepT < 0) { P.stepT = 0.32; if (U.chance(0.35)) E.burst(P.x, P.y, 0, "dust", 1); }
+      if (P.id === "max") { if (P.stepT < 0) { P.stepT = 0.12; E.burst(P.x - P.dir * 14, P.y, 0, "dust", 1); } }
+      else if (P.stepT < 0) { P.stepT = 0.32; if (U.chance(0.35)) E.burst(P.x, P.y, 0, "dust", 1); }
     } else {
       P.move = U.lerp(P.move, 0, 0.3);
       if (!P.pose) { P.side = U.lerp(P.side, 0, 0.1); P.back = false; }
@@ -793,7 +796,7 @@
     if (P.id === "ellie" && P.lift > 300) c.rotate(Math.sin(E.t * 8) * 0.3);
     A.drawChar(c, P.spec, {
       t: P.anim, move: P.move, side: P.side, dir: P.dir, back: P.back && !P.pose,
-      pose: P.pose, pt: P.poseDur ? P.poseT / P.poseDur : P.poseT, blink: P.blink, prop: P.prop,
+      pose: P.pose || (P.id === "max" && P.move > 0.5 ? "spoon" : null), pt: P.poseDur ? P.poseT / P.poseDur : P.poseT, blink: P.blink, prop: P.prop,
     });
     c.restore();
   }
