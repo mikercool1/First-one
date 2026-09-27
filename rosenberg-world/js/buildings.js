@@ -171,55 +171,49 @@
   // =====================================================================
   // THE ROSENBERG HOUSE  (anchor = front of the main block, x centered)
   // =====================================================================
+  // A long, low, white ranch house with a charcoal roof and an attached garage.
   B.HOUSE_WINDOWS = {
-    ikey: { x: -236, y: -118, w: 96, h: 70 },     // living room with the TV
-    up: [{ x: -232, y: -184, w: 58, h: 62 }, { x: -150, y: -184, w: 58, h: 62 }, { x: 92, y: -184, w: 58, h: 62 }, { x: 176, y: -184, w: 58, h: 62 }],
-    front: { x: 96, y: -118, w: 110, h: 70 },
+    ikey: { x: -182, y: -104, w: 76, h: 62 },     // living room with the TV
+    up: [{ x: -276, y: -104, w: 56, h: 62 }, { x: 204, y: -104, w: 52, h: 62 }], // Cari walks past these
+    front: { x: 36, y: -104, w: 124, h: 62 },
   };
   B.house = (c) => {
-    const W = "#FFF3E2", ROOF = "#D95A4A", TRIM = "#FFFFFF", SH = "#2F4E86";
-    // garage wing (set back a little)
+    const W = "#FAFAF7", ROOF = "#5E6675", TRIM = "#FFFFFF", SH = "#27324A", STONE = "#B9B2A6";
+    // garage wing
     c.save(); c.translate(0, -18);
-    wall(c, 262, 462, 132, W, { siding: true });
-    hipRoof(c, 262, 462, -132, 70, ROOF, { inset: 40, over: 14 });
-    // garage door
-    c.fillStyle = "#F4F4F6"; rr(c, 286, -118, 152, 118, 6); c.fill();
+    wall(c, 282, 470, 116, W, { siding: true, foundation: "#9E978B" });
+    hipRoof(c, 282, 470, -116, 64, ROOF, { inset: 40, over: 14 });
+    c.fillStyle = "#F4F4F6"; rr(c, 300, -100, 152, 100, 6); c.fill();
     c.strokeStyle = "rgba(0,0,0,.1)"; c.lineWidth = 2;
-    for (let y = -94; y < 0; y += 24) { c.beginPath(); c.moveTo(288, y); c.lineTo(436, y); c.stroke(); }
-    for (let i = 0; i < 4; i++) glass(c, 296 + i * 36, -110, 28, 14, { r: 3 });
+    for (let y = -76; y < 0; y += 24) { c.beginPath(); c.moveTo(302, y); c.lineTo(450, y); c.stroke(); }
+    for (let i = 0; i < 4; i++) glass(c, 310 + i * 36, -92, 28, 13, { r: 3 });
+    c.fillStyle = "#2B2F3A"; [292, 460].forEach((x) => { rr(c, x - 4, -84, 8, 13, 3); c.fill(); });
     c.restore();
-    // main block
-    wall(c, -262, 262, 212, W, { siding: true, trim: TRIM });
-    hipRoof(c, -262, 262, -212, 150, ROOF, { inset: 118 });
-    chimney(c, 170, -300, 80);
-    // upstairs windows
-    B.HOUSE_WINDOWS.up.forEach((w) => windowUnit(c, w.x, w.y, w.w, w.h, { shutters: SH }));
-    // front picture window and the living room window (Ikey's TV glow is drawn live)
+    // main block: one long story
+    wall(c, -304, 282, 128, W, { siding: true, trim: TRIM, foundation: "#9E978B" });
+    // stone wainscot along the bottom
+    c.fillStyle = STONE; c.fillRect(-304, -30, 586, 18);
+    c.fillStyle = "rgba(255,255,255,.18)";
+    for (let x = -300, r = 0; x < 280; x += 22, r++) c.fillRect(x + (r % 2) * 6, -27 + (r % 3) * 4, 14, 3);
+    hipRoof(c, -304, 282, -128, 92, ROOF, { inset: 90, trim: "#EDEFF3" });
+    chimney(c, 170, -176, 62, 34);
+    // windows
+    B.HOUSE_WINDOWS.up.forEach((w) => windowUnit(c, w.x, w.y, w.w, w.h, { shutters: SH, box: "#6E4A30" }));
     const f = B.HOUSE_WINDOWS.front;
-    windowUnit(c, f.x, f.y, f.w, f.h, { shutters: SH, box: "#8B5A34" });
+    windowUnit(c, f.x, f.y, f.w, f.h, { shutters: SH });
     const k = B.HOUSE_WINDOWS.ikey;
-    windowUnit(c, k.x, k.y, k.w, k.h, { shutters: SH, box: "#8B5A34", noGlass: true, noMullion: true });
-    // entry gable, pushed forward
-    c.save(); c.translate(0, 10);
-    wall(c, -130, 40, 236, "#FFF8EE", { siding: true, trim: TRIM });
-    gable(c, -142, 52, -236, -318, "#FFF8EE", ROOF);
-    // round attic window
-    c.fillStyle = TRIM; c.beginPath(); c.arc(-45, -262, 22, 0, TAU); c.fill();
-    glass(c, -63, -280, 36, 36, { round: true });
-    c.fillStyle = TRIM; c.fillRect(-47, -280, 4, 36); c.fillRect(-63, -264, 36, 4);
-    // porch roof
-    c.fillStyle = lin(c, 0, -150, 0, -128, [shade(ROOF, 0.2), ROOF]);
-    rr(c, -120, -150, 150, 22, 8); c.fill();
-    c.fillStyle = TRIM; rr(c, -122, -130, 154, 6, 3); c.fill();
-    ["#FFFFFF"].forEach(() => { c.fillStyle = TRIM; rr(c, -114, -128, 8, 128, 3); c.fill(); rr(c, 16, -128, 8, 128, 3); c.fill(); });
-    door(c, -45, 62, 112, "#1FA39A", { arch: true });
-    // house number + porch lights
-    plate(c, "99", -45, -134, 11, "#2F4E86", "#FFFFFF");
-    [-92, 2].forEach((x) => { c.fillStyle = "#2B2F3A"; rr(c, x - 4, -104, 8, 16, 3); c.fill(); c.fillStyle = "#FFE9A0"; rr(c, x - 3, -101, 6, 9, 2); c.fill(); });
-    steps(c, -45, 84, 2);
+    windowUnit(c, k.x, k.y, k.w, k.h, { shutters: SH, noGlass: true, noMullion: true });
+    // front porch with a little gable over the door
+    c.save(); c.translate(0, 8);
+    c.fillStyle = "#E9E4DA"; rr(c, -96, -8, 102, 12, 3); c.fill();
+    gable(c, -104, 14, -132, -184, "#FFFFFF", ROOF);
+    c.fillStyle = TRIM; rr(c, -98, -134, 8, 128, 3); c.fill(); rr(c, 0, -134, 8, 128, 3); c.fill();
+    door(c, -45, 58, 104, "#1FA39A", { arch: false });
+    plate(c, "99", -45, -150, 11, "#27324A", "#FFFFFF");
+    [-82, -8].forEach((x) => { c.fillStyle = "#2B2F3A"; rr(c, x - 4, -98, 8, 14, 3); c.fill(); c.fillStyle = "#FFE9A0"; rr(c, x - 3, -95, 6, 8, 2); c.fill(); });
+    steps(c, -45, 78, 2);
     c.restore();
-    // welcome mat + name plaque
-    plate(c, "THE ROSENBERGS", -150, -22, 11, "#FFFFFF", "#2F4E86", { r: 6 });
+    plate(c, "THE ROSENBERGS", 98, -20, 11, "#FFFFFF", "#27324A", { r: 6 });
   };
 
   // =====================================================================

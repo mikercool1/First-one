@@ -80,7 +80,7 @@ body:not(.ready) #title { opacity: 0; }
 .names .n { font-size: clamp(16px, 2.4vw, 26px); color: #FFFFFF; padding: 6px 16px; border-radius: 999px; box-shadow: 0 4px 0 rgba(0,0,0,.18), 0 8px 18px rgba(0,0,0,.18); letter-spacing: .06em; }
 .names .r { background: linear-gradient(180deg, #34478A, #1E2B57); }
 .names .j { background: linear-gradient(180deg, #7ACDF6, #3FA6E0); }
-.names .e { background: linear-gradient(180deg, #B484F0, #8A4FD8); }
+.names .e { background: linear-gradient(180deg, #F58BB8, #E8559B); }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 .tap-enter {
   position: absolute; left: 50%; bottom: calc(var(--safe-b) + 5vh); transform: translateX(-50%);

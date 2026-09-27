@@ -204,13 +204,13 @@
   function buildHouse() {
     const hx = 2450, hy = 1700;
     const house = add({
-      kind: "building", x: hx, y: hy, box: [-300, -420, 490, 34], sprite: true, occludes: true,
-      solid: [{ r: [-262, -190, 262, -4] }, { r: [-132, -30, 42, 14] }, { r: [262, -170, 462, -22] }],
+      kind: "building", x: hx, y: hy, box: [-340, -275, 500, 34], sprite: true, occludes: true,
+      solid: [{ r: [-304, -170, 282, -4] }, { r: [-100, -20, 10, 14] }, { r: [282, -150, 470, -22] }],
       draw: (c) => B.house(c),
       tap: { reach: "walk", at: [-45, 50], range: 50, act: (E2) => { E2.say(E2.player, U.pick(["Home sweet home!", "Knock knock!", "Anybody home?"]), 1.8); RW.sfx.play("tap"); E2.later(0.8, () => { if (!world.cameoActive("cari")) world.houseWave(); }); } },
       live: (c, E2) => drawHouseLive(c, E2),
     });
-    house.hit = [-280, -400, 470, 10];
+    house.hit = [-320, -260, 480, 10];
     // front garden
     [[2215, 1714, 0.9, "#FF6B8B"], [2335, 1716, 0.75, "#FFD23F"], [2560, 1716, 0.75, "#FFFFFF"], [2690, 1712, 0.9, "#FF6B8B"]].forEach(([x, y, s, f]) => bush(x, y, s, f));
     flowerBed(2270, 1760, 110, 30, 7); flowerBed(2630, 1760, 110, 30, 8);
@@ -235,11 +235,11 @@
     trashCan(2190, 1850);
     // family car in the driveway (tap: honk)
     add({
-      kind: "car", x: 2815, y: 1795, box: [-60, -90, 60, 8], shadow: [60, 14], squash: 0, flash: 0,
+      kind: "car", x: 2815, y: 1795, box: [-74, -114, 74, 8], shadow: [66, 14], squash: 0, flash: 0,
       solid: [{ r: [-56, -20, 56, 4] }],
       draw(c, E2, e) {
         A.drawCarFront(c, "#3F7FD9", Math.max(0, e.squash) * Math.sin(E2.t * 30));
-        if (e.flash > 0) { c.fillStyle = `rgba(255,250,200,${e.flash})`; c.beginPath(); c.arc(-36, -32, 18, 0, TAU); c.arc(36, -32, 18, 0, TAU); c.fill(); }
+        if (e.flash > 0) { c.fillStyle = `rgba(230,245,255,${e.flash * 0.8})`; c.beginPath(); c.arc(-48, -51, 16, 0, TAU); c.arc(48, -51, 16, 0, TAU); c.fill(); }
       },
       update(e, dt) { e.squash -= dt * 2; e.flash = Math.max(0, e.flash - dt * 2); },
       tap: {
@@ -1814,6 +1814,7 @@
   // rectangles kept clear of scatter trees (fields, lots, plazas, and so on)
   const KEEP_CLEAR = [
     [2020, 600, 2900, 1520],  // baseball + backyard
+    [2100, 1500, 3000, 1870], // Rosenberg House front yard and driveway
     [880, 2040, 1900, 3050],  // sports complex
     [1900, 2020, 2260, 2320], // playground
     [2150, 2380, 2780, 2820], // arcade and its front lawn

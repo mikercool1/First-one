@@ -176,11 +176,11 @@
       legs: [[0, 0.38, "#1E2130"], [0.38, 0.8, "#F4CDB1"], [0.8, 1, "#FFFFFF"]], shoe: "#F3F3F3", shoeAccent: "#2EB872",
     },
     ellie: {
-      id: "ellie", name: "Ellie", age: 3, tag: "Tiny Explorer", color: "#9B5DE5",
+      id: "ellie", name: "Ellie", age: 3, tag: "Tiny Explorer", color: "#E8559B",
       L: 12, T: 17, R: 21, bw: 25, belly: 1.1, legW: 8, armW: 7, stride: 14,
-      skin: "#F9D8C3", hair: "#B07A45", hairStyle: "pigtails", bow: "#E956A8",
-      outfit: "dress", shirt: "#9B5DE5",
-      legs: [[0, 0.72, "#F9D8C3"], [0.72, 1, "#FFFFFF"]], shoe: "#F58CC0", shoeAccent: "#FFFFFF",
+      skin: "#FFE1CF", hair: "#5B2330", hairStyle: "pigtails", bow: "#E8559B",
+      outfit: "dress", shirt: "#F28AA8",
+      legs: [[0, 0.72, "#FFE1CF"], [0.72, 1, "#FFFFFF"]], shoe: "#FF9EBB", shoeAccent: "#D9678A",
     },
     max: {
       id: "max", name: "Max", L: 15, T: 18, R: 18, bw: 22, legW: 7.5, armW: 6.5, stride: 15,
@@ -382,11 +382,11 @@
       // soft ruffle hem + tiny white dots
       c.fillStyle = "rgba(255,255,255,.28)";
       for (let i = -3; i <= 3; i++) { c.beginPath(); c.arc(i * flare * 0.3, bot + 4, 3.2, 0, TAU); c.fill(); }
-      c.fillStyle = "rgba(255,255,255,.5)";
-      [[-5, top + 9], [4, top + 14], [-2, top + 20], [7, top + 22], [-8, top + 19]].forEach(([x, y]) => { c.beginPath(); c.arc(x, y, 1.2, 0, TAU); c.fill(); });
+      c.strokeStyle = "rgba(150,50,80,.22)"; c.lineWidth = 1.4;
+      c.beginPath(); c.moveTo(-3, top + T * 0.4); c.quadraticCurveTo(-5, top + T * 0.8, -4, bot + 4); c.moveTo(5, top + T * 0.45); c.quadraticCurveTo(7, top + T * 0.85, 6, bot + 4); c.stroke();
       c.restore();
       // collar
-      c.beginPath(); c.ellipse(0, top + 2, bw * 0.22, 3.2, 0, 0, TAU); c.fillStyle = "#FFFFFF"; c.fill();
+      c.beginPath(); c.moveTo(-bw * 0.22, top + 1); c.quadraticCurveTo(0, top + 6, bw * 0.22, top + 1); c.strokeStyle = "#C9607F"; c.lineWidth = 1.6; c.stroke();
       return;
     }
     const r = Math.min(10, T * 0.35);
@@ -507,15 +507,18 @@
     const h = s.hair, hs = s.hairStyle;
     c.fillStyle = h;
     if (hs === "pigtails") {
-      const sw = Math.sin(t * 6) * 0.15;
+      const sw = Math.sin(t * 3 + 1) * 0.12;
       [-1, 1].forEach((k) => {
-        if (fs > 0.5 && k === 1 && !back) return;
         c.save();
-        c.translate(k * R * 0.92, -R * 0.1);
-        c.rotate(k * (0.5 + sw));
-        c.fillStyle = rad(c, 0, R * 0.3, 1, 0, R * 0.35, R * 0.5, [shade(h, 0.15), h, shade(h, -0.2)]);
-        ell(c, 0, R * 0.38, R * 0.3, R * 0.42); c.fill();
-        c.fillStyle = s.bow; ell(c, 0, 0, R * 0.16, R * 0.1); c.fill();
+        c.translate(k * R * 0.9, -R * 0.86);
+        c.rotate(-k * (2.05 + sw));
+        c.beginPath(); c.moveTo(-R * 0.16, 0); c.quadraticCurveTo(-R * 0.42, R * 0.4, -R * 0.3, R * 0.72);
+        c.lineTo(-R * 0.12, R * 0.58); c.lineTo(0, R * 0.8); c.lineTo(R * 0.12, R * 0.6); c.lineTo(R * 0.3, R * 0.74);
+        c.quadraticCurveTo(R * 0.42, R * 0.4, R * 0.16, 0); c.closePath();
+        c.fillStyle = rad(c, 0, R * 0.3, 1, 0, R * 0.3, R * 0.7, ["#8A4250", h]); c.fill();
+        c.strokeStyle = shade(h, -0.35); c.lineWidth = 1.4; c.stroke();
+        c.strokeStyle = "rgba(255,200,210,.25)"; c.lineWidth = 1.4;
+        c.beginPath(); c.moveTo(-R * 0.06, R * 0.12); c.quadraticCurveTo(-R * 0.14, R * 0.4, -R * 0.08, R * 0.62); c.stroke();
         c.restore();
       });
     } else if (hs === "long") {
@@ -574,25 +577,28 @@
       c.fillStyle = "rgba(255,255,255,.14)";
       ell(c, -R * 0.35, -R * 0.75, R * 0.35, R * 0.14, -0.3); c.fill();
     } else if (hs === "pigtails") {
-      c.fillStyle = hg(-R * 1.1, 0);
+      c.fillStyle = rad(c, 0, -R * 0.8, 1, 0, -R * 0.8, R * 1.1, ["#8A4250", h]);
       c.beginPath();
       if (back) { c.arc(0, 0, R * 1.04, Math.PI * 0.85, Math.PI * 2.15); c.quadraticCurveTo(0, R * 0.7, -R * 0.9, R * 0.45); c.closePath(); c.fill(); }
       else {
-        c.arc(0, -R * 0.02, R * 1.05, Math.PI * 0.98, Math.PI * 2.02);
-        c.quadraticCurveTo(R * 0.7 + fx * 0.3, -R * 0.62, R * 0.2 + fx * 0.4, -R * 0.38);
-        c.quadraticCurveTo(-R * 0.1 + fx * 0.3, -R * 0.6, -R * 0.45 + fx * 0.2, -R * 0.35);
-        c.quadraticCurveTo(-R * 0.8, -R * 0.55, -R * 1.05, -R * 0.02);
+        // fringe outline (from the Backyard Baseball Ellie), nudged toward the facing side
+        const pts = [[-1.06, 0.32], [-1.14, -0.4], [-0.84, -1.0], [-0.2, -1.22], [0.48, -1.12], [0.95, -0.76], [1.1, -0.26], [1.02, -0.14], [0.82, -0.2], [0.62, -0.15], [0.42, -0.21], [0.22, -0.15], [0.02, -0.21], [-0.18, -0.15], [-0.4, -0.21], [-0.62, -0.13], [-0.8, 0.38]]
+          .map(([x, y]) => [x * R + (y > -0.3 ? fx * 0.25 : 0), y * R]);
+        const n = pts.length;
+        const mid = (i) => [(pts[i % n][0] + pts[(i + 1) % n][0]) / 2, (pts[i % n][1] + pts[(i + 1) % n][1]) / 2];
+        const m0 = mid(n - 1);
+        c.moveTo(m0[0], m0[1]);
+        for (let i = 0; i < n; i++) { const m = mid(i); c.quadraticCurveTo(pts[i][0], pts[i][1], m[0], m[1]); }
         c.closePath(); c.fill();
+        c.strokeStyle = shade(h, -0.35); c.lineWidth = 1.4; c.stroke();
+        c.strokeStyle = "rgba(255,200,210,.22)"; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(-R * 0.5, -R * 0.9); c.quadraticCurveTo(R * 0.1, -R * 1.12, R * 0.6, -R * 0.8); c.stroke();
       }
-      // bow
-      c.save();
-      c.translate(R * 0.5, -R * 0.88);
-      c.rotate(0.3);
-      c.fillStyle = s.bow;
-      c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(-R * 0.45, -R * 0.35, -R * 0.42, R * 0.2); c.closePath(); c.fill();
-      c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(R * 0.45, -R * 0.35, R * 0.42, R * 0.2); c.closePath(); c.fill();
-      c.fillStyle = shade(s.bow, -0.2); c.beginPath(); c.arc(0, 0, R * 0.1, 0, TAU); c.fill();
-      c.restore();
+      // pink hair bobbles where the pigtails start
+      [-1, 1].forEach((k) => [[0.86, -0.88], [0.98, -0.74]].forEach(([bx, by]) => {
+        c.beginPath(); c.arc(k * bx * R, by * R, R * 0.12, 0, TAU);
+        c.fillStyle = rad(c, k * bx * R - R * 0.04, by * R - R * 0.04, 0, k * bx * R, by * R, R * 0.12, ["#FF9CC2", "#D63F77"]); c.fill();
+      }));
     } else if (hs === "curly") {
       c.fillStyle = hg(-R * 1.2, 0);
       const n = back ? 10 : 8;
@@ -844,21 +850,48 @@
     });
   };
 
-  // Front-view family car in the driveway.
+  // Front-view family car in the driveway: the black Mazda CX-50 (color arg kept for other cars).
   A.drawCarFront = (c, col, squash = 0) => {
     c.save();
-    c.scale(1 + squash * 0.06, 1 - squash * 0.06);
-    [-40, 40].forEach((x) => { c.fillStyle = "#23252E"; rr(c, x - 9, -22, 18, 24, 6); c.fill(); });
-    c.fillStyle = lin(c, 0, -80, 0, 0, [shade(col, 0.3), col, shade(col, -0.3)]);
-    rr(c, -54, -50, 108, 38, 14); c.fill();
-    c.beginPath(); c.moveTo(-40, -48); c.quadraticCurveTo(-36, -84, 0, -84); c.quadraticCurveTo(36, -84, 40, -48); c.closePath(); c.fill();
-    c.fillStyle = lin(c, 0, -80, 0, -50, ["#DDF3FF", "#8FC8EA"]);
-    c.beginPath(); c.moveTo(-32, -50); c.quadraticCurveTo(-29, -76, 0, -76); c.quadraticCurveTo(29, -76, 32, -50); c.closePath(); c.fill();
-    c.fillStyle = "rgba(255,255,255,.55)"; c.beginPath(); c.moveTo(-22, -52); c.lineTo(-12, -74); c.lineTo(-4, -74); c.lineTo(-14, -52); c.closePath(); c.fill();
-    c.fillStyle = "#FFF6D0"; ell(c, -36, -32, 9, 7); c.fill(); ell(c, 36, -32, 9, 7); c.fill();
-    c.fillStyle = shade(col, -0.4); rr(c, -18, -30, 36, 10, 5); c.fill();
-    c.fillStyle = "#F2F2F2"; rr(c, -14, -18, 28, 8, 2); c.fill();
-    text(c, "ROSNBRG", 0, -14, 6, "#333", { weight: 700 });
+    c.scale(1 + squash * 0.05, 1 - squash * 0.05);
+    const paint = "#16181D";
+    // tires
+    [-46, 46].forEach((x) => { c.fillStyle = "#101114"; rr(c, x - 11, -26, 22, 28, 7); c.fill(); });
+    // side mirrors
+    [-1, 1].forEach((k) => { c.fillStyle = paint; rr(c, k * 64 - 8, -74, 16, 11, 4); c.fill(); });
+    // lower body with rugged black cladding
+    c.fillStyle = lin(c, 0, -62, 0, -14, ["#2B2F38", paint, "#0C0D10"]);
+    rr(c, -62, -62, 124, 46, 16); c.fill();
+    c.fillStyle = "#23262D"; rr(c, -64, -30, 128, 18, 8); c.fill();
+    // cabin: tall SUV greenhouse with roof rails
+    c.fillStyle = lin(c, 0, -104, 0, -60, ["#2F333C", paint]);
+    c.beginPath(); c.moveTo(-54, -60); c.lineTo(-46, -98); c.quadraticCurveTo(-44, -104, -36, -104); c.lineTo(36, -104); c.quadraticCurveTo(44, -104, 46, -98); c.lineTo(54, -60); c.closePath(); c.fill();
+    c.fillStyle = "#8A919E"; rr(c, -42, -109, 6, 6, 2); c.fill(); rr(c, 36, -109, 6, 6, 2); c.fill();
+    c.fillStyle = "#2A2D34"; rr(c, -40, -108, 80, 3, 1.5); c.fill();
+    // windshield
+    c.fillStyle = lin(c, 0, -100, 0, -64, ["#4A5566", "#1E2632"]);
+    c.beginPath(); c.moveTo(-46, -64); c.lineTo(-40, -96); c.lineTo(40, -96); c.lineTo(46, -64); c.closePath(); c.fill();
+    c.fillStyle = "rgba(255,255,255,.22)"; c.beginPath(); c.moveTo(-30, -66); c.lineTo(-20, -94); c.lineTo(-10, -94); c.lineTo(-20, -66); c.closePath(); c.fill();
+    // glossy hood highlight
+    c.fillStyle = "rgba(255,255,255,.12)"; rr(c, -48, -60, 96, 6, 3); c.fill();
+    // big dark grille with a chrome wing bar
+    c.fillStyle = "#07080A";
+    c.beginPath(); c.moveTo(-30, -52); c.lineTo(30, -52); c.quadraticCurveTo(36, -52, 34, -44); c.lineTo(26, -30); c.lineTo(-26, -30); c.lineTo(-34, -44); c.quadraticCurveTo(-36, -52, -30, -52); c.closePath(); c.fill();
+    c.strokeStyle = "rgba(120,130,145,.35)"; c.lineWidth = 1;
+    for (let y = -48; y < -31; y += 4) { c.beginPath(); c.moveTo(-28, y); c.lineTo(28, y); c.stroke(); }
+    c.strokeStyle = "#C9CFD9"; c.lineWidth = 2.2;
+    c.beginPath(); c.moveTo(-44, -47); c.quadraticCurveTo(-20, -40, 0, -44); c.quadraticCurveTo(20, -40, 44, -47); c.stroke();
+    c.fillStyle = "#D9DEE6"; ell(c, 0, -44, 5.5, 4); c.fill();
+    c.fillStyle = "#07080A"; ell(c, 0, -44, 3.2, 2.2); c.fill();
+    // slim LED headlights
+    [-1, 1].forEach((k) => {
+      c.fillStyle = "#0B0C0F";
+      c.beginPath(); c.moveTo(k * 36, -54); c.lineTo(k * 58, -56); c.lineTo(k * 58, -46); c.lineTo(k * 38, -44); c.closePath(); c.fill();
+      c.fillStyle = "#F4FAFF"; c.beginPath(); c.moveTo(k * 38, -52); c.lineTo(k * 57, -54); c.lineTo(k * 57, -51); c.lineTo(k * 39, -49); c.closePath(); c.fill();
+    });
+    // plate
+    c.fillStyle = "#F2F2F2"; rr(c, -16, -26, 32, 10, 2); c.fill();
+    text(c, "CX-50", 0, -21, 7, "#2B2F3A", { weight: 700 });
     c.restore();
   };
 
