@@ -1025,6 +1025,10 @@
         act(E2, e) {
           statueTaps++;
           RW.sfx.play("tap");
+          // CHEAT CODE: every tap on the Max statue pays out 100 stars. Tap forever for unlimited stars.
+          RW.addStars(100, "cheat");
+          E2.float(e.x, e.y - 320, "+100 ⭐", { col: "#FFE25C" });
+          E2.flyStarFrom(e.x, e.y - 280, 5);
           if (statueTaps % 5 === 0) {
             e.wink = 1.2; RW.sfx.play("giggle");
             E2.say(e, "Psst... there's a cookie in my pocket.", 2.4);
