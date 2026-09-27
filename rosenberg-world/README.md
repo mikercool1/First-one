@@ -31,18 +31,15 @@ they walk out of that game's door and the stars they earned fly into the total.
    The Frozenbergs ice cream stand (`buildIceCream`) is a small, complete example.
 3. Optionally add it to a signpost in `buildSignposts()`.
 
-### Coming soon: Witch Mountain, Frogger and the Baha Mar Hotel
+### Coming soon: the Baha Mar Hotel
 
 The **Baha Mar Hotel** (a big pastel resort with a pool out front) stands at the east end of Baha Mar
 island, at the end of the boardwalk; its game is `bahaMarHotel` in `js/games.js`.
 
 
-Their places are built and waiting: **Witch Mountain** (a glowing rocky arch with a cauldron at the
-foot of the mountain, north of the Fart Man zone) and the **Frog Pond** (lily pads and hopping frogs
-by the road, south of the arcade, for Frogger). Both show a COMING SOON ribbon and are on the
-signposts. To switch one on, copy the game into `games/<name>/` (with the bridge lines) and in
-`js/games.js` set `unlocked: true` and `entry` on `witchMountain` or `frogger`. The ribbon then
-shows the game's title, and it appears on the map and in ALL GAMES.
+It shows a COMING SOON ribbon. To switch it on, copy the game into `games/<name>/` (with the bridge
+lines) and in `js/games.js` set `unlocked: true` and `entry` on `bahaMarHotel`. The ribbon then shows
+the game's title, and it appears on the map and in ALL GAMES.
 
 ### A game for the Game Room shelf
 
@@ -92,6 +89,8 @@ BAHA MAR"), or just tap the island; the plane on the island flies you home. The 
 | Rosenberg Raceway (and the go-kart) | Racecar Rally | `games/racecar` |
 | Frozenbergs ice cream stand (on the south street) | Frozenbergs | `games/frozenbergs` |
 | Grampa Simon's garden (between the Kitchen and the Raceway) | Grandpa's Garden | `games/grandpas-garden` |
+| Witch Mountain (the glowing arch at the foot of the mountain) | Witch Mountain | `games/witch-mountain` |
+| The Frog Pond (by the road, south of the arcade) | Rosenberg Crossing (Frogger) | `games/frogger` |
 
 The Game Room is a small hub of its own: games on its bookshelf are opened with `&room=1`, and any
 `data-rw-room` button in them (hidden by default) goes back to the room. Rosenboggle's dictionary

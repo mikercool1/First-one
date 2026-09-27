@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="../rw-bridge.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#3E7FE0">
+<title>Witch Mountain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Creepster&display=swap">
+<style>
+:root {
+  --ink: #2B2340; --muted: #6C6488; --card: #FFFDF6; --line: #EADFC8;
+  --purple: #6B3FB8; --purple-d: #45237F; --green: #3FB36A; --green-d: #2A8A4E; --red: #E0473F; --gold: #FFD23F;
+  --font: "Fredoka", "Baloo 2", ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif;
+  --spooky: "Creepster", "Fredoka", fantasy;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #3E7FE0; color: var(--ink); font: 600 16px/1.3 var(--font); }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+#stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+
+/* ---------- HUD ---------- */
+.hud { position: fixed; inset: 0 0 auto 0; padding: max(10px, env(safe-area-inset-top)) 16px 0; display: flex; justify-content: space-between; align-items: start; gap: 8px; pointer-events: none; }
+.hud > * { pointer-events: auto; }
+.hud-left { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pill { display: flex; align-items: center; gap: 6px; background: rgba(255,253,246,.94); border: 2px solid rgba(43,35,64,.12); border-radius: 999px; padding: 4px 12px 4px 4px; font-size: 16px; box-shadow: 0 3px 0 rgba(43,35,64,.14); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pill canvas { width: 30px; height: 30px; border-radius: 50%; }
+.pill .ic { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 17px; background: #EFE7FF; }
+.pill b { font-weight: 700; }
+.icon-btn { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(43,35,64,.12); background: rgba(255,253,246,.94); box-shadow: 0 3px 0 rgba(43,35,64,.14); display: grid; place-items: center; padding: 0; }
+.icon-btn svg { width: 20px; height: 20px; }
+
+/* ---------- overlays ---------- */
+.overlay { position: fixed; inset: 0; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top)) 16px 16px; background: linear-gradient(180deg, rgba(30,14,60,.15), rgba(30,14,60,.55)); overflow-y: auto; }
+.card { width: min(580px, 100%); background: var(--card); border-radius: 28px; padding: 22px 20px; box-shadow: 0 10px 0 rgba(43,35,64,.25), 0 24px 60px rgba(20,10,40,.4); text-align: center; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+h1 { margin: 0; font: 400 clamp(46px, 13vw, 76px)/.95 var(--spooky); color: var(--purple); letter-spacing: .02em; text-shadow: 0 4px 0 #D9C8FF; }
+h1 small { display: block; font: 700 clamp(18px, 5vw, 24px)/1.1 var(--font); color: var(--green-d); letter-spacing: .01em; text-shadow: none; margin-top: 4px; }
+h2 { margin: 0; font: 700 28px/1.1 var(--font); }
+p { margin: 0; }
+.lead { font-size: 17px; color: var(--muted); max-width: 38ch; }
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; }
+.step { background: #F3EDFF; border-radius: 16px; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 14px; color: var(--muted); }
+.step .e { font-size: 28px; line-height: 1.1; }
+.step b { font-size: 15px; color: var(--ink); }
+.label { font-size: 13px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+.kids { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; width: 100%; }
+.kid { border: 3px solid var(--line); background: #fff; border-radius: 18px; padding: 6px 4px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: transform .15s; }
+.kid canvas { width: 100%; max-width: 90px; aspect-ratio: 1; border-radius: 50%; }
+.kid[aria-pressed="true"] { border-color: var(--purple); box-shadow: 0 4px 0 var(--purple); transform: translateY(-3px); }
+.kid small { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 1.2em; }
+.big { border: 0; border-radius: 18px; padding: 14px 26px; font: 700 22px var(--font); background: var(--green); color: #fff; box-shadow: 0 5px 0 var(--green-d); min-width: 220px; }
+.big:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--green-d); }
+.ghost { border: 2px solid var(--line); border-radius: 14px; padding: 10px 18px; background: #fff; font-weight: 700; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; }
+.stat { background: #F3EDFF; border-radius: 16px; padding: 8px; }
+.stat b { display: block; font: 700 28px/1.1 var(--font); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 13px; color: var(--muted); }
+.stars { font-size: 38px; letter-spacing: 4px; color: #F2A900; text-shadow: 0 2px 0 #C98200; }
+.practice { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.practice span { background: #FFF1D6; border-radius: 12px; padding: 4px 10px; font-size: 16px; }
+.practice .e { font-size: 20px; margin-right: 4px; }
+
+/* ---------- the spelling card ---------- */
+.quiz { position: fixed; left: 50%; top: max(62px, calc(env(safe-area-inset-top) + 56px)); transform: translateX(-50%); width: min(560px, calc(100% - 24px)); background: var(--card); border-radius: 26px; padding: 12px 14px 14px; box-shadow: 0 8px 0 rgba(43,35,64,.25), 0 18px 40px rgba(20,10,40,.35); display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: center; animation: drop .35s cubic-bezier(.2,1.4,.4,1); }
+@keyframes drop { from { transform: translate(-50%, -30px) scale(.9); opacity: 0; } }
+.quiz.away { animation: lift .35s ease forwards; }
+@keyframes lift { to { transform: translate(-50%, -40px) scale(.9); opacity: 0; } }
+.orb { grid-row: 1 / span 3; margin-bottom: 12px; width: clamp(96px, 26vw, 138px); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 35% 30%, #FFFFFF 0 8%, #EBDDFF 30%, #B99AF0 70%, #7A52C8 100%);
+  box-shadow: inset 0 -8px 18px rgba(60,20,120,.4), 0 0 0 5px #fff, 0 0 26px 6px rgba(160,110,255,.55); position: relative; }
+.orb::after { content: ""; position: absolute; left: 18%; right: 18%; bottom: -14px; height: 16px; border-radius: 0 0 14px 14px; background: linear-gradient(#5A3A1E, #3B2412); z-index: -1; }
+.orb span { font-size: clamp(56px, 16vw, 86px); line-height: 1; filter: drop-shadow(0 4px 4px rgba(40,10,80,.35)); animation: float 2.4s ease-in-out infinite; }
+@keyframes float { 50% { transform: translateY(-5px) rotate(3deg); } }
+.qtop { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.qtop b { font-size: 18px; color: var(--purple); }
+.qtop small { color: var(--muted); font-size: 13px; white-space: nowrap; }
+.tiles { display: flex; gap: 5px; flex-wrap: nowrap; justify-content: flex-start; }
+.tile { flex: 0 1 44px; min-width: 0; height: clamp(40px, 11vw, 52px); border-radius: 10px; background: #F1EADB; border: 2.5px solid #E1D5BD; display: grid; place-items: center; font: 700 clamp(20px, 6vw, 30px)/1 var(--font); text-transform: uppercase; color: var(--ink); transition: background .15s, transform .15s; }
+.tile.cur { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(107,63,184,.2); }
+.tile.full { background: #fff; border-color: #CDBFA3; animation: pop .15s ease; }
+@keyframes pop { 50% { transform: scale(1.12); } }
+.tile.good { background: #D8F5E1; border-color: var(--green); color: var(--green-d); animation: hop .5s ease both; }
+.tile.bad { background: #FFE0DC; border-color: var(--red); color: var(--red); }
+.tile.fix { background: #FFF3C4; border-color: #E9B400; color: #7A5A00; animation: flip .45s ease both; }
+@keyframes hop { 40% { transform: translateY(-10px); } }
+@keyframes flip { 0% { transform: rotateX(90deg); } 100% { transform: rotateX(0); } }
+.tiles.shake { animation: shake .4s ease; }
+@keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+.qbar { display: flex; gap: 8px; align-items: center; }
+.hear { white-space: nowrap; border: 2px solid var(--line); background: #fff; border-radius: 999px; padding: 5px 12px; font-weight: 700; font-size: 15px; }
+.qmsg { font-size: 15px; color: var(--muted); min-height: 1.3em; }
+.qmsg.bad { color: var(--red); } .qmsg.good { color: var(--green-d); }
+
+.kb { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); width: min(760px, 100%); padding: 8px 6px max(8px, env(safe-area-inset-bottom)); background: rgba(40,22,70,.82); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-radius: 22px 22px 0 0; display: flex; flex-direction: column; gap: 6px; animation: rise .3s ease; }
+@keyframes rise { from { transform: translate(-50%, 100%); } }
+.kb .r { display: flex; gap: 5px; justify-content: center; }
+.key { flex: 1 1 0; max-width: 64px; height: clamp(44px, 7vh, 58px); border: 0; border-radius: 10px; background: #FFFDF6; color: var(--ink); font: 700 clamp(18px, 5vw, 24px) var(--font); box-shadow: 0 3px 0 #B9AEDC; text-transform: uppercase; padding: 0; }
+.key:active, .key.hit { transform: translateY(2px); box-shadow: 0 1px 0 #B9AEDC; background: #EFE7FF; }
+.key.wide { flex: 1.6 1 0; max-width: 110px; font-size: 18px; }
+.key.go { background: var(--green); color: #fff; box-shadow: 0 3px 0 var(--green-d); }
+.key.go:disabled { background: #8F86A8; box-shadow: 0 3px 0 #6C6488; }
+
+/* landscape: the card sits on the right so the witch and hiker stay in view */
+@media (min-aspect-ratio: 5/4) and (min-width: 700px) {
+  .quiz { left: auto; right: 16px; transform: none; width: min(420px, 44vw); grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .quiz .qtop, .quiz .qbar { width: 100%; justify-content: center; }
+  .orb { grid-row: auto; }
+  .tiles { justify-content: center; width: 100%; }
+  @keyframes drop { from { transform: translateY(-30px) scale(.9); opacity: 0; } }
+  @keyframes lift { to { transform: translateY(-40px) scale(.9); opacity: 0; } }
+}
+@media (max-aspect-ratio: 5/4), (max-width: 699px) {
+  .quiz { grid-template-areas: "orb top" "orb bar" "tiles tiles"; }
+  .orb { grid-area: orb; } .qtop { grid-area: top; flex-wrap: wrap; } .qbar { grid-area: bar; } .tiles { grid-area: tiles; justify-content: center; margin-top: 4px; }
+}
+@media (max-height: 520px) {
+  .quiz { top: 8px; padding: 8px 10px; }
+  .orb { width: 80px; } .orb span { font-size: 48px; }
+  .key { height: 38px; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation-duration: .01s !important; } }
+</style>
+</head>
+<body>
+<canvas id="stage" role="img" aria-label="A hiker climbing a switchback trail up Witch Mountain, with a witch on each landing"></canvas>
+
+<div class="hud" id="hud" hidden>
+  <div class="hud-left">
+    <div class="pill"><canvas id="hudFace" width="60" height="60"></canvas><b id="hudFt">0 FT</b></div>
+    <div class="pill" title="Times the witches rolled you down"><span class="ic">🌀</span><b id="hudFalls">0</b></div>
+  </div>
+  <button class="icon-btn" id="muteBtn" aria-label="Sound off" type="button"></button>
+</div>
+
+<div class="quiz" id="quiz" hidden role="dialog" aria-label="Spell the word">
+  <div class="orb"><span id="qPic" role="img"></span></div>
+  <div class="qtop"><b id="qWitch">Witch Hazel</b><small id="qCount">Witch 1 of 9</small></div>
+  <div class="tiles" id="tiles" aria-live="polite"></div>
+  <div class="qbar"><button class="hear" id="hearBtn" type="button">🔊 Hear it</button><p class="qmsg" id="qMsg" aria-live="polite"></p></div>
+</div>
+
+<div class="kb" id="kb" hidden></div>
+
+<div class="overlay" id="titleScreen">
+  <div class="card">
+    <h1>Witch Mountain<small>Spell your way to the top!</small></h1>
+    <div class="steps">
+      <div class="step"><span class="e">🖼️</span><b>See the picture</b>A witch blocks every landing</div>
+      <div class="step"><span class="e">⌨️</span><b>Spell the word</b>Right: she flies off in a huff</div>
+      <div class="step"><span class="e">🌀</span><b>Wrong?</b>She rolls you down the mountain!</div>
+    </div>
+    <p class="label">Who's hiking?</p>
+    <div class="kids" id="kids"></div>
+    <button class="big" id="startBtn" type="button">Start climbing</button>
+  </div>
+</div>
+
+<div class="overlay" id="endScreen" hidden>
+  <div class="card">
+    <h1 style="font-size:clamp(44px,12vw,66px)" id="endTitle">You made it!</h1>
+    <p class="lead" id="endLead"></p>
+    <div class="stars" id="endStars" aria-label=""></div>
+    <div class="stats">
+      <div class="stat"><b id="endTime">0:00</b><span>time</span></div>
+      <div class="stat"><b id="endRight">0</b><span>words right</span></div>
+      <div class="stat"><b id="endFalls">0</b><span>roll-downs</span></div>
+    </div>
+    <div id="practiceBox" hidden style="width:100%;display:flex;flex-direction:column;gap:8px">
+      <p class="label">Words to practice</p>
+      <div class="practice" id="practice"></div>
+    </div>
+    <div class="row">
+      <button class="big" id="againBtn" type="button">Climb again</button>
+      <button class="ghost" id="swapBtn" type="button">Switch hiker</button>
+      <button class="ghost" data-rw-back hidden type="button">BACK TO ROSENBERG WORLD</button>
+    </div>
+  </div>
+</div>
+
+<script src="chars.js"></script>
+<script src="mountain.js"></script>
+<script src="words.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

@@ -239,16 +239,16 @@
     icon: "🏎️",
   });
 
-  // ---------------- coming soon ----------------
-  // Their places are already built (Witch Mountain in the north, the Frog Pond by the road).
-  // When the game arrives: copy it into games/, set unlocked: true and entry, and it's playable.
+  // ---------------- Witch Mountain, Frogger and the hotel ----------------
+  // Their places are in the world (Witch Mountain in the north, the Frog Pond by the road, the
+  // hotel on Baha Mar). The hotel is still coming: set unlocked: true and entry when it arrives.
   G.register({
     id: "witchMountain",
     title: "Witch Mountain",
-    subtitle: "",
+    subtitle: "Hike up the mountain and spell each witch's word!",
     destination: "witchmtn",
-    unlocked: false,
-    entry: null,
+    unlocked: true,
+    entry: "games/witch-mountain/index.html",
     color: "#7B3FE4",
     icon: "🧙",
   });
@@ -266,11 +266,11 @@
 
   G.register({
     id: "frogger",
-    title: "Frogger",
-    subtitle: "",
+    title: "Rosenberg Crossing",
+    subtitle: "Frogger! Hop across the street and the river to hug the family.",
     destination: "frogpond",
-    unlocked: false,
-    entry: null,
+    unlocked: true,
+    entry: "games/frogger/index.html",
     color: "#2EB872",
     icon: "🐸",
   });
