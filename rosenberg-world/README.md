@@ -80,6 +80,7 @@ BAHA MAR"), or just tap the island; the plane on the island flies you home. The 
 | Tennis court (Sports Complex) | Jonah's Tennis | `games/jonahs-tennis` |
 | Rosenberg Raceway (and the go-kart) | Racecar Rally | `games/racecar` |
 | Frozenbergs ice cream stand (on the south street) | Frozenbergs | `games/frozenbergs` |
+| Grampa Simon's garden (between the Kitchen and the Raceway) | Grandpa's Garden | `games/grandpas-garden` |
 
 The Game Room is a small hub of its own: games on its bookshelf are opened with `&room=1`, and any
 `data-rw-room` button in them (hidden by default) goes back to the room. Rosenboggle's dictionary

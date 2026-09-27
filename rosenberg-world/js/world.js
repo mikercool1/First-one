@@ -22,6 +22,7 @@
     { id: "car", name: "The Family Car", icon: "🚗", kind: "game", portal: [2712, 1800], portalR: 60, arrive: [2712, 1815], map: [2740, 1790] },
     { id: "soccer", name: "Soccer Field", icon: "⚽", kind: "game", portal: [1425, 2240], portalR: 80, arrive: [1425, 2258], map: [1150, 2210] },
     { id: "volleyball", name: "Beach Volleyball", icon: "🏐", kind: "game", portal: [4120, 2612], portalR: 90, arrive: [4120, 2630], map: [4120, 2530] },
+    { id: "garden", name: "Grampa Simon's Garden", icon: "🍅", kind: "game", portal: [1070, 1442], portalR: 80, arrive: [1070, 1464], map: [1040, 1240] },
     { id: "shop", name: "Star Shop", icon: "⭐", kind: "shop", portal: [3690, 2186], portalR: 80, arrive: [3690, 2206], map: [3690, 2040] },
     { id: "icecream", name: "Frozenbergs Ice Cream", icon: "🍦", kind: "game", portal: [3250, 2664], portalR: 85, arrive: [3250, 2684], map: [3250, 2470] },
     { id: "court", name: "Basketball Court", icon: "🏀", kind: "game", portal: [1630, 2175], portalR: 80, arrive: [1630, 2190], map: [1710, 2175] },
@@ -63,6 +64,7 @@
     playground: { name: "PLAYGROUND", icon: "🛝", color: "#F2A93B", zone: [2000, 1960, 2270, 2330] },
     arcade:   { name: "ARCADE", icon: "🕹️", color: "#8A3FE4", go: "arcade", zone: [2150, 2380, 2800, 2820] },
     icecream: { name: "ICE CREAM", icon: "🍦", color: "#E8558A", go: "icecream", zone: [3000, 2320, 3500, 2820] },
+    garden:   { name: "GRAMPA'S GARDEN", icon: "🍅", color: "#D8342A", go: "garden", zone: [880, 1180, 1260, 1480] },
     shop:     { name: "STAR SHOP", icon: "⭐", color: "#7B3FE4", go: "shop", zone: [3510, 2010, 3860, 2280] },
     plaza:    { name: "PLAZA", icon: "⛲", color: "#6C4AC9", go: [3500, 1880], zone: [3200, 1400, 3800, 2000] },
     beach:    { name: "BEACH", icon: "🏖️", color: "#1E8FC4", go: [4100, 2100], zone: [3960, 900, 4320, 3060] },
@@ -996,6 +998,7 @@
     flowerBed(Pz.x - 150, 1520, 90, 30, 31); flowerBed(Pz.x + 150, 1520, 90, 30, 32);
 
     buildStarShop();
+    buildGarden();
   }
 
 
@@ -1303,12 +1306,78 @@
   }
   function buildSignposts() {
     signpost(2590, 1992, [["home", "U"], ["sports", "L"], ["shop", "R"], ["arcade", "D"]]);        // boulevard, below the house
-    signpost(1236, 1992, [["kitchen", "U"], ["woods", "L"], ["sports", "D"]]);                     // boulevard, west of the sports gate
+    signpost(1236, 1992, [["kitchen", "U"], ["garden", "U"], ["woods", "L"], ["sports", "D"]]);   // boulevard, west of the sports gate
     signpost(3392, 1992, [["plaza", "U"], ["home", "L"], ["shop", "R"], ["bahamar", "R"]]);         // boulevard at the plaza
     signpost(4150, 1995, [["beach", "U"], ["bahamar", "D"], ["icecream", "D"]]);                   // on the sand, where the trail heads south
     signpost(1880, 900, [["academy", "L"], ["raceway", "L"], ["baseball", "R"], ["home", "D"]]);  // north lane, west of the ballpark
     signpost(3080, 1190, [["baseball", "L"], ["space", "R"], ["home", "D"]]);                       // north lane, east of the ballpark
     signpost(2600, 2735, [["home", "U"], ["sports", "L"], ["icecream", "R"], ["bahamar", "R"]]);   // south street by the arcade
+  }
+
+  // ---------------------------------------------------------------------
+  // GRAMPA SIMON'S GARDEN (the Grandpa's Garden game)
+  // ---------------------------------------------------------------------
+  function drawTomatoPlant(c, x, y, t, i) {
+    const sway = Math.sin(t * 1.4 + i) * 1.5;
+    A.line(c, x, y, x, y - 58, 3, "#A8834E"); // stake
+    c.fillStyle = "#3E9A46";
+    [[-10, -18, 11], [9, -28, 12], [-7, -40, 10], [6, -50, 9], [0, -10, 12]].forEach(([dx, dy, r]) => { c.beginPath(); c.ellipse(x + dx + sway, y + dy, r, r * 0.7, dx * 0.03, 0, TAU); c.fill(); });
+    [[-8, -22, "#E8453C"], [10, -34, "#E8453C"], [-4, -46, "#8BC34A"], [7, -14, "#F28C28"]].forEach(([dx, dy, col], k) => {
+      if ((i + k) % 3 === 2 && col !== "#E8453C") return;
+      c.fillStyle = col; c.beginPath(); c.arc(x + dx + sway, y + dy, 6, 0, TAU); c.fill();
+      c.fillStyle = "rgba(255,255,255,.45)"; c.beginPath(); c.arc(x + dx + sway - 2, y + dy - 2, 1.8, 0, TAU); c.fill();
+    });
+  }
+  function drawGarden(c, t, e) {
+    const W = 300, D = 150; // plot size (feet at y = 0 is the front fence)
+    // soil and paths
+    c.fillStyle = "#8C6239"; A.rr(c, -W / 2, -D, W, D, 10); c.fill();
+    // three raised beds, back to front
+    [-120, -80, -40].forEach((by, r) => {
+      c.fillStyle = "#6B4A30"; A.rr(c, -130, by - 14, 260, 26, 6); c.fill();
+      c.fillStyle = "#5A3A22"; A.rr(c, -124, by - 10, 248, 14, 5); c.fill();
+      for (let k = 0; k < 5; k++) drawTomatoPlant(c, -100 + k * 50, by, t, r * 5 + k);
+    });
+    // scarecrow at the back left (tap it)
+    c.save(); c.translate(-118, -128);
+    A.line(c, 0, 0, 0, -84, 4, "#8A5A2E"); A.line(c, -26, -62, 26, -62, 4, "#8A5A2E");
+    c.fillStyle = "#E8743C"; A.rr(c, -14, -70, 28, 34, 6); c.fill();
+    c.fillStyle = "#F4D06F"; c.beginPath(); c.arc(0, -84, 12, 0, TAU); c.fill();
+    c.fillStyle = "#C9A15A"; c.beginPath(); c.ellipse(0, -94, 20, 5, 0, 0, TAU); c.fill(); A.rr(c, -9, -108, 18, 14, 4); c.fill();
+    c.fillStyle = "#2B2F3A"; c.fillRect(-5, -87, 3, 3); c.fillRect(3, -87, 3, 3);
+    if (e.caw > 0) A.text(c, "CAW!", 30, -110, 16, "#2B2F3A", { weight: 700 });
+    c.restore();
+    // Grampa Simon, tending the tomatoes with his watering can
+    c.save(); c.translate(96, -28); c.scale(0.95, 0.95);
+    A.drawChar(c, A.CHARS.simon, { t, move: 0, side: 0, dir: -1, pose: Math.sin(t * 0.6) > 0.7 ? "wave" : null, pt: 0, blink: (t % 3.3) < 0.12, hat: "cowboy" });
+    c.restore();
+    // white picket fence with a gate in the middle of the front
+    const picket = (x0, x1, y) => { for (let x = x0; x <= x1; x += 14) { c.fillStyle = "#FFFFFF"; c.beginPath(); c.moveTo(x - 4, y); c.lineTo(x - 4, y - 30); c.lineTo(x, y - 36); c.lineTo(x + 4, y - 30); c.lineTo(x + 4, y); c.closePath(); c.fill(); } c.fillStyle = "#E6E1D6"; c.fillRect(x0 - 4, y - 24, x1 - x0 + 8, 4); c.fillRect(x0 - 4, y - 12, x1 - x0 + 8, 4); };
+    picket(-W / 2, -30, 0); picket(30, W / 2, 0);
+    // open gate
+    c.fillStyle = "#FFFFFF"; c.save(); c.translate(-30, 0); c.transform(1, -0.25, 0, 1, 0, 0); for (let x = 4; x < 30; x += 12) c.fillRect(x, -32, 6, 32); c.restore();
+  }
+  function buildGarden() {
+    const gx = 1070, gy = 1412;
+    add({
+      kind: "building", x: gx, y: gy, box: [-170, -260, 170, 10], sprite: false, shadow: [0, 0], caw: 0,
+      solid: [{ r: [-150, -150, -34, 2] }, { r: [34, -150, 150, 2] }, { r: [-34, -150, 34, -40] }],
+      draw: (c, E2, e) => drawGarden(c, E2.t, e),
+      update(e, dt) { if (e.caw > 0) e.caw -= dt; },
+      tap: portalTap("garden"),
+    });
+    // tap the scarecrow: the crows it's supposed to scare fly off
+    hotspot(gx, gy, [-150, -250, -86, -130], {
+      reach: "remote",
+      act(E2) {
+        const g = E2.entities.find((e) => e.kind === "building" && e.x === gx && e.y === gy);
+        if (g) g.caw = 1.4;
+        RW.sfx.play("chirp");
+        for (let i = 0; i < 3; i++) E2.later(i * 0.15, () => E2.spawnBird(gx - 118 + U.rand(-20, 20), gy - 200));
+        E2.say(E2.player, U.pick(["Shoo, crows!", "Nice scarecrow, Grampa!", "The crows aren't scared!"]), 1.6);
+      },
+    }, gy + 1);
+    sign(gx - 190, gy + 40, ["GRAMPA SIMON'S", "GARDEN 🍅"], { size: 16, board: "#FFF8E6", edge: "#3E9A46", ink: "#2E7A36", ent: { tap: portalTap("garden") } });
   }
 
   // ---------------------------------------------------------------------
@@ -2224,6 +2293,7 @@
     [2150, 2380, 2780, 2820], // arcade and its front lawn
     [3200, 1350, 4050, 2280], // plaza + Star Shop
     [3040, 2320, 3460, 2860], // Frozenbergs ice cream stand and the street out front
+    [870, 1170, 1270, 1480],  // Grampa Simon's garden
     [3350, 540, 4100, 1060],  // fart man zone
     [120, 540, 1030, 1230],   // raceway + garage
     [1200, 620, 1800, 1060],  // academy

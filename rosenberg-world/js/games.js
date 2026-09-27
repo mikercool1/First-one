@@ -62,6 +62,17 @@
   });
 
   G.register({
+    id: "grandpasGarden",
+    title: "Grandpa's Garden",
+    subtitle: "Pick Grampa Simon's red tomatoes before they fall!",
+    destination: "garden",
+    unlocked: true,
+    entry: "games/grandpas-garden/index.html",
+    color: "#D8342A",
+    icon: "🍅",
+  });
+
+  G.register({
     id: "frozenbergs",
     title: "Frozenbergs",
     subtitle: "Run the ice cream stand! Build each cone just like the order.",
