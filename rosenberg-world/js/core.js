@@ -39,7 +39,9 @@ window.RW = window.RW || {};
   const KEY = "rosenbergWorld.save.v2";
   const OLD_KEY = "rosenbergWorld.save.v1";
   const fresh = () => ({
-    stars: 0,            // Rosenberg Stars total (the currency)
+    stars: 0,            // Rosenberg Stars to spend (the currency)
+    earned: 0,           // all the stars ever earned (house upgrades and Family Stats use this)
+    shop: { owned: {}, ride: null, hat: null }, // Star Shop: things bought, and what's in use
     foundStars: {},      // hidden world stars already collected, by id
     collectibles: {},    // collection book items found, by id
     secrets: {},         // secret jokes discovered, by id
@@ -72,6 +74,8 @@ window.RW = window.RW || {};
     const P = RW.store.profiles;
     P[id] = Object.assign(fresh(), P[id] || {});
     P[id].time = Object.assign(fresh().time, P[id].time || {});
+    P[id].shop = Object.assign(fresh().shop, P[id].shop || {});
+    if (!P[id].earned) P[id].earned = P[id].stars; // saves from before the Star Shop
     RW.save = P[id];
     RW.profileId = id;
     return RW.save;
@@ -103,7 +107,31 @@ window.RW = window.RW || {};
   RW.addStars = (n, source) => {
     if (!n) return;
     RW.save.stars = Math.max(0, RW.save.stars + n);
+    if (n > 0) RW.save.earned = (RW.save.earned || 0) + n;
     RW.persist();
     RW.bus.emit("stars", { total: RW.save.stars, added: n, source });
+  };
+
+  // ---------- Star Shop ----------
+  RW.SHOP = [
+    { id: "skateboard", type: "ride", name: "Skateboard", price: 5, speed: 430 },
+    { id: "scooter", type: "ride", name: "Scooter", price: 5, speed: 490 },
+    { id: "atv", type: "ride", name: "ATV", price: 5, speed: 560 },
+    { id: "motorbike", type: "ride", name: "Motorbike", price: 5, speed: 620 },
+    { id: "pirate", type: "hat", name: "Pirate Hat", price: 1 },
+    { id: "cowboy", type: "hat", name: "Cowboy Hat", price: 1 },
+    { id: "party", type: "hat", name: "Party Hat", price: 1 },
+    { id: "viking", type: "hat", name: "Viking Helmet", price: 1 },
+    { id: "propeller", type: "hat", name: "Propeller Cap", price: 1 },
+    { id: "shades", type: "hat", name: "Sunglasses", price: 1 },
+  ];
+  RW.shopItem = (id) => RW.SHOP.find((it) => it.id === id) || null;
+  // Spend stars; false if there aren't enough.
+  RW.spend = (n) => {
+    if (RW.save.stars < n) return false;
+    RW.save.stars -= n;
+    RW.persist();
+    RW.bus.emit("stars", { total: RW.save.stars, added: -n, source: "shop" });
+    return true;
   };
 })();

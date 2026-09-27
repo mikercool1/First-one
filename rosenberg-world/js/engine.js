@@ -202,6 +202,8 @@
       path: null, target: null, onArrive: null, idleT: 0, blinkT: 2, blink: false,
       quirkT: 6, wrongT: 0, wrongDir: 0, lookT: 0, emerge: 1, prop: null, sitOn: null,
       trampCount: 0, box: [-30, -110, 30, 6],
+      // Star Shop: what they're riding and wearing (saved per player)
+      ride: (RW.save.shop && RW.save.shop.ride) || null, hat: (RW.save.shop && RW.save.shop.hat) || null, wheel: 0,
     };
     return P;
   };
@@ -238,7 +240,7 @@
 
   function updatePlayer(P, dt) {
     const input = inputVector();
-    P.anim += dt * (1 + P.move * (P.gait - 1));
+    P.anim += dt * (P.ride ? 1 : 1 + P.move * (P.gait - 1));
     // blink
     P.blinkT -= dt;
     if (P.blinkT < 0) { P.blink = !P.blink; P.blinkT = P.blink ? 0.12 : U.rand(2, 4.5); }
@@ -253,7 +255,8 @@
     }
 
     let vx = 0, vy = 0;
-    const sp = P.speed;
+    const rideItem = P.ride && RW.shopItem(P.ride);
+    const sp = rideItem ? rideItem.speed : P.speed;
     if (input && !P.lock) {
       P.path = null; P.onArrive = null; P.target = null;
       if (P.pose === "sit" || P.pose === "look") endPose(P);
@@ -277,6 +280,7 @@
       const before = [P.x, P.y];
       moveBody(P, vx * dt, vy * dt, 15);
       const real = Math.hypot(P.x - before[0], P.y - before[1]);
+      P.wheel += real;
       P.move = U.lerp(P.move, real > 0.2 ? 1 : 0, 0.3);
       if (real < 0.1 && P.path) P.stuckT = (P.stuckT || 0) + dt; else P.stuckT = 0;
       if (P.stuckT > 0.45) {
@@ -295,7 +299,8 @@
       if (P.asleep) { P.asleep = false; E.say(P, U.pick(["Huh? I'm awake!", "I wasn't sleeping!", "Five more minutes..."]), 1.4); }
       P.stillT = 0;
       P.stepT = (P.stepT || 0) - dt;
-      if (P.id === "max") { if (P.stepT < 0) { P.stepT = 0.12; E.burst(P.x - P.dir * 14, P.y, 0, "dust", 1); } }
+      if (P.ride) { if (P.stepT < 0) { P.stepT = 0.09; E.burst(P.x - P.dir * 44, P.y, 0, "dust", 1); } }
+      else if (P.id === "max") { if (P.stepT < 0) { P.stepT = 0.12; E.burst(P.x - P.dir * 14, P.y, 0, "dust", 1); } }
       else if (P.stepT < 0) { P.stepT = 0.32; if (U.chance(0.35)) E.burst(P.x, P.y, 0, "dust", 1); }
     } else {
       P.move = U.lerp(P.move, 0, 0.3);
@@ -810,10 +815,22 @@
     if (P.emerge < 1) { c.globalAlpha = Math.min(1, P.emerge * 2); c.scale(em, em); }
     c.translate(0, -P.lift);
     if (P.id === "ellie" && P.lift > 300) c.rotate(Math.sin(E.t * 8) * 0.3);
-    A.drawChar(c, P.spec, {
-      t: P.anim, move: P.move, side: P.side, dir: P.dir, back: P.back && !P.pose,
-      pose: P.pose || (P.id === "max" && P.move > 0.5 ? "spoon" : null), pt: P.poseDur ? P.poseT / P.poseDur : P.poseT, blink: P.blink, prop: P.prop,
-    });
+    const R = P.ride && A.RIDES[P.ride];
+    if (R && !P.pose) {
+      // riding: the vehicle, the rider on top, then the handlebars over their hands
+      const spin = P.wheel / 14, bump = P.move > 0.5 ? Math.abs(Math.sin(P.wheel / 9)) * 1.5 : 0;
+      c.save(); c.scale(P.dir, 1); A.drawRide(c, P.ride, spin, "back"); c.restore();
+      c.save();
+      c.translate(0, -R.seat - bump + (R.stand ? 0 : P.spec.L * 0.45));
+      A.drawChar(c, P.spec, { t: P.anim, move: 0, side: 1, dir: P.dir, back: false, pose: R.stand ? null : "sit", pt: 0, blink: P.blink, prop: P.prop, hat: P.hat });
+      c.restore();
+      c.save(); c.scale(P.dir, 1); A.drawRide(c, P.ride, spin, "front"); c.restore();
+    } else {
+      A.drawChar(c, P.spec, {
+        t: P.anim, move: P.move, side: P.side, dir: P.dir, back: P.back && !P.pose,
+        pose: P.pose || (P.id === "max" && P.move > 0.5 ? "spoon" : null), pt: P.poseDur ? P.poseT / P.poseDur : P.poseT, blink: P.blink, prop: P.prop, hat: P.hat,
+      });
+    }
     c.restore();
   }
 

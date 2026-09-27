@@ -93,7 +93,7 @@
     cards.forEach((c) => {
       c.b.classList.toggle("last", c.id === RW.store.last);
       const pr = RW.profile(c.id), tt = RW.totalTime(pr);
-      c.b.querySelector(".mem").innerHTML = pr && (tt || pr.stars) ? `${STAR_SVG} ${pr.stars} · ${RW.fmtTime(tt)} played` : "New player!";
+      c.b.querySelector(".mem").innerHTML = pr && (tt || pr.stars) ? `${STAR_SVG} ${pr.earned || pr.stars} · ${RW.fmtTime(tt)} played` : "New player!";
     });
     const t0 = performance.now();
     const loop = (now) => {
@@ -153,6 +153,7 @@
     switching = false;
     E.mode = "play";
     updateWho();
+    syncRideBtn();
     show(hud, true);
     syncStars(true);
     RW.sfx.play("whoosh");
@@ -245,6 +246,15 @@
     portalDest = d;
     if (!d || E.mode !== "play") { portalCard.classList.remove("on"); setTimeout(() => { if (!portalDest) show(portalCard, false); }, 250); return; }
     const status = world.destStatus(d);
+    if (status === "shop") {
+      portalCard.style.setProperty("--c", "#7B3FE4");
+      portalCard.innerHTML = `<div class="p-ico">⭐</div><div class="p-txt"><div class="p-title">STAR SHOP</div><div class="p-sub">Spend your stars on rides and hats!</div></div><button class="p-btn" type="button">SHOP</button>`;
+      portalCard.querySelector(".p-btn").addEventListener("click", (ev) => { ev.stopPropagation(); openShop(); });
+      show(portalCard, true);
+      requestAnimationFrame(() => portalCard.classList.add("on"));
+      RW.sfx.play("pop");
+      return;
+    }
     if (status === "travel") { // the sea plane: a FLY card instead of PLAY
       portalCard.style.setProperty("--c", "#18A0B8");
       portalCard.innerHTML = `<div class="p-ico">✈️</div><div class="p-txt"><div class="p-title">${d.name.toUpperCase()}</div><div class="p-sub">${d.to === "bahamar" ? "Splash Down and the Lazy River are on the island!" : "Back to Rosenberg World"}</div></div><button class="p-btn" type="button">FLY</button>`;
@@ -275,6 +285,7 @@
   function enterPortal(d) {
     const status = world.destStatus(d);
     if (status === "travel") { world.flyTo(d.to); return; }
+    if (status === "shop") { openShop(); return; }
     if (status === "locked") {
       RW.sfx.play("lock");
       portalCard.classList.remove("shake"); void portalCard.offsetWidth; portalCard.classList.add("shake");
@@ -473,6 +484,175 @@
   }
 
   // =====================================================================
+  // STAR SHOP: hats on the shelf, rides on the floor, Grandpa Ikey at the counter
+  // =====================================================================
+  const shopEl = $("#shop"), shopPanel = $("#shopPanel");
+  let shopSel = null, shopRaf = 0, roomDrawn = false;
+  const shopIcon = (cv, it, t = 0) => {
+    const c = cv.getContext("2d");
+    c.clearRect(0, 0, cv.width, cv.height);
+    c.save();
+    if (it.type === "hat") {
+      c.translate(cv.width / 2, cv.height * 0.72);
+      // a little stand for the hat
+      c.fillStyle = "#E9DCC6"; c.beginPath(); c.ellipse(0, 18, 34, 9, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = "#F6ECDC"; c.beginPath(); c.arc(0, 0, 20, 0, Math.PI * 2); c.fill();
+      A.drawHat(c, it.id, 22, t);
+    } else {
+      c.translate(cv.width / 2, cv.height - 10);
+      c.scale(cv.width / 150, cv.width / 150);
+      A.drawRide(c, it.id, t * 3, "back"); A.drawRide(c, it.id, 0, "front");
+    }
+    c.restore();
+  };
+  function drawShopRoom() {
+    const cv = $("#shopRoom"), c = cv.getContext("2d"), W = 1600, H = 1000;
+    // back wall with stripes
+    c.fillStyle = "#FFF3DC"; c.fillRect(0, 0, W, 560);
+    c.fillStyle = "rgba(123,63,228,.07)"; for (let x = 0; x < W; x += 80) c.fillRect(x, 0, 40, 560);
+    // floor in perspective
+    c.fillStyle = "#D9B98E"; c.beginPath(); c.moveTo(0, 560); c.lineTo(W, 560); c.lineTo(W, H); c.lineTo(0, H); c.closePath(); c.fill();
+    c.strokeStyle = "rgba(120,80,40,.22)"; c.lineWidth = 2;
+    for (let i = -12; i <= 12; i++) { c.beginPath(); c.moveTo(800 + i * 70, 560); c.lineTo(800 + i * 170, H); c.stroke(); }
+    for (let y = 600; y < H; y += 60 + (y - 560) * 0.3) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+    c.fillStyle = "rgba(0,0,0,.08)"; c.fillRect(0, 556, W, 10);
+    // the hat shelf
+    c.fillStyle = "#8E5836"; c.fillRect(70, 395, W - 140, 22); c.fillStyle = "#6E4128"; c.fillRect(70, 417, W - 140, 10);
+    [[140, 427], [W - 140, 427]].forEach(([x, y]) => { c.fillStyle = "#6E4128"; c.fillRect(x - 8, y, 16, 60); });
+    // a rug for the rides
+    c.fillStyle = "rgba(123,63,228,.16)"; c.beginPath(); c.ellipse(800, 800, 700, 110, 0, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = "rgba(255,210,63,.6)"; c.lineWidth = 6; c.beginPath(); c.ellipse(800, 800, 670, 95, 0, 0, Math.PI * 2); c.stroke();
+    // Grandpa Ikey behind the little counter in the corner, with a bell
+    c.save(); c.translate(1440, 600); c.scale(2.3, 2.3);
+    A.drawChar(c, A.CHARS.ikey, { t: 1, move: 0, side: 0, dir: -1, pose: "wave", pt: 0 });
+    c.restore();
+    c.fillStyle = "#7B3FE4"; c.beginPath(); c.moveTo(1300, 560); c.lineTo(1600, 560); c.lineTo(1600, 660); c.lineTo(1300, 660); c.closePath(); c.fill();
+    c.fillStyle = "#9B6BF0"; c.fillRect(1290, 548, 320, 16);
+    c.fillStyle = "#FFD23F"; c.beginPath(); c.arc(1360, 538, 16, Math.PI, 0); c.fill(); c.fillRect(1340, 536, 40, 5);
+    // a "sale" poster
+    c.save(); c.translate(50, 90); c.rotate(-0.06);
+    c.fillStyle = "#FF5C8A"; A.rr(c, 0, 0, 170, 96, 12); c.fill();
+    A.text(c, "HATS", 85, 34, 28, "#FFFFFF", { weight: 700 }); A.text(c, "★ 1", 85, 70, 30, "#FFD23F", { weight: 700 });
+    c.restore();
+    c.save(); c.translate(1380, 90); c.rotate(0.05);
+    c.fillStyle = "#2EB872"; A.rr(c, 0, 0, 170, 96, 12); c.fill();
+    A.text(c, "RIDES", 85, 34, 28, "#FFFFFF", { weight: 700 }); A.text(c, "★ 5", 85, 70, 30, "#FFD23F", { weight: 700 });
+    c.restore();
+  }
+  function buildShopItems() {
+    [["hat", $("#shopHats")], ["ride", $("#shopRides")]].forEach(([type, host]) => {
+      host.innerHTML = "";
+      RW.SHOP.filter((it) => it.type === type).forEach((it) => {
+        const b = el("button", "s-item"); b.type = "button"; b.dataset.id = it.id;
+        const cv = el("canvas"); cv.width = type === "hat" ? 160 : 300; cv.height = type === "hat" ? 160 : 220;
+        b.appendChild(cv); b.appendChild(el("span", "s-tag"));
+        b.addEventListener("click", (ev) => { ev.stopPropagation(); RW.sfx.play("tap"); shopSel = it.id; syncShop(); });
+        host.appendChild(b);
+      });
+    });
+  }
+  function syncShop() {
+    const sh = RW.save.shop;
+    $("#shopStars").textContent = RW.save.stars;
+    shopEl.querySelectorAll(".s-item").forEach((b) => {
+      const it = RW.shopItem(b.dataset.id), owned = !!sh.owned[it.id], using = sh.ride === it.id || sh.hat === it.id;
+      b.classList.toggle("owned", owned); b.classList.toggle("using", using); b.classList.toggle("sel", shopSel === it.id);
+      b.classList.toggle("poor", !owned && RW.save.stars < it.price);
+      b.querySelector(".s-tag").innerHTML = using ? (it.type === "ride" ? "RIDING" : "WEARING") : owned ? "YOURS" : `${STAR_SVG} ${it.price}`;
+    });
+    const it = shopSel && RW.shopItem(shopSel);
+    if (!it) { shopPanel.innerHTML = `Tap something to look at it!`; return; }
+    const owned = !!sh.owned[it.id], using = sh.ride === it.id || sh.hat === it.id;
+    let btn;
+    if (!owned) btn = `<button class="btn primary" type="button" data-act="buy">BUY for ${STAR_SVG} ${it.price}</button>`;
+    else if (using) btn = `<button class="btn ghost" type="button" data-act="off">${it.type === "ride" ? "WALK INSTEAD" : "TAKE OFF"}</button>`;
+    else btn = `<button class="btn primary" type="button" data-act="use">${it.type === "ride" ? "RIDE IT" : "WEAR IT"}</button>`;
+    shopPanel.innerHTML = `<b>${it.name}</b>${it.type === "ride" ? " · super fast!" : ""} ${btn}`;
+    shopPanel.querySelector("[data-act]").addEventListener("click", (ev) => { ev.stopPropagation(); shopAction(it, ev.currentTarget.dataset.act); });
+  }
+  function useItem(it, on) {
+    const sh = RW.save.shop, P = E.player;
+    if (it.type === "ride") { sh.ride = on ? it.id : null; if (P) P.ride = sh.ride; }
+    else { sh.hat = on ? it.id : null; if (P) P.hat = sh.hat; }
+    RW.persist();
+    syncRideBtn();
+  }
+  function shopAction(it, act) {
+    if (act === "buy") {
+      if (!RW.spend(it.price)) {
+        RW.sfx.play("lock");
+        shopPanel.classList.remove("shake"); void shopPanel.offsetWidth; shopPanel.classList.add("shake");
+        shopPanel.innerHTML = `You need ${STAR_SVG} ${it.price - RW.save.stars} more! Play games to earn stars.`;
+        return;
+      }
+      RW.save.shop.owned[it.id] = Date.now();
+      RW.sfx.play("cheer");
+      useItem(it, true); // put it on / hop on right away
+      syncStars(true);
+      toast(it.type === "ride" ? `You got the ${it.name}! Tap RIDE to switch rides.` : `New hat: ${it.name}!`, it.type === "ride" ? "🛵" : "🎩");
+    } else if (act === "use") { RW.sfx.play("pop"); useItem(it, true); }
+    else { RW.sfx.play("pop"); useItem(it, false); }
+    syncShop();
+  }
+  function openShop() {
+    if (E.player && E.player.lock) return;
+    if (!roomDrawn) { drawShopRoom(); buildShopItems(); roomDrawn = true; }
+    shopSel = null;
+    syncShop();
+    show(shopEl, true);
+    requestAnimationFrame(() => shopEl.classList.add("on"));
+    show(portalCard, false);
+    RW.sfx.play("magic");
+    // gently animate the items (propeller spins, wheels roll)
+    const t0 = performance.now();
+    const loop = (now) => {
+      if (shopEl.hidden) return;
+      const t = (now - t0) / 1000;
+      shopEl.querySelectorAll(".s-item").forEach((b) => shopIcon(b.querySelector("canvas"), RW.shopItem(b.dataset.id), b.classList.contains("sel") ? t : 0));
+      shopRaf = requestAnimationFrame(loop);
+    };
+    cancelAnimationFrame(shopRaf); shopRaf = requestAnimationFrame(loop);
+  }
+  function closeShop() { shopEl.classList.remove("on"); cancelAnimationFrame(shopRaf); setTimeout(() => show(shopEl, false), 260); if (portalDest) show(portalCard, true); }
+  $("#shopClose").addEventListener("click", closeShop);
+  shopEl.addEventListener("click", (ev) => { if (ev.target === shopEl) closeShop(); });
+
+  // Ride button: pick what to ride (or walk). Shows up once you own a ride.
+  const rideBtn = $("#rideBtn"), ridePick = $("#ridePick");
+  function drawRideIcon(cv, id) {
+    const c = cv.getContext("2d"); c.clearRect(0, 0, cv.width, cv.height);
+    c.save(); c.translate(cv.width / 2, cv.height - 8);
+    if (id) { c.scale(cv.width / 150, cv.width / 150); A.drawRide(c, id, 0, "back"); A.drawRide(c, id, 0, "front"); }
+    else { const P = E.player; c.scale(cv.height / 150, cv.height / 150); A.drawChar(c, A.CHARS[P ? P.id : "reuben"], { t: 0, move: 0, side: 0, dir: 1 }); }
+    c.restore();
+  }
+  function syncRideBtn() {
+    const sh = RW.save.shop, rides = RW.SHOP.filter((it) => it.type === "ride" && sh.owned[it.id]);
+    rideBtn.hidden = !rides.length;
+    if (!rides.length) { ridePick.hidden = true; return; }
+    drawRideIcon($("#rideIco"), sh.ride);
+    $("#rideLbl").textContent = sh.ride ? "RIDING" : "RIDE";
+  }
+  rideBtn.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    if (!ridePick.hidden) { ridePick.hidden = true; return; }
+    const sh = RW.save.shop;
+    ridePick.innerHTML = "";
+    [null, ...RW.SHOP.filter((it) => it.type === "ride" && sh.owned[it.id]).map((it) => it.id)].forEach((id) => {
+      const b = el("button", sh.ride === id ? "on" : ""); b.type = "button";
+      const cv = el("canvas"); cv.width = 140; cv.height = 104; drawRideIcon(cv, id);
+      b.appendChild(cv); b.appendChild(el("span", "", id ? RW.shopItem(id).name : "Walk"));
+      b.addEventListener("click", (e2) => {
+        e2.stopPropagation();
+        sh.ride = id; if (E.player) { E.player.ride = id; E.burst(E.player.x, E.player.y, 30, "puff", 8); }
+        RW.persist(); RW.sfx.play(id ? "rumble" : "pop"); ridePick.hidden = true; syncRideBtn();
+      });
+      ridePick.appendChild(b);
+    });
+    ridePick.hidden = false;
+  });
+
+  // =====================================================================
   // MAP
   // =====================================================================
   const mapEl = $("#map"), mapCv = $("#mapCanvas"), pins = $("#pins");
@@ -504,7 +684,7 @@
     world.DESTINATIONS.forEach((d) => {
       if (d.noPin) return;
       const status = world.destStatus(d);
-      if (status === "locked" || status === "place" || status === "travel") return; // only games you can play
+      if (status === "locked" || status === "place" || status === "travel") return; // only games you can play (and the shop)
       const [px, py] = pct(d.map[0], d.map[1]);
       const p = el("button", `pin ${status}`);
       p.type = "button";
@@ -512,7 +692,7 @@
       const g = RW.games.forDestination(d.id);
       const icon = status === "locked" ? LOCK : (g && g.icon) || d.icon;
       const label = status === "locked" ? d.name : world.destTitle(d);
-      p.innerHTML = `<span class="pi">${icon}</span><span class="pl">${label}</span>${status === "locked" ? '<span class="ps">COMING SOON</span>' : status === "place" ? "" : '<span class="ps play">PLAY</span>'}`;
+      p.innerHTML = `<span class="pi">${icon}</span><span class="pl">${label}</span>${status === "locked" ? '<span class="ps">COMING SOON</span>' : status === "place" ? "" : status === "shop" ? '<span class="ps play">SHOP</span>' : '<span class="ps play">PLAY</span>'}`;
       p.addEventListener("click", (ev) => { ev.stopPropagation(); travel(d, p); });
       pins.appendChild(p);
     });
@@ -701,7 +881,7 @@
       col.appendChild(el("div", "st-nums", `
         <div><b>${RW.fmtTime(RW.totalTime(pr))}</b><span>total</span></div>
         <div><b>${RW.fmtTime((t.days || {})[today] || 0)}</b><span>today</span></div>
-        <div><b>${pr.stars}</b><span>${STAR_SVG} stars</span></div>`));
+        <div><b>${pr.earned || pr.stars}</b><span>${STAR_SVG} earned</span></div>`));
       col.appendChild(el("div", "st-line", `🌍 Exploring the world <b>${RW.fmtTime(t.world || 0)}</b>`));
       col.appendChild(el("div", "st-line", `🎮 Visits <b>${t.sessions || 0}</b> · Games played <b>${games.reduce((a, x) => a + (x.st.plays || 0), 0)}</b>`));
       const list = el("div", "st-games");

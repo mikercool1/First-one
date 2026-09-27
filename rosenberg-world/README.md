@@ -90,6 +90,18 @@ is `games/rosenboggle/words.js` (common English words, rude words removed).
 folder. The old standalone links at the top of the repo (`index.html` for The Word Game, `buckets/`,
 `lox-run/`) now just open the copy in here.
 
+## Star Shop
+
+The Star Shop (next to the plaza) is a little store you walk into. Hats cost 1 star and sit on the
+shelf; rides cost 5 stars and are parked on the floor: Skateboard, Scooter, ATV and Motorbike, all
+much faster than walking. Buying something puts it on right away. Once you own a ride, the RIDE
+button (bottom right) picks what you ride, or walking. Everything is saved per player.
+
+- The catalog (names, prices, ride speeds) is `RW.SHOP` in `js/core.js`; the art is `A.drawHat` and
+  `A.drawRide` in `js/art.js`.
+- The number at the top of the screen is stars you can spend. House upgrades and Family Stats use
+  the stars you've ever earned (`RW.save.earned`), so shopping never un-builds anything.
+
 ## Finding your way
 
 - **Signposts** stand at the main crossroads. Each arrow board names a neighbourhood (Home, Sports

@@ -22,6 +22,7 @@
     { id: "car", name: "The Family Car", icon: "🚗", kind: "game", portal: [2712, 1800], portalR: 60, arrive: [2712, 1815], map: [2740, 1790] },
     { id: "soccer", name: "Soccer Field", icon: "⚽", kind: "game", portal: [1425, 2240], portalR: 80, arrive: [1425, 2258], map: [1150, 2210] },
     { id: "volleyball", name: "Beach Volleyball", icon: "🏐", kind: "game", portal: [4120, 2612], portalR: 90, arrive: [4120, 2630], map: [4120, 2530] },
+    { id: "shop", name: "Star Shop", icon: "⭐", kind: "shop", portal: [3690, 2186], portalR: 80, arrive: [3690, 2206], map: [3690, 2040] },
     { id: "icecream", name: "Frozenbergs Ice Cream", icon: "🍦", kind: "game", portal: [3250, 2664], portalR: 85, arrive: [3250, 2684], map: [3250, 2470] },
     { id: "court", name: "Basketball Court", icon: "🏀", kind: "game", portal: [1630, 2175], portalR: 80, arrive: [1630, 2190], map: [1710, 2175] },
     { id: "plaza", name: "Mystery Plaza", icon: "⛲", kind: "place", map: [3500, 1760], arrive: [3500, 1880] },
@@ -44,6 +45,7 @@
   world.destStatus = (d) => {
     if (d.kind === "place") return "place";
     if (d.kind === "travel") return "travel";
+    if (d.kind === "shop") return "shop";
     return RW.games.status(RW.games.forDestination(d.id));
   };
   // =====================================================================
@@ -61,6 +63,7 @@
     playground: { name: "PLAYGROUND", icon: "🛝", color: "#F2A93B", zone: [2000, 1960, 2270, 2330] },
     arcade:   { name: "ARCADE", icon: "🕹️", color: "#8A3FE4", go: "arcade", zone: [2150, 2380, 2800, 2820] },
     icecream: { name: "ICE CREAM", icon: "🍦", color: "#E8558A", go: "icecream", zone: [3000, 2320, 3500, 2820] },
+    shop:     { name: "STAR SHOP", icon: "⭐", color: "#7B3FE4", go: "shop", zone: [3510, 2010, 3860, 2280] },
     plaza:    { name: "PLAZA", icon: "⛲", color: "#6C4AC9", go: [3500, 1880], zone: [3200, 1400, 3800, 2000] },
     beach:    { name: "BEACH", icon: "🏖️", color: "#1E8FC4", go: [4100, 2100], zone: [3960, 900, 4320, 3060] },
     bahamar:  { name: "BAHA MAR", icon: "🏝️", color: "#18A0B8", go: "seaplane" },
@@ -991,10 +994,7 @@
     });
     flowerBed(Pz.x - 150, 1520, 90, 30, 31); flowerBed(Pz.x + 150, 1520, 90, 30, 32);
 
-    // picnic lawn beside the plaza, where the construction lot used to be
-    [[3760, 2090], [3930, 2120]].forEach(([x, y]) => bench(x, y));
-    tree(3700, 2000, "blossom", 1); tree(3990, 2010, "round", 1.05);
-    flowerBed(3850, 2170, 110, 30, 33);
+    buildStarShop();
   }
 
 
@@ -1301,13 +1301,61 @@
     });
   }
   function buildSignposts() {
-    signpost(2590, 1992, [["home", "U"], ["sports", "L"], ["bahamar", "R"], ["arcade", "D"]]);     // boulevard, below the house
+    signpost(2590, 1992, [["home", "U"], ["sports", "L"], ["shop", "R"], ["arcade", "D"]]);        // boulevard, below the house
     signpost(1236, 1992, [["kitchen", "U"], ["woods", "L"], ["sports", "D"]]);                     // boulevard, west of the sports gate
-    signpost(3392, 1992, [["plaza", "U"], ["home", "L"], ["beach", "R"], ["bahamar", "R"]]);       // boulevard at the plaza
+    signpost(3392, 1992, [["plaza", "U"], ["home", "L"], ["shop", "R"], ["bahamar", "R"]]);         // boulevard at the plaza
     signpost(4150, 1995, [["beach", "U"], ["bahamar", "D"], ["icecream", "D"]]);                   // on the sand, where the trail heads south
     signpost(1880, 900, [["academy", "L"], ["raceway", "L"], ["baseball", "R"], ["home", "D"]]);  // north lane, west of the ballpark
     signpost(3080, 1190, [["baseball", "L"], ["space", "R"], ["home", "D"]]);                       // north lane, east of the ballpark
     signpost(2600, 2735, [["home", "U"], ["sports", "L"], ["icecream", "R"], ["bahamar", "R"]]);   // south street by the arcade
+  }
+
+  // ---------------------------------------------------------------------
+  // STAR SHOP: spend Rosenberg Stars on rides and hats
+  // ---------------------------------------------------------------------
+  function drawStarShop(c, t) {
+    // walls and roof
+    c.fillStyle = "#FFF6DD"; A.rr(c, -140, -190, 280, 190, 10); c.fill();
+    c.fillStyle = "rgba(0,0,0,.05)"; for (let x = -130; x < 140; x += 26) c.fillRect(x, -186, 3, 182);
+    c.fillStyle = "#7B3FE4"; c.beginPath(); c.moveTo(-156, -186); c.lineTo(0, -262); c.lineTo(156, -186); c.closePath(); c.fill();
+    c.fillStyle = "#5E2CC0"; c.fillRect(-156, -192, 312, 10);
+    // big spinning star sign on the roof
+    c.save(); c.translate(0, -262); c.scale(Math.cos(t * 1.6) * 0.3 + 0.9, 1);
+    c.fillStyle = "#FFD23F"; A.starPath(c, 0, 0, 34, 5, 0.45); c.fill();
+    c.strokeStyle = "#D98200"; c.lineWidth = 3; c.stroke();
+    c.restore();
+    // striped awning
+    for (let i = 0; i < 8; i++) {
+      c.fillStyle = i % 2 ? "#FFFFFF" : "#FFB020";
+      c.beginPath(); c.moveTo(-150 + i * 37.5, -150); c.lineTo(-150 + (i + 1) * 37.5, -150); c.lineTo(-150 + (i + 1) * 37.5, -126);
+      c.arc(-150 + (i + 0.5) * 37.5, -126, 18.75, 0, Math.PI); c.closePath(); c.fill();
+    }
+    // sign board
+    c.fillStyle = "#7B3FE4"; A.rr(c, -110, -186, 220, 34, 10); c.fill();
+    A.text(c, "★ STAR SHOP ★", 0, -168, 22, "#FFFFFF", { weight: 700 });
+    // windows with a hat and a motorbike on display
+    [[-88, "hat"], [88, "ride"]].forEach(([x, what]) => {
+      c.fillStyle = "#FFFFFF"; A.rr(c, x - 42, -100, 84, 70, 8); c.fill();
+      c.fillStyle = "#BFE6FF"; A.rr(c, x - 36, -94, 72, 58, 6); c.fill();
+      c.save(); c.translate(x, -40);
+      if (what === "hat") { c.translate(0, -12); A.drawHat(c, "pirate", 26, t); } else { c.scale(0.62, 0.62); A.drawRide(c, "motorbike", t * 2, "back"); A.drawRide(c, "motorbike", 0, "front"); }
+      c.restore();
+      c.fillStyle = "rgba(255,255,255,.35)"; c.beginPath(); c.moveTo(x - 30, -94); c.lineTo(x - 14, -94); c.lineTo(x - 34, -40); c.lineTo(x - 36, -52); c.closePath(); c.fill();
+    });
+    // door
+    c.fillStyle = "#5E2CC0"; A.rr(c, -30, -108, 60, 108, 10); c.fill();
+    c.fillStyle = "#FFD23F"; c.beginPath(); c.arc(18, -52, 4, 0, TAU); c.fill();
+    c.fillStyle = "#FFFFFF"; A.rr(c, -22, -96, 44, 18, 4); c.fill();
+    A.text(c, "OPEN", 0, -87, 11, "#2EB872", { weight: 700 });
+  }
+  function buildStarShop() {
+    add({
+      kind: "building", x: 3690, y: 2150, box: [-170, -310, 170, 14], sprite: false, occludes: true, shadow: [150, 16],
+      solid: [{ r: [-150, -60, -34, 4] }, { r: [34, -60, 150, 4] }, { r: [-34, -60, 34, -14] }],
+      draw: (c, E2) => drawStarShop(c, E2.t),
+      tap: portalTap("shop"),
+    });
+    flowerBed(3500, 2170, 70, 24, 33); flowerBed(3880, 2175, 60, 24, 34);
   }
 
   // ---------------------------------------------------------------------
@@ -1868,7 +1916,7 @@
     { id: "slide", name: "GIANT SLIDE", cost: 60, x: 2070, y: 1650, w: 150, h: 90 },
     { id: "court", name: "SPORT COURT", cost: 80, x: 3070, y: 1680, w: 170, h: 100 },
   ];
-  world.upgradeUnlocked = (u) => RW.save.stars >= u.cost;
+  world.upgradeUnlocked = (u) => (RW.save.earned || RW.save.stars) >= u.cost; // stars ever earned, so shopping never un-builds anything
   function buildUpgrades() {
     UPGRADES.forEach((u) => {
       // ground pad
@@ -2173,7 +2221,7 @@
     [880, 2040, 1900, 3050],  // sports complex
     [1900, 2020, 2260, 2320], // playground
     [2150, 2380, 2780, 2820], // arcade and its front lawn
-    [3200, 1350, 4050, 2260], // plaza + lot
+    [3200, 1350, 4050, 2280], // plaza + Star Shop
     [3040, 2320, 3460, 2860], // Frozenbergs ice cream stand and the street out front
     [3350, 540, 4100, 1060],  // fart man zone
     [120, 540, 1030, 1230],   // raceway + garage

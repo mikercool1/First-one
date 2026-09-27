@@ -382,9 +382,108 @@
     c.translate(0, headY);
     c.rotate(P.headTilt || 0);
     drawHead(c, s, st, R, side, back, P, t);
+    if (st.hat) A.drawHat(c, st.hat, R, t, back);
     c.restore();
     c.restore();
     c.restore();
+  };
+
+  // ---------- Star Shop hats (drawn in the head's frame: origin at the head's middle, radius R) ----------
+  A.drawHat = (c, id, R, t = 0, back = false) => {
+    const k = R / 20; // hats are drawn for a head of radius 20
+    c.save(); c.scale(k, k);
+    if (id === "pirate") {
+      c.fillStyle = "#1E1E24"; c.beginPath(); c.moveTo(-30, -12); c.quadraticCurveTo(0, -46, 30, -12); c.quadraticCurveTo(0, -20, -30, -12); c.fill();
+      c.beginPath(); c.moveTo(-18, -20); c.quadraticCurveTo(0, -44, 18, -20); c.closePath(); c.fill();
+      c.fillStyle = "#FFD23F"; c.fillRect(-26, -16, 52, 3);
+      if (!back) { c.fillStyle = "#FFFFFF"; c.beginPath(); c.arc(0, -27, 4.5, 0, TAU); c.fill(); c.strokeStyle = "#FFFFFF"; c.lineWidth = 2; c.beginPath(); c.moveTo(-6, -20); c.lineTo(6, -16); c.moveTo(6, -20); c.lineTo(-6, -16); c.stroke(); }
+    } else if (id === "cowboy") {
+      c.fillStyle = "#A8703C"; c.beginPath(); c.ellipse(0, -14, 32, 7, 0, 0, TAU); c.fill();
+      c.fillStyle = "#8A5A2E"; rr(c, -16, -38, 32, 26, 10); c.fill();
+      c.fillStyle = "#5A3A1E"; c.fillRect(-16, -18, 32, 5);
+      c.fillStyle = "rgba(255,255,255,.18)"; rr(c, -12, -36, 8, 18, 4); c.fill();
+    } else if (id === "party") {
+      c.fillStyle = lin(c, -14, -50, 14, -14, ["#FF5C8A", "#FFB020"]);
+      c.beginPath(); c.moveTo(-14, -14); c.lineTo(0, -52); c.lineTo(14, -14); c.closePath(); c.fill();
+      ["#2F9BFF", "#2EB872", "#FFFFFF"].forEach((col, i) => { c.fillStyle = col; c.beginPath(); c.arc(-5 + i * 5, -22 - i * 9, 2.6, 0, TAU); c.fill(); });
+      c.fillStyle = "#FFD23F"; c.beginPath(); c.arc(0, -54, 5, 0, TAU); c.fill();
+    } else if (id === "viking") {
+      c.fillStyle = "#F4EDE2";
+      [-1, 1].forEach((d) => { c.beginPath(); c.moveTo(d * 16, -18); c.quadraticCurveTo(d * 34, -24, d * 30, -46); c.quadraticCurveTo(d * 26, -30, d * 12, -26); c.closePath(); c.fill(); });
+      c.fillStyle = lin(c, 0, -40, 0, -10, ["#C9CED8", "#8E96A6"]); c.beginPath(); c.arc(0, -12, 21, Math.PI, TAU); c.fill();
+      c.fillStyle = "#C9A15A"; c.fillRect(-21, -14, 42, 5); c.fillRect(-2.5, -33, 5, 20);
+    } else if (id === "propeller") {
+      c.fillStyle = "#2F6BD6"; c.beginPath(); c.arc(0, -12, 20, Math.PI, TAU); c.fill();
+      c.fillStyle = "#E8453C"; c.beginPath(); c.moveTo(0, -32); c.arc(0, -12, 20, -Math.PI / 2, -Math.PI / 6); c.closePath(); c.fill();
+      c.fillStyle = "#FFD23F"; c.beginPath(); c.moveTo(0, -32); c.arc(0, -12, 20, -Math.PI * 5 / 6, -Math.PI / 2); c.closePath(); c.fill();
+      c.fillStyle = "#3A4252"; c.fillRect(-1.5, -40, 3, 9);
+      const sp = Math.sin(t * 22);
+      c.fillStyle = "#E8453C"; c.beginPath(); c.ellipse(sp * 6, -41, 16 * Math.abs(Math.cos(t * 22)) + 3, 3, 0, 0, TAU); c.fill();
+    } else if (id === "shades") {
+      if (!back) {
+        c.fillStyle = "#1E1E24"; rr(c, -17, -5, 14, 9, 4); c.fill(); rr(c, 3, -5, 14, 9, 4); c.fill(); c.fillRect(-4, -3, 8, 2.5);
+        c.fillStyle = "rgba(255,255,255,.45)"; c.fillRect(-14, -3, 4, 2); c.fillRect(6, -3, 4, 2);
+      }
+    }
+    c.restore();
+  };
+
+  // ---------- Star Shop vehicles (side view, facing right, ground at y = 0) ----------
+  // seat: how high the rider sits. stand: the rider stands (skateboard).
+  A.RIDES = { skateboard: { seat: 12, stand: true }, scooter: { seat: 40 }, atv: { seat: 46 }, motorbike: { seat: 44 } };
+  function wheel(c, x, y, r, spin, col = "#2B2F3A") {
+    c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
+    c.fillStyle = "#C9CED8"; c.beginPath(); c.arc(x, y, r * 0.5, 0, TAU); c.fill();
+    c.strokeStyle = "#8E96A6"; c.lineWidth = Math.max(1.5, r * 0.12);
+    for (let i = 0; i < 3; i++) { const a = spin + (i * TAU) / 3; c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(a) * r * 0.5, y + Math.sin(a) * r * 0.5); c.stroke(); }
+  }
+  // part: "back" (everything behind the rider) or "front" (handlebars, drawn over the rider's hands)
+  A.drawRide = (c, id, spin = 0, part = "back") => {
+    if (id === "skateboard") {
+      if (part !== "back") return;
+      wheel(c, -22, -5, 5, spin, "#FFD23F"); wheel(c, 22, -5, 5, spin, "#FFD23F");
+      c.fillStyle = "#2EB872"; rr(c, -36, -16, 72, 7, 4); c.fill();
+      c.fillStyle = "#1E8A55"; c.beginPath(); c.moveTo(-36, -12); c.quadraticCurveTo(-44, -14, -42, -20); c.lineTo(-34, -16); c.fill();
+      c.beginPath(); c.moveTo(36, -12); c.quadraticCurveTo(44, -14, 42, -20); c.lineTo(34, -16); c.fill();
+      return;
+    }
+    if (id === "scooter") {
+      if (part === "back") {
+        wheel(c, -30, -11, 11, spin); wheel(c, 32, -11, 11, spin);
+        c.fillStyle = lin(c, 0, -44, 0, -10, ["#8FE3D3", "#3CC4A8"]);
+        c.beginPath(); c.moveTo(-44, -22); c.quadraticCurveTo(-44, -44, -18, -42); c.lineTo(10, -30); c.lineTo(26, -30); c.lineTo(30, -16); c.lineTo(-36, -14); c.closePath(); c.fill();
+        c.fillStyle = "#6B3E2A"; rr(c, -30, -48, 34, 9, 4); c.fill();
+        c.fillStyle = "#3CC4A8"; c.beginPath(); c.moveTo(22, -30); c.lineTo(36, -66); c.lineTo(44, -64); c.lineTo(34, -26); c.closePath(); c.fill();
+        c.fillStyle = "#FFF3B0"; c.beginPath(); c.arc(44, -58, 5, 0, TAU); c.fill();
+      } else { c.strokeStyle = "#3A4252"; c.lineWidth = 4; c.lineCap = "round"; c.beginPath(); c.moveTo(38, -68); c.lineTo(26, -70); c.stroke(); }
+      return;
+    }
+    if (id === "atv") {
+      if (part === "back") {
+        wheel(c, -32, -16, 17, spin, "#23262E"); wheel(c, 34, -16, 17, spin, "#23262E");
+        c.fillStyle = "#2F8A3C"; rr(c, -50, -40, 100, 16, 7); c.fill();
+        c.fillStyle = lin(c, 0, -52, 0, -26, ["#5CC46A", "#2F8A3C"]);
+        c.beginPath(); c.moveTo(-52, -34); c.lineTo(-44, -50); c.lineTo(-20, -48); c.lineTo(8, -40); c.lineTo(30, -52); c.lineTo(54, -46); c.lineTo(56, -34); c.closePath(); c.fill();
+        c.fillStyle = "#1E1E24"; rr(c, -26, -56, 34, 10, 5); c.fill();
+        c.strokeStyle = "#3A4252"; c.lineWidth = 3; c.strokeRect(-52, -62, 18, 12);
+        c.fillStyle = "#FFF3B0"; c.beginPath(); c.arc(52, -42, 4, 0, TAU); c.fill();
+        c.strokeStyle = "#3A4252"; c.lineWidth = 4; c.beginPath(); c.moveTo(22, -46); c.lineTo(28, -68); c.stroke();
+      } else { c.strokeStyle = "#1E1E24"; c.lineWidth = 5; c.lineCap = "round"; c.beginPath(); c.moveTo(20, -70); c.lineTo(36, -70); c.stroke(); }
+      return;
+    }
+    if (id === "motorbike") {
+      if (part === "back") {
+        wheel(c, -36, -15, 15, spin); wheel(c, 38, -15, 15, spin);
+        c.strokeStyle = "#8E96A6"; c.lineWidth = 4; c.beginPath(); c.moveTo(38, -15); c.lineTo(26, -56); c.stroke();
+        c.fillStyle = "#3A4252"; rr(c, -18, -30, 36, 12, 5); c.fill();
+        c.fillStyle = lin(c, 0, -52, 0, -30, ["#FF6B5C", "#D8342A"]);
+        c.beginPath(); c.moveTo(-40, -34); c.lineTo(-10, -44); c.quadraticCurveTo(8, -56, 26, -48); c.lineTo(24, -36); c.lineTo(-30, -28); c.closePath(); c.fill();
+        c.fillStyle = "#1E1E24"; rr(c, -34, -50, 30, 9, 4); c.fill();
+        c.fillStyle = "rgba(255,255,255,.35)"; c.beginPath(); c.ellipse(8, -48, 8, 3, -0.3, 0, TAU); c.fill();
+        c.strokeStyle = "#C9CED8"; c.lineWidth = 4; c.beginPath(); c.moveTo(-20, -20); c.lineTo(-52, -26); c.stroke();
+        c.fillStyle = "#FFF3B0"; c.beginPath(); c.arc(32, -52, 5, 0, TAU); c.fill();
+      } else { c.strokeStyle = "#1E1E24"; c.lineWidth = 4; c.lineCap = "round"; c.beginPath(); c.moveTo(20, -62); c.lineTo(34, -60); c.stroke(); }
+    }
   };
 
   function drawTorso(c, s, hipY, T, bw, back) {
