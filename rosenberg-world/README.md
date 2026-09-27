@@ -97,6 +97,7 @@ door and the stars you earned fly into your total.
 | The big white rocket (Fart Man Landing Zone) | Lunar Lander | `games/lunar-lander` |
 | Math Blaster Academy | Reuben's Math Blaster | `games/math-blaster` |
 | Soccer field (Sports Complex) | Backyard Soccer | `games/backyard-soccer` |
+| Football field goalposts and the FIELD GOALS sign (Sports Complex) | Split the Uprights | `games/field-goal` |
 | Beach volleyball court | Jonah's Volley | `games/jonahs-volley` |
 | Rosenberg House front door | The Game Room: Rosenboggle and The Word Game | `games/game-room`, `games/rosenboggle`, `games/word-game` |
 | Splash Down slide park on Baha Mar (gate, slides or splash pool) | Splash Down | `games/water-slide` |
