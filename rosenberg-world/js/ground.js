@@ -190,9 +190,6 @@
     A.rr(c, 2740, 1690, 150, 230, 10); c.fill();
     c.strokeStyle = "rgba(255,255,255,.25)"; c.lineWidth = 2; c.setLineDash([12, 10]);
     c.beginPath(); c.moveTo(2815, 1700); c.lineTo(2815, 1905); c.stroke(); c.setLineDash([]);
-    // three-point arc painted on the driveway
-    c.strokeStyle = "rgba(255,255,255,.55)"; c.lineWidth = 3;
-    c.beginPath(); c.arc(2885, 1735, 100, Math.PI * 0.55, Math.PI * 1.02); c.stroke();
 
     // mystery plaza
     const Pz = L.plaza;

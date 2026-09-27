@@ -253,13 +253,6 @@
         },
       },
     });
-    // hoop over the garage + a basketball on the driveway
-    const hoop = add({
-      kind: "hoop", x: 2815, y: 1700, sortY: 1700, box: [-40, -196, 40, 4], net: 0,
-      draw(c, E2, e) { c.save(); c.translate(0, 8); c.beginPath(); c.rect(-60, -300, 120, 278); c.clip(); P_.hoop(c, E2.t, e.net); c.restore(); },
-      update(e, dt) { e.net = Math.max(0, e.net - dt * 2); },
-    });
-    hoopBall(2780, 1885, hoop, [2815, 1895]);
   }
 
   function drawHouseLive(c, E2) {
