@@ -378,7 +378,7 @@
     [-120, 112].forEach((x) => { c.save(); c.translate(x, 4); A.rock(c, 1.1); c.restore(); });
   };
 
-  // Water World gate arch
+  // Baha Bay gate arch
   B.waterGate = (c, open) => {
     [-150, 150].forEach((x) => {
       c.fillStyle = lin(c, x - 22, 0, x + 22, 0, ["#3CC3E8", "#1E8FC4"]); rr(c, x - 22, -200, 44, 200, 12); c.fill();
@@ -388,7 +388,7 @@
     c.beginPath(); c.moveTo(-180, -190);
     for (let i = 0; i <= 8; i++) c.quadraticCurveTo(-180 + (i - 0.5) * 45, -258 - (i % 2) * 14, -180 + i * 45, -236);
     c.lineTo(180, -190); c.closePath(); c.fill();
-    text(c, "WATER WORLD", 0, -222, 32, "#FFFFFF", { weight: 700, stroke: "#156A99", strokeW: 6 });
+    text(c, "BAHA BAY", 0, -222, 34, "#FFFFFF", { weight: 700, stroke: "#156A99", strokeW: 6 });
     if (open) {
       // gates swung open, with a welcome plate for the slide game
       [-1, 1].forEach((k) => {
@@ -410,7 +410,37 @@
     A.prop.lockBadge(c, 0, -62, 1);
   };
 
-  // Water World slide towers (behind the fence)
+  // Baha Bay Lazy River entrance: a tiki hut with a stack of inner tubes
+  B.riverHut = (c, open) => {
+    // tube stack on the right
+    ["#1E9FD9", "#FFB020", "#FF5C8A", "#2EB872"].forEach((col, i) => {
+      c.fillStyle = shade(col, -0.25); ell(c, 104, -8 - i * 16, 26, 11); c.fill();
+      c.fillStyle = col; ell(c, 104, -11 - i * 16, 25, 10); c.fill();
+      c.fillStyle = "rgba(20,60,90,.35)"; ell(c, 104, -12 - i * 16, 10, 4); c.fill();
+    });
+    // bamboo posts
+    [-80, 80].forEach((x) => {
+      c.fillStyle = lin(c, x - 10, 0, x + 10, 0, ["#C98A4A", "#8B5A2B"]); rr(c, x - 10, -170, 20, 170, 6); c.fill();
+      c.fillStyle = "rgba(0,0,0,.18)"; for (let y = -150; y < 0; y += 34) { rr(c, x - 10, y, 20, 4, 2); c.fill(); }
+    });
+    // thatched roof
+    c.fillStyle = lin(c, 0, -230, 0, -160, ["#F2CF7A", "#C9973F"]);
+    c.beginPath(); c.moveTo(-118, -160); c.lineTo(0, -232); c.lineTo(118, -160); c.closePath(); c.fill();
+    c.strokeStyle = "rgba(120,80,20,.45)"; c.lineWidth = 2;
+    for (let x = -100; x <= 100; x += 16) { c.beginPath(); c.moveTo(x, -162); c.lineTo(x * 0.3, -214); c.stroke(); }
+    c.fillStyle = "#B8862F"; for (let x = -114; x < 114; x += 12) { c.beginPath(); c.moveTo(x, -162); c.lineTo(x + 6, -150); c.lineTo(x + 12, -162); c.fill(); }
+    // sign board
+    c.fillStyle = "#1E8FC4"; rr(c, -84, -148, 168, 52, 10); c.fill();
+    c.fillStyle = "#EAF6FF"; rr(c, -78, -142, 156, 40, 8); c.fill();
+    text(c, "LAZY RIVER", 0, -121, 22, "#156A99", { weight: 700 });
+    // wavy water under the arch
+    c.strokeStyle = "#3CC3E8"; c.lineWidth = 5; c.lineCap = "round";
+    c.beginPath(); for (let x = -60; x <= 60; x += 6) c.lineTo(x, -40 + Math.sin(x / 9) * 4); c.stroke();
+    if (open) { plate(c, "FLOAT IN!", 0, -76, 13, "#2EB872", "#FFFFFF"); return; }
+    A.prop.lockBadge(c, 0, -70, 1);
+  };
+
+  // Baha Bay slide towers (behind the fence)
   B.slides = (c) => {
     c.fillStyle = "#E9E2D6"; rr(c, -30, -250, 60, 250, 8); c.fill();
     c.fillStyle = "#F2C230"; rr(c, -44, -266, 88, 22, 8); c.fill();

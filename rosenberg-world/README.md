@@ -60,7 +60,8 @@ Every linked game is also one tap away from the ALL GAMES button in the HUD.
 | Soccer field (Sports Complex) | Backyard Soccer | `games/backyard-soccer` |
 | Beach volleyball court | Jonah's Volley | `games/jonahs-volley` |
 | Mystery Plaza building | The Word Game | `games/word-game` |
-| Water World | Splash Down | `games/water-slide` |
+| Baha Bay water park (main gate) | Splash Down | `games/water-slide` |
+| Baha Bay Lazy River hut (and the floating tubes) | Lazy River Pirates | `games/lazy-river` |
 | Rosenberg Arcade (and its orange cabinet) | Max-Man | `games/max-man` |
 | Tennis court (Sports Complex) | Jonah's Tennis | `games/jonahs-tennis` |
 | Rosenberg Raceway (and the go-kart) | Racecar Rally | `games/racecar` |

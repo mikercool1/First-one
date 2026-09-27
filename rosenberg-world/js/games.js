@@ -139,6 +139,17 @@
   });
 
   G.register({
+    id: "lazyRiver",
+    title: "Lazy River Pirates",
+    subtitle: "Swim the Baha Bay lazy river and race Dad!",
+    destination: "lazyriver",
+    unlocked: true,
+    entry: "games/lazy-river/index.html",
+    color: "#0B8FB0",
+    icon: "🏴‍☠️",
+  });
+
+  G.register({
     id: "maxMan",
     title: "Max-Man",
     subtitle: "Gobble every Cheerio. Dodge Bath Time and Bedtime!",

@@ -327,7 +327,7 @@
     c.fillStyle = "#F4DEA6"; A.ell(c, 4780, 1170, 140, 72); c.fill();
     c.fillStyle = "#7CC766"; A.ell(c, 4785, 1160, 105, 52); c.fill();
 
-    // water world pool and lazy river, behind its fence
+    // Baha Bay pool and lazy river, behind its fence
     c.fillStyle = "#E4D8C2"; A.rr(c, 3140, 2780, 820, 420, 30); c.fill();
     c.fillStyle = "#3CC3E8"; A.rr(c, 3420, 2860, 260, 130, 40); c.fill();
     c.fillStyle = "#7FDDF5"; A.rr(c, 3432, 2870, 236, 40, 20); c.fill();

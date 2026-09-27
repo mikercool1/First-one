@@ -32,7 +32,8 @@
     { id: "raceway", name: "Rosenberg Raceway", icon: "🏎️", kind: "future", portal: [640, 1000], portalR: 100, arrive: [640, 1030], map: [640, 760] },
     { id: "woods", name: "Adventure Woods", icon: "🌲", kind: "place", map: [560, 1780], arrive: [640, 1900] },
     { id: "woods-cave", name: "Mystery Cave", icon: "🔦", kind: "future", portal: [270, 1585], portalR: 85, arrive: [300, 1600], map: [270, 1480] },
-    { id: "waterworld", name: "Water World", icon: "🌊", kind: "future", portal: [3550, 2720], portalR: 100, arrive: [3550, 2700], map: [3550, 2900] },
+    { id: "waterworld", name: "Baha Bay", icon: "🌊", kind: "future", portal: [3550, 2720], portalR: 100, arrive: [3550, 2700], map: [3330, 2900] },
+    { id: "lazyriver", name: "Baha Bay Lazy River", icon: "🛟", kind: "future", portal: [3862, 2716], portalR: 70, arrive: [3862, 2700], map: [3810, 3010] },
     { id: "beach", name: "Rosenberg Beach", icon: "🏖️", kind: "place", map: [4150, 1860], arrive: [4100, 2260] },
     { id: "beach-dock", name: "The Dock", icon: "⛵", kind: "future", portal: [4630, 2352], portalR: 80, arrive: [4600, 2352], map: [4650, 2352] },
     { id: "gondola", name: "Winter Mountain", icon: "🏔️", kind: "future", portal: [3160, 515], portalR: 85, arrive: [3160, 540], map: [3300, 150] },
@@ -186,7 +187,7 @@
     buildSports();
     buildPlayground();
     buildArcade();
-    buildWaterWorld();
+    buildBahaBay();
     buildBeach();
     buildRaceway();
     buildWoods();
@@ -1215,9 +1216,9 @@
   }
 
   // ---------------------------------------------------------------------
-  // WATER WORLD
+  // BAHA BAY (the water park: Splash Down slides and the Lazy River)
   // ---------------------------------------------------------------------
-  function buildWaterWorld() {
+  function buildBahaBay() {
     const fy = L.waterFenceY;
     E.addSolid({ r: [3120, fy - 16, 3980, fy + 40] });
     for (let x = 3130; x < 3960; x += 200) {
@@ -1248,6 +1249,38 @@
       update(e, dt) { e.t0 += dt; const cyc = e.t0 % 7; e.tip = cyc > 5.5 ? Math.min(1, (cyc - 5.5) * 3) : Math.max(0, e.tip - dt * 2); },
     });
     sign(3330, 2700, ["SPLASH DOWN", "WATER SLIDES"], { size: 15, board: "#EAF6FF", edge: "#1E8FC4", ink: "#156A99" });
+
+    // Lazy River entrance: a tiki hut with a tube stack, just east of the main gate
+    const lrOpen = world.destStatus(DEST.lazyriver) !== "locked";
+    staticProp(3862, fy + 4, [-110, -230, 110, 10], (c) => B.riverHut(c, lrOpen), {
+      kind: "gate", tap: portalTap("lazyriver"), shadow: [90, 10],
+      solid: [{ r: [-92, -10, -66, 4] }, { r: [66, -10, 92, 4] }],
+    });
+    // tubes floating round the lazy river inside the park
+    const RIVER = { x: 3550, y: 3050, rx: 360, ry: 90 };
+    const riders = [["#FF5C8A", "#F4D273"], ["#FFB020", "#7B4A26"], ["#2EB872", "#5B2330"], ["#7C5CFF", "#2B2B2B"], ["#FF7A1F", "#C98A4A"], ["#1E9FD9", "#F4D273"]];
+    riders.forEach(([col, hair], i) => {
+      add({
+        kind: "tube", x: RIVER.x, y: RIVER.y, box: [-40, -60, 40, 20], a: (i / riders.length) * TAU, bob: i,
+        update(e, dt) {
+          e.a += dt * 0.09; e.bob += dt;
+          e.x = RIVER.x + Math.cos(e.a) * RIVER.rx;
+          e.y = RIVER.y + Math.sin(e.a) * RIVER.ry;
+        },
+        draw(c, E2, e) {
+          const b = Math.sin(e.bob * 2.4) * 2;
+          c.fillStyle = "rgba(255,255,255,.35)"; A.ell(c, 0, 4, 30, 9); c.fill();
+          c.translate(0, b);
+          c.fillStyle = A.shade(col, -0.25); A.ell(c, 0, 2, 26, 12); c.fill();
+          c.fillStyle = col; A.ell(c, 0, -1, 25, 11); c.fill();
+          c.fillStyle = "#58C9EC"; A.ell(c, 0, -2, 11, 5); c.fill();
+          c.fillStyle = "#FFD8BE"; c.beginPath(); c.arc(0, -16, 9, 0, TAU); c.fill();
+          c.fillStyle = hair; c.beginPath(); c.arc(0, -19, 9, Math.PI, TAU); c.fill();
+          c.fillStyle = "rgba(255,255,255,.55)"; A.ell(c, -10, -4, 7, 2.5); c.fill();
+        },
+        tap: portalTap("lazyriver"),
+      });
+    });
   }
 
   // ---------------------------------------------------------------------
@@ -1686,7 +1719,7 @@
     [[1100, 1960, 3], [2000, 1840, 4], [2950, 1960, 5], [3300, 1850, 6], [700, 1960, 9]].forEach(([x, y, s]) => flowerBed(x, y, 90, 28, s));
     // southern hedge (the world edge)
     for (let x = 60; x < 4050; x += 150) {
-      if (x > 3120 && x < 3980) continue; // water world fence already there
+      if (x > 3120 && x < 3980) continue; // Baha Bay fence already there
       staticProp(x, 3085, [-90, -60, 90, 12], (c) => { c.save(); c.translate(-45, 0); A.bush(c, 1, null, x); c.restore(); c.save(); c.translate(40, 2); A.bush(c, 1.05, x % 3 ? null : "#FFFFFF", x + 1); c.restore(); }, { kind: "hedge" });
     }
     // distant houses beyond the road
@@ -1853,7 +1886,7 @@
     [880, 2040, 1900, 3050],  // sports complex
     [1900, 2020, 2260, 2320], // playground
     [2150, 2380, 2780, 2820], // arcade and its front lawn
-    [3100, 2600, 4000, 3100], // water world
+    [3100, 2600, 4000, 3100], // Baha Bay
     [3200, 1350, 4050, 2260], // plaza + lot
     [3350, 540, 4100, 1060],  // fart man zone
     [120, 540, 1030, 1230],   // raceway + garage
