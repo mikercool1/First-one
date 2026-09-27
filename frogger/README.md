@@ -3,6 +3,10 @@
 Frogger in Rosenberg World. Pick Reuben, Jonah, Ellie or Max, hop across the street and the Baha Bay
 lazy river, and land on a family member's spot to give them a hug. Hug all five to go up a level.
 
+Levels 1-3 ramp in gently (slower, emptier street, longer logs, no sinking tubes on level 1, a safe
+spot on the park path, forgiving landings); level 4 is the full game, and it speeds up from there.
+The knobs are `ease`, `lifeTime` and `easyLevel` near the top of `game.js`, and `buildLanes`.
+
 Open `index.html` in a browser. No install, no server.
 
 - `game.js`: the game and the 2.5D camera (a tilted perspective view; cars and logs are side-view

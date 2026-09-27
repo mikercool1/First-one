@@ -19,7 +19,12 @@
   const COLS = 13, ROWS = 13;
   const MARGIN = 9, PERIOD = COLS + MARGIN * 2;
   const SPOTS = [2, 4, 6, 8, 10];
-  const HOP_TIME = 0.17, LIFE_TIME = 40, DEATH_TIME = 1.5, HUG_TIME = 1.1;
+  const HOP_TIME = 0.17, DEATH_TIME = 1.5, HUG_TIME = 1.1;
+  // Difficulty ramps in gently: level 1 is slow and roomy, level 4 is the full game, then it keeps
+  // speeding up. ease: 0 at level 1 .. 1 from level 4.
+  const ease = (level) => clamp((level - 1) / 3, 0, 1);
+  const lifeTime = (level) => (level <= 2 ? 60 : 45);
+  const easyLevel = (level) => level <= 2;
   const zOf = (row) => ROWS - 1 - row;
   const isRiver = (row) => row >= 1 && row <= 5;
   const groundH = (row) => (row <= 0 ? 0.18 : row === 6 || row >= 12 ? 0.12 : 0);
@@ -204,18 +209,21 @@
 
   function buildLanes(level) {
     lanes = [];
-    const mult = Math.min(1 + (level - 1) * 0.12, 2);
+    const e = ease(level);
+    const mult = Math.min(lerp(0.6, 1, e) + Math.max(0, level - 4) * 0.12, 2);
     for (const d of LANE_DEFS) {
       const river = isRiver(d.row);
       let count = Math.max(1, Math.round((d.dens * PERIOD) / 25));
-      if (!river && d.pool[0] !== 'kart' && level >= 3) count += Math.min(Math.floor((level - 1) / 2), 2);
-      if (river && d.kind === 'log' && level >= 4) count = Math.max(2, count - 1);
-      if (d.pool && d.pool[0] === 'kart' && level >= 5) count += 1;
+      if (!river) count = Math.max(1, Math.round(count * lerp(0.6, 1, e)));
+      if (!river && d.pool[0] !== 'kart' && level >= 5) count += Math.min(Math.floor((level - 3) / 2), 2);
+      if (river && level <= 2) count += 1; // more to ride on early
+      if (river && d.kind === 'log' && level >= 6) count = Math.max(2, count - 1);
+      if (d.pool && d.pool[0] === 'kart' && level >= 7) count += 1;
       const gap = PERIOD / count, start = Math.random() * PERIOD;
       const items = [];
       for (let i = 0; i < count; i++) {
         const type = d.pool ? d.pool[Math.floor(Math.random() * d.pool.length)] : d.kind;
-        const len = d.pool ? VEH[type].len : d.len;
+        const len = d.pool ? VEH[type].len : d.kind === 'log' && level <= 2 ? d.len + 1 : d.len;
         const slack = Math.max(0, gap - len - 2);
         items.push({
           pos: (start + i * gap + rand(-0.25, 0.25) * slack) % PERIOD,
@@ -223,7 +231,8 @@
           col: type === 'car' || type === 'kart' ? CAR_COLS[Math.floor(Math.random() * CAR_COLS.length)] : null,
           tubes: Array.from({ length: d.len || 0 }, () => TUBE_COLS[Math.floor(Math.random() * TUBE_COLS.length)]),
           duck: Math.random() < 0.4,
-          diver: !!d.dive && (i % d.dive === 0 || (level >= 3 && i % 2 === 0)),
+          // no sinking tubes on level 1, a few from level 2, more from level 5
+          diver: !!d.dive && level >= 2 && (i % d.dive === 0 || (level >= 5 && i % 2 === 0)),
           phase: Math.random() * DIVE_CYCLE,
           star: null,
         });
@@ -251,7 +260,7 @@
   const S = {
     mode: 'title', kid: 'reuben', paused: false,
     score: 0, level: 1, lives: 3, nextExtra: 5000, stars: 0, levelsCleared: 0,
-    t: 0, lifeLeft: LIFE_TIME,
+    t: 0, lifeLeft: 60, checkpoint: false,
     hugged: [false, false, false, false, false],
     hugT: [0, 0, 0, 0, 0],
     homeStar: { spot: -1, t: 0, next: 9 },
@@ -342,7 +351,7 @@
     S.kid = kid || S.kid;
     store.set('rw-crossing-kid', S.kid);
     Object.assign(S, {
-      mode: 'play', paused: false, score: 0, level: 1, lives: 3, nextExtra: 5000, stars: 0, levelsCleared: 0,
+      mode: 'play', paused: false, score: 0, level: 1, lives: 5, checkpoint: false, nextExtra: 5000, stars: 0, levelsCleared: 0,
       hugged: [false, false, false, false, false], hugT: [0, 0, 0, 0, 0], parts: [], floaters: [], queued: null,
       homeStar: { spot: -1, t: 0, next: 9 }, itemStarNext: 6, dog: null, fart: { t: -1, next: 14 },
     });
@@ -360,7 +369,12 @@
     audio();
     banner('LEVEL 1', 'gold', `Go hug ${CALL[FAMILY[S.kid][1]]}, ${CALL[FAMILY[S.kid][3]]} and everyone!`);
   }
-  function resetPlayer() { S.P = newPlayer(); S.lifeLeft = LIFE_TIME; S.queued = null; }
+  function resetPlayer(fromCheckpoint) {
+    S.P = newPlayer();
+    // Early levels: once you've crossed the street, a slip in the river puts you back on the park path
+    if (fromCheckpoint && S.checkpoint && S.level <= 3) { S.P.row = 6; S.P.furthest = 6; S.P.h = groundH(6); }
+    S.lifeLeft = lifeTime(S.level); S.queued = null;
+  }
 
   function showTitle() {
     S.mode = 'title'; S.paused = false;
@@ -394,7 +408,8 @@
   function afterDeath() {
     S.lives--; hud();
     if (S.lives <= 0) return gameOver();
-    resetPlayer();
+    resetPlayer(true);
+    if (S.P.row === 6) banner('SAFE SPOT!', 'gold', 'Try the river again from the park path.');
   }
 
   function gameOver() {
@@ -432,6 +447,7 @@
   }
 
   function finishHug() {
+    S.checkpoint = false; // each trip to the family starts back at the sidewalk
     if (S.hugged.every(Boolean)) {
       S.levelsCleared++;
       addScore(1000, COLS / 2, zOf(3), 'EVERYONE HUGGED! +1000');
@@ -442,7 +458,7 @@
       S.homeStar = { spot: -1, t: 0, next: 8 };
       S.fart.next = 3;
       buildLanes(S.level);
-      S.dog = S.level >= 2 ? { x: -2, dir: 1, speed: 1 + S.level * 0.12 } : null;
+      S.dog = S.level >= 4 ? { x: -2, dir: 1, speed: 1 + S.level * 0.12 } : null;
     }
     resetPlayer();
     hud();
@@ -469,8 +485,11 @@
     let tx = P.x + dx;
     if (!isRiver(trow)) tx = Math.round(tx);
     if (trow === 0) {
-      const near = SPOTS.reduce((b, c) => (Math.abs(c - tx) < Math.abs(b - tx) ? c : b), SPOTS[0]);
-      if (Math.abs(near - tx) < 0.62) tx = near;
+      // Snap into a family spot you're close to. Early on, prefer someone still waiting and be generous.
+      const easy = easyLevel(S.level);
+      const pool = SPOTS.filter((c, i) => !easy || !S.hugged[i]);
+      const near = (pool.length ? pool : SPOTS).reduce((b, c) => (Math.abs(c - tx) < Math.abs(b - tx) ? c : b));
+      if (Math.abs(near - tx) < (easy ? 1.2 : 0.62)) tx = near;
     }
     tx = clamp(tx, 0, COLS - 1);
     // Where will we land, and how high? (a log is taller than the water)
@@ -484,12 +503,14 @@
     const cx = fx + 0.5;
     for (const it of lane.items) {
       const x = itemX(it);
-      if (cx >= x + 0.06 && cx <= x + it.len - 0.06 && diveState(it, S.t).depth < 0.6) return it;
+      const grip = easyLevel(S.level) ? -0.15 : 0.06; // early on you can land a little past the end of a log
+      if (cx >= x + grip && cx <= x + it.len - grip && diveState(it, S.t).depth < 0.6) return it;
     }
     return null;
   }
   function hitsVehicle(lane, fx) {
-    const a = fx + 0.22, b = fx + 0.78;
+    const pad = easyLevel(S.level) ? 0.1 : 0; // near misses count as misses early on
+    const a = fx + 0.22 + pad, b = fx + 0.78 - pad;
     for (const it of lane.items) {
       const x = itemX(it);
       if (b > x + 0.12 && a < x + it.len - 0.12) return true;
@@ -500,6 +521,7 @@
   function landPlayer() {
     const P = S.P;
     if (P.row < P.furthest) { P.furthest = P.row; if (P.row > 0) addScore(10); }
+    if (P.row === 6 && !S.checkpoint && S.level <= 3) { S.checkpoint = true; }
     if (P.row === 0) {
       const spot = SPOTS.findIndex((c) => Math.abs(c - P.x) < 0.05);
       if (spot === -1) return die('bush');
@@ -1141,7 +1163,7 @@
     drawParticles();
 
     if (S.mode === 'play') {
-      el.time.style.transform = `scaleX(${Math.max(0, S.lifeLeft / LIFE_TIME)})`;
+      el.time.style.transform = `scaleX(${Math.max(0, S.lifeLeft / lifeTime(S.level))})`;
       el.time.classList.toggle('low', S.lifeLeft <= 10);
     }
   }
