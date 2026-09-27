@@ -1393,7 +1393,7 @@
         A.line(c, 8, -34, 16, -44, 3, "#2B2F3A");
       },
       update(e, dt) { e.vroom = Math.max(0, e.vroom - dt); },
-      tap: { reach: "remote", act(E2, e) { e.vroom = 1.2; RW.sfx.play("rumble"); E2.say(e, "VROOM! (Raceway opening soon!)", 2); } },
+      tap: { reach: "remote", act(E2, e) { e.vroom = 1.2; RW.sfx.play("rumble"); if (world.destStatus(DEST.raceway) === "locked") E2.say(e, "VROOM! (Raceway opening soon!)", 2); else { E2.say(e, "VROOM! Race time!", 1.4); const d = DEST.raceway; if (!E2.player.lock) E2.walkTo(d.portal[0], d.portal[1] + 8); } } },
     });
     // starting lights
     add({
@@ -1417,11 +1417,23 @@
       c.save(); c.translate(-w / 2, 0); raceFence(c, w / 2 - 70); c.restore();
       c.save(); c.translate(70, 0); raceFence(c, w / 2 - 70); c.restore();
       // gate
-      c.fillStyle = "#E9ECF2";
-      for (let x = -62; x <= 62; x += 16) { A.rr(c, x - 3, -80, 6, 80, 3); c.fill(); }
-      c.fillStyle = "#E8453C"; A.rr(c, -68, -86, 136, 10, 4); c.fill(); A.rr(c, -68, -40, 136, 8, 4); c.fill();
-      c.strokeStyle = "#8A93A8"; c.lineWidth = 4; c.beginPath(); c.moveTo(-18, -54); c.quadraticCurveTo(0, -30, 18, -54); c.stroke();
-      P_.lockBadge(c, 0, -30, 0.9);
+      if (world.destStatus(DEST.raceway) !== "locked") {
+        // gate swung open, checkered flag waving you in
+        [-1, 1].forEach((k) => {
+          c.save(); c.translate(k * 66, 0); c.scale(k * 0.35, 1);
+          c.fillStyle = "#E9ECF2"; for (let x = 0; x <= 64; x += 16) { A.rr(c, -x - 3, -80, 6, 80, 3); c.fill(); }
+          c.fillStyle = "#E8453C"; A.rr(c, -68, -86, 68, 10, 4); c.fill(); A.rr(c, -68, -40, 68, 8, 4); c.fill();
+          c.restore();
+        });
+        A.line(c, -40, 0, -40, -104, 3, "#3A4252");
+        for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) { c.fillStyle = (i + j) % 2 ? "#222" : "#FFF"; c.fillRect(-40 + i * 7, -104 + j * 7, 7, 7); }
+      } else {
+        c.fillStyle = "#E9ECF2";
+        for (let x = -62; x <= 62; x += 16) { A.rr(c, x - 3, -80, 6, 80, 3); c.fill(); }
+        c.fillStyle = "#E8453C"; A.rr(c, -68, -86, 136, 10, 4); c.fill(); A.rr(c, -68, -40, 136, 8, 4); c.fill();
+        c.strokeStyle = "#8A93A8"; c.lineWidth = 4; c.beginPath(); c.moveTo(-18, -54); c.quadraticCurveTo(0, -30, 18, -54); c.stroke();
+        P_.lockBadge(c, 0, -30, 0.9);
+      }
     }, { kind: "gate", tap: portalTap("raceway") });
     add({
       kind: "building", x: 290, y: 1150, box: [-140, -190, 140, 20], sprite: true,
@@ -1429,7 +1441,8 @@
       tap: portalTap("raceway"), occludes: true,
     });
     marquee(880, 1085, ["ROSENBERG", "RACEWAY"], "#E8453C", "raceway", { size: 28 });
-    staticProp(880, 1087, [-60, -30, 60, 10], (c) => { c.translate(0, -14); P_.ribbon(c, "LOCKED", 110, "#2B2F55"); }, { sortY: 1090 });
+    const raceOpen = world.destStatus(DEST.raceway) !== "locked";
+    staticProp(880, 1087, [-80, -30, 80, 10], (c) => { c.translate(0, -14); P_.ribbon(c, raceOpen ? "RACE DAY!" : "LOCKED", 120, raceOpen ? "#2EB872" : "#2B2F55"); }, { sortY: 1090 });
   }
   function raceFence(c, w) {
     c.fillStyle = "#FFFFFF";

@@ -25,8 +25,8 @@ they walk out of that game's door and the stars they earned fly into the total.
 
 ### A brand-new game with no building yet
 
-There are 8 future slots (`futureGame01` to `futureGame08` in `js/games.js`). Each one already has
-a locked place in the world: the Hoops Gym, Field House, Raceway, Mystery Cave,
+There are 7 future slots (`futureGame01` to `futureGame07` in `js/games.js`). Each one already has
+a locked place in the world: the Hoops Gym, Field House, Mystery Cave,
 the Dock, Winter Mountain, Mystery Island and the construction lot. To open one, give it a `title`, `icon`, `color`, set `unlocked: true` and an `entry`.
 The construction lot shows "???" until then; after that its sign shows the game's title
 automatically (that's how the Mystery Plaza building became The Word Game).
@@ -63,6 +63,7 @@ Every linked game is also one tap away from the ALL GAMES button in the HUD.
 | Water World | Splash Down | `games/water-slide` |
 | Rosenberg Arcade (and its orange cabinet) | Max-Man | `games/max-man` |
 | Tennis court (Sports Complex) | Jonah's Tennis | `games/jonahs-tennis` |
+| Rosenberg Raceway (and the go-kart) | Racecar Rally | `games/racecar` |
 
 These are copies of each game made for the hub. A later update to a game elsewhere in the repo
 needs copying in here again (keeping its `rw-bridge.js` lines).

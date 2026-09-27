@@ -160,18 +160,28 @@
     icon: "🎾",
   });
 
+  G.register({
+    id: "racecarRally",
+    title: "Racecar Rally",
+    subtitle: "Pick a car and race the family!",
+    destination: "raceway",
+    unlocked: true,
+    entry: "games/racecar/index.html",
+    color: "#E8453C",
+    icon: "🏎️",
+  });
+
   // ---------------- future game slots ----------------
   // Each is already placed in the world with a locked building, gate or cabinet.
 
   const future = [
     ["futureGame01", "sports-hoops", "🏀"],
     ["futureGame02", "sports-stadium", "🏈"],
-    ["futureGame03", "raceway", "🏎️"],
-    ["futureGame04", "woods-cave", "🔦"],
-    ["futureGame05", "beach-dock", "⛵"],
-    ["futureGame06", "gondola", "🏔️"],
-    ["futureGame07", "island", "🏝️"],
-    ["futureGame08", "plaza-lot", "🚧"],
+    ["futureGame03", "woods-cave", "🔦"],
+    ["futureGame04", "beach-dock", "⛵"],
+    ["futureGame05", "gondola", "🏔️"],
+    ["futureGame06", "island", "🏝️"],
+    ["futureGame07", "plaza-lot", "🚧"],
   ];
   future.forEach(([id, destination, icon]) => G.register({ id, title: "", destination, unlocked: false, icon }));
 })();
