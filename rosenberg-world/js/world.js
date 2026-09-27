@@ -83,7 +83,7 @@
     garden:   { name: "GRAMPA'S GARDEN", icon: "🍅", color: "#D8342A", go: "garden", zone: [880, 1180, 1260, 1480] },
     shop:     { name: "STAR SHOP", icon: "⭐", color: "#7B3FE4", go: "shop", zone: [3510, 2010, 3860, 2280] },
     plaza:    { name: "PLAZA", icon: "⛲", color: "#6C4AC9", go: [3500, 1880], zone: [3200, 1400, 3800, 2000] },
-    minigolf: { name: "MINI GOLF", icon: "⛳", color: "#2EB872", go: [3200, 2540], zone: [2880, 2290, 3540, 2640] },
+    minigolf: { name: "MINI GOLF", icon: "⛳", color: "#2EB872", go: "minigolf", zone: [2880, 2290, 3540, 2640] },
     jetski:   { name: "JET SKI", icon: "🚤", color: "#E8453C", go: [4215, 1150] },
     beach:    { name: "BEACH", icon: "🏖️", color: "#1E8FC4", go: [4100, 2100], zone: [3960, 900, 4320, 3060] },
     bahamar:  { name: "BAHA MAR", icon: "🏝️", color: "#18A0B8", go: "seaplane" },

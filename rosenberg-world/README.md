@@ -48,14 +48,6 @@ they walk out of that game's door and the stars they earned fly into the total.
    The Frozenbergs ice cream stand (`buildIceCream`) is a small, complete example.
 3. Optionally add it to a signpost in `buildSignposts()`.
 
-### Coming soon: Mini Golf
-
-Between the Star Shop and the arcade there's a mini golf course: a winding green with a pond and
-bridge, a sand trap, three flagged holes and a big windmill whose sails turn (the last hole goes
-through its door), plus a MINI GOLF sign. Its game is registered as `miniGolf` (destination
-`minigolf`, built in `buildMiniGolf()`); switch it on with `unlocked: true` and an `entry` in
-`js/games.js`, and change `go` on `PLACES.minigolf` to `"minigolf"`.
-
 ### Coming soon: Ice Mountain's winter games
 
 The bottom-left corner of the world is **Ice Mountain**: snow on the ground, snowy pines, a frozen
@@ -120,6 +112,7 @@ BAHA MAR"), or just tap the island; the plane on the island flies you home. The 
 | Cocoa Party hut (Ice Mountain, a log cabin with a steaming mug) | Cocoa Party | `games/coco-party` |
 | Bunny Hill (Ice Mountain, the sled hill someone keeps whooshing down) | Max's Bunny Hill | `games/maxs-bunny-hill` |
 | Ice Rink (bottom-left of Ice Mountain, kids skating laps) | Rosenberg Ice Hockey | `games/rosenberg-hockey` |
+| Windmill mini golf course (between the Star Shop and the arcade) | Rosenberg Mini Golf | `games/mini-golf` |
 | Baha Mar Hotel (the east end of the island) | Checking In | `games/checking-in` |
 | Grampa Simon's garden (between the Kitchen and the Raceway) | Grandpa's Garden | `games/grandpas-garden` |
 | Witch Mountain (a spooky purple mountain in the woods; tap it or its glowing cave door) | Witch Mountain | `games/witch-mountain` |

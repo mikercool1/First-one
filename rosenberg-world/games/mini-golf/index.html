@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="../rw-bridge.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rosenberg Mini Golf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<style>
+:root {
+  --ink: #1C2238; --cream: #FFFDF7; --glass: rgba(255, 253, 247, .82); --edge: rgba(255, 255, 255, .7);
+  --green: #2FA35A; --green-2: #1F7F43; --gold: #FFC940; --red: #E8423B; --muted: #5E6680;
+  --display: "Fredoka", ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif;
+  --body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: #A6D6F3; color: var(--ink); font: 700 15px/1.35 var(--body); overflow: hidden; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+#cv { position: fixed; inset: 0; display: block; touch-action: none; cursor: crosshair; }
+
+/* HUD */
+.hud { position: fixed; z-index: 3; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 12px; right: 12px; display: flex; gap: 8px; align-items: stretch; justify-content: center; pointer-events: none; }
+.pill { background: var(--glass); border: 1px solid var(--edge); border-radius: 16px; box-shadow: 0 8px 24px rgba(30, 40, 80, .14); backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%); }
+.where { flex: 1 1 auto; max-width: 300px; min-width: 0; padding: 7px 14px; display: flex; flex-direction: column; justify-content: center; }
+.where small { font: 800 10px/1 var(--body); letter-spacing: .16em; text-transform: uppercase; color: var(--green-2); }
+.where b { font: 600 clamp(16px, 4.6vw, 20px)/1.15 var(--display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
+.stats { display: flex; padding: 4px 4px; }
+.stat { min-width: 44px; padding: 3px 6px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+.stat + .stat { border-left: 1px solid rgba(28, 34, 56, .1); }
+.stat b { font: 700 22px/1 var(--display); font-variant-numeric: tabular-nums; }
+.stat span { font: 800 9px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
+#mute { pointer-events: auto; width: 46px; border: 1px solid var(--edge); display: grid; place-items: center; cursor: pointer; color: var(--ink); padding: 0; }
+#mute svg { width: 22px; height: 22px; }
+#mute .off { display: none; }
+#mute[aria-pressed="true"] .on { display: none; }
+#mute[aria-pressed="true"] .off { display: block; }
+button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+.hint { position: fixed; z-index: 2; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); transform: translateX(-50%); padding: 8px 16px; border-radius: 999px; font: 700 14px/1.2 var(--body); color: var(--ink); white-space: nowrap; pointer-events: none; transition: opacity .6s, transform .6s; }
+.on-title .hud, .on-title .hint { opacity: 0; }
+.hud { transition: opacity .5s; }
+.hint.gone { opacity: 0; transform: translate(-50%, 10px); }
+
+/* hole banner */
+.banner { position: fixed; z-index: 2; left: 50%; top: 32%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; opacity: 0; color: #fff; width: min(92vw, 520px); text-shadow: 0 2px 0 rgba(0,0,0,.18), 0 6px 30px rgba(0,0,0,.25); }
+.banner.show { animation: banner 3.2s cubic-bezier(.2,.9,.3,1) forwards; }
+.banner small { display: inline-block; font: 800 12px/1 var(--body); letter-spacing: .18em; text-transform: uppercase; padding: 7px 12px; border-radius: 999px; background: rgba(0,0,0,.22); text-shadow: none; }
+.banner h2 { margin: 10px 0 4px; font: 700 clamp(40px, 12vw, 68px)/1 var(--display); letter-spacing: -.01em; }
+.banner p { margin: 0; font: 700 16px/1.3 var(--body); }
+@keyframes banner { 0% { opacity: 0; transform: translate(-50%, -40%) scale(.92); } 14% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 78% { opacity: 1; transform: translate(-50%, -50%); } 100% { opacity: 0; transform: translate(-50%, -62%); } }
+
+.toast { position: fixed; z-index: 4; left: 50%; top: 40%; transform: translate(-50%, -50%) scale(.8); font: 700 34px/1 var(--display); color: #fff; text-shadow: 0 3px 0 rgba(20,60,120,.4), 0 8px 24px rgba(0,0,0,.25); opacity: 0; pointer-events: none; transition: opacity .25s, transform .35s cubic-bezier(.2,.9,.3,1.4); }
+.toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+/* cards */
+.overlay { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; padding: 16px; }
+.overlay.dim { background: radial-gradient(80% 60% at 50% 45%, rgba(255,255,255,.05), rgba(20,30,60,.35)); }
+.card { width: min(100%, 380px); background: var(--cream); border-radius: 26px; padding: 24px 22px 20px; text-align: center; box-shadow: 0 24px 60px rgba(20, 30, 70, .3), inset 0 -4px 0 rgba(0,0,0,.05); animation: pop .5s cubic-bezier(.2,.9,.3,1.25); }
+@keyframes pop { from { opacity: 0; transform: translateY(24px) scale(.94); } }
+.card h1 { margin: 0; font: 700 clamp(38px, 11vw, 50px)/.95 var(--display); letter-spacing: -.02em; color: var(--ink); }
+.card h1 span { color: var(--green); display: block; }
+.card h3 { margin: 0; font: 700 38px/1 var(--display); letter-spacing: -.01em; }
+.card.great h3 { color: var(--green); }
+.card p { margin: 10px 0 0; color: var(--muted); font-size: 15px; }
+.card .tag { font: 800 11px/1 var(--body); letter-spacing: .18em; text-transform: uppercase; color: var(--green-2); margin-bottom: 10px; }
+.btn { margin-top: 18px; width: 100%; border: 0; border-radius: 16px; padding: 15px 18px; font: 700 20px/1 var(--display); color: #fff; background: linear-gradient(180deg, #3DBB6A, var(--green-2)); box-shadow: 0 5px 0 #145C30, 0 12px 24px rgba(31,127,67,.35); cursor: pointer; transition: transform .1s, box-shadow .1s; }
+.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #145C30, 0 6px 14px rgba(31,127,67,.3); }
+.holes { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+.holes div { flex: 1; border-radius: 14px; padding: 10px 6px; font: 700 12px/1.2 var(--body); color: var(--muted); background: #F1EEE4; }
+.holes b { display: block; font: 700 22px/1 var(--display); color: var(--ink); margin-bottom: 3px; }
+.best { margin-top: 12px; font-size: 13px; color: var(--muted); min-height: 1em; }
+table { width: 100%; border-collapse: collapse; margin-top: 16px; font-variant-numeric: tabular-nums; }
+th { font: 800 10px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 0 6px 8px; }
+td { padding: 9px 6px; border-top: 1px solid #ECE6D8; font: 700 18px/1 var(--display); }
+td.nm, th.nm { text-align: left; font: 700 15px/1.2 var(--body); }
+td.under { color: var(--green); } td.over { color: var(--red); }
+tr.tot td { border-top: 2px solid var(--ink); font-size: 22px; }
+@media (prefers-reduced-motion: reduce) { .banner.show, .card { animation: none; } .banner.show { opacity: 1; } }
+</style>
+</head>
+<body class="on-title">
+<canvas id="cv" aria-label="Mini golf course. Drag back from anywhere and let go to putt."></canvas>
+
+<div class="hud">
+  <div class="pill where"><small id="hudHole">Hole 1</small><b id="hudName">Windmill Meadow</b></div>
+  <div class="pill stats">
+    <div class="stat"><b id="hudPar">2</b><span>Par</span></div>
+    <div class="stat"><b id="hudStrokes">0</b><span>Shots</span></div>
+    <div class="stat"><b id="hudTotal">E</b><span>Total</span></div>
+  </div>
+  <button class="pill" id="mute" type="button" aria-pressed="false" aria-label="Sound on">
+    <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+    <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="m16 9 5 6M21 9l-5 6"/></svg>
+  </button>
+</div>
+
+<div class="pill hint" id="hint">Drag back anywhere, let go to putt</div>
+<div class="banner" id="banner"><small id="bannerNum"></small><h2 id="bannerName"></h2><p id="bannerBlurb"></p></div>
+<div class="toast" id="toast" aria-live="polite"></div>
+
+<div class="overlay dim" id="title">
+  <div class="card">
+    <div class="tag">Rosenberg World</div>
+    <h1>Rosenberg <span>Mini Golf</span></h1>
+    <p>Three little islands in the sky. Pull back, let go, and try to sink it in as few shots as you can.</p>
+    <div class="holes">
+      <div><b>1</b>Windmill Meadow</div>
+      <div><b>2</b>Lagoon Crossing</div>
+      <div><b>3</b>Lantern Hill</div>
+    </div>
+    <button class="btn" id="startBtn" type="button">Tee off</button>
+    <div class="best" id="titleBest"></div>
+  </div>
+</div>
+
+<div class="overlay" id="card" hidden>
+  <div class="card">
+    <h3 id="cardTitle">Par</h3>
+    <p id="cardSub"></p>
+    <button class="btn" id="nextBtn" type="button">Next hole</button>
+  </div>
+</div>
+
+<div class="overlay dim" id="final" hidden>
+  <div class="card">
+    <div class="tag">Scorecard</div>
+    <h3 id="finalTitle"></h3>
+    <table>
+      <thead><tr><th>#</th><th class="nm">Hole</th><th>Par</th><th>You</th></tr></thead>
+      <tbody id="scoreRows"></tbody>
+    </table>
+    <p id="finalSub"></p>
+    <button class="btn" id="againBtn" type="button">Play again</button>
+    <button class="btn" data-rw-back hidden style="margin-top:10px">Back to Rosenberg World</button>
+  </div>
+</div>
+
+<script src="courses.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
