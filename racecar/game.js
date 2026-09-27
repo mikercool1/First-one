@@ -197,6 +197,8 @@
   // ---------- state ----------
   let state = "menu"; // menu | count | race | finish
   let selected = store.get("rc-car"); if (!byId[selected]) selected = CARS[0].id;
+  const rwPlayer = window.RosenbergBridge && RosenbergBridge.player; // who is playing inside Rosenberg World
+  if (byId[rwPlayer]) selected = rwPlayer;
   const P = { def: byId[selected], z: 0, x: 0, speed: 0, boost: 0, bumpV: 0, stars: 0, tilt: 0, bounce: 0, finishTime: 0, place: 4, sayT: 0, say: "" };
   let rivals = [], raceT = 0, countT = 0, finishT = 0, skyX = 0, T = 0, shake = 0, zoneShown = 0, bgFade = 1, bgFrom = 0, bgTo = 0;
   const parts = [], confetti = [], fireworks = [];
@@ -739,6 +741,7 @@
       icons.push([div.querySelector("canvas"), c.def]);
     });
     const place = order.indexOf(P) + 1;
+    if (window.RosenbergBridge) RosenbergBridge.report({ score: P.stars, stars: place === 1 ? 3 : place === 2 ? 2 : 1 });
     const name = P.def.owner || "You";
     $("#resTitle").textContent = place === 1 ? `${name} ${P.def.owner ? "wins" : "win"}!` : `${ordinal(place)} place!`;
     $("#resSub").innerHTML = `You grabbed <b>${P.stars} ⭐</b> stars.` + (place === 1 ? " Champion driving!" : " Grab more stars and rainbows to zoom ahead!");
