@@ -25,12 +25,11 @@ they walk out of that game's door and the stars they earned fly into the total.
 
 ### A brand-new game with no building yet
 
-There are 12 future slots (`futureGame01` to `futureGame12` in `js/games.js`). Each one already has
+There are 11 future slots (`futureGame01` to `futureGame11` in `js/games.js`). Each one already has
 a locked place in the world: the Hoops Gym, Field House, Tennis Club, Arcade, Raceway, Mystery Cave,
-Water World, the Dock, Winter Mountain, Mystery Island, the Mystery Plaza building and the
-construction lot. To open one, give it a `title`, `icon`, `color`, set `unlocked: true` and an `entry`.
-The Mystery Plaza building and the construction lot show "???" until then; after that their signs
-show the game's title automatically.
+Water World, the Dock, Winter Mountain, Mystery Island and the construction lot. To open one, give it a `title`, `icon`, `color`, set `unlocked: true` and an `entry`.
+The construction lot shows "???" until then; after that its sign shows the game's title
+automatically (that's how the Mystery Plaza building became The Word Game).
 
 ### Games written as a JS module
 
@@ -47,6 +46,9 @@ It shows up in the Collection Book.
 
 ## Linked games
 
+Every linked game is also one tap away from the ALL GAMES button in the HUD.
+
+
 | Where in the world | Game | Folder |
 | --- | --- | --- |
 | Backyard Baseball field | Backyard Baseball | `games/backyard-baseball` |
@@ -57,6 +59,7 @@ It shows up in the Collection Book.
 | Math Blaster Academy | Reuben's Math Blaster | `games/math-blaster` |
 | Soccer field (Sports Complex) | Backyard Soccer | `games/backyard-soccer` |
 | Beach volleyball court | Jonah's Volley | `games/jonahs-volley` |
+| Mystery Plaza building | The Word Game | `games/word-game` |
 
 These are copies of each game made for the hub. A later update to a game elsewhere in the repo
 needs copying in here again (keeping its `rw-bridge.js` lines).

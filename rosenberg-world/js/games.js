@@ -116,6 +116,17 @@
     icon: "🏐",
   });
 
+  G.register({
+    id: "wordGame",
+    title: "The Word Game",
+    subtitle: "Chain words in a category. Beat the computer!",
+    destination: "plaza-building",
+    unlocked: true,
+    entry: "games/word-game/index.html",
+    color: "#2F5BEA",
+    icon: "🔤",
+  });
+
   // ---------------- future game slots ----------------
   // Each is already placed in the world with a locked building, gate or cabinet.
 
@@ -130,8 +141,7 @@
     ["futureGame08", "beach-dock", "⛵"],
     ["futureGame09", "gondola", "🏔️"],
     ["futureGame10", "island", "🏝️"],
-    ["futureGame11", "plaza-building", "❓"],
-    ["futureGame12", "plaza-lot", "🚧"],
+    ["futureGame11", "plaza-lot", "🚧"],
   ];
   future.forEach(([id, destination, icon]) => G.register({ id, title: "", destination, unlocked: false, icon }));
 })();

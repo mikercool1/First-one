@@ -886,7 +886,6 @@
       tap: portalTap("plaza-building"),
       hit: [-160, -290, 160, 10],
     });
-    sign(bx - 200, by + 70, ["NEW ADVENTURE", "COMING SOON"], { size: 18, board: "#F4EDFF", edge: "#6C4AC9", ink: "#4B2FA0" });
 
     // construction lot (future game slot 12)
     const lx0 = 3690, lx1 = 4010, ly0 = 1985, ly1 = 2185;

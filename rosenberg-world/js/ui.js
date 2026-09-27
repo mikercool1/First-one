@@ -541,6 +541,41 @@
   mapEl.addEventListener("click", (ev) => { if (ev.target === mapEl) closeMap(); });
 
   // =====================================================================
+  // ALL GAMES: pick any game without walking there
+  // =====================================================================
+  const allEl = $("#allgames");
+  function openAll() {
+    if (E.player && E.player.lock) return;
+    RW.sfx.play("pop");
+    const grid = $("#allGrid");
+    grid.innerHTML = "";
+    RW.games.list.filter((g) => RW.games.status(g) !== "locked").forEach((g) => {
+      const d = world.DEST[g.destination];
+      const st = RW.games.stats(g.id);
+      const b = el("button", "g-card");
+      b.type = "button";
+      b.style.setProperty("--c", g.color || "#2F6BFF");
+      b.innerHTML = `<span class="g-ico">${g.icon}</span><span class="g-title">${g.title}</span><span class="g-where">${d ? d.name : ""}</span>`
+        + `<span class="g-rec">${st.plays ? `Best ${st.highScore} · ${st.starsEarned} ${STAR_SVG}` : ""}</span><span class="g-play">PLAY</span>`;
+      b.addEventListener("click", () => {
+        closeAll(true);
+        const P = E.player;
+        // the player "was" at that game's door, so they walk back out of it afterwards
+        if (P && d && d.arrive) { P.x = d.arrive[0]; P.y = d.arrive[1]; P.path = null; E.snap(); }
+        RW.host.launch(g, d);
+      });
+      grid.appendChild(b);
+    });
+    show(allEl, true);
+    requestAnimationFrame(() => allEl.classList.add("on"));
+    show(portalCard, false);
+  }
+  function closeAll(silent) { allEl.classList.remove("on"); setTimeout(() => show(allEl, false), 260); if (!silent && portalDest) show(portalCard, true); }
+  $("#allBtn").addEventListener("click", openAll);
+  $("#allClose").addEventListener("click", () => closeAll());
+  allEl.addEventListener("click", (ev) => { if (ev.target === allEl) closeAll(); });
+
+  // =====================================================================
   // COLLECTION BOOK
   // =====================================================================
   const book = $("#book");

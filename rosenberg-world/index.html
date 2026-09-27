@@ -43,6 +43,10 @@
     <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 11l12-5 14 5 12-5v31l-12 5-14-5-12 5z" fill="#FFF6DD" stroke="#2B6CB0" stroke-width="3" stroke-linejoin="round"/><path d="M17 6v31M31 11v31" stroke="#2B6CB0" stroke-width="3"/><path d="M9 26c4-4 7 2 11-1s6-6 10-2 6 3 9-1" stroke="#2EB872" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="36" cy="18" r="4" fill="#E8453C"/></svg>
     <span>MAP</span>
   </button>
+  <button id="allBtn" class="round big hud-all" type="button" aria-label="All games">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="6" width="16" height="16" rx="5" fill="#FF5C8A"/><rect x="26" y="6" width="16" height="16" rx="5" fill="#FFD23F"/><rect x="6" y="26" width="16" height="16" rx="5" fill="#2EB872"/><rect x="26" y="26" width="16" height="16" rx="5" fill="#2F9BFF"/><path d="M12 14l3-3 3 3-3 3z" fill="#fff"/><circle cx="34" cy="14" r="3.2" fill="#fff"/><path d="M11 34h8M15 30v8" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M31 31l6 6M37 31l-6 6" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>
+    <span>ALL GAMES</span>
+  </button>
   <button id="bookBtn" class="round big hud-book" type="button" aria-label="Collection book">
     <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 8h14a4 4 0 014 4v28a3 3 0 00-3-3H8z" fill="#FFF6DD" stroke="#7B3FE4" stroke-width="3" stroke-linejoin="round"/><path d="M40 8H28a4 4 0 00-4 4v28a3 3 0 013-3h13z" fill="#FFFFFF" stroke="#7B3FE4" stroke-width="3" stroke-linejoin="round"/><path d="M32 16l1.6 3.4 3.6.4-2.7 2.5.7 3.6L32 24l-3.2 1.9.7-3.6-2.7-2.5 3.6-.4z" fill="#FFD23F"/></svg>
     <span>COLLECTION</span>
@@ -60,6 +64,14 @@
   <div class="map-frame">
     <div class="map-head"><span>ROSENBERG WORLD</span><button class="round small" id="mapClose" type="button" aria-label="Close map">✕</button></div>
     <div class="map-body"><canvas id="mapCanvas"></canvas><div id="pins"></div></div>
+  </div>
+</section>
+
+<!-- ALL GAMES: jump straight into any game -->
+<section class="overlay" id="allgames" hidden>
+  <div class="all-frame">
+    <div class="book-head all-head"><span>ALL GAMES</span><button class="round small" id="allClose" type="button" aria-label="Close">✕</button></div>
+    <div class="all-grid" id="allGrid"></div>
   </div>
 </section>
 

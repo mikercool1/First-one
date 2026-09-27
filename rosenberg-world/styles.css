@@ -323,3 +323,25 @@ body:not(.ready) #title { opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
   .logo .ch, .tap-enter, .p-btn, .pin .pi, .me { animation: none !important; }
 }
+
+/* ---------- ALL GAMES ---------- */
+.hud-all { left: calc(var(--safe-l) + 16px); bottom: calc(var(--safe-b) + 116px); color: #E8457C; box-shadow: 0 6px 0 #E8457C, 0 12px 26px rgba(30,42,90,.28) !important; }
+@media (max-width: 700px), (max-height: 500px) { .hud-all { bottom: calc(var(--safe-b) + 98px); } }
+.all-frame { width: min(94vw, 1000px); max-height: calc(100vh - 40px); display: flex; flex-direction: column; background: var(--cream); border-radius: 30px; padding: 12px; box-shadow: 0 0 0 8px #E8457C inset, 0 14px 50px rgba(0,0,0,.4); transform: scale(.94); transition: transform .3s cubic-bezier(.3,1.4,.5,1); }
+.overlay.on .all-frame { transform: none; }
+.all-head { color: #E8457C; padding: 8px 10px 6px 20px; }
+.all-grid { overflow-y: auto; padding: 6px 14px 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+.g-card {
+  --c: #2F6BFF;
+  display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; padding: 16px 12px 14px;
+  background: #FFFFFF; border-radius: 26px; box-shadow: 0 6px 0 color-mix(in srgb, var(--c) 60%, #10183A), 0 10px 20px rgba(30,42,90,.14);
+  transition: transform .12s ease;
+}
+.g-card:active { transform: translateY(4px) scale(.97); }
+.g-ico { width: 78px; height: 78px; border-radius: 24px; display: grid; place-items: center; font-size: 44px; background: linear-gradient(180deg, color-mix(in srgb, var(--c) 25%, #FFFFFF), color-mix(in srgb, var(--c) 55%, #FFFFFF)); }
+.g-title { font-size: 19px; line-height: 1.1; color: var(--ink); margin-top: 4px; }
+.g-where { font-size: 12px; color: var(--ink-2); font-weight: 500; }
+.g-rec { font-size: 13px; color: var(--ink-2); min-height: 1.2em; }
+.g-play { margin-top: 6px; font-size: 16px; letter-spacing: .06em; color: #FFFFFF; padding: 7px 22px; border-radius: 999px; background: linear-gradient(180deg, #4BDB92, var(--green)); box-shadow: 0 4px 0 var(--green-2); }
+.round.big span { font-size: 10px; letter-spacing: .01em; white-space: nowrap; }
+@media (max-width: 700px), (max-height: 500px) { .round.big span { font-size: 8.5px; } }
