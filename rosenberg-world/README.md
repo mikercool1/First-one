@@ -48,6 +48,14 @@ they walk out of that game's door and the stars they earned fly into the total.
    The Frozenbergs ice cream stand (`buildIceCream`) is a small, complete example.
 3. Optionally add it to a signpost in `buildSignposts()`.
 
+### Coming soon: Mini Golf
+
+Between the Star Shop and the arcade there's a mini golf course: a winding green with a pond and
+bridge, a sand trap, three flagged holes and a big windmill whose sails turn (the last hole goes
+through its door), plus a MINI GOLF sign. Its game is registered as `miniGolf` (destination
+`minigolf`, built in `buildMiniGolf()`); switch it on with `unlocked: true` and an `entry` in
+`js/games.js`, and change `go` on `PLACES.minigolf` to `"minigolf"`.
+
 ### Coming soon: Ice Mountain's winter games
 
 The bottom-left corner of the world is **Ice Mountain**: snow on the ground, snowy pines, a frozen

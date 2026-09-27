@@ -295,6 +295,7 @@
     color: "#2F6BD6",
     icon: "🏒",
   });
+  G.register({ id: "miniGolf", title: "Mini Golf", subtitle: "", destination: "minigolf", unlocked: false, entry: null, color: "#2EB872", icon: "⛳" });
   G.register({ id: "skiRun", title: "Ski Run", subtitle: "", destination: "skirun", unlocked: false, entry: null, color: "#2F6BD6", icon: "⛷️" });
 
   G.register({

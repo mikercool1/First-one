@@ -28,6 +28,7 @@
     // Ice Mountain: winter games on their way
     { id: "hotchoc", name: "Cocoa Party", icon: "☕", kind: "game", portal: [820, 2612], portalR: 70, arrive: [820, 2630], map: [820, 2480] },
     { id: "skirun", name: "Ski Run", icon: "⛷️", kind: "game", portal: [300, 2742], portalR: 80, arrive: [300, 2760], map: [280, 2560] },
+    { id: "minigolf", name: "Mini Golf", icon: "⛳", kind: "game", portal: [3200, 2512], portalR: 80, arrive: [3200, 2532], map: [3200, 2380] },
     { id: "icerink", name: "Ice Rink", icon: "🏒", kind: "game", portal: [250, 2842], portalR: 80, arrive: [250, 2830], map: [250, 2930] },
     { id: "sledhill", name: "Max's Bunny Hill", icon: "🐰", kind: "game", portal: [660, 2992], portalR: 80, arrive: [660, 3010], map: [660, 2880] },
     { id: "garden", name: "Grampa Simon's Garden", icon: "🍅", kind: "game", portal: [1070, 1442], portalR: 80, arrive: [1070, 1464], map: [1040, 1240] },
@@ -82,6 +83,7 @@
     garden:   { name: "GRAMPA'S GARDEN", icon: "🍅", color: "#D8342A", go: "garden", zone: [880, 1180, 1260, 1480] },
     shop:     { name: "STAR SHOP", icon: "⭐", color: "#7B3FE4", go: "shop", zone: [3510, 2010, 3860, 2280] },
     plaza:    { name: "PLAZA", icon: "⛲", color: "#6C4AC9", go: [3500, 1880], zone: [3200, 1400, 3800, 2000] },
+    minigolf: { name: "MINI GOLF", icon: "⛳", color: "#2EB872", go: [3200, 2540], zone: [2880, 2290, 3540, 2640] },
     jetski:   { name: "JET SKI", icon: "🚤", color: "#E8453C", go: [4215, 1150] },
     beach:    { name: "BEACH", icon: "🏖️", color: "#1E8FC4", go: [4100, 2100], zone: [3960, 900, 4320, 3060] },
     bahamar:  { name: "BAHA MAR", icon: "🏝️", color: "#18A0B8", go: "seaplane" },
@@ -1067,6 +1069,7 @@
 
     buildStarShop();
     buildPet();
+    buildMiniGolf();
     buildJetski();
     buildGarden();
     buildWitchMountain();
@@ -1389,7 +1392,7 @@
     signpost(1880, 900, [["academy", "L"], ["raceway", "L"], ["baseball", "R"]]); // north lane, west of the ballpark
     signpost(3080, 1190, [["baseball", "L"], ["space", "R"], ["home", "D"]]);        // north lane, east of the ballpark
     signpost(5000, 1420, [["lazyriver", "R"], ["hotel", "R"], ["splash", "D"]]); // on Baha Mar, by the plane
-    signpost(2600, 2735, [["home", "U"], ["frogs", "L"], ["bahamar", "R"]]);      // south street by the arcade
+    signpost(2600, 2735, [["home", "U"], ["frogs", "L"], ["minigolf", "R"]]);      // south street by the arcade
   }
 
   // ---------------------------------------------------------------------
@@ -1747,6 +1750,76 @@
     c.fillStyle = "#FFD23F"; c.beginPath(); c.arc(18, -52, 4, 0, TAU); c.fill();
     c.fillStyle = "#FFFFFF"; A.rr(c, -22, -96, 44, 18, 4); c.fill();
     A.text(c, "OPEN", 0, -87, 11, "#2EB872", { weight: 700 });
+  }
+  // Mini golf between the Star Shop and the arcade: a putting green with a big turning windmill.
+  function buildMiniGolf() {
+    const X = 3200, Y = 2470;
+    // the course: a winding green with brick edges, a little pond, and holes with flags
+    staticProp(X, Y, [-330, -170, 330, 150], (c) => {
+      const green = (path) => { c.beginPath(); path(); c.closePath(); };
+      const shape = () => { c.moveTo(-300, 40); c.quadraticCurveTo(-310, -120, -170, -140); c.lineTo(160, -150); c.quadraticCurveTo(310, -140, 300, -10); c.quadraticCurveTo(300, 120, 150, 130); c.lineTo(-180, 136); c.quadraticCurveTo(-296, 136, -300, 40); };
+      c.fillStyle = "#B5563A"; green(shape); c.fill();
+      c.save(); c.scale(0.955, 0.93); c.fillStyle = A.lin(c, 0, -150, 0, 140, ["#5FD06A", "#3FB456"]); green(shape); c.fill(); c.restore();
+      // mowing stripes
+      c.save(); c.scale(0.955, 0.93); green(shape); c.clip();
+      c.fillStyle = "rgba(255,255,255,.07)"; for (let x = -320; x < 320; x += 60) c.fillRect(x, -160, 30, 320);
+      c.restore();
+      // pond with a tiny bridge
+      c.fillStyle = "#4FB3E8"; c.beginPath(); c.ellipse(-190, 50, 62, 28, 0, 0, TAU); c.fill();
+      c.fillStyle = "rgba(255,255,255,.35)"; c.beginPath(); c.ellipse(-205, 42, 24, 5, 0, 0, TAU); c.fill();
+      c.fillStyle = "#C98A4A"; A.rr(c, -214, 34, 48, 34, 6); c.fill();
+      c.strokeStyle = "rgba(90,60,30,.4)"; c.lineWidth = 2; for (let x = -208; x < -166; x += 9) { c.beginPath(); c.moveTo(x, 34); c.lineTo(x, 68); c.stroke(); }
+      // a sand trap, the tee mats and the holes
+      c.fillStyle = "#F2DDA8"; c.beginPath(); c.ellipse(210, 70, 48, 20, 0.2, 0, TAU); c.fill();
+      [[-250, -80], [120, 100]].forEach(([x, y]) => { c.fillStyle = "#2E8B3E"; A.rr(c, x - 18, y - 9, 36, 18, 4); c.fill(); });
+      [[-110, -100], [250, -60], [30, 105]].forEach(([x, y]) => { c.fillStyle = "#1E3A1E"; c.beginPath(); c.ellipse(x, y, 9, 5, 0, 0, TAU); c.fill(); });
+    }, { kind: "course", layer: "ground" });
+    // flags in the holes
+    [[-110, -100, "#E8453C", 1], [250, -60, "#FFD23F", 2], [30, 105, "#2F9BFF", 3]].forEach(([dx, dy, col, n]) => {
+      add({
+        kind: "flag", x: X + dx, y: Y + dy, box: [-6, -70, 34, 4], sprite: false,
+        draw(c, E2) {
+          A.line(c, 0, 0, 0, -64, 3, "#EDEDED");
+          const w = Math.sin(E2.t * 4 + n) * 3;
+          c.fillStyle = col; c.beginPath(); c.moveTo(1, -64); c.quadraticCurveTo(14, -60 + w, 28, -56); c.lineTo(1, -46); c.closePath(); c.fill();
+          A.text(c, String(n), 11, -55, 9, "#FFFFFF", { weight: 700 });
+        },
+        tap: portalTap("minigolf"),
+      });
+    });
+    // a golf ball sitting on the tee
+    staticProp(X - 250, Y - 84, [-6, -6, 6, 4], (c) => { c.fillStyle = "#FFFFFF"; c.beginPath(); c.arc(0, -3, 4, 0, TAU); c.fill(); }, { kind: "ball" });
+    // the windmill: a red-and-white tower whose sails turn, with the putting hole through its door
+    add({
+      kind: "windmill", x: X, y: Y + 20, box: [-150, -330, 150, 12], sprite: false, occludes: true, shadow: [70, 12],
+      solid: [{ r: [-62, -40, -26, 4] }, { r: [26, -40, 62, 4] }],
+      draw(c, E2) {
+        // tower
+        c.fillStyle = A.lin(c, -60, 0, 60, 0, ["#FFFFFF", "#F0E6DA", "#D9CBBB"]);
+        c.beginPath(); c.moveTo(-64, 0); c.lineTo(-44, -200); c.lineTo(44, -200); c.lineTo(64, 0); c.closePath(); c.fill();
+        c.fillStyle = "#D8342A"; c.fillRect(-58, -70, 116, 14); c.fillRect(-50, -150, 100, 12);
+        // roof cap
+        c.fillStyle = "#8A3A22"; c.beginPath(); c.moveTo(-54, -198); c.quadraticCurveTo(0, -270, 54, -198); c.closePath(); c.fill();
+        // window and the door the ball rolls through
+        c.fillStyle = "#6FB8E8"; A.rr(c, -12, -130, 24, 30, 10); c.fill();
+        c.fillStyle = "#3A2A20"; c.beginPath(); c.moveTo(-24, 0); c.lineTo(-24, -34); c.quadraticCurveTo(0, -56, 24, -34); c.lineTo(24, 0); c.closePath(); c.fill();
+        c.fillStyle = "#3FB456"; c.fillRect(-24, -6, 48, 6);
+        // sails turning around the hub
+        c.save(); c.translate(0, -196); c.rotate(E2.t * 0.9);
+        for (let i = 0; i < 4; i++) {
+          c.save(); c.rotate(i * Math.PI / 2);
+          c.fillStyle = "#6B4A30"; c.fillRect(-3, 0, 6, 118);
+          c.fillStyle = "rgba(255,250,240,.95)"; A.rr(c, 4, 22, 28, 94, 3); c.fill();
+          c.strokeStyle = "rgba(120,90,60,.5)"; c.lineWidth = 1.5; for (let y = 34; y < 116; y += 14) { c.beginPath(); c.moveTo(4, y); c.lineTo(32, y); c.stroke(); }
+          c.restore();
+        }
+        c.fillStyle = "#3A2A20"; c.beginPath(); c.arc(0, 0, 9, 0, TAU); c.fill();
+        c.restore();
+        c.save(); c.translate(0, -300); comingRibbon(c, "minigolf", 0, "#2EB872"); c.restore();
+      },
+      tap: portalTap("minigolf"),
+    });
+    sign(X - 250, Y + 150, ["MINI", "GOLF ⛳"], { size: 18, board: "#FFFFFF", edge: "#2EB872", ink: "#1F7A36", ent: { tap: portalTap("minigolf") } });
   }
   // Your pet from the Star Shop trots along behind you everywhere (and flies over on the sea plane).
   function buildPet() {
@@ -2759,6 +2832,7 @@
     [1900, 2020, 2260, 2320], // playground
     [2150, 2380, 2780, 2820], // arcade and its front lawn
     [3200, 1350, 4050, 2280], // plaza + Star Shop
+    [2860, 2260, 3560, 2640], // mini golf
     [870, 1170, 1270, 1480],  // Grampa Simon's garden
     [460, 1100, 880, 1520],   // Witch Mountain (in the woods)
     [1900, 2790, 2270, 3070], // Frog Pond
