@@ -54,7 +54,7 @@
       const b = el("button", "card");
       b.type = "button";
       b.style.setProperty("--c", s.color);
-      b.innerHTML = `<canvas width="360" height="420"></canvas><span class="nm">${s.name.toUpperCase()}</span><span class="tag">${s.tag}</span><span class="age">AGE ${s.age}</span>`;
+      b.innerHTML = `<canvas width="360" height="420"></canvas><span class="nm">${s.name.toUpperCase()}</span><span class="tag">${s.tag}</span><span class="age">AGE ${s.age}</span><span class="mem"></span>`;
       b.addEventListener("click", () => choose(id, b));
       wrap.appendChild(b);
       cards.push({ id, b, cv: b.querySelector("canvas") });
@@ -69,7 +69,11 @@
     switching = !!isSwitch;
     show(select, true);
     $("#selectBack").textContent = switching ? "✕" : "←";
-    cards.forEach((c) => c.b.classList.toggle("last", c.id === RW.save.character));
+    cards.forEach((c) => {
+      c.b.classList.toggle("last", c.id === RW.store.last);
+      const pr = RW.profile(c.id), tt = RW.totalTime(pr);
+      c.b.querySelector(".mem").innerHTML = pr && (tt || pr.stars) ? `${STAR_SVG} ${pr.stars} · ${RW.fmtTime(tt)} played` : "New player!";
+    });
     const t0 = performance.now();
     const loop = (now) => {
       const t = (now - t0) / 1000;
@@ -102,9 +106,14 @@
   // =====================================================================
   // PLAY
   // =====================================================================
-  let firstRun = !RW.save.character;
   function startPlay(id) {
-    RW.save.character = id; RW.persist();
+    // "log in": switch to this player's own stars, items, records and play time
+    const returning = RW.totalTime(RW.profile(id)) > 0;
+    if (RW.profileId !== id) { RW.useProfile(id); world.refreshProgress(); mapDirty = true; }
+    RW.store.last = id;
+    RW.save.time.sessions = (RW.save.time.sessions || 0) + 1;
+    RW.persist();
+    const firstRun = !returning;
     const wasPlaying = !!E.player;
     world.endTitle();
     if (wasPlaying) {
@@ -126,8 +135,8 @@
     syncStars(true);
     RW.sfx.play("whoosh");
     E.later(0.7, () => E.say(E.player, { reuben: "Let's go, Rosenbergs!", jonah: "Race you!", ellie: "Yay! Me turn!" }[id], 2));
+    E.later(1.2, () => toast(returning ? `Welcome back, ${A.CHARS[id].name}! ⭐ ${RW.save.stars}` : `Hi ${A.CHARS[id].name}! This is your own Rosenberg World.`, "👋"));
     if (firstRun) {
-      firstRun = false;
       E.later(2.2, () => toast("Drag anywhere to walk, or tap where you want to go!", "👆"));
       E.later(7.5, () => toast("Find hidden Rosenberg Stars all over the world!", "⭐"));
       E.later(13, () => toast("Tap things! Lots of things do something funny.", "✨"));
@@ -139,7 +148,7 @@
   // =====================================================================
   const face = $("#face"), whoName = $("#whoName"), starCount = $("#starCount");
   function updateWho() {
-    const id = E.player ? E.player.id : RW.save.character || "reuben";
+    const id = E.player ? E.player.id : RW.store.last || "reuben";
     A.portrait(face, id, { t: 0 });
     whoName.textContent = A.CHARS[id].name.toUpperCase();
     $("#who").style.setProperty("--c", A.CHARS[id].color);
@@ -147,8 +156,8 @@
   setInterval(() => { if (!hud.hidden && E.player) A.portrait(face, E.player.id, { blink: true }); setTimeout(() => { if (!hud.hidden && E.player) A.portrait(face, E.player.id, {}); }, 140); }, 3700);
   $("#who").addEventListener("click", () => { RW.sfx.play("tap"); if (E.player && E.player.lock) return; E.mode = "select"; show(hud, false); show(portalCard, false); openSelect(true); });
   const soundBtn = $("#sound");
-  const setSoundIcon = () => { soundBtn.innerHTML = RW.save.muted ? "🔇" : "🔊"; soundBtn.setAttribute("aria-label", RW.save.muted ? "Sound off" : "Sound on"); };
-  soundBtn.addEventListener("click", () => { RW.sfx.unlock(); RW.sfx.setMuted(!RW.save.muted); setSoundIcon(); RW.sfx.play("tap"); });
+  const setSoundIcon = () => { soundBtn.innerHTML = RW.store.muted ? "🔇" : "🔊"; soundBtn.setAttribute("aria-label", RW.store.muted ? "Sound off" : "Sound on"); };
+  soundBtn.addEventListener("click", () => { RW.sfx.unlock(); RW.sfx.setMuted(!RW.store.muted); setSoundIcon(); RW.sfx.play("tap"); });
   setSoundIcon();
 
   // Displayed star count lags behind the bank so stars can fly in and land.
@@ -599,6 +608,7 @@
       <div class="b-list" id="bUp"></div>
       <h3>GAMES</h3>
       <div class="b-list" id="bGames"></div>
+      <button class="btn ghost b-stats-btn" type="button" id="bookStats">📊 FAMILY STATS</button>
       <button class="reset" type="button" id="resetBtn">Reset all progress</button>`;
     const grid = $("#bItems");
     items.forEach((it) => {
@@ -634,7 +644,8 @@
     });
     const futureCount = RW.games.list.filter((g) => RW.games.status(g) === "locked").length;
     gl.appendChild(el("div", "b-row", `<span class="b-ri">${LOCK}</span><span class="b-rt">${futureCount} more games</span><span class="b-rv">COMING SOON</span>`));
-    $("#resetBtn").addEventListener("click", () => { if (confirm("Erase all Rosenberg World progress on this device?")) RW.resetSave(); });
+    $("#resetBtn").addEventListener("click", () => { if (confirm("Erase ALL Rosenberg World progress for every player on this device?")) RW.resetSave(); });
+    $("#bookStats").addEventListener("click", () => { closeBook(); openStats(); });
     show(book, true);
     requestAnimationFrame(() => book.classList.add("on"));
     show(portalCard, false);
@@ -643,6 +654,66 @@
   $("#bookBtn").addEventListener("click", openBook);
   $("#bookClose").addEventListener("click", closeBook);
   book.addEventListener("click", (ev) => { if (ev.target === book) closeBook(); });
+
+  // =====================================================================
+  // FAMILY STATS: who played, how long, and which games
+  // =====================================================================
+  const statsEl = $("#stats");
+  function openStats() {
+    RW.persist();
+    RW.sfx.play("paper");
+    const body = $("#statsBody");
+    body.innerHTML = "";
+    const today = RW.today();
+    ["reuben", "jonah", "ellie"].forEach((id) => {
+      const s = A.CHARS[id], pr = RW.profile(id);
+      const col = el("div", "st-kid");
+      col.style.setProperty("--c", s.color);
+      const cv = el("canvas"); cv.width = cv.height = 120; A.portrait(cv, id, {});
+      const head = el("div", "st-head"); head.appendChild(cv);
+      head.appendChild(el("div", "st-name", `<b>${s.name.toUpperCase()}</b><span>${pr && pr.time && pr.time.last ? "Last played " + new Date(pr.time.last).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "Hasn't played yet"}</span>`));
+      col.appendChild(head);
+      if (!pr) { col.appendChild(el("p", "st-empty", "No games yet. Pick " + s.name + " on the character screen to start!")); body.appendChild(col); return; }
+      const t = pr.time || {};
+      const games = RW.games.list.filter((g) => RW.games.status(g) !== "locked").map((g) => ({ g, secs: (t.games || {})[g.id] || 0, st: (pr.games || {})[g.id] || {} })).filter((x) => x.secs || x.st.plays).sort((a, b) => b.secs - a.secs);
+      col.appendChild(el("div", "st-nums", `
+        <div><b>${RW.fmtTime(RW.totalTime(pr))}</b><span>total</span></div>
+        <div><b>${RW.fmtTime((t.days || {})[today] || 0)}</b><span>today</span></div>
+        <div><b>${pr.stars}</b><span>${STAR_SVG} stars</span></div>`));
+      col.appendChild(el("div", "st-line", `🌍 Exploring the world <b>${RW.fmtTime(t.world || 0)}</b>`));
+      col.appendChild(el("div", "st-line", `🎮 Visits <b>${t.sessions || 0}</b> · Games played <b>${games.reduce((a, x) => a + (x.st.plays || 0), 0)}</b>`));
+      const list = el("div", "st-games");
+      if (!games.length) list.appendChild(el("p", "st-empty", "No mini-games yet."));
+      const max = Math.max(1, ...games.map((x) => x.secs));
+      games.forEach(({ g, secs, st }) => {
+        const row = el("div", "st-game");
+        row.innerHTML = `<span class="st-gi">${g.icon}</span><span class="st-gt"><b>${g.title}</b><small>${st.plays || 0} ${st.plays === 1 ? "round" : "rounds"}${st.plays ? ` · best ${st.highScore}` : ""}</small><i style="width:${Math.max(4, (secs / max) * 100)}%"></i></span><span class="st-gs">${RW.fmtTime(secs)}</span>`;
+        list.appendChild(row);
+      });
+      col.appendChild(list);
+      body.appendChild(col);
+    });
+    show(statsEl, true);
+    requestAnimationFrame(() => statsEl.classList.add("on"));
+    show(portalCard, false);
+  }
+  function closeStats() { statsEl.classList.remove("on"); setTimeout(() => show(statsEl, false), 260); if (portalDest && E.mode === "play") show(portalCard, true); }
+  $("#statsClose").addEventListener("click", closeStats);
+  statsEl.addEventListener("click", (ev) => { if (ev.target === statsEl) closeStats(); });
+  $("#selectStats").addEventListener("click", (ev) => { ev.stopPropagation(); openStats(); });
+
+  // Count play time once a second while the page is visible: in a game, or out exploring.
+  let tick = 0;
+  setInterval(() => {
+    if (document.hidden) return;
+    const cur = RW.host.current;
+    if (cur && cur.game) RW.addTime(1, cur.game.id);
+    else if (E.mode === "play" && E.player) RW.addTime(1);
+    else return;
+    if (++tick % 15 === 0) RW.persist();
+  }, 1000);
+  window.addEventListener("pagehide", () => RW.persist());
+  document.addEventListener("visibilitychange", () => { if (document.hidden) RW.persist(); });
 
   // =====================================================================
   // BOOT

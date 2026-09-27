@@ -12,7 +12,7 @@
     if (!AC) return false;
     ac = new AC();
     master = ac.createGain();
-    master.gain.value = RW.save.muted ? 0 : 0.8;
+    master.gain.value = RW.store.muted ? 0 : 0.8;
     master.connect(ac.destination);
     musicGain = ac.createGain();
     musicGain.gain.value = 0.16;
@@ -112,12 +112,12 @@
   RW.sfx = {
     unlock() { gestured = true; if (ensure()) startMusic(); },
     play(name) {
-      if (RW.save.muted || !SOUNDS[name] || !gestured) return;
+      if (RW.store.muted || !SOUNDS[name] || !gestured) return;
       if (!ensure()) return;
       try { SOUNDS[name](); } catch (e) { /* audio hiccup; ignore */ }
     },
     setMuted(m) {
-      RW.save.muted = m; RW.persist();
+      RW.store.muted = m; RW.persist();
       if (ac) master.gain.setTargetAtTime(m ? 0 : 0.8, ac.currentTime, 0.05);
     },
     // Games take over the speakers; the hub tune pauses while one is open.

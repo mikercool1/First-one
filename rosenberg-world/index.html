@@ -29,6 +29,7 @@
 <section class="screen" id="select" hidden>
   <button class="round back" id="selectBack" type="button" aria-label="Back">←</button>
   <h2 class="sel-title">WHO'S PLAYING?</h2>
+  <button class="round stats-btn" id="selectStats" type="button" aria-label="Family stats">📊</button>
   <div class="cards" id="cards"></div>
 </section>
 
@@ -72,6 +73,15 @@
   <div class="all-frame">
     <div class="book-head all-head"><span>ALL GAMES</span><button class="round small" id="allClose" type="button" aria-label="Close">✕</button></div>
     <div class="all-grid" id="allGrid"></div>
+  </div>
+</section>
+
+<!-- FAMILY STATS -->
+<section class="overlay" id="stats" hidden>
+  <div class="stats-frame">
+    <div class="book-head stats-head"><span>FAMILY STATS</span><button class="round small" id="statsClose" type="button" aria-label="Close">✕</button></div>
+    <div class="stats-body" id="statsBody"></div>
+    <p class="stats-note">Saved on this device. Each kid's stars, games and time are kept separately.</p>
   </div>
 </section>
 

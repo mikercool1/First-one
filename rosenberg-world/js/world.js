@@ -1571,9 +1571,7 @@
       });
     });
     // keep track of which upgrades have been celebrated
-    RW.save.built = RW.save.built || {};
-    UPGRADES.forEach((u) => { if (world.upgradeUnlocked(u)) RW.save.built[u.id] = true; });
-    RW.persist();
+    markBuilt();
     RW.bus.on("stars", () => {
       UPGRADES.forEach((u) => {
         if (world.upgradeUnlocked(u) && !RW.save.built[u.id]) {
@@ -1587,6 +1585,12 @@
         }
       });
     });
+  }
+  // upgrades a player already has don't get celebrated again (per player)
+  function markBuilt() {
+    RW.save.built = RW.save.built || {};
+    UPGRADES.forEach((u) => { if (world.upgradeUnlocked(u)) RW.save.built[u.id] = true; });
+    RW.persist();
   }
   function drawPlotGround(c, u, on) {
     const w = u.w, h = u.h;
@@ -1708,6 +1712,13 @@
     ["construction", 4050, 2230], ["waterGate", 3350, 2715], ["gondola", 3290, 455], ["treehouse", 775, 2170],
     ["sandcastle", 4240, 2755],
   ];
+  // A different kid logged in: show the stars and items THEY haven't found yet.
+  world.refreshProgress = () => {
+    E.entities.filter((e) => (e.kind === "star" || e.kind === "item") && !e.flying).forEach((e) => E.remove(e));
+    world.chefHatOut = false;
+    buildStarsAndItems();
+    markBuilt();
+  };
   function buildStarsAndItems() {
     HIDDEN_STARS.forEach(([id, x, y]) => {
       if (RW.save.foundStars[id]) return;

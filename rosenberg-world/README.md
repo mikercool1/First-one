@@ -80,12 +80,19 @@ needs copying in here again (keeping its `rw-bridge.js` lines).
 - `js/ui.js`: title, character select, HUD, map, Collection Book, game host, results.
 - `js/registry.js`, `js/core.js`, `js/audio.js`: registry plumbing, saved progress, sounds.
 
-## Progress
+## Progress and player memory
 
-Stars, collectibles, secrets, high scores and the last player are saved on the device
-(`localStorage`). "Reset all progress" is at the bottom of the Collection Book.
-House upgrades unlock by star total: Dog House 10, Pool 25, Treehouse 40, Giant Slide 60,
-Sport Court 80.
+Picking Reuben, Jonah or Ellie on the character screen logs in to that player's own profile:
+their Rosenberg Stars, hidden stars found, collectibles, secrets, house upgrades, high scores
+and play time are all kept separately, on this device (`localStorage`). The character cards show
+each kid's stars and time played, and the game remembers who played last.
+
+Play time is counted per player: time exploring the world, time in each mini-game, and time per
+day. The 📊 button on the character screen (or FAMILY STATS in the Collection Book) shows it all.
+"Reset all progress" at the bottom of the Collection Book erases every player on the device.
+
+House upgrades unlock by each player's star total: Dog House 10, Pool 25, Treehouse 40,
+Giant Slide 60, Sport Court 80.
 
 Add `?dev` to the URL to get a "Test finish" button on placeholder game screens, which runs
 the full results and star flow.
