@@ -198,7 +198,7 @@
   G.register({
     id: "lazyRiver",
     title: "Lazy River Pirates",
-    subtitle: "Swim the Baha Bay lazy river and race Dad!",
+    subtitle: "Float the Baha Mar lazy river and race Dad!",
     destination: "lazyriver",
     unlocked: true,
     entry: "games/lazy-river/index.html",

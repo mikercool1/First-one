@@ -379,7 +379,7 @@
     c.beginPath(); c.moveTo(-180, -190);
     for (let i = 0; i <= 8; i++) c.quadraticCurveTo(-180 + (i - 0.5) * 45, -258 - (i % 2) * 14, -180 + i * 45, -236);
     c.lineTo(180, -190); c.closePath(); c.fill();
-    text(c, "BAHA BAY", 0, -222, 34, "#FFFFFF", { weight: 700, stroke: "#156A99", strokeW: 6 });
+    text(c, "SPLASH DOWN", 0, -222, 28, "#FFFFFF", { weight: 700, stroke: "#156A99", strokeW: 6 });
     if (open) {
       // gates swung open, with a welcome plate for the slide game
       [-1, 1].forEach((k) => {

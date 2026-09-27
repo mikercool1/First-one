@@ -19,9 +19,11 @@
     plaza: { x: 3500, y: 1760, r: 250 },
     // Baha Mar: the water park island, reached by sea plane from the dock
     // a roomy island: the sea plane lands at the north-west, a promenade runs east to the hotel,
-    // and the Baha Bay water park sits in the south-middle
+    // with Splash Down (slides, west) and the Lazy River (its own loop, east) kept apart
     island: { x: 5600, y: 1750, rx: 1080, ry: 620 },
-    park: { dx: 1700, dy: -1080 },        // the water park's layout was drawn for its old mainland spot
+    // two separate water rides, side by side but clearly apart:
+    splash: { x0: 4780, y0: 1680, x1: 5380, y1: 2100, gate: 5080 }, // Splash Down: a fenced slide park (west)
+    lazy: { x: 5780, y: 2010, rx: 210, ry: 100, hut: [5780, 1800] }, // Lazy River: its own loop (east)
     waterFenceY: 1680,
     paths: [
       // main boulevard, west trail out of the woods to the beach
@@ -366,15 +368,20 @@
     smoothPath(c, walk); c.strokeStyle = PATH_COLORS.board[1]; c.lineWidth = 92; c.stroke();
     smoothPath(c, walk); c.strokeStyle = PATH_COLORS.board[2]; c.lineWidth = 35; c.setLineDash([4, 14]); c.stroke(); c.setLineDash([]);
 
-    // Baha Bay pool and lazy river, behind its fence (on the island)
-    const { dx, dy } = L.park;
-    c.fillStyle = "#E4D8C2"; A.rr(c, 3180 + dx, 2780 + dy, 740, 400, 30); c.fill();
-    c.fillStyle = "#3CC3E8"; A.rr(c, 3420 + dx, 2860 + dy, 260, 130, 40); c.fill();
-    c.fillStyle = "#7FDDF5"; A.rr(c, 3432 + dx, 2870 + dy, 236, 40, 20); c.fill();
-    c.strokeStyle = "#3CC3E8"; c.lineWidth = 46;
-    A.ell(c, 3550 + dx, 3050 + dy, 330, 80); c.stroke();
-    c.strokeStyle = "#8BE3F7"; c.lineWidth = 12; c.setLineDash([30, 30]);
-    A.ell(c, 3550 + dx, 3050 + dy, 330, 80); c.stroke(); c.setLineDash([]);
+    // Splash Down: the slide park's deck and splash pool, behind its fence
+    const S = L.splash;
+    c.fillStyle = "#E4D8C2"; A.rr(c, S.x0, S.y0 + 20, S.x1 - S.x0, S.y1 - S.y0 - 20, 30); c.fill();
+    c.fillStyle = "#3CC3E8"; A.rr(c, S.gate - 170, 1820, 340, 190, 60); c.fill();
+    c.fillStyle = "#7FDDF5"; A.rr(c, S.gate - 156, 1832, 312, 54, 27); c.fill();
+    // Lazy River: a boardwalk down from the promenade to its tiki hut, then the loop itself
+    const R = L.lazy;
+    const lw = [[R.x, 1515], [R.x, R.hut[1] - 30]];
+    smoothPath(c, lw); c.strokeStyle = PATH_COLORS.board[0]; c.lineWidth = 86; c.stroke();
+    smoothPath(c, lw); c.strokeStyle = PATH_COLORS.board[1]; c.lineWidth = 76; c.stroke();
+    c.fillStyle = "#E4D8C2"; A.ell(c, R.x, R.y, R.rx + 64, R.ry + 52); c.fill();
+    c.strokeStyle = "#3CC3E8"; c.lineWidth = 64; A.ell(c, R.x, R.y, R.rx, R.ry); c.stroke();
+    c.strokeStyle = "#8BE3F7"; c.lineWidth = 12; c.setLineDash([30, 30]); A.ell(c, R.x, R.y, R.rx, R.ry); c.stroke(); c.setLineDash([]);
+    c.fillStyle = grassPattern || "#8CD06A"; A.ell(c, R.x, R.y, R.rx - 42, R.ry - 34); c.fill();
   }
 
   function paintPaths(c) {

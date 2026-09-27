@@ -39,8 +39,8 @@
     { id: "arcade", name: "Rosenberg Arcade", icon: "🕹️", kind: "future", portal: [2450, 2600], portalR: 90, arrive: [2450, 2640], map: [2450, 2470] },
     { id: "raceway", name: "Rosenberg Raceway", icon: "🏎️", kind: "future", portal: [640, 1000], portalR: 100, arrive: [640, 1030], map: [640, 760] },
     { id: "woods", name: "Adventure Woods", icon: "🌲", kind: "place", map: [560, 1780], arrive: [640, 1900] },
-    { id: "waterworld", name: "Baha Bay", icon: "🌊", kind: "future", portal: [5250, 1640], portalR: 90, arrive: [5250, 1618], map: [5020, 1880] },
-    { id: "lazyriver", name: "Baha Bay Lazy River", icon: "🛟", kind: "future", portal: [5562, 1636], portalR: 70, arrive: [5562, 1616], map: [5560, 2010] },
+    { id: "waterworld", name: "Splash Down", icon: "🌊", kind: "future", portal: [5080, 1640], portalR: 90, arrive: [5080, 1618], map: [5080, 1900] },
+    { id: "lazyriver", name: "Lazy River", icon: "🛟", kind: "future", portal: [5780, 1752], portalR: 70, arrive: [5780, 1730], map: [5780, 2010] },
     { id: "beach", name: "Rosenberg Beach", icon: "🏖️", kind: "place", map: [4150, 1860], arrive: [4100, 2260] },
     // sea planes between the dock and Baha Mar (travel, not games)
     { id: "seaplane", name: "Fly to Baha Mar", icon: "✈️", kind: "travel", to: "bahamar", portal: [4630, 2352], portalR: 70, arrive: [4610, 2352], map: [4650, 2352] },
@@ -105,7 +105,7 @@
     out.push({ x: I.x, y: I.y - I.ry + 40, name: "BAHA MAR", icon: "🏝️", color: PLACES.bahamar.color });
     for (const k of ["splash", "lazyriver"]) {
       const d = DESTINATIONS.find((x) => x.id === PLACES[k].go);
-      if (d) out.push({ x: d.portal[0] + (k === "splash" ? -30 : 0), y: d.portal[1] + (k === "splash" ? 330 : -160), name: PLACES[k].name, icon: PLACES[k].icon, color: PLACES[k].color });
+      if (d) out.push({ x: d.map[0], y: d.map[1], name: PLACES[k].name, icon: PLACES[k].icon, color: PLACES[k].color });
     }
     return (labelCache = out);
   };
@@ -1329,7 +1329,7 @@
   }
 
   // ---------------------------------------------------------------------
-  // BAHA BAY (the water park: Splash Down slides and the Lazy River)
+  // BAHA MAR WATER RIDES (Splash Down slides and the Lazy River, kept apart)
   // ---------------------------------------------------------------------
   // ---------------------------------------------------------------------
   // SIGNPOSTS at the crossroads. Each arrow board walks you to its place when tapped.
@@ -1377,7 +1377,7 @@
     signpost(4150, 1995, [["beach", "U"], ["bahamar", "D"]]);                                        // on the sand, where the trail heads south
     signpost(1880, 900, [["academy", "L"], ["raceway", "L"], ["baseball", "R"], ["home", "D"]]);  // north lane, west of the ballpark
     signpost(3080, 1190, [["witch", "U"], ["baseball", "L"], ["space", "R"], ["home", "D"]]);      // north lane, east of the ballpark
-    signpost(5000, 1420, [["icecream", "R"], ["hotel", "R"], ["splash", "D"], ["lazyriver", "D"], ["flyhome", "L"]]);  // on Baha Mar, by the plane
+    signpost(5000, 1420, [["icecream", "R"], ["lazyriver", "R"], ["hotel", "R"], ["splash", "D"], ["flyhome", "L"]]);  // on Baha Mar, by the plane
     signpost(2600, 2735, [["home", "U"], ["frogs", "L"], ["sports", "L"], ["bahamar", "R"]]);      // south street by the arcade
   }
 
@@ -1767,15 +1767,17 @@
     sign(sx - 205, sy + 20, ["ICE CREAM", "🍦 OPEN!"], { size: 15, board: "#FFF4E8", edge: "#E8558A", ink: "#B8356A", ent: { tap: portalTap("icecream") } });
   }
 
-  // Baha Bay water park, out on Baha Mar island. Its layout was drawn for its old spot
-  // on the mainland, so everything is shifted by L.park.
+  // Baha Mar's two water rides, kept well apart so it's obvious which is which:
+  // Splash Down (a fenced slide park, west) and the Lazy River (its own loop with a tiki hut, east).
   function buildBahaBay() {
-    const fy = L.waterFenceY, { dx, dy } = L.park;
-    E.addSolid({ r: [3120 + dx, fy - 16, 3980 + dx, fy + 40] });
-    E.addSolid({ r: [3120 + dx, fy, 3980 + dx, fy + 600] }); // the park grounds (you play it through the gates)
-    for (let x = 3130 + dx; x < 3960 + dx; x += 200) {
-      const w = Math.min(200, 3960 + dx - x);
-      if (x + w > 3430 + dx && x < 3670 + dx) continue; // gate gap
+    const fy = L.waterFenceY, S = L.splash, G = S.gate;
+    // ---- Splash Down ----
+    E.addSolid({ r: [S.x0, fy - 16, S.x1, fy + 40] });
+    E.addSolid({ r: [S.x0, fy, S.x1, S.y1] }); // the park grounds (you play it through the gate)
+    // fence runs either side of the gate
+    const runs = [];
+    for (const [a, z] of [[S.x0 + 10, G - 150], [G + 150, S.x1 - 10]]) for (let x = a; x < z - 1; x += 150) runs.push([x, Math.min(150, z - x)]);
+    for (const [x, w] of runs) {
       staticProp(x + w / 2, fy, [-w / 2 - 4, -70, w / 2 + 4, 6], (c) => {
         c.fillStyle = "#EAF6FF";
         for (let k = -w / 2; k <= w / 2; k += 14) { A.rr(c, k - 3, -60, 6, 60, 3); c.fill(); }
@@ -1783,15 +1785,14 @@
       }, { kind: "fence" });
     }
     const wwOpen = world.destStatus(DEST.waterworld) !== "locked";
-    staticProp(3550 + dx, fy + 2, [-200, -280, 200, 10], (c) => B.waterGate(c, wwOpen), { kind: "gate", tap: portalTap("waterworld"), solid: [{ r: [-172, -12, 172, 6] }] });
-    // tap the water slides to ride Splash Down, or the lazy river to float it
-    staticProp(3260 + dx, 2960 + dy, [-130, -220, 150, 10], (c) => { c.scale(0.78, 0.78); B.slides(c); }, { kind: "slides", tap: portalTap("waterworld") });
-    staticProp(3850 + dx, 2990 + dy, [-150, -220, 130, 10], (c) => { c.scale(-0.78, 0.78); B.slides(c); }, { kind: "slides", tap: portalTap("waterworld") });
-    hotspot(3550 + dx, 3050 + dy, [-360, -110, 360, 110], portalTap("lazyriver"), 3050 + dy - 200);
-    hotspot(3550 + dx, 2925 + dy, [-140, -70, 140, 60], portalTap("waterworld"), 2925 + dy - 200); // the splash pool
+    staticProp(G, fy + 2, [-200, -280, 200, 10], (c) => B.waterGate(c, wwOpen), { kind: "gate", tap: portalTap("waterworld"), solid: [{ r: [-172, -12, 172, 6] }] });
+    // tap the slides or the splash pool to ride
+    staticProp(G - 190, 1990, [-130, -220, 150, 10], (c) => { c.scale(0.78, 0.78); B.slides(c); }, { kind: "slides", tap: portalTap("waterworld") });
+    staticProp(G + 190, 2020, [-150, -220, 130, 10], (c) => { c.scale(-0.78, 0.78); B.slides(c); }, { kind: "slides", tap: portalTap("waterworld") });
+    hotspot(G, 1920, [-170, -100, 170, 90], portalTap("waterworld"), 1720); // the splash pool
     // tipping splash bucket
     add({
-      kind: "bucket", x: 3400 + dx, y: 3000 + dy, box: [-60, -230, 60, 10], tip: 0, t0: 0,
+      kind: "bucket", x: G, y: 2070, box: [-60, -230, 60, 10], tip: 0, t0: 0,
       draw(c, E2, e) {
         c.fillStyle = "#F2C230"; c.fillRect(-40, -200, 8, 200); c.fillRect(32, -200, 8, 200);
         c.fillStyle = "#2F6BD6"; c.fillRect(-44, -206, 88, 10);
@@ -1801,26 +1802,31 @@
         c.restore();
         if (e.tip > 0.6) for (let i = 0; i < 10; i++) { c.fillStyle = "rgba(150,220,255,.8)"; c.beginPath(); c.arc(30 + Math.sin(i) * 10, -170 + ((E2.t * 400 + i * 30) % 170), 5, 0, TAU); c.fill(); }
       },
+      tap: portalTap("waterworld"),
       update(e, dt) { e.t0 += dt; const cyc = e.t0 % 7; e.tip = cyc > 5.5 ? Math.min(1, (cyc - 5.5) * 3) : Math.max(0, e.tip - dt * 2); },
     });
-    sign(3330 + dx, 2700 + dy, ["SPLASH DOWN", "WATER SLIDES"], { size: 15, board: "#EAF6FF", edge: "#1E8FC4", ink: "#156A99" });
+    sign(G - 250, 1630, ["SPLASH DOWN", "WATER SLIDES"], { size: 15, board: "#EAF6FF", edge: "#1E8FC4", ink: "#156A99", ent: { tap: portalTap("waterworld") } });
 
-    // Lazy River entrance: a tiki hut with a tube stack, just east of the main gate
+    // ---- Lazy River ----
+    const R = L.lazy;
+    E.addSolid({ r: [R.x - R.rx - 60, R.y - R.ry - 40, R.x + R.rx + 60, R.y + R.ry + 50] }); // you float it through the hut
     const lrOpen = world.destStatus(DEST.lazyriver) !== "locked";
-    staticProp(3862 + dx, fy + 4, [-110, -230, 110, 10], (c) => B.riverHut(c, lrOpen), {
+    staticProp(R.hut[0], R.hut[1], [-110, -230, 110, 10], (c) => B.riverHut(c, lrOpen), {
       kind: "gate", tap: portalTap("lazyriver"), shadow: [90, 10],
       solid: [{ r: [-92, -10, -66, 4] }, { r: [66, -10, 92, 4] }],
     });
-    // tubes floating round the lazy river inside the park
-    const RIVER = { x: 3550 + dx, y: 3050 + dy, rx: 330, ry: 80 };
-    const riders = [["#FF5C8A", "#F4D273"], ["#FFB020", "#7B4A26"], ["#2EB872", "#5B2330"], ["#7C5CFF", "#2B2B2B"], ["#FF7A1F", "#C98A4A"], ["#1E9FD9", "#F4D273"]];
+    hotspot(R.x, R.y, [-R.rx - 40, -R.ry - 40, R.rx + 40, R.ry + 40], portalTap("lazyriver"), R.hut[1] - 10); // the river water
+    tree(R.x, R.y + 10, "palm", 0.8); // a palm on the little island in the middle
+    sign(R.x + 150, 1640, ["LAZY RIVER", "FLOAT ON IN"], { size: 15, board: "#EAFBF6", edge: "#0B8FB0", ink: "#0B6E88", ent: { tap: portalTap("lazyriver") } });
+    // tubes floating round the loop
+    const riders = [["#FF5C8A", "#F4D273"], ["#FFB020", "#7B4A26"], ["#2EB872", "#5B2330"], ["#7C5CFF", "#2B2B2B"], ["#FF7A1F", "#C98A4A"]];
     riders.forEach(([col, hair], i) => {
       add({
-        kind: "tube", x: RIVER.x, y: RIVER.y, box: [-40, -60, 40, 20], a: (i / riders.length) * TAU, bob: i,
+        kind: "tube", x: R.x, y: R.y, box: [-40, -60, 40, 20], a: (i / riders.length) * TAU, bob: i,
         update(e, dt) {
-          e.a += dt * 0.09; e.bob += dt;
-          e.x = RIVER.x + Math.cos(e.a) * RIVER.rx;
-          e.y = RIVER.y + Math.sin(e.a) * RIVER.ry;
+          e.a += dt * 0.12; e.bob += dt;
+          e.x = R.x + Math.cos(e.a) * R.rx;
+          e.y = R.y + Math.sin(e.a) * R.ry;
         },
         draw(c, E2, e) {
           const b = Math.sin(e.bob * 2.4) * 2;

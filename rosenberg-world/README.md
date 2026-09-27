@@ -83,8 +83,8 @@ door and the stars you earned fly into your total.
 | Soccer field (Sports Complex) | Backyard Soccer | `games/backyard-soccer` |
 | Beach volleyball court | Jonah's Volley | `games/jonahs-volley` |
 | Rosenberg House front door | The Game Room: Rosenboggle and The Word Game | `games/game-room`, `games/rosenboggle`, `games/word-game` |
-| Baha Bay water park on Baha Mar island (main gate) | Splash Down | `games/water-slide` |
-| Baha Bay Lazy River hut on Baha Mar (and the floating tubes) | Lazy River Pirates | `games/lazy-river` |
+| Splash Down slide park on Baha Mar (gate, slides or splash pool) | Splash Down | `games/water-slide` |
+| Lazy River loop on Baha Mar, east of Splash Down (tiki hut, water or tubes) | Lazy River Pirates | `games/lazy-river` |
 
 Baha Mar is an island out in the ocean. Take the sea plane at the end of the beach dock ("FLY TO
 BAHA MAR"), or just tap the island; the plane on the island flies you home. The flight lives in
