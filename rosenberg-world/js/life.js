@@ -153,6 +153,7 @@
     nana: ["Hello, sweetheart!", "I'm knitting you a sweater!", "Have you eaten?", "Come give Nana a hug!"],
     max: ["Hehehe!", "Can't catch me!", "I have a spoon!", "Nope!"],
     molly: ["Hi sweetie!", "Chag sameach!", "Look how big you're getting!"],
+    doctor: ["Let me tell you about Tremfya!", "Did you ask me about Tremfya yet?"],
   };
   const cameos = [];
   world.cameoActive = (id) => cameos.some((n) => n.charId === id && !n.dead);
@@ -178,6 +179,7 @@
     n.t += dt;
     n.alpha = n.fading ? Math.max(0, n.alpha - dt * 2.5) : Math.min(1, n.alpha + dt * 3);
     if (n.fading && n.alpha <= 0) { E2.remove(n); cameos.splice(cameos.indexOf(n), 1); return; }
+    if (n.pausedT > 0) { n.pausedT -= dt; n.move = 0; n.side = 0; n.back = false; return; }
     const step = n.script[n.si];
     if (!step) { n.move = 0; return; }
     n.st += dt;
@@ -196,12 +198,21 @@
       if (step.dir) n.dir = step.dir;
       if (step.say && !step.said) { step.said = true; E2.say(n, step.say, Math.min(2.4, step.wait)); }
       if (n.st > step.wait) { n.si++; n.st = 0; }
+    } else if (step.loop) {
+      n.si = 0; n.st = 0;
     } else if (step.vanish) {
       if (!n.fading) { n.fading = true; E2.burst(n.x, n.y, 30, "puff", 5); }
     } else n.si++;
   }
   function tapNPC(E2, n) {
     if (n.charId === "max") { maxRunAway(n); return; }
+    if (n.charId === "doctor") {
+      n.line = (n.line || 0) + 1;
+      E2.say(n, LINES.doctor[n.line % 2], 2.4);
+      n.pausedT = 2.6; // stop walking for a moment to deliver the pitch
+      RW.sfx.play("chirp");
+      return;
+    }
     E2.say(n, U.pick(LINES[n.charId] || ["Hi!"]), 2);
     E2.burst(n.x, n.y, 100, "heart", 3);
     RW.sfx.play("giggle");
@@ -441,6 +452,30 @@
     nana.alpha = 1; nana.side = 0;
     nana.update = (n, dt, E2) => { n.t += dt; n.pose = "knit"; n.move = 0; n.side = 0; if (U.chance(dt * 0.15)) E2.burst(n.x, n.y, 90, "heart", 1, { sp: 10, up: 30 }); };
     cameos.splice(cameos.indexOf(nana), 1); // Nana is permanent, not a cameo
+    // the Doctor: always out for a walk, always ready to talk about Tremfya
+    const doc = makeNPC("doctor", 1600, 1905, [
+      { to: [2200, 1905] }, { to: [2900, 1905] }, { to: [3300, 1905] }, { to: [3500, 1905] }, { wait: 1.5 },
+      { to: [3860, 2200] }, { to: [3880, 2640] }, { to: [3000, 2665] }, { to: [2450, 2650] }, { wait: 1.2 },
+      { to: [2000, 2660] }, { to: [1500, 2690] }, { to: [1500, 2300] }, { to: [1500, 1905] }, { to: [1000, 1905] },
+      { to: [700, 1905] }, { wait: 1.2 }, { to: [1000, 1905] }, { to: [1250, 1600] }, { to: [1300, 1250] }, { to: [1450, 975] },
+      { to: [1800, 1010] }, { to: [2090, 1100] }, { to: [2200, 1230] }, { to: [2090, 1450] }, { to: [2070, 1700] }, { to: [2080, 1905] },
+      { loop: true },
+    ], { speed: 80 });
+    doc.alpha = 1;
+    cameos.splice(cameos.indexOf(doc), 1); // permanent, not a cameo
+    world.doctor = doc;
+    const docUpdate = doc.update;
+    doc.update = (n, dt, E2) => {
+      docUpdate(n, dt, E2);
+      // now and then, pipe up when the player walks by
+      n.chatT = (n.chatT || 6) - dt;
+      const P = E2.player;
+      if (P && E2.mode === "play" && n.chatT < 0 && Math.hypot(P.x - n.x, P.y - n.y) < 260) {
+        n.chatT = U.rand(14, 22);
+        n.line = (n.line || 0) + 1;
+        E2.say(n, LINES.doctor[n.line % 2], 2.4);
+      }
+    };
     // butterflies
     [[2450, 1780], [3500, 1690], [1420, 1810], [2080, 2150], [3020, 1960], [700, 1650]].forEach(([x, y]) => makeButterfly(x, y));
     // cars on the far road

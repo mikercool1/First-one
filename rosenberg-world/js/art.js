@@ -231,6 +231,12 @@
       outfit: "shirt", shirt: "#F3ECE0", belt: "#8A5A2E",
       legs: [[0, 1, "#CDA67D"]], shoe: "#D9B29A", shoeAccent: "#D9B29A",
     },
+    doctor: {
+      id: "doctor", name: "Doctor", L: 36, T: 38, R: 17, bw: 32, legW: 10, armW: 8.5, stride: 7,
+      skin: "#E9BD98", hair: "#4A3526", hairStyle: "short", glasses: true,
+      outfit: "dress", dressLen: 0.5, shirt: "#FBFCFF", pattern: "labcoat", sleeve: "#FBFCFF",
+      legs: [[0, 1, "#2F3A5A"]], shoe: "#2B2B30", shoeAccent: "#2B2B30", prop: "clipboard",
+    },
     molly: {
       id: "molly", name: "Molly", L: 35, T: 37, R: 17.5, bw: 32, legW: 10.5, armW: 8.5, stride: 7,
       skin: "#F3CBAA", hair: "#A87A42", hairStyle: "long", hairLen: 1.45, lashes: true, lip: "#B8475A",
@@ -404,6 +410,11 @@
         c.fillStyle = "rgba(255,255,255,.28)";
         for (let i = -3; i <= 3; i++) { c.beginPath(); c.arc(i * flare * 0.3, bot + 4, 3.2, 0, TAU); c.fill(); }
       }
+      if (s.pattern === "labcoat") {
+        c.strokeStyle = "rgba(120,140,170,.45)"; c.lineWidth = 1.4;
+        c.beginPath(); c.moveTo(0, top + 9); c.lineTo(0, hem); c.stroke();
+        c.fillStyle = "rgba(120,140,170,.25)"; rr(c, -hw + 2, hipY - 2, 8, 7, 2); c.fill(); rr(c, hw - 10, hipY - 2, 8, 7, 2); c.fill();
+      }
       if (s.pattern === "floral") {
         [[-9, 0.5], [6, 0.7], [-4, 1.0], [10, 1.15], [-11, 1.35], [3, 1.45]].forEach(([fx, fy]) => {
           const y = top + T * fy;
@@ -416,7 +427,15 @@
       c.beginPath(); c.moveTo(-3, top + T * 0.4); c.quadraticCurveTo(-5, top + T * 0.8, -4, hem); c.moveTo(5, top + T * 0.45); c.quadraticCurveTo(7, top + T * 0.85, 6, hem); c.stroke();
       c.restore();
       if (s.belt) { c.fillStyle = s.belt; rr(c, -hw - 1, hipY - 5, hw * 2 + 2, 4, 2); c.fill(); }
-      if (adult) {
+      if (s.pattern === "labcoat") {
+        // teal scrubs under the coat, lapels, and a stethoscope
+        c.fillStyle = "#3BB8A8"; c.beginPath(); c.moveTo(-6, top + 1); c.lineTo(0, top + 10); c.lineTo(6, top + 1); c.closePath(); c.fill();
+        c.strokeStyle = "rgba(120,140,170,.6)"; c.lineWidth = 1.4;
+        c.beginPath(); c.moveTo(-7, top + 1); c.lineTo(-1, top + 14); c.moveTo(7, top + 1); c.lineTo(1, top + 14); c.stroke();
+        c.strokeStyle = "#39414F"; c.lineWidth = 1.8;
+        c.beginPath(); c.moveTo(-6, top); c.quadraticCurveTo(-9, top + 12, -3, top + 17); c.moveTo(6, top); c.quadraticCurveTo(9, top + 12, 3, top + 17); c.stroke();
+        c.fillStyle = "#AEB6C4"; c.beginPath(); c.arc(0, top + 19, 3.2, 0, TAU); c.fill();
+      } else if (adult) {
         // V neckline
         c.fillStyle = s.skin; c.beginPath(); c.moveTo(-5, top + 1); c.lineTo(0, top + 9); c.lineTo(5, top + 1); c.closePath(); c.fill();
       } else {
@@ -725,6 +744,12 @@
       c.rotate(-0.4);
       line(c, 0, 4, 0, -26, 3.2, "#C08A55");
       c.fillStyle = "#D69C60"; ell(c, 0, -30, 5, 7); c.fill();
+    } else if (prop === "clipboard") {
+      c.rotate(-0.15);
+      c.fillStyle = "#B8834E"; rr(c, -8, -14, 16, 20, 2); c.fill();
+      c.fillStyle = "#FFFFFF"; c.fillRect(-6, -11, 12, 15);
+      c.fillStyle = "#9AA0AE"; for (let i = 0; i < 4; i++) c.fillRect(-4, -8 + i * 3.5, 8, 1.2);
+      c.fillStyle = "#C9CDD8"; rr(c, -3.5, -16, 7, 4, 1.5); c.fill();
     } else if (prop === "phone") {
       c.fillStyle = "#1E2230"; rr(c, -5, -9, 10, 17, 2.5); c.fill();
       c.fillStyle = "#7FD4FF"; rr(c, -3.8, -7.5, 7.6, 13, 1.5); c.fill();

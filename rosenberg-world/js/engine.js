@@ -805,12 +805,16 @@
     const s = b.t < 0.18 ? U.easeOutBack(b.t / 0.18) : u > 0.9 ? (1 - u) / 0.1 : 1;
     c.save();
     c.translate(x, y); c.scale(s, s);
-    c.font = `700 19px ${A.FONT}`;
-    const w = Math.min(300, c.measureText(b.str).width + 30), bh = 38;
+    // shrink the text a little for long lines so it always fits inside the bubble
+    let fsz = 19;
+    c.font = `700 ${fsz}px ${A.FONT}`;
+    const tw = c.measureText(b.str).width;
+    if (tw > 340) { fsz = Math.max(13, Math.floor(19 * 340 / tw)); c.font = `700 ${fsz}px ${A.FONT}`; }
+    const w = c.measureText(b.str).width + 32, bh = 38;
     c.fillStyle = "rgba(20,30,60,.18)"; A.rr(c, -w / 2 + 2, -bh + 4, w, bh, 19); c.fill();
     c.fillStyle = "#FFFFFF"; A.rr(c, -w / 2, -bh, w, bh, 19); c.fill();
     c.beginPath(); c.moveTo(-8, -2); c.lineTo(0, 10); c.lineTo(8, -2); c.closePath(); c.fill();
-    A.text(c, b.str, 0, -bh / 2 + 1, 19, "#2B2F55", { weight: 700 });
+    A.text(c, b.str, 0, -bh / 2 + 1, fsz, "#2B2F55", { weight: 700 });
     c.restore();
   }
 
