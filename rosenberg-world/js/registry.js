@@ -9,6 +9,7 @@
     title: "",
     subtitle: "",
     destination: null,  // id of a destination in world.js (the building/portal the game lives in)
+    also: [],           // more destinations where the game can also be played (e.g. ["house"])
     unlocked: false,    // false = a locked future slot (padlock, COMING SOON)
     entry: null,        // URL of a finished game's index.html; opened full screen inside the hub
     mount: null,        // OR a function (container, api) => cleanup, for games written as a JS module
@@ -31,7 +32,9 @@
       return byId[g.id];
     },
     get: (id) => byId[id],
-    forDestination: (destId) => list.find((g) => g.destination === destId),
+    forDestination: (destId) => list.find((g) => g.destination === destId) || list.find((g) => (g.also || []).includes(destId)),
+    // every game playable at a destination (the house has more than one)
+    forDestinationAll: (destId) => list.filter((g) => g.destination === destId || (g.also || []).includes(destId)),
     // "playable": the full game is connected. "placeholder": the door is open but the game isn't wired in yet.
     // "locked": a future slot.
     status(g) {

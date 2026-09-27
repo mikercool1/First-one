@@ -27,6 +27,31 @@
 
   // ---------------- current games ----------------
 
+  // Game night in the Rosenberg House: the first games you play, right at the front door.
+  G.register({
+    id: "rattle",
+    title: "Rattle",
+    subtitle: "Shake the dice, find the words. 1 star for every word!",
+    destination: "house",
+    unlocked: true,
+    entry: "games/rattle/index.html",
+    color: "#F0642A",
+    icon: "🎲",
+    maxStars: 200,      // one star per word found, so a great round can pass 10
+  });
+
+  G.register({
+    id: "wordGame",
+    title: "The Word Game",
+    subtitle: "Chain words in a category. Beat the computer!",
+    destination: "plaza-building",
+    also: ["house"],
+    unlocked: true,
+    entry: "games/word-game/index.html",
+    color: "#2F5BEA",
+    icon: "🔤",
+  });
+
   G.register({
     id: "backyardBaseball",
     title: "Backyard Baseball",
@@ -114,17 +139,6 @@
     entry: "games/jonahs-volley/index.html",
     color: "#F2A93B",
     icon: "🏐",
-  });
-
-  G.register({
-    id: "wordGame",
-    title: "The Word Game",
-    subtitle: "Chain words in a category. Beat the computer!",
-    destination: "plaza-building",
-    unlocked: true,
-    entry: "games/word-game/index.html",
-    color: "#2F5BEA",
-    icon: "🔤",
   });
 
   G.register({

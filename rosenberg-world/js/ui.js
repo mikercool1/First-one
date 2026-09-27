@@ -168,9 +168,11 @@
     if (force || (flying === 0 && !holding)) { shown = RW.save.stars; starCount.textContent = shown; }
   }
   RW.bus.on("stars", () => { clearTimeout(syncTimer); syncTimer = setTimeout(() => syncStars(), 3500); });
-  function flyStars(sx, sy, n, delay = 0) {
+  function flyStars(sx, sy, total, delay = 0) {
     const target = $("#stars").getBoundingClientRect();
     const tx = target.left + 26, ty = target.top + target.height / 2;
+    const n = Math.min(total, 15); // a big haul flies as 15 stars, each worth a share
+    const worth = (i) => Math.floor((total * (i + 1)) / n) - Math.floor((total * i) / n);
     for (let i = 0; i < n; i++) {
       flying++;
       setTimeout(() => {
@@ -185,7 +187,7 @@
         ], { duration: 900, easing: "cubic-bezier(.5,0,.4,1)" });
         anim.onfinish = () => {
           s.remove(); flying--;
-          shown = Math.min(RW.save.stars, shown + 1);
+          shown = Math.min(RW.save.stars, shown + worth(i));
           starCount.textContent = shown;
           const pill = $("#stars");
           pill.classList.remove("pulse"); void pill.offsetWidth; pill.classList.add("pulse");
@@ -226,6 +228,26 @@
     const locked = status === "locked";
     const titleTxt = locked ? d.name : world.destTitle(d);
     const st = g ? RW.games.stats(g.id) : null;
+    const many = locked ? [] : RW.games.forDestinationAll(d.id).filter((x) => RW.games.status(x) !== "locked");
+    portalCard.classList.toggle("multi", many.length > 1);
+    if (many.length > 1) {
+      portalCard.style.setProperty("--c", many[0].color || "#F0642A");
+      portalCard.innerHTML = `
+      <div class="p-ico">${d.icon}</div>
+      <div class="p-txt">
+        <div class="p-title">Game Night at the ${d.name}</div>
+        <div class="p-sub">Pick a game to play inside</div>
+      </div>
+      <div class="p-games">${many.map((x) => {
+        const s2 = RW.games.stats(x.id);
+        return `<button class="p-game" type="button" data-game="${x.id}" style="--c:${x.color}"><span class="pg-ico">${x.icon}</span><span class="pg-t">${x.title}</span><span class="pg-s">${s2.plays ? `Best ${s2.highScore} · ${s2.starsEarned} ${STAR_SVG}` : "PLAY"}</span></button>`;
+      }).join("")}</div>`;
+      portalCard.querySelectorAll(".p-game").forEach((b) => b.addEventListener("click", (ev) => { ev.stopPropagation(); RW.host.launch(RW.games.get(b.dataset.game), d); }));
+      show(portalCard, true);
+      requestAnimationFrame(() => portalCard.classList.add("on"));
+      RW.sfx.play("pop");
+      return;
+    }
     portalCard.style.setProperty("--c", g && g.color && !locked ? g.color : "#6C4AC9");
     portalCard.innerHTML = `
       <div class="p-ico">${locked ? LOCK : (g && g.icon) || d.icon}</div>
@@ -322,7 +344,12 @@
       showResults(game, dest, s);
     },
     async exit() {
-      if (!current) return;
+      if (!current || current.leaving) return;
+      current.leaving = true;
+      if (current.frame) {
+        try { current.frame.contentWindow.postMessage({ type: "rosenberg-world:leaving" }, "*"); } catch (e) { /* ignore */ }
+        await new Promise((r) => setTimeout(r, 150)); // time for its last report to arrive
+      }
       const { game, dest, session } = current;
       await irisTo(true, innerWidth / 2, innerHeight / 2);
       closeGame();
@@ -436,7 +463,9 @@
     requestAnimationFrame(step);
     const starsEl = $("#rStars");
     if (!rec.stars) starsEl.innerHTML = '<span class="r-none">0 this time. Try again!</span>';
-    for (let i = 0; i < rec.stars; i++) setTimeout(() => { const s = el("span", "r-star", STAR_SVG); starsEl.appendChild(s); RW.sfx.play("chime"); }, 900 + i * 260);
+    const popN = Math.min(rec.stars, 10), gap = rec.stars > 5 ? 140 : 260;
+    for (let i = 0; i < popN; i++) setTimeout(() => { const s = el("span", "r-star", STAR_SVG); starsEl.appendChild(s); RW.sfx.play("chime"); }, 900 + i * gap);
+    if (rec.stars > 10) setTimeout(() => starsEl.appendChild(el("span", "r-more", `× ${rec.stars}`)), 900 + popN * gap);
     $("#rAgain").addEventListener("click", () => { show(results, false); RW.host.launch(game, dest); });
     $("#rBack").addEventListener("click", () => { show(results, false); backToWorld(dest, rec.stars); });
   }
@@ -505,7 +534,7 @@
       p.type = "button";
       p.style.left = px + "%"; p.style.top = py + "%";
       const g = RW.games.forDestination(d.id);
-      const icon = status === "locked" ? LOCK : (g && g.icon) || d.icon;
+      const icon = status === "locked" ? LOCK : RW.games.forDestinationAll(d.id).length > 1 ? d.icon : (g && g.icon) || d.icon;
       const label = status === "locked" ? d.name : world.destTitle(d);
       p.innerHTML = `<span class="pi">${icon}</span><span class="pl">${label}</span>${status === "locked" ? '<span class="ps">COMING SOON</span>' : status === "place" ? "" : '<span class="ps play">PLAY</span>'}`;
       p.addEventListener("click", (ev) => { ev.stopPropagation(); travel(d, p); });

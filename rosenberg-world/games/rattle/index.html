@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Rattle</title>
+<script src="../rw-bridge.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Caveat:wght@500;700&family=Figtree:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="rattle.css">
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <div class="logo" aria-label="Rattle">
+      <span style="--r:-6deg">R</span><span style="--r:4deg;--y:-4px">A</span><span style="--r:-2deg">T</span><span style="--r:7deg;--y:-2px">T</span><span style="--r:-4deg">L</span><span style="--r:3deg;--y:-3px">E</span>
+    </div>
+    <div class="readouts">
+      <div class="chip time" id="timeChip"><small>Time</small><b id="time">3:00</b></div>
+      <div class="chip"><small>Score</small><b id="score">0</b></div>
+      <div class="chip stars" id="starChip"><small>Rosenberg Stars</small><b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg><span id="stars">0</span></b></div>
+    </div>
+  </header>
+
+  <main class="stage">
+    <aside class="padcol">
+      <div class="pad" aria-label="Your words">
+        <h3>Your words <span id="count"></span></h3>
+        <ol id="found"></ol>
+        <p class="empty" id="padEmpty">Words you find get written here.</p>
+      </div>
+    </aside>
+
+    <section class="boardcol">
+      <div class="ribbon" id="ribbon" aria-live="polite"></div>
+      <div class="scene" id="scene">
+        <div class="tray" id="board"></div>
+      </div>
+      <div class="toasts" id="toasts" aria-live="polite"></div>
+      <div class="controls">
+        <button class="btn alt" id="turn" type="button">Turn board ↻</button>
+        <button class="btn" id="enter" type="button" hidden>Score it</button>
+        <button class="btn alt" id="clear" type="button" hidden>Clear</button>
+      </div>
+    </section>
+
+    <aside class="sidecol">
+      <svg class="hourglass" id="glass" viewBox="0 0 120 230" role="img" aria-label="Sand timer">
+        <defs>
+          <linearGradient id="wood" x1="0" x2="1"><stop offset="0" stop-color="#6B3E1E"/><stop offset=".45" stop-color="#C98A4E"/><stop offset="1" stop-color="#5A3218"/></linearGradient>
+          <linearGradient id="glassG" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset=".35" stop-color="#fff" stop-opacity=".05"/><stop offset=".8" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity=".28"/></linearGradient>
+          <linearGradient id="sandG" x1="0" x2="1"><stop offset="0" stop-color="#D9953A"/><stop offset=".5" stop-color="#F7CD78"/><stop offset="1" stop-color="#C98430"/></linearGradient>
+          <clipPath id="bulb"><path d="M30 24 C30 72 56 94 57 110 C56 126 30 150 30 198 L90 198 C90 150 64 126 63 110 C64 94 90 72 90 24 Z"/></clipPath>
+        </defs>
+        <rect x="14" y="22" width="7" height="184" rx="3" fill="url(#wood)"/>
+        <rect x="99" y="22" width="7" height="184" rx="3" fill="url(#wood)"/>
+        <g clip-path="url(#bulb)">
+          <rect id="sandTop" class="sand" x="20" y="44" width="80" height="66" fill="url(#sandG)"/>
+          <rect id="stream" x="59" y="106" width="2" height="94" fill="#E7B25A" opacity="0"/>
+          <path id="sandBot" class="sand" d="M24 198 Q60 132 96 198 Z" fill="url(#sandG)"/>
+        </g>
+        <path d="M30 24 C30 72 56 94 57 110 C56 126 30 150 30 198 L90 198 C90 150 64 126 63 110 C64 94 90 72 90 24 Z" fill="url(#glassG)" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+        <path d="M37 32 C37 66 50 86 54 100" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>
+        <path d="M37 190 C37 160 46 140 52 128" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="6" y="200" width="108" height="20" rx="6" fill="url(#wood)"/>
+        <ellipse cx="60" cy="201" rx="52" ry="5" fill="#D59A5C"/>
+        <rect x="6" y="8" width="108" height="20" rx="6" fill="url(#wood)"/>
+        <ellipse cx="60" cy="9" rx="52" ry="5" fill="#E0A76A"/>
+      </svg>
+      <p class="how">Drag through dice that touch: sideways, up, down or diagonal. Or tap them one at a time, or type.</p>
+    </aside>
+  </main>
+
+  <!-- start card -->
+  <div class="overlay" id="intro">
+    <div class="card">
+      <div class="kicker">Classic rules · 3 minutes</div>
+      <h1>Shake the dice.<br>Find the words.</h1>
+      <ul class="rules-list">
+        <li>Words are <b>3 letters or longer</b>, made from dice that touch, including diagonals.</li>
+        <li>Each die can be used once per word. <b>Qu</b> counts as two letters.</li>
+        <li>Every word you find earns a <b class="gold">★ Rosenberg Star</b>.</li>
+      </ul>
+      <div class="scoring">
+        <div><b>1</b><span>3–4 letters</span></div><div><b>2</b><span>5</span></div><div><b>3</b><span>6</span></div><div><b>5</b><span>7</span></div><div><b>11</b><span>8+</span></div>
+      </div>
+      <button class="btn big" id="start" type="button">Shake the tray</button>
+      <button class="btn ghost" type="button" data-rw-back hidden>Back to Rosenberg World</button>
+    </div>
+  </div>
+
+  <!-- results -->
+  <div class="overlay" id="over" hidden>
+    <div class="card wide">
+      <div class="kicker">Time's up</div>
+      <h1>Pencils down!</h1>
+      <div class="results">
+        <div><small>Score</small><b id="rScore">0</b></div>
+        <div><small>Words</small><b id="rWords">0</b></div>
+        <div class="gold"><small>Rosenberg Stars</small><b id="rStars">+0</b></div>
+      </div>
+      <p class="note" id="rNote"></p>
+      <div class="missed-wrap">
+        <h2 id="missedTitle">Words hiding in the dice</h2>
+        <div class="missed" id="missed"></div>
+      </div>
+      <div class="actions">
+        <button class="btn big" id="again" type="button">Shake again</button>
+        <button class="btn alt" type="button" data-rw-back hidden>Back to Rosenberg World</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="words.js"></script>
+<script src="rattle.js"></script>
+</body>
+</html>

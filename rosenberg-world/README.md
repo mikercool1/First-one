@@ -38,6 +38,16 @@ Instead of `entry`, a game can have `mount(container, api)`. It draws into `cont
 `api.save(key, value)` / `api.load(key)` give the game its own saved slot. Return a cleanup function
 if the game needs to stop timers.
 
+### Game Night: more than one game behind a door
+
+A game can list extra destinations with `also: ["house"]`. When a door has two or more games,
+its PLAY card turns into a picker. The Rosenberg House front door works this way: Rattle and
+The Word Game are the first games a new player sees, since everyone starts at the house.
+
+Games that pay a star per action (Rattle pays one per word) set `maxStars` higher than the default 10.
+A game can also call `RosenbergBridge.onLeave(fn)` to report a round in progress when the player
+taps the world's ✕ button; the world waits a moment for that report before closing the game.
+
 ### Collectibles from games
 
 Register an item with `RW.collection.add({ id, name, icon, hint })` (for example in `games.js`),
@@ -51,6 +61,8 @@ Every linked game is also one tap away from the ALL GAMES button in the HUD.
 
 | Where in the world | Game | Folder |
 | --- | --- | --- |
+| Rosenberg House front door (Game Night) | Rattle | `games/rattle` |
+| Rosenberg House front door (Game Night) and the Mystery Plaza building | The Word Game | `games/word-game` |
 | Backyard Baseball field | Backyard Baseball | `games/backyard-baseball` |
 | The family car in the driveway | Fish Friday | `games/lox-run` |
 | Basketball court (Sports Complex) | Buckets | `games/buckets` |
@@ -59,7 +71,6 @@ Every linked game is also one tap away from the ALL GAMES button in the HUD.
 | Math Blaster Academy | Reuben's Math Blaster | `games/math-blaster` |
 | Soccer field (Sports Complex) | Backyard Soccer | `games/backyard-soccer` |
 | Beach volleyball court | Jonah's Volley | `games/jonahs-volley` |
-| Mystery Plaza building | The Word Game | `games/word-game` |
 | Water World | Splash Down | `games/water-slide` |
 | Rosenberg Arcade (and its orange cabinet) | Max-Man | `games/max-man` |
 | Tennis court (Sports Complex) | Jonah's Tennis | `games/jonahs-tennis` |

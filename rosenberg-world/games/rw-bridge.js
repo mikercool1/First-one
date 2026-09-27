@@ -40,7 +40,15 @@
     report: function (result) { return send(pack("rosenberg-world:report", result)); },
     finish: function (result) { return send(pack("rosenberg-world:finish", result)); },
     exit: function () { return send({ type: "rosenberg-world:exit" }); },
+    // Called just before the world closes the game (the ✕ button), so a round in progress
+    // can still report() what it earned: RosenbergBridge.onLeave(function () { ... });
+    onLeave: function (cb) { leaveCbs.push(cb); },
   };
+  var leaveCbs = [];
+  window.addEventListener("message", function (e) {
+    if (!inWorld || e.source !== window.parent || !e.data || e.data.type !== "rosenberg-world:leaving") return;
+    for (var i = 0; i < leaveCbs.length; i++) { try { leaveCbs[i](); } catch (err) { /* keep going */ } }
+  });
   // Lets a game's CSS make room for the hub's close button: .rw-in-world .hud { ... }
   if (inWorld) document.documentElement.classList.add("rw-in-world");
   function wire() {
