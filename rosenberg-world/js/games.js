@@ -264,6 +264,10 @@
     icon: "🏨",
   });
 
+  // Ice Mountain (bottom-left): winter games on their way
+  [["hotChocolate", "Hot Chocolate", "hotchoc", "#8A5A3C", "☕"], ["skiRun", "Ski Run", "skirun", "#2F6BD6", "⛷️"], ["sledHill", "Sled Hill", "sledhill", "#E8453C", "🛷"]]
+    .forEach(([id, title, destination, color, icon]) => G.register({ id, title, subtitle: "", destination, unlocked: false, entry: null, color, icon }));
+
   G.register({
     id: "frogger",
     title: "Rosenberg Crossing",

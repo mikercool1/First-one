@@ -31,6 +31,20 @@ they walk out of that game's door and the stars they earned fly into the total.
    The Frozenbergs ice cream stand (`buildIceCream`) is a small, complete example.
 3. Optionally add it to a signpost in `buildSignposts()`.
 
+### Coming soon: Ice Mountain's winter games
+
+The bottom-left corner of the world is **Ice Mountain**: snow on the ground, snowy pines, a frozen
+stream you can walk across, falling snow and a snowman, reached by the snowy trail past the
+treehouse (the ICE MOUNTAIN arch marks the way in). Three places wait for their games:
+
+| Place | Game id in `js/games.js` | Destination |
+| --- | --- | --- |
+| Hot Chocolate hut (a log cabin with a steaming mug on the roof) | `hotChocolate` | `hotchoc` |
+| Ski Run (a big snowy peak with slalom flags and a moving ski lift) | `skiRun` | `skirun` |
+| Sled Hill (someone keeps whooshing down it) | `sledHill` | `sledhill` |
+
+Switch one on the same way as the hotel below: copy the game in, set `unlocked: true` and `entry`.
+
 ### Coming soon: the Baha Mar Hotel
 
 The **Baha Mar Hotel** (a big pastel resort with a pool out front) stands at the east end of Baha Mar
@@ -87,7 +101,7 @@ BAHA MAR"), or just tap the island; the plane on the island flies you home. The 
 | Rosenberg Arcade (and its orange cabinet) | Max-Man | `games/max-man` |
 | Tennis court (Sports Complex) | Jonah's Tennis | `games/jonahs-tennis` |
 | Rosenberg Raceway (and the go-kart) | Racecar Rally | `games/racecar` |
-| Frozenbergs ice cream stand (on the south street) | Frozenbergs | `games/frozenbergs` |
+| Frozenbergs ice cream stand (the west end of Baha Mar island) | Frozenbergs | `games/frozenbergs` |
 | Grampa Simon's garden (between the Kitchen and the Raceway) | Grandpa's Garden | `games/grandpas-garden` |
 | Witch Mountain (the glowing arch at the foot of the mountain) | Witch Mountain | `games/witch-mountain` |
 | The Frog Pond (by the road, south of the arcade) | Rosenberg Crossing (Frogger) | `games/frogger` |

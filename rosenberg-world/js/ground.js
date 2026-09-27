@@ -48,6 +48,8 @@
       { w: 56, pts: [[600, 1900], [640, 1700], [560, 1560], [330, 1540]], kind: "dirt" },
       { w: 52, pts: [[300, 1905], [240, 2080], [110, 2240], [-120, 2300]], kind: "dirt" },
       { w: 52, pts: [[620, 1900], [680, 2060], [700, 2200]], kind: "dirt" },
+      // Ice Mountain: a snowy trail on from the treehouse, over the frozen stream to the ski run
+      { w: 60, pts: [[700, 2200], [730, 2380], [690, 2540], [600, 2700], [470, 2790], [330, 2770]], kind: "snow" },
       { w: 50, pts: [[330, 1540], [200, 1400], [110, 1330], [-120, 1300]], kind: "dirt" },
       // raceway gate
       { w: 70, pts: [[640, 1030], [640, 960]], kind: "stone" },
@@ -94,7 +96,17 @@
     stone: ["#CDB690", "#F1E4C8", "#E6D5B2"],
     dirt: ["#A98452", "#D2AE78", "#C49D66"],
     board: ["#8E6440", "#D8A870", "#C48F58"],
+    snow: ["#B8CDE0", "#FFFFFF", "#E3EEF8"],
   };
+  // Ice Mountain: the snowy bottom-left corner of the world
+  const SNOW = L.snow = { x1: 890, y0: 2345 };
+  L.inSnow = (x, y) => y > SNOW.y0 + 20 && x < SNOW.x1 - 20;
+  function snowShape(c) {
+    c.beginPath(); c.moveTo(-300, 3200); c.lineTo(-300, SNOW.y0);
+    for (let x = -300; x <= SNOW.x1; x += 40) c.lineTo(x, SNOW.y0 + Math.sin(x / 70) * 14);
+    for (let y = SNOW.y0; y <= 3200; y += 40) c.lineTo(SNOW.x1 + Math.sin(y / 60) * 16, y);
+    c.closePath();
+  }
 
   // ---------- painters, in order ----------
   function paintBase(c, x0, y0, x1, y1) {
@@ -115,6 +127,17 @@
     c.fillRect(-400, 900, 1700, 1900);
     c.fillStyle = A.rad(c, 2450, 450, 50, 2450, 450, 900, ["rgba(210,255,170,.25)", "rgba(210,255,170,0)"]);
     c.fillRect(1400, -200, 2200, 1300);
+
+    // Ice Mountain snowfield
+    c.save();
+    snowShape(c);
+    c.fillStyle = A.lin(c, 0, SNOW.y0, 0, 3100, ["#F6FBFF", "#E4F0FA"]); c.fill();
+    c.clip();
+    const rs = U.seeded(77);
+    for (let i = 0; i < 40; i++) { c.fillStyle = "rgba(160,200,235,.18)"; A.ell(c, rs() * 1100 - 200, SNOW.y0 + rs() * 760, 60 + rs() * 90, 18 + rs() * 20); c.fill(); }
+    c.fillStyle = "rgba(255,255,255,.9)"; for (let i = 0; i < 220; i++) { c.beginPath(); c.arc(rs() * 1100 - 200, SNOW.y0 + rs() * 760, 1.5 + rs() * 1.5, 0, TAU); c.fill(); }
+    c.restore();
+    c.strokeStyle = "rgba(170,205,235,.8)"; c.lineWidth = 5; snowShape(c); c.stroke();
 
     // Fart Man hill: a raised mound with a lit top
     const H = L.hill;
@@ -301,6 +324,12 @@
     smoothPath(c, STREAM); c.strokeStyle = "#B99A6C"; c.lineWidth = 66; c.stroke();
     smoothPath(c, STREAM); c.strokeStyle = "#4FB3E8"; c.lineWidth = 50; c.stroke();
     smoothPath(c, STREAM); c.strokeStyle = "#7DD0F5"; c.lineWidth = 26; c.stroke();
+    // ...and frozen solid where it runs through Ice Mountain
+    c.save(); snowShape(c); c.clip();
+    smoothPath(c, STREAM); c.strokeStyle = "#CFE3F2"; c.lineWidth = 78; c.stroke();
+    smoothPath(c, STREAM); c.strokeStyle = "#B7E0FA"; c.lineWidth = 56; c.stroke();
+    smoothPath(c, STREAM); c.strokeStyle = "#E4F6FF"; c.lineWidth = 18; c.setLineDash([40, 30]); c.stroke(); c.setLineDash([]);
+    c.restore();
 
     // beach sand
     c.beginPath();
@@ -472,6 +501,7 @@
         for (let k = 0; k < 3; k++) {
           const u = ((t * 0.35 + k / 3 + i * 0.17) % 1);
           const x = ax + (bx - ax) * u + Math.sin(t * 3 + k) * 8, y = ay + (by - ay) * u;
+          if (L.inSnow(x, y)) continue; // frozen: no ripples
           A.ell(c, x, y, 7, 2); c.fill();
         }
       }
