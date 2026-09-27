@@ -35,7 +35,7 @@
     { id: "court", name: "Basketball Court", icon: "🏀", kind: "game", portal: [1630, 2175], portalR: 80, arrive: [1630, 2190], map: [1710, 2175] },
     { id: "plaza", name: "Mystery Plaza", icon: "⛲", kind: "place", map: [3500, 1760], arrive: [3500, 1880] },
     { id: "sports", name: "Sports Complex", icon: "🏟️", kind: "place", map: [1500, 2090], arrive: [1500, 2200] },
-    { id: "sports-tennis", name: "Tennis Court", icon: "🎾", kind: "future", portal: [1905, 2715], portalR: 90, arrive: [1905, 2730], map: [1710, 2700] },
+    { id: "sports-tennis", name: "Tennis Court", icon: "🎾", kind: "future", portal: [1710, 3012], portalR: 80, arrive: [1710, 3030], map: [1710, 2620] },
     { id: "arcade", name: "Rosenberg Arcade", icon: "🕹️", kind: "future", portal: [2450, 2600], portalR: 90, arrive: [2450, 2640], map: [2450, 2470] },
     { id: "raceway", name: "Rosenberg Raceway", icon: "🏎️", kind: "future", portal: [640, 1000], portalR: 100, arrive: [640, 1030], map: [640, 760] },
     { id: "woods", name: "Adventure Woods", icon: "🌲", kind: "place", map: [560, 1780], arrive: [640, 1900] },
@@ -1143,15 +1143,14 @@
       A.line(c, -32, -70, -32, -160, 5, "#F2C230"); A.line(c, 32, -70, 32, -160, 5, "#F2C230");
     }, { solid: [{ c: [0, -2, 6] }] }));
     // tennis net
-    staticProp(1710, 2702, [-150, -40, 150, 6], (c) => {
+    staticProp(1710, 2497, [-150, -40, 150, 6], (c) => {
       c.fillStyle = "#3A4252"; c.fillRect(-134, -34, 5, 34); c.fillRect(129, -34, 5, 34);
       c.strokeStyle = "rgba(255,255,255,.6)"; c.lineWidth = 1;
       for (let x = -130; x < 130; x += 6) { c.beginPath(); c.moveTo(x, -30); c.lineTo(x, 0); c.stroke(); }
       for (let y = -30; y < 0; y += 6) { c.beginPath(); c.moveTo(-130, y); c.lineTo(130, y); c.stroke(); }
       c.fillStyle = "#FFFFFF"; c.fillRect(-132, -34, 264, 5);
     }, { solid: [{ r: [-132, -6, 132, 2] }], tap: portalTap("sports-tennis") });
-    // shade trees and benches where the locked gym and field house stood
-    tree(1650, 2520, "round", 1.1); tree(1790, 2560, "deep", 1); bench(1720, 2610);
+    // shade trees and a bench by the football field
     tree(1060, 2540, "round", 1.05); tree(1240, 2560, "blossom", 1); bench(1150, 2610);
     add({
       kind: "building", x: 1710, y: 2995, box: [-140, -230, 140, 24], sprite: true, occludes: true,

@@ -233,7 +233,7 @@
     field(c, 920, 2080, 460, 260, "soccer");
     field(c, 900, 2670, 500, 290, "football");
     court(c, 1560, 2080, 300, 190, "#E3894A", "#3A7BD5");
-    court(c, 1560, 2600, 300, 200, "#5AAE6B", "#3F86C9", true);
+    court(c, 1560, 2395, 300, 200, "#5AAE6B", "#3F86C9", true); // tennis, north of the lower street
 
     // fart man launch pad
     const px = 3720, py = 830;
