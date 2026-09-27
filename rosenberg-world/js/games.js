@@ -239,6 +239,31 @@
     icon: "🏎️",
   });
 
+  // ---------------- coming soon ----------------
+  // Their places are already built (Witch Mountain in the north, the Frog Pond by the road).
+  // When the game arrives: copy it into games/, set unlocked: true and entry, and it's playable.
+  G.register({
+    id: "witchMountain",
+    title: "Witch Mountain",
+    subtitle: "",
+    destination: "witchmtn",
+    unlocked: false,
+    entry: null,
+    color: "#7B3FE4",
+    icon: "🧙",
+  });
+
+  G.register({
+    id: "frogger",
+    title: "Frogger",
+    subtitle: "",
+    destination: "frogpond",
+    unlocked: false,
+    entry: null,
+    color: "#2EB872",
+    icon: "🐸",
+  });
+
   // Future games: register the game here with a destination, then give that destination a
   // door in js/world.js (see "A brand-new game" in README.md).
 })();

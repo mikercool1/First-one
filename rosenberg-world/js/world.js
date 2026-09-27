@@ -22,6 +22,9 @@
     { id: "car", name: "The Family Car", icon: "🚗", kind: "game", portal: [2712, 1800], portalR: 60, arrive: [2712, 1815], map: [2740, 1790] },
     { id: "soccer", name: "Soccer Field", icon: "⚽", kind: "game", portal: [1425, 2240], portalR: 80, arrive: [1425, 2258], map: [1150, 2210] },
     { id: "volleyball", name: "Beach Volleyball", icon: "🏐", kind: "game", portal: [4120, 2612], portalR: 90, arrive: [4120, 2630], map: [4120, 2530] },
+    // places ready for games that are on their way (see "Coming soon" in README.md)
+    { id: "witchmtn", name: "Witch Mountain", icon: "🧙", kind: "game", portal: [3170, 668], portalR: 80, arrive: [3170, 690], map: [3170, 560] },
+    { id: "frogpond", name: "Frog Pond", icon: "🐸", kind: "game", portal: [2080, 2842], portalR: 80, arrive: [2080, 2830], map: [2080, 2900] },
     { id: "garden", name: "Grampa Simon's Garden", icon: "🍅", kind: "game", portal: [1070, 1442], portalR: 80, arrive: [1070, 1464], map: [1040, 1240] },
     { id: "shop", name: "Star Shop", icon: "⭐", kind: "shop", portal: [3690, 2186], portalR: 80, arrive: [3690, 2206], map: [3690, 2040] },
     { id: "icecream", name: "Frozenbergs Ice Cream", icon: "🍦", kind: "game", portal: [3250, 2664], portalR: 85, arrive: [3250, 2684], map: [3250, 2470] },
@@ -64,6 +67,8 @@
     playground: { name: "PLAYGROUND", icon: "🛝", color: "#F2A93B", zone: [2000, 1960, 2270, 2330] },
     arcade:   { name: "ARCADE", icon: "🕹️", color: "#8A3FE4", go: "arcade", zone: [2150, 2380, 2800, 2820] },
     icecream: { name: "ICE CREAM", icon: "🍦", color: "#E8558A", go: "icecream", zone: [3000, 2320, 3500, 2820] },
+    witch:    { name: "WITCH MOUNTAIN", icon: "🧙", color: "#5E2CA5", go: "witchmtn", zone: [2980, 420, 3380, 770] },
+    frogs:    { name: "FROG POND", icon: "🐸", color: "#2E9A4E", go: "frogpond", zone: [1900, 2790, 2260, 3060] },
     garden:   { name: "GRAMPA'S GARDEN", icon: "🍅", color: "#D8342A", go: "garden", zone: [880, 1180, 1260, 1480] },
     shop:     { name: "STAR SHOP", icon: "⭐", color: "#7B3FE4", go: "shop", zone: [3510, 2010, 3860, 2280] },
     plaza:    { name: "PLAZA", icon: "⛲", color: "#6C4AC9", go: [3500, 1880], zone: [3200, 1400, 3800, 2000] },
@@ -80,7 +85,11 @@
     const P = E.player;
     if (!P || P.lock) return;
     RW.sfx.play("tap");
-    if (typeof pl.go === "string") { goPlay(E, DEST[pl.go]); return; }
+    if (typeof pl.go === "string") {
+      const d = DEST[pl.go];
+      if (world.destStatus(d) === "locked") { E.walkTo(d.portal[0], d.portal[1] + 30); E.say(P, "Let's go see!", 1.2); return; }
+      goPlay(E, d); return;
+    }
     E.walkTo(pl.go[0], pl.go[1]);
     E.say(P, U.pick([`To the ${pl.name.toLowerCase()}!`, "This way!", "Let's go!"]), 1.3);
   };
@@ -963,6 +972,22 @@
     trashCan(Pz.x + 130, Pz.y + 210);
 
     // Easter egg: a statue of Max at the top of the plaza, spoon raised in triumph
+    const stoneCache = {};
+    const stoneMax = (wink) => {
+      const key = wink ? "wink" : "open";
+      if (stoneCache[key]) return stoneCache[key];
+      const cv = document.createElement("canvas"); cv.width = 160; cv.height = 200;
+      const g = cv.getContext("2d");
+      g.translate(80, 180); g.scale(1.35, 1.35);
+      A.drawChar(g, A.CHARS.max, { t: 0.6, move: 0, side: 0, dir: 1, pose: "spoon", pt: 0, blink: wink });
+      // turn it to stone: grey, a little lighter and flatter
+      try {
+        const im = g.getImageData(0, 0, cv.width, cv.height), d = im.data;
+        for (let i = 0; i < d.length; i += 4) { const v = (d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11) * 0.8 + 52; d[i] = v; d[i + 1] = v; d[i + 2] = v * 1.02; }
+        g.putImageData(im, 0, 0);
+      } catch (err) { /* canvas unreadable: keep it in colour */ }
+      return (stoneCache[key] = cv);
+    };
     let statueTaps = 0;
     add({
       kind: "statue", x: Pz.x, y: 1500, box: [-80, -300, 80, 14], sprite: false, shadow: [70, 14], solid: [{ r: [-64, -24, 64, 4] }], bubbleH: 300, wink: 0,
@@ -973,12 +998,9 @@
         c.fillStyle = "#C9A15A"; A.rr(c, -46, -66, 92, 34, 4); c.fill();
         A.text(c, "MAX", 0, -56, 15, "#5A3E12", { weight: 700 });
         A.text(c, "HERO OF SNACKS", 0, -41, 8.5, "#5A3E12", { weight: 700 });
-        // Max, in stone
-        c.save(); c.translate(0, -100); c.scale(1.35, 1.35);
-        c.filter = "grayscale(1) brightness(1.08) contrast(.9)";
-        A.drawChar(c, A.CHARS.max, { t: E2.t, move: 0, side: 0, dir: 1, pose: "spoon", pt: 0, blink: e.wink > 0 });
-        c.filter = "none";
-        c.restore();
+        // Max, in stone (drawn once and cached: a live canvas filter made the whole world stutter)
+        const img = stoneMax(e.wink > 0);
+        c.drawImage(img, -img.width / 2, -100 - img.height + 20);
         if (e.wink > 0) { c.fillStyle = "rgba(255,210,63,.9)"; A.starPath(c, 34, -250, 9, 4, 0.35); c.fill(); }
       },
       update(e, dt) { if (e.wink > 0) e.wink -= dt; },
@@ -999,6 +1021,8 @@
 
     buildStarShop();
     buildGarden();
+    buildWitchMountain();
+    buildFrogPond();
   }
 
 
@@ -1310,8 +1334,8 @@
     signpost(3392, 1992, [["plaza", "U"], ["home", "L"], ["shop", "R"], ["bahamar", "R"]]);         // boulevard at the plaza
     signpost(4150, 1995, [["beach", "U"], ["bahamar", "D"], ["icecream", "D"]]);                   // on the sand, where the trail heads south
     signpost(1880, 900, [["academy", "L"], ["raceway", "L"], ["baseball", "R"], ["home", "D"]]);  // north lane, west of the ballpark
-    signpost(3080, 1190, [["baseball", "L"], ["space", "R"], ["home", "D"]]);                       // north lane, east of the ballpark
-    signpost(2600, 2735, [["home", "U"], ["sports", "L"], ["icecream", "R"], ["bahamar", "R"]]);   // south street by the arcade
+    signpost(3080, 1190, [["witch", "U"], ["baseball", "L"], ["space", "R"], ["home", "D"]]);      // north lane, east of the ballpark
+    signpost(2600, 2735, [["home", "U"], ["frogs", "L"], ["sports", "L"], ["icecream", "R"]]);     // south street by the arcade
   }
 
   // ---------------------------------------------------------------------
@@ -1345,11 +1369,6 @@
     c.fillStyle = "#F4D06F"; c.beginPath(); c.arc(0, -84, 12, 0, TAU); c.fill();
     c.fillStyle = "#C9A15A"; c.beginPath(); c.ellipse(0, -94, 20, 5, 0, 0, TAU); c.fill(); A.rr(c, -9, -108, 18, 14, 4); c.fill();
     c.fillStyle = "#2B2F3A"; c.fillRect(-5, -87, 3, 3); c.fillRect(3, -87, 3, 3);
-    if (e.caw > 0) A.text(c, "CAW!", 30, -110, 16, "#2B2F3A", { weight: 700 });
-    c.restore();
-    // Grampa Simon, tending the tomatoes with his watering can
-    c.save(); c.translate(96, -28); c.scale(0.95, 0.95);
-    A.drawChar(c, A.CHARS.simon, { t, move: 0, side: 0, dir: -1, pose: Math.sin(t * 0.6) > 0.7 ? "wave" : null, pt: 0, blink: (t % 3.3) < 0.12, hat: "cowboy" });
     c.restore();
     // white picket fence with a gate in the middle of the front
     const picket = (x0, x1, y) => { for (let x = x0; x <= x1; x += 14) { c.fillStyle = "#FFFFFF"; c.beginPath(); c.moveTo(x - 4, y); c.lineTo(x - 4, y - 30); c.lineTo(x, y - 36); c.lineTo(x + 4, y - 30); c.lineTo(x + 4, y); c.closePath(); c.fill(); } c.fillStyle = "#E6E1D6"; c.fillRect(x0 - 4, y - 24, x1 - x0 + 8, 4); c.fillRect(x0 - 4, y - 12, x1 - x0 + 8, 4); };
@@ -1359,11 +1378,19 @@
   }
   function buildGarden() {
     const gx = 1070, gy = 1412;
-    add({
-      kind: "building", x: gx, y: gy, box: [-170, -260, 170, 10], sprite: false, shadow: [0, 0], caw: 0,
+    // the beds, plants, scarecrow and fence are drawn once (cached); Grampa Simon and the crows are live
+    staticProp(gx, gy, [-170, -260, 170, 10], (c) => drawGarden(c, 0, {}), {
+      kind: "building", caw: 0,
       solid: [{ r: [-150, -150, -34, 2] }, { r: [34, -150, 150, 2] }, { r: [-34, -150, 34, -40] }],
-      draw: (c, E2, e) => drawGarden(c, E2.t, e),
       update(e, dt) { if (e.caw > 0) e.caw -= dt; },
+      live(c, E2, e) {
+        const t = E2.t;
+        if (e.caw > 0) A.text(c, "CAW!", -88, -238, 16, "#2B2F3A", { weight: 700 });
+        // Grampa Simon, tending the tomatoes
+        c.save(); c.translate(96, -28); c.scale(0.95, 0.95);
+        A.drawChar(c, A.CHARS.simon, { t, move: 0, side: 0, dir: -1, pose: Math.sin(t * 0.6) > 0.7 ? "wave" : null, pt: 0, blink: (t % 3.3) < 0.12, hat: "cowboy" });
+        c.restore();
+      },
       tap: portalTap("garden"),
     });
     // tap the scarecrow: the crows it's supposed to scare fly off
@@ -1378,6 +1405,88 @@
       },
     }, gy + 1);
     sign(gx - 190, gy + 40, ["GRAMPA SIMON'S", "GARDEN 🍅"], { size: 16, board: "#FFF8E6", edge: "#3E9A46", ink: "#2E7A36", ent: { tap: portalTap("garden") } });
+  }
+
+  // ---------------------------------------------------------------------
+  // COMING SOON: Witch Mountain and the Frog Pond (Frogger). Their games plug in later:
+  // in games.js set unlocked: true and an entry, and the ribbons show the game's name.
+  // ---------------------------------------------------------------------
+  function comingRibbon(c, destId, y, col) {
+    const g = RW.games.forDestination(destId);
+    P_.ribbon(c, g && RW.games.status(g) !== "locked" ? g.title.toUpperCase() : "COMING SOON", 170, col);
+  }
+  function buildWitchMountain() {
+    const x = 3170, y = 640;
+    add({
+      kind: "building", x, y, box: [-170, -300, 170, 14], sprite: false, shadow: [0, 0], solid: [{ r: [-150, -90, -50, 4] }, { r: [50, -90, 150, 4] }, { r: [-50, -90, 50, -40] }],
+      draw(c, E2) {
+        const t = E2.t;
+        // a rocky arch at the foot of the mountain, glowing purple inside
+        c.fillStyle = A.lin(c, -160, -240, 160, 0, ["#6E6780", "#4E485E", "#3A3548"]);
+        c.beginPath(); c.moveTo(-160, 0); c.bezierCurveTo(-170, -150, -90, -250, 0, -248); c.bezierCurveTo(90, -250, 170, -150, 160, 0); c.closePath(); c.fill();
+        c.fillStyle = "rgba(255,255,255,.12)"; c.beginPath(); c.ellipse(-70, -170, 40, 14, -0.5, 0, TAU); c.fill();
+        const glow = 0.6 + Math.sin(t * 2) * 0.2;
+        c.fillStyle = `rgba(123,63,228,${glow})`; c.beginPath(); c.moveTo(-58, 0); c.bezierCurveTo(-62, -100, -30, -150, 0, -150); c.bezierCurveTo(30, -150, 62, -100, 58, 0); c.closePath(); c.fill();
+        c.fillStyle = "#1E1430"; c.beginPath(); c.moveTo(-44, 0); c.bezierCurveTo(-46, -86, -22, -126, 0, -126); c.bezierCurveTo(22, -126, 46, -86, 44, 0); c.closePath(); c.fill();
+        // a pair of glowing eyes in the dark...
+        if ((t % 5) < 4.6) { c.fillStyle = "#FFE45C"; c.beginPath(); c.arc(-9, -70, 3.2, 0, TAU); c.arc(9, -70, 3.2, 0, TAU); c.fill(); }
+        // twisted dead trees either side
+        [-1, 1].forEach((d) => { c.strokeStyle = "#3A2A22"; c.lineWidth = 7; c.lineCap = "round"; c.beginPath(); c.moveTo(d * 138, -10); c.quadraticCurveTo(d * 150, -120, d * 120, -190); c.stroke(); c.lineWidth = 4; c.beginPath(); c.moveTo(d * 144, -110); c.lineTo(d * 176, -150); c.moveTo(d * 128, -160); c.lineTo(d * 96, -200); c.stroke(); });
+        // the witch's broom leaning on the rock
+        c.save(); c.translate(-108, -4); c.rotate(-0.35); A.line(c, 0, 0, 0, -120, 5, "#8A5A2E"); c.fillStyle = "#D9A441"; c.beginPath(); c.moveTo(-14, 0); c.lineTo(14, 0); c.lineTo(6, -30); c.lineTo(-6, -30); c.closePath(); c.fill(); c.restore();
+        // bubbling cauldron
+        c.save(); c.translate(104, -6);
+        c.fillStyle = "#2B2F3A"; c.beginPath(); c.ellipse(0, -18, 30, 22, 0, 0, TAU); c.fill();
+        c.fillStyle = "#7CFF6B"; c.beginPath(); c.ellipse(0, -34, 26, 7, 0, 0, TAU); c.fill();
+        for (let i = 0; i < 3; i++) { const u = (t * 0.8 + i / 3) % 1; c.globalAlpha = 1 - u; c.fillStyle = "#9BFF8E"; c.beginPath(); c.arc(-10 + i * 10, -40 - u * 40, 5 + u * 4, 0, TAU); c.fill(); }
+        c.globalAlpha = 1; c.fillStyle = "#FF7A1F"; c.beginPath(); c.ellipse(0, 2, 22, 6, 0, 0, TAU); c.fill();
+        c.restore();
+        // bats circling the peak
+        for (let i = 0; i < 3; i++) { const a = t * 1.3 + i * 2.1; const bx = Math.cos(a) * 110, by = -250 + Math.sin(a * 1.4) * 26; c.fillStyle = "#2B2238"; c.beginPath(); c.moveTo(bx, by); c.quadraticCurveTo(bx - 10, by - 10 - Math.sin(t * 14 + i) * 5, bx - 18, by); c.quadraticCurveTo(bx - 9, by - 3, bx, by + 2); c.quadraticCurveTo(bx + 9, by - 3, bx + 18, by); c.quadraticCurveTo(bx + 10, by - 10 - Math.sin(t * 14 + i) * 5, bx, by); c.fill(); }
+        c.save(); c.translate(0, -262); comingRibbon(c, "witchmtn", 0, "#7B3FE4"); c.restore();
+      },
+      tap: portalTap("witchmtn"),
+    });
+    sign(x + 200, y + 50, ["WITCH", "MOUNTAIN"], { size: 18, board: "#3A2A4E", edge: "#7B3FE4", ink: "#E8D8FF", ent: { tap: portalTap("witchmtn") } });
+  }
+  function buildFrogPond() {
+    const x = 2080, y = 2940;
+    E.addSolid({ c: [x, y, 118] }); // you can't walk into the pond
+    staticProp(x, y, [-190, -90, 190, 90], (c) => {
+      c.fillStyle = "#6FAE52"; c.beginPath(); c.ellipse(0, 0, 176, 78, 0, 0, TAU); c.fill();
+      c.fillStyle = A.lin(c, 0, -70, 0, 70, ["#4FB3E8", "#2A8FC4"]); c.beginPath(); c.ellipse(0, 0, 160, 68, 0, 0, TAU); c.fill();
+      c.fillStyle = "rgba(255,255,255,.18)"; c.beginPath(); c.ellipse(-50, -24, 60, 12, 0, 0, TAU); c.fill();
+      // cattails round the edge
+      [[-150, -20], [-138, 18], [146, -14], [134, 24]].forEach(([cx, cy]) => { A.line(c, cx, cy, cx, cy - 44, 3, "#4E8A3A"); c.fillStyle = "#7A4A26"; A.rr(c, cx - 4, cy - 44, 8, 18, 4); c.fill(); });
+    }, { layer: "ground" });
+    // lily pads with frogs that hop between them
+    const pads = [[-80, 10], [-20, -26], [40, 18], [96, -12], [-120, -20]];
+    add({
+      kind: "frogs", x, y: y - 1, box: [-170, -120, 170, 70], sortY: y - 60, // drawn on top of the pond
+      draw(c, E2) {
+        const t = E2.t;
+        pads.forEach(([px, py]) => { c.fillStyle = "#3E9A46"; c.beginPath(); c.ellipse(px, py, 22, 10, 0, 0.35, TAU - 0.35); c.lineTo(px, py); c.closePath(); c.fill(); });
+        for (let f = 0; f < 3; f++) {
+          const cyc = (t * 0.5 + f * 0.37) % 1, i = Math.floor(t * 0.5 + f * 0.37 + f * 2) % pads.length, j = (i + 1 + f) % pads.length;
+          const hop = cyc > 0.8 ? (cyc - 0.8) / 0.2 : 0;
+          const [ax, ay] = pads[i], [bx, by] = pads[j];
+          const fx = ax + (bx - ax) * hop, fy = ay + (by - ay) * hop - Math.sin(hop * Math.PI) * 26;
+          c.fillStyle = "#5CC46A"; c.beginPath(); c.ellipse(fx, fy - 6, 10, 7, 0, 0, TAU); c.fill();
+          c.fillStyle = "#FFFFFF"; c.beginPath(); c.arc(fx - 4, fy - 12, 3.2, 0, TAU); c.arc(fx + 4, fy - 12, 3.2, 0, TAU); c.fill();
+          c.fillStyle = "#1E1E24"; c.beginPath(); c.arc(fx - 4, fy - 12, 1.5, 0, TAU); c.arc(fx + 4, fy - 12, 1.5, 0, TAU); c.fill();
+        }
+        c.save(); c.translate(0, -100); comingRibbon(c, "frogpond", 0, "#2EB872"); c.restore();
+      },
+      tap: portalTap("frogpond"),
+    });
+    // a frog-crossing sign facing the road
+    staticProp(x + 230, y + 70, [-40, -150, 40, 8], (c) => {
+      A.line(c, 0, 0, 0, -90, 5, "#8E96A6");
+      c.save(); c.translate(0, -118); c.rotate(Math.PI / 4); c.fillStyle = "#FFD23F"; A.rr(c, -30, -30, 60, 60, 6); c.fill(); c.strokeStyle = "#2B2F3A"; c.lineWidth = 4; A.rr(c, -26, -26, 52, 52, 5); c.stroke(); c.restore();
+      c.fillStyle = "#2B2F3A"; c.beginPath(); c.ellipse(0, -114, 13, 9, 0, 0, TAU); c.fill(); c.beginPath(); c.arc(-6, -124, 4, 0, TAU); c.arc(6, -124, 4, 0, TAU); c.fill();
+      A.text(c, "FROG XING", 0, -70, 11, "#2B2F3A", { weight: 700 });
+    }, { kind: "sign", solid: [{ c: [0, -2, 6] }], shadow: [12, 4], tap: portalTap("frogpond") });
+    sign(x - 150, y - 90, ["FROG POND"], { size: 18, board: "#EFFFF0", edge: "#2E9A4E", ink: "#1F6B36", ent: { tap: portalTap("frogpond") } });
   }
 
   // ---------------------------------------------------------------------
@@ -2294,6 +2403,8 @@
     [3200, 1350, 4050, 2280], // plaza + Star Shop
     [3040, 2320, 3460, 2860], // Frozenbergs ice cream stand and the street out front
     [870, 1170, 1270, 1480],  // Grampa Simon's garden
+    [2960, 400, 3400, 780],   // Witch Mountain
+    [1900, 2790, 2270, 3070], // Frog Pond
     [3350, 540, 4100, 1060],  // fart man zone
     [120, 540, 1030, 1230],   // raceway + garage
     [1200, 620, 1800, 1060],  // academy

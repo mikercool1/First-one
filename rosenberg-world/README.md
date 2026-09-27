@@ -31,7 +31,14 @@ they walk out of that game's door and the stars they earned fly into the total.
    The Frozenbergs ice cream stand (`buildIceCream`) is a small, complete example.
 3. Optionally add it to a signpost in `buildSignposts()`.
 
-There are no locked "coming soon" places any more: every door in the world opens a game.
+### Coming soon: Witch Mountain and Frogger
+
+Their places are built and waiting: **Witch Mountain** (a glowing rocky arch with a cauldron at the
+foot of the mountain, north of the Fart Man zone) and the **Frog Pond** (lily pads and hopping frogs
+by the road, south of the arcade, for Frogger). Both show a COMING SOON ribbon and are on the
+signposts. To switch one on, copy the game into `games/<name>/` (with the bridge lines) and in
+`js/games.js` set `unlocked: true` and `entry` on `witchMountain` or `frogger`. The ribbon then
+shows the game's title, and it appears on the map and in ALL GAMES.
 
 ### A game for the Game Room shelf
 
