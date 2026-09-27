@@ -23,6 +23,7 @@
     nana: { name: "Nana", fav: "kugel", draw: ART.nana, top: 262 * 1.9, thanks: "Perfect, sweetheart!" },
     michael: { name: "Michael", fav: "frittata", draw: ART.michael, top: 215 * 1.9, couch: true, thanks: "Thanks, Ariel!" },
     sarah: { name: "Sarah", fav: "cake", draw: ART.sarah, top: 250 * 1.9, thanks: "So good!" },
+    molly: { name: "Molly", fav: "kugel", draw: ART.molly, top: 245 * 1.9, thanks: "Yum, thank you!" },
     reuben: { name: "Reuben", fav: "cutlets", kid: true, top: 136 * KID, thanks: "Home run!" },
     jonah: { name: "Jonah", fav: "frittata", kid: true, top: 118 * KID, thanks: "Yum yum!" },
     ellie: { name: "Ellie", fav: "cake", kid: true, top: 98 * KID, thanks: "Yummy!" },
@@ -95,12 +96,14 @@
     for (const d of opts) {
       const b = document.createElement("button"); b.type = "button"; b.className = "choice";
       b.innerHTML = `<img src="${icon(d)}" alt="">${FOOD[d]}`;
-      b.onclick = () => choose(d, b);
+      onTap(b, () => choose(d, b));
       box.appendChild(b);
     }
-    // Max starts sneaking in from round 3, more often as it goes
-    if (!G.max && G.served >= 2 && Math.random() < Math.min(.85, .35 + G.served * .07))
-      G.max = { state: "wait", x: -90, delay: rand(.6, 2.2), speed: 60 + G.served * 7, ph: 0, t: 0, grab: null };
+    // Max tries to snatch food on most orders, and more often as it goes
+    if (!G.max && Math.random() < Math.min(.95, .6 + G.served * .05)) sendMax(rand(.5, 2));
+  }
+  function sendMax(delay) {
+    G.max = { state: "wait", x: -90, y: 0, delay, speed: 70 + G.served * 7, ph: 0, t: 0, grab: null };
   }
   function choose(d, btn) {
     if (!G || G.phase !== "wait") return;
@@ -128,21 +131,32 @@
     if (m.state === "wait") { m.delay -= dt; if (m.delay <= 0) { m.state = "sneak"; sfx.sneak(); } return; }
     if (m.state === "sneak") {
       m.x += m.speed * dt;
-      if (m.x >= AX - 30) {
-        m.state = "grab"; m.grab = pick(DISHES); loseHeart(); sfx.ouch();
+      if (m.x >= AX - 120) { m.state = "leap"; m.t = 0; m.x0 = m.x; sfx.sneak(); }
+      return;
+    }
+    if (m.state === "leap") {
+      // a big jump up at the food in Ariel's hands
+      const k = Math.min(1, m.t / .7);
+      m.x = m.x0 + (AX - 20 - m.x0) * k; m.y = -Math.sin(k * Math.PI) * 170;
+      if (k >= 1) {
+        m.y = 0; m.state = "grab"; m.grab = pick(DISHES); loseHeart(); sfx.ouch();
         G.say = `Max grabbed the ${FOOD[m.grab].toLowerCase()}!`; G.sayT = 1.8; G.sayAt = "ariel";
         if (G.hearts <= 0) { G.phase = "over"; G.t = 0; }
       }
       return;
     }
     // running away, either shooed or with his loot
-    m.x -= 420 * dt;
-    if (m.x < -120) G.max = null;
+    m.x -= 420 * dt; m.y = Math.min(0, m.y + 600 * dt);
+    if (m.x < -120) {
+      const again = m.state === "shoo" && G.phase === "wait" && Math.random() < .5;
+      G.max = null;
+      if (again) sendMax(rand(.8, 1.6)); // he doesn't give up easily
+    }
   }
   function tapCanvas(e) {
-    if (!G || G.mode !== "play" || !G.max || G.max.state !== "sneak") return;
+    if (!G || G.mode !== "play" || !G.max || (G.max.state !== "sneak" && G.max.state !== "leap")) return;
     const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * LW, y = (e.clientY - r.top) / r.height * LH - DY;
-    if (Math.hypot(x - G.max.x, y - (MY - 70)) < 110) { G.max.state = "shoo"; G.say = "Shoo, Max!"; G.sayT = 1.2; G.sayAt = "ariel"; sfx.shoo(); }
+    if (Math.hypot(x - G.max.x, y - (MY - 70 + G.max.y)) < 120) { G.max.state = "shoo"; G.say = "Shoo, Max!"; G.sayT = 1.2; G.sayAt = "ariel"; sfx.shoo(); }
   }
   cv.addEventListener("pointerdown", tapCanvas);
 
@@ -279,13 +293,13 @@
   }
   function drawMax(c) {
     const m = G.max; if (!m || m.state === "wait") return;
-    const sneaking = m.state === "sneak";
-    ART.max(c, m.x, MY, 1.7, { t: T, act: "run", dir: sneaking ? 1 : -1, ph: m.ph, expr: sneaking ? "sly" : "grin", blink: T % 3.7 < .12 });
+    const sneaking = m.state === "sneak" || m.state === "leap", my = MY + m.y;
+    ART.max(c, m.x, my, 1.7, { t: T, act: m.state === "leap" ? "reach" : "run", dir: sneaking ? 1 : -1, ph: m.ph, expr: sneaking ? "sly" : "grin", blink: T % 3.7 < .12 });
     if (m.state === "grab") ART.food(c, m.grab, m.x - 10, MY - 150, 70, T);
     if (sneaking) {
       const p = .5 + .5 * Math.sin(T * 9);
-      c.save(); c.globalAlpha = .5 + .5 * p; c.beginPath(); c.ellipse(m.x, MY - 70, 80, 90, 0, 0, Math.PI * 2); c.strokeStyle = "#E5484D"; c.lineWidth = 5; c.stroke(); c.restore();
-      ART.speech(c, m.x + 20, MY - 170, "Tap me!", { size: 22, weight: 700, border: "#E5484D", clampX: [10, LW - 10] });
+      c.save(); c.globalAlpha = .5 + .5 * p; c.beginPath(); c.ellipse(m.x, my - 70, 80, 90, 0, 0, Math.PI * 2); c.strokeStyle = "#E5484D"; c.lineWidth = 5; c.stroke(); c.restore();
+      ART.speech(c, m.x + 20, my - 170, m.state === "leap" ? "Tap me! Quick!" : "Tap me!", { size: 22, weight: 700, border: "#E5484D", clampX: [10, LW - 10] });
     }
   }
   function draw() {
@@ -336,22 +350,34 @@
   addEventListener("resize", resize);
 
   // ---------- buttons ----------
+  // every button reacts to a finger lifting or a click, whichever the browser sends first
+  function onTap(el, fn) {
+    let lastT = 0;
+    const go = e => { const now = performance.now(); if (now - lastT < 450) return; lastT = now; e.preventDefault(); fn(e); };
+    el.addEventListener("pointerup", go); el.addEventListener("click", go);
+  }
   const start = () => { for (const id of ["#start", "#win", "#lose"]) $(id).hidden = true; newGame(); tone(660, .1); };
-  $("#play").onclick = start;
-  $("#again").onclick = start;
-  $("#retry").onclick = start;
+  onTap($("#play"), start);
+  onTap($("#again"), start);
+  onTap($("#retry"), start);
   $("#back").onclick = () => {
     let same = false; try { same = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch {}
     if (same && history.length > 1) history.back(); else location.href = "../";
   };
   const syncMute = () => { $("#mute").classList.toggle("off", muted); $("#mute").setAttribute("aria-label", muted ? "Sound off" : "Sound on"); };
-  $("#mute").onclick = () => { muted = !muted; try { localStorage.setItem("arielCookout.muted", muted ? "1" : "0"); } catch {} syncMute(); };
+  onTap($("#mute"), () => { muted = !muted; try { localStorage.setItem("arielCookout.muted", muted ? "1" : "0"); } catch {} syncMute(); });
   syncMute();
   $("#plates").innerHTML = "<i></i>".repeat(GOAL);
   $("#hearts").innerHTML = "<span>♥</span>".repeat(HEARTS);
 
   let last = performance.now();
-  function frame(now) { update(Math.min(.05, (now - last) / 1000)); last = now; draw(); requestAnimationFrame(frame); }
+  let reported = false;
+  function frame(now) {
+    requestAnimationFrame(frame);
+    try { update(Math.min(.05, (now - last) / 1000)); draw(); }
+    catch (err) { if (!reported) { reported = true; console.error(err); } }
+    last = now;
+  }
   resize();
   if (document.fonts) document.fonts.ready.then(() => { for (const k in icons) delete icons[k]; });
   requestAnimationFrame(frame);

@@ -243,21 +243,20 @@ const ART = (() => {
       dot(c, 0, -r * 1.12, r * .34, col); dot(c, 0, -r * 1.12, r * .2, dk);
       for (const sx of [-1, 1]) dot(c, sx * r * .98, r * .1, r * .22, col);
     },
-    // Simon (Grandpa): a full, thick head of silver hair and a neat beard
+    // Simon (Grandpa): neatly combed, side-parted dark hair. No beard.
     simon: (c, r) => {
-      c.beginPath(); c.moveTo(-r * 1.1, r * .3);
-      c.bezierCurveTo(-r * 1.3, -r * 1.05, -r * .4, -r * 1.55, r * .3, -r * 1.34);
-      c.bezierCurveTo(r * 1.08, -r * 1.2, r * 1.3, -r * .4, r * 1.1, r * .32);
-      c.bezierCurveTo(r * .98, -r * .15, r * .62, -r * .48, r * .18, -r * .56);
-      c.bezierCurveTo(-r * .3, -r * .72, -r * .86, -r * .32, -r * 1.1, r * .3);
-      fill(c, lin(c, 0, -r * 1.4, 0, r * .3, "#E4E7EB", "#B5BBC3", "#9CA3AC"));
-      c.save(); c.globalAlpha = .55;
-      curve(c, -r * .7, -r * .95, -r * .2, -r * 1.25, r * .4, -r * 1.05, r * .07, "#FFFFFF");
-      curve(c, -r * .85, -r * .5, -r * .5, -r * .85, -r * .05, -r * .75, r * .06, "#8E949C");
+      c.beginPath(); c.moveTo(-r * 1.06, r * .2);
+      c.bezierCurveTo(-r * 1.2, -r * .95, -r * .5, -r * 1.42, r * .2, -r * 1.3);
+      c.bezierCurveTo(r * .95, -r * 1.2, r * 1.2, -r * .5, r * 1.06, r * .22);
+      c.bezierCurveTo(r * .98, -r * .25, r * .7, -r * .56, r * .35, -r * .64);
+      c.lineTo(-r * .25, -r * .62);
+      c.bezierCurveTo(-r * .7, -r * .52, -r * .96, -r * .2, -r * 1.06, r * .2);
+      fill(c, lin(c, 0, -r * 1.4, 0, r * .2, "#5E4A3A", "#3E2E22", "#2A1E16"));
+      c.save(); c.globalAlpha = .45;
+      for (let i = 0; i < 4; i++) curve(c, -r * .28, -r * (1.18 - i * .13), r * .3, -r * (1.3 - i * .12), r * .95, -r * (.9 - i * .13), r * .035, "#7A6452");
+      for (let i = 0; i < 2; i++) curve(c, -r * .34, -r * (1.12 - i * .16), -r * .8, -r * (1.0 - i * .2), -r * 1.02, -r * (.4 - i * .2), r * .035, "#7A6452");
       c.restore();
-      c.beginPath(); c.moveTo(-r * .8, r * .25); c.quadraticCurveTo(-r * .7, r * 1.15, 0, r * 1.18); c.quadraticCurveTo(r * .7, r * 1.15, r * .8, r * .25);
-      c.quadraticCurveTo(r * .5, r * .75, 0, r * .72); c.quadraticCurveTo(-r * .5, r * .75, -r * .8, r * .25); fill(c, "#B9BEC5");
-      c.beginPath(); c.moveTo(-r * .32, r * .44); c.quadraticCurveTo(0, r * .3, r * .32, r * .44); c.quadraticCurveTo(0, r * .52, -r * .32, r * .44); fill(c, "#A3A9B1");
+      curve(c, -r * .36, -r * 1.24, -r * .31, -r * .92, -r * .27, -r * .62, r * .045, "#1E1510");
     },
     ikey: (c, r) => { capPath(c, r, .1, .62); fill(c, lin(c, 0, -r * 1.2, 0, 0, "#4A3528", "#2E2018")); },
     michael: (c, r) => {
@@ -285,6 +284,7 @@ const ART = (() => {
     michael: { skin: "#EBBE9B", skinHi: "#F9D9BE", skinDk: "#CC946E" },
     ikey: { skin: "#E2AF89", skinHi: "#F2CDAE", skinDk: "#BF8660" },
     simon: { skin: "#ECC4A4", skinHi: "#FADDC5", skinDk: "#CF9A77" },
+    molly: { skin: "#F3CBAA", skinHi: "#FDE3CD", skinDk: "#DB9F7C" },
     max: { skin: "#F8D4BA", skinHi: "#FFEBDC", skinDk: "#E3AE8E" },
   };
 
@@ -449,6 +449,45 @@ const ART = (() => {
     c.restore();
   }
 
+  // ---------- MOLLY (about 40, navy wrap dress; standing, faces left) ----------
+  function molly(c, x, y, s, o) {
+    const t = o.t, sk = SK.molly, st = o.state;
+    const HAIR_COLS = ["#C99A5E", "#A87A42", "#86592C"];
+    c.save(); c.translate(x, y); c.scale(s, s);
+    shadow(c, 0, 2, 46, 11, .26);
+    c.scale(-1, 1);
+    if (st === "outburst") c.translate(0, -Math.abs(Math.sin(t * 10)) * 5);
+    const sway = Math.sin(t * 1.4) * 1.5;
+    c.save(); c.translate(0, -192); HAIR.longBack(sway * .4, HAIR_COLS, 1.45)(c, 34); c.restore();
+    for (const sd of [-1, 1]) { line(c, [sd * 10, -80, sd * 11, -8], 13, sk.skin); ell(c, sd * 11 + 5, -4, 13, 6, "#6B3F2A"); }
+    // fuller wrap skirt with a little white floral print
+    c.beginPath(); c.moveTo(-25, -118); c.bezierCurveTo(-33, -92, -45 + sway, -62, -49 + sway, -42); c.quadraticCurveTo(0, -32, 49 + sway, -42); c.bezierCurveTo(45 + sway, -62, 33, -92, 25, -118); c.closePath();
+    fill(c, lin(c, -49, 0, 49, 0, "#46679A", "#2C4570", "#4A6CA0"));
+    for (const [fx, fy] of [[-30, -52], [-12, -70], [8, -50], [26, -74], [-24, -92], [14, -98], [34, -50], [-2, -86]]) { for (let i = 0; i < 5; i++) { const a = i / 5 * TAU; dot(c, fx + Math.cos(a) * 2.6, fy + Math.sin(a) * 2.6, 1.7, "rgba(255,255,255,.85)"); } dot(c, fx, fy, 1.2, "#F2C94C"); }
+    c.beginPath(); c.moveTo(-6, -114); c.quadraticCurveTo(10 + sway, -80, 20 + sway, -40); stroke(c, "rgba(20,30,60,.35)", 2);
+    // bodice with a wrap V and a tie at the waist
+    c.beginPath(); c.moveTo(-29, -150); c.quadraticCurveTo(-34, -132, -25, -114); c.lineTo(25, -114); c.quadraticCurveTo(34, -132, 29, -150); c.quadraticCurveTo(0, -158, -29, -150);
+    fill(c, lin(c, -29, 0, 29, 0, "#46679A", "#2C4570", "#4A6CA0"));
+    box(c, -7, -172, 14, 20, 6, sk.skin);
+    c.beginPath(); c.moveTo(-12, -154); c.lineTo(3, -130); c.lineTo(12, -154); c.closePath(); fill(c, sk.skin);
+    c.beginPath(); c.moveTo(-14, -153); c.lineTo(3, -128); stroke(c, "#243A60", 2);
+    box(c, -27, -121, 54, 7, 3.5, "#243A60");
+    ell(c, 20, -117, 6, 4, "#243A60", .5); ell(c, 28, -117, 6, 4, "#243A60", -.5); line(c, [22, -114, 26, -102], 3, "#243A60");
+    let Lh = [-28, -94], Le = [-32, -122], Rh = [30, -95], Re = [34, -122];
+    if (st === "wrong") { Rh = [6, -142]; Re = [32, -124]; }
+    if (st === "eating") { Lh = [22, -116]; Le = [-6, -110]; Rh = [16, -170 + Math.sin(t * 6) * 10]; Re = [38, -140]; }
+    if (st === "outburst") { Lh = [12, -126]; Rh = [-12, -122]; Le = [-30, -120]; Re = [30, -122]; }
+    arm(c, [-26, -146], Le, Lh, 11, "#3A5A8C", sk, .75);
+    arm(c, [26, -146], Re, Rh, 11, "#3A5A8C", sk, .75);
+    handDot(c, Lh, 6.5, sk); handDot(c, Rh, 6.5, sk);
+    let expr = "calm";
+    if (st === "outburst") expr = "annoyed"; else if (st === "eating") expr = "eat"; else if (st === "wrong") expr = "gasp";
+    head(c, 0, -194, 34, { ...sk, expr, t, blink: o.blink, lashes: true, lip: "#B8475A", earrings: "#FFFFFF", look: [1, 0], blush: .34,
+      hairFront: HAIR.longFront(HAIR_COLS), browCol: "#6E4A28" });
+    if (st === "eating") { c.save(); c.translate(22, -120); food(c, o.plate || "kugel", 0, 0, 50, t); c.restore(); }
+    c.restore();
+  }
+
   // ---------- IKEY (couch, football fan) ----------
   function ikey(c, x, y, s, o) {
     const t = o.t, sk = SK.ikey, m = o.mood || 0, st = o.state;
@@ -531,11 +570,10 @@ const ART = (() => {
     let expr = ["calm", "meh", "annoyed", "angry"][m];
     if (st === "outburst") expr = "annoyed"; else if (st === "eating") expr = "eat"; else if (st === "wrong") expr = "gasp";
     if (o.event === "tangle") expr = "worried";
-    head(c, 0, -164, 35, { ...sk, expr, t, blink: o.blink, glasses: "#6B5A3A", look: [-.8, .3], blush: .38, hairFront: HAIR.simon, browCol: "#8E949C" });
-    c.save(); c.translate(0, -164);
-    c.beginPath(); c.arc(0, -8, 44, Math.PI * 1.08, Math.PI * 1.92); stroke(c, "#2B2B33", 6);
-    box(c, -48, -20, 14, 30, 7, "#B8323A"); box(c, 34, -20, 14, 30, 7, "#B8323A");
-    c.restore();
+    // radio headphones resting around his neck
+    c.beginPath(); c.arc(0, -134, 26, Math.PI * .1, Math.PI * .9); stroke(c, "#2B2B33", 5);
+    box(c, -34, -140, 12, 20, 6, "#B8323A"); box(c, 22, -140, 12, 20, 6, "#B8323A");
+    head(c, 0, -164, 35, { ...sk, expr, t, blink: o.blink, glasses: "#6B5A3A", look: [-.8, .3], blush: .38, hairFront: HAIR.simon, browCol: "#3E2E22" });
     if (st === "eating") { c.save(); c.translate(0, -76); food(c, o.plate || "soup", 0, 0, 52, t); c.restore(); }
     c.restore();
   }
@@ -892,5 +930,5 @@ const ART = (() => {
     c.restore();
   }
   return { FONT, rr, lin, rad, radF, box, ell, dot, line, curve, text, shadow,
-    ariel, sarah, ikey, michael, simon, cari, nana, max, food, speech };
+    ariel, sarah, molly, ikey, michael, simon, cari, nana, max, food, speech };
 })();
