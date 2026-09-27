@@ -275,8 +275,17 @@
     color: "#8A5A3C",
     icon: "☕",
   });
-  [["skiRun", "Ski Run", "skirun", "#2F6BD6", "⛷️"], ["sledHill", "Sled Hill", "sledhill", "#E8453C", "🛷"]]
-    .forEach(([id, title, destination, color, icon]) => G.register({ id, title, subtitle: "", destination, unlocked: false, entry: null, color, icon }));
+  G.register({
+    id: "sledHill",
+    title: "Max's Bunny Hill",
+    subtitle: "Sled down the icy hill and stack bunnies on Max's hat!",
+    destination: "sledhill",
+    unlocked: true,
+    entry: "games/maxs-bunny-hill/index.html",
+    color: "#E8453C",
+    icon: "🐰",
+  });
+  G.register({ id: "skiRun", title: "Ski Run", subtitle: "", destination: "skirun", unlocked: false, entry: null, color: "#2F6BD6", icon: "⛷️" });
 
   G.register({
     id: "frogger",

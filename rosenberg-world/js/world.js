@@ -28,7 +28,7 @@
     // Ice Mountain: winter games on their way
     { id: "hotchoc", name: "Cocoa Party", icon: "☕", kind: "game", portal: [820, 2612], portalR: 70, arrive: [820, 2630], map: [820, 2480] },
     { id: "skirun", name: "Ski Run", icon: "⛷️", kind: "game", portal: [300, 2742], portalR: 80, arrive: [300, 2760], map: [280, 2560] },
-    { id: "sledhill", name: "Sled Hill", icon: "🛷", kind: "game", portal: [660, 2992], portalR: 80, arrive: [660, 3010], map: [660, 2880] },
+    { id: "sledhill", name: "Max's Bunny Hill", icon: "🐰", kind: "game", portal: [660, 2992], portalR: 80, arrive: [660, 3010], map: [660, 2880] },
     { id: "garden", name: "Grampa Simon's Garden", icon: "🍅", kind: "game", portal: [1070, 1442], portalR: 80, arrive: [1070, 1464], map: [1040, 1240] },
     { id: "shop", name: "Star Shop", icon: "⭐", kind: "shop", portal: [3690, 2186], portalR: 80, arrive: [3690, 2206], map: [3690, 2040] },
     { id: "icecream", name: "Frozenbergs Ice Cream", icon: "🍦", kind: "game", portal: [5780, 1478], portalR: 70, arrive: [5780, 1496], map: [5780, 1330] },
@@ -86,7 +86,7 @@
     woods:    { name: "WOODS", icon: "🌲", color: "#3E7A3A", go: [640, 1900], zone: [110, 1160, 880, 2340] },
     hotchoc:  { name: "COCOA PARTY", icon: "☕", color: "#8A5A3C", go: "hotchoc", zone: [700, 2400, 900, 2640] },
     ski:      { name: "SKI RUN", icon: "⛷️", color: "#2F6BD6", go: "skirun", zone: [100, 2400, 470, 2800] },
-    sled:     { name: "SLED HILL", icon: "🛷", color: "#E8453C", go: "sledhill", zone: [460, 2800, 860, 3060] },
+    sled:     { name: "MAX'S BUNNY HILL", icon: "🐰", color: "#E8453C", go: "sledhill", zone: [460, 2800, 860, 3060] },
     icemtn:   { name: "ICE MOUNTAIN", icon: "❄️", color: "#4A90D9", go: [720, 2430], zone: [100, 2340, 900, 3070] },
   };
   // Names shown over the world when you pinch out (the engine draws them).
@@ -94,7 +94,7 @@
   world.mapLabels = () => {
     if (labelCache) return labelCache;
     const out = [];
-    const skip = { home: 0, ski: 1, sled: 1, icemtn: 0 };
+    const skip = { home: 0, ski: 1, icemtn: 0 };
     for (const k in PLACES) {
       const pl = PLACES[k];
       if (!pl.zone || skip[k]) continue;
@@ -1493,7 +1493,7 @@
     sign(x + 200, y + 50, ["WITCH", "MOUNTAIN"], { size: 18, board: "#3A2A4E", edge: "#7B3FE4", ink: "#E8D8FF", ent: { tap: portalTap("witchmtn") } });
   }
   // ---------------------------------------------------------------------
-  // ICE MOUNTAIN (bottom-left): Hot Chocolate, the Ski Run and Sled Hill, all coming soon
+  // ICE MOUNTAIN (bottom-left): Cocoa Party, Max's Bunny Hill (sledding) and the Ski Run (coming soon)
   // ---------------------------------------------------------------------
   function drawHotChoc(c) {
     // a little log cabin with a snowy roof
@@ -1540,7 +1540,7 @@
     // sleds parked at the bottom
     [[-150, -6, "#E8453C"], [-110, -4, "#2EB872"]].forEach(([x, y, col]) => { c.fillStyle = col; A.rr(c, x - 22, y - 10, 44, 10, 4); c.fill(); c.strokeStyle = "#3A4252"; c.lineWidth = 2; c.beginPath(); c.moveTo(x - 24, y); c.quadraticCurveTo(x + 20, y + 4, x + 26, y - 8); c.stroke(); });
     c.fillStyle = "#E8453C"; A.rr(c, 70, -34, 120, 26, 10); c.fill();
-    A.text(c, "🛷 SLED HILL", 130, -21, 14, "#FFFFFF", { weight: 700 });
+    A.text(c, "🐰 BUNNY HILL", 130, -21, 14, "#FFFFFF", { weight: 700 });
   }
   function buildIceMountain() {
     // Hot Chocolate hut (steam rises from the mug)
@@ -1563,7 +1563,7 @@
       },
       tap: portalTap("skirun"),
     });
-    // Sled Hill: someone keeps whooshing down it
+    // Max's Bunny Hill: someone keeps whooshing down it
     staticProp(660, 2950, [-200, -170, 200, 10], (c) => drawSledHill(c), {
       kind: "building", shadow: [0, 0], solid: [{ r: [-170, -50, 170, 4] }],
       live(c, E2) {
@@ -1571,6 +1571,9 @@
         c.fillStyle = "#2F9BFF"; A.rr(c, x - 16, y - 6, 32, 8, 3); c.fill();
         c.fillStyle = "#FFD8BE"; c.beginPath(); c.arc(x, y - 16, 7, 0, TAU); c.fill();
         c.fillStyle = "#E8453C"; c.beginPath(); c.arc(x, y - 20, 7, Math.PI, TAU); c.fill();
+        // it's Max, with a bunny on his hat
+        c.fillStyle = "#FFFFFF"; c.beginPath(); c.arc(x, y - 30, 5, 0, TAU); c.fill();
+        A.rr(c, x - 4, y - 42, 3, 9, 1.5); c.fill(); A.rr(c, x + 1, y - 42, 3, 9, 1.5); c.fill();
         c.save(); c.translate(0, -175); comingRibbon(c, "sledhill", 0, "#E8453C"); c.restore();
       },
       tap: portalTap("sledhill"),
@@ -1583,7 +1586,7 @@
       A.text(c, "❄ ICE MOUNTAIN ❄", 0, -148, 19, "#FFFFFF", { weight: 700 });
     }, { kind: "arch", solid: [{ r: [-96, -6, -76, 4] }, { r: [76, -6, 96, 4] }] });
     // snowy pines and a snowman
-    [[180, 2440], [420, 2430], [880, 2700], [860, 2880], [150, 2880], [330, 2980], [480, 3030], [820, 3030], [120, 2660], [520, 2540]].forEach(([x, y], i) => tree(x, y, "snowpine", 0.95 + (i % 3) * 0.1));
+    [[180, 2440], [880, 2700], [150, 2880], [880, 3030]].forEach(([x, y], i) => tree(x, y, "snowpine", 0.95 + (i % 3) * 0.1));
     staticProp(430, 2600, [-30, -90, 30, 6], (c) => {
       c.fillStyle = "#FFFFFF"; c.beginPath(); c.arc(0, -20, 22, 0, TAU); c.arc(0, -52, 16, 0, TAU); c.arc(0, -76, 12, 0, TAU); c.fill();
       c.fillStyle = "#2B2F3A"; c.beginPath(); c.arc(-4, -79, 2, 0, TAU); c.arc(4, -79, 2, 0, TAU); c.fill(); c.fillRect(-10, -96, 20, 8); c.fillRect(-14, -89, 28, 3);
@@ -2640,18 +2643,18 @@
     const rnd = U.seeded(2024);
     const placed = [];
     const ok = (x, y, gap) => placed.every(([px, py]) => Math.hypot(px - x, (py - y) * 1.3) > gap);
-    let minPath = 45;
+    let minPath = 95; // keep a wide clear lane along every path
     const tryTree = (x, y, kinds, gap, s, tap) => {
       if (!clearSpot(x, y) || distToPath(x, y) < minPath || E.blocked(x, y, 30) || !ok(x, y, gap)) return false;
       placed.push([x, y]);
       tree(x, y, kinds[Math.floor(rnd() * kinds.length)], s, { tap });
       return true;
     };
-    // Adventure Woods: dense
-    for (let i = 0; i < 520; i++) tryTree(130 + rnd() * 780, 1180 + rnd() * 1400, ["deep", "pine", "round", "pine"], 88, 0.95 + rnd() * 0.35, false);
-    // the rest of the neighborhood: scattered
-    minPath = 80;
-    for (let i = 0; i < 420; i++) tryTree(150 + rnd() * 3800, 420 + rnd() * 2620, ["round", "deep", "round", "deep", "blossom", "round", "gold"], 270, 0.9 + rnd() * 0.3, false);
+    // Adventure Woods: leafy, but with room to walk between the trees
+    for (let i = 0; i < 520; i++) tryTree(130 + rnd() * 780, 1180 + rnd() * 1400, ["deep", "pine", "round", "pine"], 165, 0.95 + rnd() * 0.35, false);
+    // the rest of the neighborhood: a few here and there
+    minPath = 130;
+    for (let i = 0; i < 420; i++) tryTree(150 + rnd() * 3800, 420 + rnd() * 2620, ["round", "deep", "round", "deep", "blossom", "round", "gold"], 420, 0.9 + rnd() * 0.3, false);
     // northern tree line (hides where the ground meets the mountains)
     for (let x = 40; x < 4000; x += 70 + rnd() * 40) {
       if (x > 3050 && x < 3280) continue;

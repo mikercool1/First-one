@@ -35,12 +35,11 @@ they walk out of that game's door and the stars they earned fly into the total.
 
 The bottom-left corner of the world is **Ice Mountain**: snow on the ground, snowy pines, a frozen
 stream you can walk across, falling snow and a snowman, reached by the snowy trail past the
-treehouse (the ICE MOUNTAIN arch marks the way in). Cocoa Party is open; two places wait for their games:
+treehouse (the ICE MOUNTAIN arch marks the way in). Cocoa Party and Max's Bunny Hill are open; one place waits for its game:
 
 | Place | Game id in `js/games.js` | Destination |
 | --- | --- | --- |
 | Ski Run (a big snowy peak with slalom flags and a moving ski lift) | `skiRun` | `skirun` |
-| Sled Hill (someone keeps whooshing down it) | `sledHill` | `sledhill` |
 
 Switch one on: copy the game into `games/<name>/` (with the bridge lines) and in `js/games.js` set
 `unlocked: true` and `entry`. The ribbon then shows the game's title, and it appears on the map and
@@ -94,6 +93,7 @@ BAHA MAR"), or just tap the island; the plane on the island flies you home. The 
 | Rosenberg Raceway (and the go-kart) | Racecar Rally | `games/racecar` |
 | Frozenbergs ice cream stand (Baha Mar, on the promenade) | Frozenbergs | `games/frozenbergs` |
 | Cocoa Party hut (Ice Mountain, a log cabin with a steaming mug) | Cocoa Party | `games/coco-party` |
+| Bunny Hill (Ice Mountain, the sled hill someone keeps whooshing down) | Max's Bunny Hill | `games/maxs-bunny-hill` |
 | Baha Mar Hotel (the east end of the island) | Checking In | `games/checking-in` |
 | Grampa Simon's garden (between the Kitchen and the Raceway) | Grandpa's Garden | `games/grandpas-garden` |
 | Witch Mountain (the glowing arch at the foot of the mountain) | Witch Mountain | `games/witch-mountain` |
