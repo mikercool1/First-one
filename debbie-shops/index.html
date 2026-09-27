@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Debbie Shops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;0,900;1,600;1,800&family=Jost:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <header class="hud" aria-label="Scoreboard">
+    <div class="hud-total">
+      <span class="lbl">Total spent</span>
+      <span class="val" id="total">$0</span>
+    </div>
+    <div class="hud-side">
+      <div class="hud-bags"><span class="lbl">Bags</span><span class="val2" id="bags">0 / 12</span></div>
+      <div class="hud-full">
+        <span class="lbl full-row"><span>Fullness</span><em id="fullWord">Peckish</em></span>
+        <div class="meter"><i id="fullBar"></i></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="stage-wrap">
+    <div class="stage" id="stage">
+      <svg id="scene" viewBox="0 -60 400 620" aria-label="Billy on the couch in a chic studio apartment while Debbie brings in shopping">
+        <defs>
+          <linearGradient id="gWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3EBE0"/><stop offset="1" stop-color="#E4D6C4"/></linearGradient>
+          <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#46507F"/><stop offset=".55" stop-color="#B98FA8"/><stop offset="1" stop-color="#F7C79A"/></linearGradient>
+          <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F1DA9E"/><stop offset=".5" stop-color="#C9A45C"/><stop offset="1" stop-color="#9C7634"/></linearGradient>
+          <linearGradient id="gCouch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBF7F1"/><stop offset="1" stop-color="#E3D8C9"/></linearGradient>
+          <linearGradient id="gHall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE9C2"/><stop offset="1" stop-color="#E7B676"/></linearGradient>
+          <linearGradient id="gDoor" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#35584A"/><stop offset="1" stop-color="#26433A"/></linearGradient>
+          <linearGradient id="gMarble" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E8E4DE"/></linearGradient>
+          <radialGradient id="gGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFE3B0" stop-opacity=".85"/><stop offset="1" stop-color="#FFE3B0" stop-opacity="0"/></radialGradient>
+          <radialGradient id="gSkinB" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#F3C9A2"/><stop offset="1" stop-color="#D59F73"/></radialGradient>
+          <radialGradient id="gSkinD" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#FBDCC3"/><stop offset="1" stop-color="#E8B895"/></radialGradient>
+          <radialGradient id="gSpot" cx="50%" cy="0%" r="100%"><stop offset="0" stop-color="#FFF4D6" stop-opacity=".9"/><stop offset="1" stop-color="#FFF4D6" stop-opacity="0"/></radialGradient>
+          <pattern id="pFloor" width="24" height="12" patternUnits="userSpaceOnUse">
+            <rect width="24" height="12" fill="#C79A6B"/>
+            <path d="M0 12 L12 0 L18 0 L6 12 Z" fill="#B7885A"/><path d="M12 12 L24 0 L24 6 L18 12 Z" fill="#D2A778"/>
+            <path d="M0 0 L6 0 L0 6 Z" fill="#D2A778"/>
+          </pattern>
+          <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2"/></filter>
+        </defs>
+
+        <!-- room -->
+        <rect y="-60" width="400" height="432" fill="url(#gWall)"/>
+        <rect y="-60" width="400" height="22" fill="#FBF7F0"/><rect y="-38" width="400" height="3" fill="#E0D2BF"/><rect y="-35" width="400" height="2" fill="#EFE3D3"/>
+        <g stroke="#D9CAB5" stroke-width="1.4" fill="none">
+          <rect x="160" y="236" width="68" height="118" rx="2"/><rect x="236" y="236" width="70" height="118" rx="2"/>
+        </g>
+        <!-- pendant -->
+        <path d="M200 -38 L200 34" stroke="#9C7634" stroke-width="1.5"/><ellipse cx="200" cy="-37" rx="8" ry="2.5" fill="url(#gGold)"/>
+        <g fill="url(#gGold)"><circle cx="200" cy="40" r="6"/></g>
+        <g stroke="#C9A45C" stroke-width="1.4"><path d="M200 40 L180 30 M200 40 L220 30 M200 40 L184 52 M200 40 L216 52 M200 40 L200 58"/></g>
+        <g fill="#FFF3D1"><circle cx="180" cy="30" r="3"/><circle cx="220" cy="30" r="3"/><circle cx="184" cy="52" r="3"/><circle cx="216" cy="52" r="3"/><circle cx="200" cy="58" r="3"/></g>
+        <circle cx="200" cy="44" r="46" fill="url(#gGlow)" opacity=".5"/>
+
+        <!-- window -->
+        <g>
+          <path d="M22 258 L22 92 Q22 40 86 40 Q150 40 150 92 L150 258 Z" fill="url(#gSky)"/>
+          <g fill="#2E3558" opacity=".92">
+            <rect x="24" y="170" width="18" height="90"/><rect x="44" y="150" width="14" height="110"/><rect x="60" y="182" width="22" height="78"/>
+            <rect x="84" y="128" width="16" height="132"/><rect x="100" y="160" width="20" height="100"/><rect x="122" y="140" width="14" height="120"/><rect x="136" y="176" width="14" height="84"/>
+            <path d="M88 128 L92 108 L96 128 Z"/>
+          </g>
+          <g fill="#FFD98A" id="cityLights"></g>
+          <path d="M22 258 L22 92 Q22 40 86 40 Q150 40 150 92 L150 258 Z" fill="none" stroke="#FBF7F0" stroke-width="7"/>
+          <path d="M86 44 L86 258 M22 150 L150 150" stroke="#C9A45C" stroke-width="2"/>
+          <rect x="14" y="256" width="144" height="8" rx="2" fill="#FBF7F0"/>
+          <path d="M10 36 Q18 150 12 262 L30 262 Q24 150 34 38 Z" fill="#FFFFFF" opacity=".55"/>
+          <path d="M162 36 Q154 150 160 262 L142 262 Q148 150 138 38 Z" fill="#FFFFFF" opacity=".55"/>
+          <rect x="6" y="30" width="160" height="5" rx="2" fill="url(#gGold)"/>
+        </g>
+
+        <!-- art -->
+        <g>
+          <rect x="194" y="88" width="92" height="82" fill="url(#gGold)"/>
+          <rect x="199" y="93" width="82" height="72" fill="#FBF7F0"/>
+          <rect x="206" y="100" width="68" height="58" fill="#EFE3D3"/>
+          <circle cx="226" cy="124" r="14" fill="#C9724F"/>
+          <path d="M240 158 L240 126 Q253 110 266 126 L266 158 Z" fill="#9DAE92"/>
+          <path d="M210 146 Q234 132 270 148" stroke="#2A2420" stroke-width="1.6" fill="none"/>
+        </g>
+
+        <!-- floor lamp -->
+        <g>
+          <ellipse cx="268" cy="370" rx="14" ry="3.5" fill="#9C7634"/>
+          <path d="M268 370 L268 176 Q268 142 224 146" stroke="url(#gGold)" stroke-width="3" fill="none"/>
+          <path d="M204 158 Q206 138 224 138 Q242 138 244 158 Z" fill="#FBF3E4" stroke="#E6D6BD"/>
+          <ellipse cx="224" cy="164" rx="70" ry="60" fill="url(#gGlow)" opacity=".55"/>
+        </g>
+
+        <!-- door + hallway -->
+        <g id="doorway">
+          <rect x="312" y="144" width="78" height="228" fill="#FBF7F0"/>
+          <rect x="320" y="152" width="62" height="220" fill="url(#gHall)"/>
+          <circle cx="351" cy="190" r="26" fill="#FFF3D6" opacity=".8" filter="url(#soft)"/>
+          <rect x="346" y="178" width="10" height="16" rx="3" fill="#C9A45C"/>
+          <polygon id="doorSpill" points="320,372 382,372 404,540 296,540" fill="#FFE4B0" opacity="0"/>
+          <g id="door">
+            <rect x="320" y="152" width="62" height="220" fill="url(#gDoor)"/>
+            <rect x="327" y="162" width="48" height="88" rx="2" fill="none" stroke="#1E362E" stroke-width="2"/>
+            <rect x="327" y="262" width="48" height="98" rx="2" fill="none" stroke="#1E362E" stroke-width="2"/>
+            <circle cx="329" cy="268" r="3.4" fill="url(#gGold)"/>
+          </g>
+        </g>
+        <rect x="0" y="364" width="400" height="8" fill="#FBF7F0"/>
+
+        <!-- floor -->
+        <rect y="372" width="400" height="188" fill="url(#pFloor)"/>
+        <rect y="372" width="400" height="188" fill="#FFF3E0" opacity=".12"/>
+        <rect y="500" width="400" height="60" fill="#5A3A20" opacity=".08"/>
+        <rect y="372" width="400" height="10" fill="#000" opacity=".06"/>
+        <!-- rug -->
+        <ellipse cx="176" cy="436" rx="160" ry="46" fill="#EFE6D8"/>
+        <ellipse cx="176" cy="436" rx="146" ry="38" fill="none" stroke="#D7C4AA" stroke-width="3"/>
+        <ellipse cx="176" cy="436" rx="130" ry="31" fill="none" stroke="#E4D5BF" stroke-width="1.5" stroke-dasharray="4 5"/>
+
+        <!-- plant -->
+        <g>
+          <path d="M16 372 L12 336 L42 336 L38 372 Z" fill="#FBF7F0" stroke="#E4D8C8"/>
+          <path d="M27 336 L27 250" stroke="#6C5A3C" stroke-width="2"/>
+          <g fill="#4E7A55"><ellipse cx="18" cy="300" rx="12" ry="8" transform="rotate(-30 18 300)"/><ellipse cx="38" cy="286" rx="12" ry="8" transform="rotate(30 38 286)"/><ellipse cx="16" cy="266" rx="11" ry="7" transform="rotate(-40 16 266)"/><ellipse cx="36" cy="254" rx="11" ry="7" transform="rotate(35 36 254)"/><ellipse cx="27" cy="240" rx="9" ry="6"/></g>
+          <g fill="#6A9B6E" opacity=".7"><ellipse cx="20" cy="298" rx="6" ry="3" transform="rotate(-30 20 298)"/><ellipse cx="36" cy="284" rx="6" ry="3" transform="rotate(30 36 284)"/></g>
+        </g>
+
+        <!-- couch -->
+        <g id="couch">
+          <rect x="54" y="354" width="5" height="16" fill="#9C7634"/><rect x="214" y="354" width="5" height="16" fill="#9C7634"/>
+          <path d="M46 330 Q44 262 96 262 L178 262 Q230 262 228 330 Z" fill="url(#gCouch)" stroke="#E0D3C1"/>
+          <path d="M40 318 Q36 300 52 298 Q66 298 66 318 L66 356 L42 356 Z" fill="#F4EEE5" stroke="#E0D3C1"/>
+          <path d="M234 318 Q238 300 222 298 Q208 298 208 318 L208 356 L232 356 Z" fill="#F4EEE5" stroke="#E0D3C1"/>
+          <rect x="60" y="320" width="154" height="36" rx="12" fill="url(#gCouch)" stroke="#E0D3C1"/>
+          <path d="M137 324 L137 354" stroke="#E6DACA"/>
+          <rect x="176" y="284" width="34" height="30" rx="8" fill="#E8C4B8" transform="rotate(10 193 299)"/>
+          <rect x="64" y="286" width="32" height="28" rx="8" fill="#A9B7A0" transform="rotate(-10 80 300)"/>
+        </g>
+
+        <g id="billy"></g>
+        <g id="remnants"></g>
+
+        <!-- coffee table -->
+        <g id="table">
+          <path d="M178 404 L170 442 M200 404 L208 442" stroke="url(#gGold)" stroke-width="3"/>
+          <ellipse cx="190" cy="404" rx="50" ry="13" fill="#D8D2C9"/>
+          <ellipse cx="190" cy="400" rx="50" ry="13" fill="url(#gMarble)"/>
+          <path d="M156 398 Q176 394 186 402 M200 396 Q214 400 226 398" stroke="#CFC8BE" stroke-width=".8" fill="none"/>
+          <rect x="206" y="386" width="22" height="5" fill="#2F4A3F"/><rect x="208" y="381" width="18" height="5" fill="#E8C4B8"/>
+          <path d="M166 394 L164 380 L172 380 L170 394 Z" fill="#FBF7F0" stroke="#E0D3C1"/>
+          <path d="M168 380 Q164 368 158 364 M168 380 Q172 366 178 362" stroke="#6C8A5C" stroke-width="1.2" fill="none"/>
+          <circle cx="158" cy="363" r="2.4" fill="#E8C4B8"/><circle cx="178" cy="361" r="2.4" fill="#F2E3B3"/>
+        </g>
+
+        <g id="clutterBack"></g>
+        <g id="spot" opacity="0"><polygon points="300,-60 340,-60 430,560 190,560" fill="url(#gSpot)"/></g>
+        <g id="party"></g>
+        <g id="clutter"></g>
+        <g id="stageBag"></g>
+        <g id="food"></g>
+        <g id="fx"></g>
+      </svg>
+
+      <div class="bubble b-billy" id="bBilly"></div>
+      <div class="bubble b-debbie" id="bDebbie"></div>
+      <div class="tag" id="tag" hidden>
+        <span class="tag-hole"></span>
+        <span class="tag-item" id="tagItem">Cashmere coat</span>
+        <span class="tag-price" id="tagPrice">$0</span>
+        <span class="tag-tier" id="tagTier"></span>
+      </div>
+      <div class="chomp" id="chomp">CHOMP</div>
+      <div class="flash" id="flash"></div>
+    </div>
+  </main>
+
+  <footer class="controls">
+    <div class="guess" id="guess" role="group" aria-label="Optional guess">
+      <span class="guess-lbl">Guess? <b id="streak"></b></span>
+      <div class="chips">
+        <button type="button" class="chip" data-g="low">Under $700</button>
+        <button type="button" class="chip" data-g="mid">$700–$1,100</button>
+        <button type="button" class="chip" data-g="high">Over $1,100</button>
+      </div>
+    </div>
+    <button type="button" class="reveal" id="revealBtn">REVEAL PRICE</button>
+    <p class="status" id="status">Debbie's on her way up&hellip;</p>
+  </footer>
+</div>
+
+<div class="overlay" id="title">
+  <div class="card">
+    <p class="kicker">A comedy in twelve bags</p>
+    <h1 class="logo">Debbie <em>Shops</em></h1>
+    <p class="blurb">Debbie brings the bags. You reveal the prices.<br>Billy eats his feelings.</p>
+    <button type="button" class="cta" id="startBtn">LET HER IN</button>
+    <p class="fine" id="bestLine"></p>
+  </div>
+</div>
+
+<div class="overlay" id="end" hidden>
+  <div class="card">
+    <p class="kicker">Shopping complete</p>
+    <p class="end-total" id="endTotal">$0</p>
+    <p class="end-sub">spent across 12 bags</p>
+    <ul class="stats" id="endStats"></ul>
+    <p class="quote" id="endQuote"></p>
+    <button type="button" class="cta" id="againBtn">RUN IT BACK</button>
+  </div>
+</div>
+<canvas id="confetti" hidden></canvas>
+
+<script src="art.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
