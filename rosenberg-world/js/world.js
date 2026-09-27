@@ -18,6 +18,8 @@
     { id: "mathblaster", name: "Math Blaster Academy", icon: "✖️", kind: "game", portal: [1450, 935], portalR: 95, arrive: [1450, 965], map: [1450, 760] },
     { id: "kitchen", name: "Ariel's Kitchen", icon: "🍳", kind: "game", portal: [1570, 1755], portalR: 90, arrive: [1570, 1790], map: [1420, 1570] },
     { id: "car", name: "The Family Car", icon: "🚗", kind: "game", portal: [2892, 1822], portalR: 62, arrive: [2892, 1840], map: [2815, 1760] },
+    { id: "soccer", name: "Soccer Field", icon: "⚽", kind: "game", portal: [1425, 2240], portalR: 80, arrive: [1425, 2258], map: [1150, 2210] },
+    { id: "volleyball", name: "Beach Volleyball", icon: "🏐", kind: "game", portal: [4120, 2612], portalR: 90, arrive: [4120, 2630], map: [4120, 2530] },
     { id: "court", name: "Basketball Court", icon: "🏀", kind: "game", portal: [1630, 2175], portalR: 80, arrive: [1630, 2190], map: [1710, 2175] },
     { id: "plaza", name: "Mystery Plaza", icon: "⛲", kind: "place", map: [3500, 1760], arrive: [3500, 1880] },
     { id: "plaza-building", name: "Mystery Building", icon: "❓", kind: "future", portal: [3500, 1535], portalR: 85, arrive: [3500, 1560], map: [3500, 1420] },
@@ -995,6 +997,7 @@
       c.beginPath(); c.moveTo(0, 40); c.lineTo(0, -50); c.lineTo(d * 26, -70); c.lineTo(d * 26, 20); c.stroke();
     }, { sortY: y + 40 }));
     world.soccerBall = kickBall(1150, 2215, "soccer");
+    sign(1425, 2150, ["BACKYARD", "SOCCER"], { size: 16, postH: 22, board: "#FFFFFF", edge: "#2E8B57", ink: "#1F6B42", ent: { tap: portalTap("soccer") } });
     // bleachers above the soccer field
     staticProp(1150, 2065, [-190, -80, 190, 6], (c) => {
       for (let i = 0; i < 4; i++) { c.fillStyle = i % 2 ? "#D9DDE6" : "#C3C9D6"; A.rr(c, -180 + i * 8, -18 - i * 18, 360 - i * 16, 18, 4); c.fill(); }
@@ -1256,14 +1259,15 @@
       tap: { reach: "remote", act(E2, e) { if (e.cool > E2.t) return; e.cool = E2.t + 2; RW.sfx.play("chirp"); E2.say(e, U.pick(["No running! ...okay, a little running.", "Wear sunscreen!", "Swim buddy check!"]), 2); } },
     });
     // umbrellas + towels
-    [[4090, 1990, "#FF5C8A", "#FFFFFF"], [4205, 2150, "#2F9BFF", "#FFD23F"], [4070, 2480, "#2EB872", "#FFFFFF"]].forEach(([x, y, a, b]) => {
+    [[4090, 1990, "#FF5C8A", "#FFFFFF"], [4205, 2150, "#2F9BFF", "#FFD23F"], [4060, 2420, "#2EB872", "#FFFFFF"]].forEach(([x, y, a, b]) => {
       staticProp(x + 30, y + 30, [-50, -20, 50, 20], (c) => { c.rotate(-0.1); c.fillStyle = a; A.rr(c, -40, -14, 80, 28, 6); c.fill(); c.fillStyle = "rgba(255,255,255,.5)"; for (let i = -30; i < 40; i += 16) c.fillRect(i, -14, 6, 28); }, { layer: "ground" });
       staticProp(x, y, [-62, -104, 62, 8], (c) => P_.umbrella(c, a, b), { shadow: [52, 14, 0, 6, 0.16], solid: [{ c: [0, -2, 5] }] });
     });
     world.beachBall = kickBall(4130, 2080, "beach");
+    buildVolleyball();
     // sandcastle
     add({
-      kind: "castle", x: 4190, y: 2630, box: [-44, -80, 44, 8], flag: 0, bubbleH: 100, solid: [{ c: [0, -4, 30] }],
+      kind: "castle", x: 4195, y: 2735, box: [-44, -80, 44, 8], flag: 0, bubbleH: 100, solid: [{ c: [0, -4, 30] }],
       draw(c, E2, e) {
         c.fillStyle = "#E9CF8E"; A.rr(c, -40, -30, 80, 30, 6); c.fill();
         c.fillStyle = "#F2DAA0"; A.rr(c, -26, -52, 52, 26, 4); c.fill();
@@ -1326,6 +1330,36 @@
       tap: { reach: "remote", act(E2) { RW.sfx.play("magic"); E2.toast("Mystery Island… how will we ever get there?", "🏝️"); } },
       hit: [-140, -340, 140, 30],
     });
+  }
+
+  // Beach volleyball court (Jonah's Volley)
+  function buildVolleyball() {
+    const cx = 4120, cy = 2560, w = 230, h = 120;
+    // rope lines in the sand
+    staticProp(cx, cy, [-w / 2 - 8, -h / 2 - 8, w / 2 + 8, h / 2 + 8], (c) => {
+      c.strokeStyle = "rgba(255,255,255,.9)"; c.lineWidth = 4;
+      A.rr(c, -w / 2, -h / 2, w, h, 4); c.stroke();
+      c.fillStyle = "rgba(255,255,255,.18)"; A.rr(c, -w / 2, -h / 2, w, h, 4); c.fill();
+    }, { layer: "ground" });
+    // the net across the middle (runs left to right, seen from the side)
+    staticProp(cx, cy + 6, [-w / 2 - 20, -110, w / 2 + 20, 10], (c) => {
+      [-w / 2 - 6, w / 2 + 6].forEach((x) => { c.fillStyle = A.lin(c, x - 4, 0, x + 4, 0, ["#E9E2D6", "#B9AE9A"]); A.rr(c, x - 4, -96, 8, 96, 3); c.fill(); });
+      c.fillStyle = "rgba(30,40,60,.08)"; c.fillRect(-w / 2, -86, w, 40);
+      c.strokeStyle = "rgba(40,50,70,.45)"; c.lineWidth = 1;
+      for (let x = -w / 2; x <= w / 2; x += 8) { c.beginPath(); c.moveTo(x, -86); c.lineTo(x, -46); c.stroke(); }
+      for (let y = -86; y <= -46; y += 8) { c.beginPath(); c.moveTo(-w / 2, y); c.lineTo(w / 2, y); c.stroke(); }
+      c.fillStyle = "#FFFFFF"; c.fillRect(-w / 2, -90, w, 6);
+      c.fillStyle = "#2F9BD0"; c.fillRect(-w / 2, -48, w, 3);
+    }, { kind: "net", solid: [{ r: [-w / 2 - 8, -6, w / 2 + 8, 3] }], tap: portalTap("volleyball") });
+    // a volleyball resting in the sand
+    staticProp(cx - 70, cy + 40, [-14, -26, 14, 4], (c) => {
+      c.translate(0, -11);
+      c.beginPath(); c.arc(0, 0, 11, 0, TAU); c.fillStyle = A.gloss(c, 0, 0, 11, "#FFFFFF"); c.fill();
+      c.strokeStyle = "#F2C230"; c.lineWidth = 2.2;
+      c.beginPath(); c.arc(-4, -2, 9, -0.6, 1.8); c.stroke();
+      c.strokeStyle = "#2F9BD0"; c.beginPath(); c.arc(5, 3, 9, 2.4, 4.6); c.stroke();
+    }, { shadow: [11, 4], tap: portalTap("volleyball") });
+    sign(cx + 150, cy - 95, ["BEACH", "VOLLEYBALL"], { size: 15, postH: 22, board: "#FFF4D6", edge: "#2F9BD0", ink: "#1E6B99" });
   }
 
   // ---------------------------------------------------------------------
@@ -1648,7 +1682,7 @@
     ["leftField", 2215, 800], ["cave", 360, 1470], ["dockEnd", 4665, 2352], ["rocket", 3570, 690],
     ["academy", 1630, 700], ["raceGarage", 450, 1075], ["tennis", 1850, 2790], ["kitchen", 1225, 1500],
     ["construction", 4050, 2230], ["waterGate", 3350, 2715], ["gondola", 3290, 455], ["treehouse", 775, 2170],
-    ["sandcastle", 4235, 2650],
+    ["sandcastle", 4240, 2755],
   ];
   function buildStarsAndItems() {
     HIDDEN_STARS.forEach(([id, x, y]) => {

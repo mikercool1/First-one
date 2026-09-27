@@ -55,6 +55,8 @@ It shows up in the Collection Book.
 | Ariel's Kitchen | Ariel's Passover Cookout | `games/ariel-passover-cookout` |
 | Fart Man Landing Zone | Fart Man Lander | `games/fart-man-lander` |
 | Math Blaster Academy | Reuben's Math Blaster | `games/math-blaster` |
+| Soccer field (Sports Complex) | Backyard Soccer | `games/backyard-soccer` |
+| Beach volleyball court | Jonah's Volley | `games/jonahs-volley` |
 
 These are copies of each game made for the hub. A later update to a game elsewhere in the repo
 needs copying in here again (keeping its `rw-bridge.js` lines).

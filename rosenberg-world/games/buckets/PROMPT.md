@@ -8,7 +8,7 @@ game, but be dead simple to play.
 - A one-on-one basketball matchup: Jalen Brunson (the player) vs. Victor Wembanyama.
 - A multiplication question appears in huge type, e.g. **8 × 7**.
 - Reuben types the answer on a big on-screen number pad (or keyboard).
-- **5-second shot clock.** It counts down in red LED digits.
+- **10-second shot clock.** It counts down in red LED digits.
 - **Right answer:** Brunson shoots over Wemby, swish, Brunson +1.
 - **Wrong answer or time runs out:** Wemby swats the shot ("REJECTED!"), Wemby +1,
   and the correct fact is shown big for a moment (8 × 7 = 56) so it sinks in.

@@ -94,6 +94,28 @@
     icon: "🏀",
   });
 
+  G.register({
+    id: "backyardSoccer",
+    title: "Backyard Soccer",
+    subtitle: "One-on-one: pick your kicker",
+    destination: "soccer",
+    unlocked: true,
+    entry: "games/backyard-soccer/index.html",
+    color: "#2E8B57",
+    icon: "⚽",
+  });
+
+  G.register({
+    id: "jonahsVolley",
+    title: "Jonah's Volley",
+    subtitle: "Volleyball: Jonah vs. Ellie or Reuben",
+    destination: "volleyball",
+    unlocked: true,
+    entry: "games/jonahs-volley/index.html",
+    color: "#F2A93B",
+    icon: "🏐",
+  });
+
   // ---------------- future game slots ----------------
   // Each is already placed in the world with a locked building, gate or cabinet.
 

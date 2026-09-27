@@ -107,7 +107,7 @@ body { background: radial-gradient(120% 70% at 50% 0%, #1A2450 0%, var(--night) 
   <div>
     <div class="board" aria-label="Scoreboard">
       <div class="team jb"><span class="nm">Brunson</span><span class="pts" id="sJB">0</span></div>
-      <div class="clock"><small>SHOT CLOCK</small><span id="clock">5.0</span></div>
+      <div class="clock"><small>SHOT CLOCK</small><span id="clock">10.0</span></div>
       <div class="team vw"><span class="nm">Wemby</span><span class="pts" id="sVW">0</span></div>
     </div>
     <div class="to11">FIRST TO 11</div>
@@ -133,7 +133,7 @@ body { background: radial-gradient(120% 70% at 50% 0%, #1A2450 0%, var(--night) 
     <p class="kicker">Reuben's 8s &amp; 9s</p>
     <h1 class="logo">BUCKETS</h1>
     <div class="vs"><span class="a">BRUNSON</span><i>vs</i><span class="b">WEMBY</span></div>
-    <p class="how">Answer the times table in <b>5 seconds</b>. Right answer: <b>Brunson scores</b>. Wrong or too slow: <b>Wemby blocks it</b> and scores. First to <b>11</b> wins.</p>
+    <p class="how">Answer the times table in <b>10 seconds</b>. Right answer: <b>Brunson scores</b>. Wrong or too slow: <b>Wemby blocks it</b> and scores. First to <b>11</b> wins.</p>
     <button class="go" id="startBtn" type="button">TIP OFF</button>
     <p class="record" id="record"></p>
   </div>
@@ -156,7 +156,7 @@ body { background: radial-gradient(120% 70% at 50% 0%, #1A2450 0%, var(--night) 
 <script>
 (() => {
   const $ = (s) => document.querySelector(s);
-  const TARGET = 11, CLOCK = 5000;
+  const TARGET = 11, CLOCK = 10000;
   const FACTS = [];
   for (const a of [8, 9]) for (let b = 1; b <= 9; b++) FACTS.push({ a, b, key: `${a}x${b}` });
 
@@ -222,7 +222,7 @@ body { background: radial-gradient(120% 70% at 50% 0%, #1A2450 0%, var(--night) 
   function start() {
     $("#title").hidden = true; $("#end").hidden = true;
     G = { jb: 0, vw: 0, queue: deck(), q: null, live: false, seen: {} };
-    $("#sJB").textContent = "0"; $("#sVW").textContent = "0"; Court.setScores(0, 0); Court.setClock(5);
+    $("#sJB").textContent = "0"; $("#sVW").textContent = "0"; Court.setScores(0, 0); Court.setClock(10);
     Court.reset();
     tone(660, 0.1, "triangle", 0.05); tone(880, 0.2, "triangle", 0.05, 0.1);
     setTimeout(next, 500);
@@ -235,7 +235,7 @@ body { background: radial-gradient(120% 70% at 50% 0%, #1A2450 0%, var(--night) 
     $("#ans").className = ""; $("#learn").textContent = "";
     $("#qa").textContent = G.q.a; $("#qb").textContent = G.q.b;
     $(".fact").animate([{ transform: "scale(.85)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], { duration: 220, easing: "cubic-bezier(.2,.9,.3,1.3)" });
-    G.live = true; G.t0 = performance.now(); lastTick = 5;
+    G.live = true; G.t0 = performance.now(); lastTick = 10;
     cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
   }
 
