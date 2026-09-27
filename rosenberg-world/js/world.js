@@ -22,6 +22,7 @@
     { id: "car", name: "The Family Car", icon: "🚗", kind: "game", portal: [2712, 1800], portalR: 60, arrive: [2712, 1815], map: [2740, 1790] },
     { id: "soccer", name: "Soccer Field", icon: "⚽", kind: "game", portal: [1425, 2240], portalR: 80, arrive: [1425, 2258], map: [1150, 2210] },
     { id: "volleyball", name: "Beach Volleyball", icon: "🏐", kind: "game", portal: [4120, 2612], portalR: 90, arrive: [4120, 2630], map: [4120, 2530] },
+    { id: "icecream", name: "Frozenbergs Ice Cream", icon: "🍦", kind: "game", portal: [3250, 2664], portalR: 85, arrive: [3250, 2684], map: [3250, 2470] },
     { id: "court", name: "Basketball Court", icon: "🏀", kind: "game", portal: [1630, 2175], portalR: 80, arrive: [1630, 2190], map: [1710, 2175] },
     { id: "plaza", name: "Mystery Plaza", icon: "⛲", kind: "place", map: [3500, 1760], arrive: [3500, 1880] },
     { id: "plaza-building", name: "Mystery Building", icon: "❓", kind: "future", portal: [3500, 1535], portalR: 85, arrive: [3500, 1560], map: [3500, 1420] },
@@ -202,6 +203,7 @@
     buildPlayground();
     buildArcade();
     buildBahaBay();
+    buildIceCream();
     buildBeach();
     buildRaceway();
     buildWoods();
@@ -1248,6 +1250,60 @@
   // ---------------------------------------------------------------------
   // BAHA BAY (the water park: Splash Down slides and the Lazy River)
   // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // FROZENBERGS ICE CREAM STAND (the Frozenbergs game)
+  // ---------------------------------------------------------------------
+  function drawIceCreamStand(c, t) {
+    // back wall and counter
+    c.fillStyle = "#FFF4E8"; A.rr(c, -130, -170, 260, 170, 14); c.fill();
+    c.fillStyle = "#F7D9E6"; for (let x = -118; x < 130; x += 28) c.fillRect(x, -160, 12, 100);
+    // serving window
+    c.fillStyle = "#6B3E2A"; A.rr(c, -96, -150, 192, 78, 10); c.fill();
+    c.fillStyle = "#FFE7C2"; A.rr(c, -88, -144, 176, 66, 8); c.fill();
+    // tubs of ice cream in the window
+    ["#FFB3C7", "#8B5A3C", "#FFF3D6", "#A8E6CF", "#C9A7FF"].forEach((col, i) => {
+      const x = -70 + i * 35;
+      c.fillStyle = "#D9DEE8"; A.rr(c, x - 14, -96, 28, 16, 4); c.fill();
+      c.fillStyle = col; c.beginPath(); c.arc(x, -96, 12, Math.PI, TAU); c.fill();
+    });
+    // counter front
+    c.fillStyle = A.lin(c, 0, -72, 0, 0, ["#FF7FA8", "#E8558A"]); A.rr(c, -140, -74, 280, 74, 12); c.fill();
+    c.fillStyle = "#FFFFFF"; A.rr(c, -146, -80, 292, 14, 7); c.fill();
+    c.fillStyle = "rgba(255,255,255,.35)"; for (let x = -120; x < 130; x += 40) { c.beginPath(); c.arc(x, -34, 9, 0, TAU); c.fill(); }
+    A.text(c, "FROZENBERGS", 0, -38, 24, "#FFFFFF", { weight: 700, stroke: "#B8356A", strokeW: 5 });
+    // striped scalloped awning
+    const aw = -176;
+    for (let i = 0; i < 8; i++) {
+      c.fillStyle = i % 2 ? "#FFFFFF" : "#FF5C8A";
+      c.beginPath(); c.moveTo(-150 + i * 37.5, aw); c.lineTo(-150 + (i + 1) * 37.5, aw); c.lineTo(-150 + (i + 1) * 37.5, aw + 26);
+      c.arc(-150 + (i + 0.5) * 37.5, aw + 26, 18.75, 0, Math.PI); c.closePath(); c.fill();
+    }
+    c.fillStyle = "#E8558A"; A.rr(c, -156, aw - 12, 312, 16, 8); c.fill();
+    // giant cone on the roof, gently bobbing
+    const b = Math.sin(t * 2) * 3;
+    c.save(); c.translate(0, aw - 12 + b);
+    c.fillStyle = "#E3A857"; c.beginPath(); c.moveTo(-34, -40); c.lineTo(34, -40); c.lineTo(0, 30); c.closePath(); c.fill();
+    c.strokeStyle = "rgba(150,90,30,.45)"; c.lineWidth = 3;
+    for (let k = -2; k <= 2; k++) { c.beginPath(); c.moveTo(-30 + k * 14, -40); c.lineTo(-4 + k * 14 + 20, -10); c.stroke(); }
+    c.fillStyle = "#FFB3C7"; c.beginPath(); c.arc(-14, -52, 24, 0, TAU); c.fill();
+    c.fillStyle = "#8B5A3C"; c.beginPath(); c.arc(16, -54, 24, 0, TAU); c.fill();
+    c.fillStyle = "#FFF3D6"; c.beginPath(); c.arc(0, -80, 24, 0, TAU); c.fill();
+    c.fillStyle = "#E8453C"; c.beginPath(); c.arc(4, -106, 8, 0, TAU); c.fill();
+    A.line(c, 4, -112, 12, -124, 2.5, "#3E8C45");
+    ["#FF5C8A", "#2F9BFF", "#FFD23F", "#2EB872"].forEach((col, i) => { c.fillStyle = col; c.fillRect(-12 + i * 8, -90 + (i % 2) * 10, 5, 2.5); });
+    c.restore();
+  }
+  function buildIceCream() {
+    staticProp(3250, 2602, [-160, -330, 160, 10], (c) => {}, {
+      kind: "building", sprite: false, shadow: [150, 16], solid: [{ r: [-146, -40, 146, 6] }],
+      draw: (c, E2) => drawIceCreamStand(c, E2.t),
+      tap: portalTap("icecream"),
+    });
+    // a little table with a parasol out front
+    staticProp(3440, 2560, [-62, -104, 62, 8], (c) => P_.umbrella(c, "#FF5C8A", "#FFFFFF"), { shadow: [52, 14, 0, 6, 0.16], solid: [{ c: [0, -2, 5] }] });
+    sign(3030, 2610, ["ICE CREAM", "🍦 OPEN!"], { size: 15, board: "#FFF4E8", edge: "#E8558A", ink: "#B8356A", ent: { tap: portalTap("icecream") } });
+  }
+
   // Baha Bay water park, out on Baha Mar island. Its layout was drawn for its old spot
   // on the mainland, so everything is shifted by L.park.
   function buildBahaBay() {
@@ -2046,6 +2102,7 @@
     [1900, 2020, 2260, 2320], // playground
     [2150, 2380, 2780, 2820], // arcade and its front lawn
     [3200, 1350, 4050, 2260], // plaza + lot
+    [3040, 2320, 3460, 2640], // Frozenbergs ice cream stand
     [3350, 540, 4100, 1060],  // fart man zone
     [120, 540, 1030, 1230],   // raceway + garage
     [1200, 620, 1800, 1060],  // academy

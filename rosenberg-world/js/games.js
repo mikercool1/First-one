@@ -62,6 +62,17 @@
   });
 
   G.register({
+    id: "frozenbergs",
+    title: "Frozenbergs",
+    subtitle: "Run the ice cream stand! Build each cone just like the order.",
+    destination: "icecream",
+    unlocked: true,
+    entry: "games/frozenbergs/index.html",
+    color: "#E8558A",
+    icon: "🍦",
+  });
+
+  G.register({
     id: "mathBlaster",
     title: "Math Blaster",
     subtitle: "Reuben's multiplication mission",
