@@ -141,13 +141,20 @@ greets them that way.
 
 ## Star Shop
 
-The Star Shop (next to the plaza) is a little store you walk into. Hats cost 1 star and sit on the
-shelf; rides cost 5 stars and are parked on the floor: Skateboard, Scooter, ATV and Motorbike, all
-much faster than walking. Buying something puts it on right away. Once you own a ride, the RIDE
-button (bottom right) picks what you ride, or walking. Everything is saved per player.
+The Star Shop (next to the plaza) is a full-page store with three sections, cheapest first.
+Buying something puts it on right away, and everything is saved per player.
 
-- The catalog (names, prices, ride speeds) is `RW.SHOP` in `js/core.js`; the art is `A.drawHat` and
-  `A.drawRide` in `js/art.js`.
+- **Rides**: Skateboard, Scooter, ATV and Motorbike (5 stars each); Hoverboard 20, Golf Cart 25,
+  Unicorn 40, and two big goals, the Go-Kart 50 and the Jetpack 100. Once you own a ride, the RIDE
+  button (bottom right) picks what you ride, or walking.
+- **Pets** follow you everywhere, even onto the sea plane, and say hello when tapped: Puppy 10,
+  Kitten 10, Bunny 15, Penguin 20, and the Baby Dragon 75 (a big goal: it flies and puffs little flames).
+- **Hats**: six for 1 star, Bunny Ears, Chef Hat and Flower Crown for 2, Wizard Hat, Top Hat and
+  Hockey Helmet for 3, the Halo for 5 and the Golden Crown for 25.
+- Things you're saving up for show a progress bar; big goals (50+) get a gold badge and confetti.
+
+- The catalog (names, prices, ride speeds) is `RW.SHOP` in `js/core.js`; the art is `A.drawHat`,
+  `A.drawRide` and `A.drawPet` in `js/art.js`; the pet that follows you is `buildPet()` in `js/world.js`.
 - The number at the top of the screen is stars you can spend. House upgrades and Family Stats use
   the stars you've ever earned (`RW.save.earned`), so shopping never un-builds anything.
 

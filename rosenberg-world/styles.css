@@ -230,6 +230,15 @@ body:not(.ready) #title { opacity: 0; }
 .sp-card { --c: #2EB872; display: flex; flex-direction: column; align-items: center; gap: 6px; background: #FFFFFF; border-radius: 22px; padding: 10px 10px 12px;
   box-shadow: 0 5px 0 color-mix(in srgb, var(--c) 45%, #D8D0E8); border: 3px solid transparent; }
 .sp-hats .sp-card { --c: #E8558A; }
+.sp-pets .sp-card { --c: #FF8A3D; }
+.sp-pets .sp-grid { grid-template-columns: repeat(auto-fit, minmax(min(160px, 36vw), 1fr)); }
+.sp-pets h3 { color: #FF8A3D; }
+.sp-card { position: relative; }
+.sp-card.goal { border-color: #FFD23F; box-shadow: 0 5px 0 #E3A600, 0 0 0 3px rgba(255,210,63,.35); }
+.sp-goal { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 1; padding: 3px 12px; border-radius: 999px; background: #FFD23F; color: #6B4A00; font-size: 13px; letter-spacing: .05em; white-space: nowrap; box-shadow: 0 3px 0 #E3A600; }
+.sp-bar { width: 86%; height: 9px; border-radius: 99px; background: #EEE6FA; overflow: hidden; }
+.sp-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #FFD23F, #FF9A2E); transition: width .4s ease; }
+.confetti { position: fixed; top: 0; width: 10px; height: 14px; border-radius: 3px; z-index: 90; pointer-events: none; }
 .sp-card.using { border-color: #7B3FE4; }
 .sp-card canvas { width: 100%; height: auto; border-radius: 16px; background: radial-gradient(90% 80% at 50% 45%, color-mix(in srgb, var(--c) 16%, #FFFFFF), color-mix(in srgb, var(--c) 6%, #FFFFFF)); }
 .sp-rides .sp-card canvas { aspect-ratio: 300 / 170; }
@@ -250,7 +259,7 @@ body:not(.ready) #title { opacity: 0; }
 .hud-ride { position: absolute; right: calc(var(--safe-r, 0px) + 16px); bottom: calc(var(--safe-b) + 112px); background: #FFFFFF; }
 .hud-ride canvas { width: 54px; height: 43px; }
 .hud-ride span { font-size: 12px; }
-.ride-pick { position: absolute; right: calc(var(--safe-r, 0px) + 112px); bottom: calc(var(--safe-b) + 112px); display: flex; gap: 10px; background: #FFFFFF; padding: 10px; border-radius: 26px;
+.ride-pick { position: absolute; right: calc(var(--safe-r, 0px) + 112px); bottom: calc(var(--safe-b) + 112px); display: flex; flex-wrap: wrap; justify-content: flex-end; max-width: min(560px, calc(100vw - 150px)); gap: 10px; background: #FFFFFF; padding: 10px; border-radius: 26px;
   box-shadow: 0 8px 0 rgba(30,42,90,.2), 0 16px 34px rgba(30,42,90,.3); pointer-events: auto; }
 .ride-pick button { border: 0; background: #F2EEFF; border-radius: 18px; padding: 6px 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; font: inherit; font-size: 12px; color: var(--ink); }
 .ride-pick button.on { background: #7B3FE4; color: #FFFFFF; }

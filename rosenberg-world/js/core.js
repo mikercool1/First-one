@@ -41,7 +41,7 @@ window.RW = window.RW || {};
   const fresh = () => ({
     stars: 0,            // Rosenberg Stars to spend (the currency)
     earned: 0,           // all the stars ever earned (house upgrades and Family Stats use this)
-    shop: { owned: {}, ride: null, hat: null }, // Star Shop: things bought, and what's in use
+    shop: { owned: {}, ride: null, hat: null, pet: null }, // Star Shop: things bought, and what's in use
     foundStars: {},      // hidden world stars already collected, by id
     collectibles: {},    // collection book items found, by id
     secrets: {},         // secret jokes discovered, by id
@@ -147,17 +147,36 @@ window.RW = window.RW || {};
   RW.siblings = (a, b) => a !== b && parentsOf(a).some((p) => parentsOf(b).includes(p));
 
   // ---------- Star Shop ----------
+  // Cheap starters (5-star rides, 1-star hats), fancier things to save up for, and a few big goals.
   RW.SHOP = [
     { id: "skateboard", type: "ride", name: "Skateboard", price: 5, speed: 430 },
     { id: "scooter", type: "ride", name: "Scooter", price: 5, speed: 490 },
     { id: "atv", type: "ride", name: "ATV", price: 5, speed: 560 },
     { id: "motorbike", type: "ride", name: "Motorbike", price: 5, speed: 620 },
+    { id: "hoverboard", type: "ride", name: "Hoverboard", price: 20, speed: 660 },
+    { id: "golfcart", type: "ride", name: "Golf Cart", price: 25, speed: 600 },
+    { id: "unicorn", type: "ride", name: "Unicorn", price: 40, speed: 700 },
+    { id: "gokart", type: "ride", name: "Go-Kart", price: 50, speed: 760 },
+    { id: "jetpack", type: "ride", name: "Jetpack", price: 100, speed: 880 },
+    { id: "puppy", type: "pet", name: "Puppy", price: 10 },
+    { id: "kitten", type: "pet", name: "Kitten", price: 10 },
+    { id: "bunny", type: "pet", name: "Bunny", price: 15 },
+    { id: "penguin", type: "pet", name: "Penguin", price: 20 },
+    { id: "dragon", type: "pet", name: "Baby Dragon", price: 75 },
     { id: "pirate", type: "hat", name: "Pirate Hat", price: 1 },
     { id: "cowboy", type: "hat", name: "Cowboy Hat", price: 1 },
     { id: "party", type: "hat", name: "Party Hat", price: 1 },
     { id: "viking", type: "hat", name: "Viking Helmet", price: 1 },
     { id: "propeller", type: "hat", name: "Propeller Cap", price: 1 },
     { id: "shades", type: "hat", name: "Sunglasses", price: 1 },
+    { id: "bunnyears", type: "hat", name: "Bunny Ears", price: 2 },
+    { id: "chef", type: "hat", name: "Chef Hat", price: 2 },
+    { id: "flowers", type: "hat", name: "Flower Crown", price: 2 },
+    { id: "wizard", type: "hat", name: "Wizard Hat", price: 3 },
+    { id: "tophat", type: "hat", name: "Top Hat", price: 3 },
+    { id: "hockey", type: "hat", name: "Hockey Helmet", price: 3 },
+    { id: "halo", type: "hat", name: "Halo", price: 5 },
+    { id: "crown", type: "hat", name: "Golden Crown", price: 25 },
   ];
   RW.shopItem = (id) => RW.SHOP.find((it) => it.id === id) || null;
   // Spend stars; false if there aren't enough.

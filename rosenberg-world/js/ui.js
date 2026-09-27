@@ -507,23 +507,32 @@
       c.fillStyle = "#E9DCC6"; c.fillRect(-6, 10, 12, 36);
       c.fillStyle = "#F6ECDC"; c.beginPath(); c.arc(0, 4, 34, 0, Math.PI * 2); c.fill();
       A.drawHat(c, it.id, 42, t);
+    } else if (it.type === "pet") {
+      c.translate(cv.width / 2, cv.height - 24);
+      c.fillStyle = "rgba(0,0,0,.1)"; c.beginPath(); c.ellipse(0, 4, 70, 10, 0, 0, Math.PI * 2); c.fill();
+      const k = it.id === "dragon" ? 2.2 : 3; c.scale(k, k);
+      A.drawPet(c, it.id, t, true);
     } else {
       c.translate(cv.width / 2, cv.height - 22);
       c.fillStyle = "rgba(0,0,0,.1)"; c.beginPath(); c.ellipse(0, 4, 120, 12, 0, 0, Math.PI * 2); c.fill();
-      c.scale(cv.width / 160, cv.width / 160);
+      const h = (A.RIDES[it.id] && A.RIDES[it.id].h) || 80, k = Math.min(cv.width / 160, (cv.height - 30) / h); // tall rides shrink to fit
+      c.scale(k, k);
       A.drawRide(c, it.id, t * 4, "back"); A.drawRide(c, it.id, 0, "front");
     }
     c.restore();
   };
   function buildShopItems() {
-    [["ride", $("#shopRides")], ["hat", $("#shopHats")]].forEach(([type, host]) => {
+    [["ride", $("#shopRides")], ["pet", $("#shopPets")], ["hat", $("#shopHats")]].forEach(([type, host]) => {
       host.innerHTML = "";
-      RW.SHOP.filter((it) => it.type === type).forEach((it) => {
-        const card = el("div", "sp-card"); card.dataset.id = it.id;
-        const cv = el("canvas"); cv.width = type === "hat" ? 240 : 300; cv.height = type === "hat" ? 200 : 170;
+      RW.SHOP.filter((it) => it.type === type).sort((a, b) => a.price - b.price).forEach((it) => {
+        const card = el("div", "sp-card" + (it.price >= 50 ? " goal" : "")); card.dataset.id = it.id;
+        if (it.price >= 50) card.appendChild(el("div", "sp-goal", "⭐ BIG GOAL"));
+        const cv = el("canvas"); cv.width = type === "ride" ? 300 : 240; cv.height = type === "ride" ? 170 : 200;
         card.appendChild(cv);
         card.appendChild(el("div", "sp-name", it.name));
         if (type === "ride") card.appendChild(el("div", "sp-info", `${Math.round(it.speed / 262 * 10) / 10}× faster than walking`));
+        if (type === "pet") card.appendChild(el("div", "sp-info", "Follows you everywhere"));
+        const bar = el("div", "sp-bar"); bar.appendChild(el("i")); card.appendChild(bar); // saving-up progress
         const btn = el("button", "sp-btn"); btn.type = "button";
         btn.addEventListener("click", (ev) => { ev.stopPropagation(); shopAction(it, card); });
         card.appendChild(btn);
@@ -535,27 +544,31 @@
     const sh = RW.save.shop;
     $("#shopStars").textContent = RW.save.stars;
     shopEl.querySelectorAll(".sp-card").forEach((card) => {
-      const it = RW.shopItem(card.dataset.id), owned = !!sh.owned[it.id], using = sh.ride === it.id || sh.hat === it.id;
-      const btn = card.querySelector(".sp-btn");
+      const it = RW.shopItem(card.dataset.id), owned = !!sh.owned[it.id], using = inUse(it);
+      const btn = card.querySelector(".sp-btn"), bar = card.querySelector(".sp-bar");
       card.classList.toggle("using", using);
       btn.className = "sp-btn";
+      const short = it.price - RW.save.stars;
+      bar.hidden = owned || short <= 0 || it.price < 10;
+      if (!bar.hidden) { bar.firstChild.style.width = Math.round((RW.save.stars / it.price) * 100) + "%"; bar.title = `${RW.save.stars} of ${it.price}`; }
       if (!owned) {
-        const short = it.price - RW.save.stars;
         if (short > 0) { btn.classList.add("poor"); btn.innerHTML = `Need ${short} more ${STAR_SVG}`; }
         else { btn.classList.add("buy"); btn.innerHTML = `BUY ${STAR_SVG} ${it.price}`; }
-      } else if (using) { btn.classList.add("off"); btn.innerHTML = it.type === "ride" ? "✓ RIDING" : "✓ WEARING"; btn.title = it.type === "ride" ? "Tap to walk instead" : "Tap to take it off"; }
-      else btn.innerHTML = it.type === "ride" ? "RIDE IT" : "WEAR IT";
+      } else if (using) { btn.classList.add("off"); btn.innerHTML = { ride: "✓ RIDING", hat: "✓ WEARING", pet: "✓ WITH YOU" }[it.type]; btn.title = { ride: "Tap to walk instead", hat: "Tap to take it off", pet: "Tap to leave your pet at home" }[it.type]; }
+      else btn.innerHTML = { ride: "RIDE IT", hat: "WEAR IT", pet: "BRING ALONG" }[it.type];
     });
   }
+  const inUse = (it) => { const sh = RW.save.shop; return sh.ride === it.id || sh.hat === it.id || sh.pet === it.id; };
   function useItem(it, on) {
     const sh = RW.save.shop, P = E.player;
     if (it.type === "ride") { sh.ride = on ? it.id : null; if (P) P.ride = sh.ride; }
+    else if (it.type === "pet") sh.pet = on ? it.id : null;
     else { sh.hat = on ? it.id : null; if (P) P.hat = sh.hat; }
     RW.persist();
     syncRideBtn();
   }
   function shopAction(it, card) {
-    const sh = RW.save.shop, owned = !!sh.owned[it.id], using = sh.ride === it.id || sh.hat === it.id;
+    const sh = RW.save.shop, owned = !!sh.owned[it.id], using = inUse(it);
     if (!owned) {
       if (!RW.spend(it.price)) {
         RW.sfx.play("lock");
@@ -567,9 +580,21 @@
       RW.sfx.play("cheer");
       useItem(it, true); // put it on / hop on right away
       syncStars(true);
-      toast(it.type === "ride" ? `You got the ${it.name}! Use the RIDE button to switch rides.` : `New hat: ${it.name}!`, it.type === "ride" ? "🛵" : "🎩");
+      toast(it.type === "ride" ? `You got the ${it.name}! Use the RIDE button to switch rides.` : it.type === "pet" ? `Your new ${it.name} will follow you everywhere!` : `New hat: ${it.name}!`, { ride: "🛵", pet: "🐾", hat: "🎩" }[it.type]);
+      if (it.price >= 50) { RW.sfx.play("unlock"); confetti(); } // a big goal reached!
     } else { RW.sfx.play("pop"); useItem(it, !using); }
     syncShop();
+  }
+  // a shower of confetti over the whole screen
+  function confetti() {
+    const cols = ["#FF5C8A", "#FFD23F", "#2EB872", "#2F9BFF", "#7B3FE4", "#FF8A3D"];
+    for (let i = 0; i < 70; i++) {
+      const bit = el("div", "confetti"); bit.style.background = cols[i % cols.length];
+      bit.style.left = Math.random() * 100 + "vw"; $("#fx").appendChild(bit);
+      const a = bit.animate([{ transform: `translate(0,-20px) rotate(0deg)` }, { transform: `translate(${(Math.random() - 0.5) * 160}px, 105vh) rotate(${Math.random() * 900}deg)` }],
+        { duration: 1800 + Math.random() * 1400, delay: Math.random() * 300, easing: "cubic-bezier(.25,.6,.4,1)" });
+      a.onfinish = () => bit.remove();
+    }
   }
   function openShop() {
     if (E.player && E.player.lock) return;

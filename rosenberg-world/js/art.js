@@ -419,6 +419,52 @@
       c.fillStyle = "#3A4252"; c.fillRect(-1.5, -40, 3, 9);
       const sp = Math.sin(t * 22);
       c.fillStyle = "#E8453C"; c.beginPath(); c.ellipse(sp * 6, -41, 16 * Math.abs(Math.cos(t * 22)) + 3, 3, 0, 0, TAU); c.fill();
+    } else if (id === "bunnyears") {
+      c.fillStyle = "#F4F1F6"; c.fillRect(-20, -16, 40, 4);
+      [-1, 1].forEach((d) => {
+        c.save(); c.translate(d * 9, -18); c.rotate(d * (0.18 + Math.sin(t * 3 + d) * 0.05));
+        c.fillStyle = "#FFFFFF"; c.beginPath(); c.ellipse(0, -20, 7, 20, 0, 0, TAU); c.fill();
+        c.fillStyle = "#FFB7CF"; c.beginPath(); c.ellipse(0, -19, 3.5, 14, 0, 0, TAU); c.fill();
+        c.restore();
+      });
+    } else if (id === "chef") {
+      c.fillStyle = "#FFFFFF"; rr(c, -17, -24, 34, 12, 3); c.fill();
+      [[-11, -34, 11], [0, -40, 13], [11, -34, 11]].forEach(([x, y, r]) => { c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); });
+      c.fillStyle = "rgba(0,0,0,.07)"; c.fillRect(-17, -16, 34, 4);
+    } else if (id === "flowers") {
+      c.strokeStyle = "#4E9A3A"; c.lineWidth = 3; c.beginPath(); c.arc(0, -4, 20, Math.PI * 1.08, Math.PI * 1.92); c.stroke();
+      ["#FF5C8A", "#FFD23F", "#7C5CFF", "#FF8A3D", "#2F9BFF"].forEach((col, i) => {
+        const a = Math.PI * (1.12 + i * 0.19), x = Math.cos(a) * 20, y = -4 + Math.sin(a) * 20;
+        c.fillStyle = col; for (let k = 0; k < 5; k++) { const b = k * TAU / 5; c.beginPath(); c.arc(x + Math.cos(b) * 3.6, y + Math.sin(b) * 3.6, 3, 0, TAU); c.fill(); }
+        c.fillStyle = "#FFF3B0"; c.beginPath(); c.arc(x, y, 2.2, 0, TAU); c.fill();
+      });
+    } else if (id === "wizard") {
+      c.fillStyle = "#5B3CC4"; c.beginPath(); c.ellipse(0, -14, 30, 7, 0, 0, TAU); c.fill();
+      c.fillStyle = lin(c, -16, -60, 16, -14, ["#7C5CFF", "#4A2DA8"]);
+      c.beginPath(); c.moveTo(-17, -15); c.quadraticCurveTo(-4, -40, 10, -62); c.quadraticCurveTo(6, -38, 17, -15); c.closePath(); c.fill();
+      c.fillStyle = "#FFD23F"; star(c, -2, -30, 5, 5, 0.45); c.fill(); star(c, 8, -44, 3.5, 5, 0.45); c.fill();
+      if (!back) { c.fillStyle = "rgba(255,241,160," + (0.5 + Math.sin(t * 4) * 0.4) + ")"; star(c, 10, -63, 3, 4, 0.4); c.fill(); }
+    } else if (id === "tophat") {
+      c.fillStyle = "#1E1E24"; c.beginPath(); c.ellipse(0, -15, 28, 6, 0, 0, TAU); c.fill();
+      rr(c, -15, -52, 30, 38, 4); c.fill();
+      c.fillStyle = "#D8342A"; c.fillRect(-15, -24, 30, 6);
+      c.fillStyle = "rgba(255,255,255,.14)"; c.fillRect(-11, -50, 5, 24);
+    } else if (id === "hockey") {
+      c.fillStyle = lin(c, 0, -36, 0, -8, ["#3F86E0", "#1F4AA8"]); c.beginPath(); c.arc(0, -10, 22, Math.PI * 1.02, Math.PI * 1.98); c.closePath(); c.fill();
+      c.fillStyle = "#FFFFFF"; c.fillRect(-2.5, -32, 5, 20);
+      c.fillStyle = "#1A3C8A"; rr(c, -23, -14, 9, 14, 4); c.fill(); rr(c, 14, -14, 9, 14, 4); c.fill();
+      c.fillStyle = "rgba(255,255,255,.3)"; c.beginPath(); c.ellipse(-8, -26, 7, 3, -0.4, 0, TAU); c.fill();
+    } else if (id === "halo") {
+      const bob = Math.sin(t * 2.5) * 2;
+      c.strokeStyle = "rgba(255,226,92,.35)"; c.lineWidth = 9; c.beginPath(); c.ellipse(0, -44 + bob, 17, 5, 0, 0, TAU); c.stroke();
+      c.strokeStyle = "#FFD23F"; c.lineWidth = 4; c.beginPath(); c.ellipse(0, -44 + bob, 17, 5, 0, 0, TAU); c.stroke();
+    } else if (id === "crown") {
+      c.fillStyle = lin(c, 0, -46, 0, -12, ["#FFE58A", "#F2B632", "#C98A12"]);
+      c.beginPath(); c.moveTo(-19, -12); c.lineTo(-22, -38); c.lineTo(-11, -26); c.lineTo(0, -46); c.lineTo(11, -26); c.lineTo(22, -38); c.lineTo(19, -12); c.closePath(); c.fill();
+      c.fillStyle = "#D8342A"; c.beginPath(); c.arc(0, -20, 3.5, 0, TAU); c.fill();
+      c.fillStyle = "#2F9BFF"; c.beginPath(); c.arc(-11, -18, 2.6, 0, TAU); c.arc(11, -18, 2.6, 0, TAU); c.fill();
+      [[-22, -38], [0, -46], [22, -38]].forEach(([x, y]) => { c.fillStyle = "#FFFFFF"; c.beginPath(); c.arc(x, y, 2.4, 0, TAU); c.fill(); });
+      if (!back) { const s = (t * 0.8) % 1; c.fillStyle = `rgba(255,255,255,${1 - s})`; star(c, 16, -44 - s * 6, 4 + s * 3, 4, 0.3); c.fill(); }
     } else if (id === "shades") {
       if (!back) {
         c.fillStyle = "#1E1E24"; rr(c, -17, -5, 14, 9, 4); c.fill(); rr(c, 3, -5, 14, 9, 4); c.fill(); c.fillRect(-4, -3, 8, 2.5);
@@ -430,7 +476,12 @@
 
   // ---------- Star Shop vehicles (side view, facing right, ground at y = 0) ----------
   // seat: how high the rider sits. stand: the rider stands (skateboard).
-  A.RIDES = { skateboard: { seat: 12, stand: true }, scooter: { seat: 40 }, atv: { seat: 46 }, motorbike: { seat: 44 } };
+  // h: how tall it draws (for shop pictures).
+  A.RIDES = {
+    skateboard: { seat: 12, stand: true }, scooter: { seat: 40 }, atv: { seat: 46 }, motorbike: { seat: 44 },
+    hoverboard: { seat: 24, stand: true }, golfcart: { seat: 40, h: 150 }, unicorn: { seat: 50, h: 118 },
+    gokart: { seat: 18 }, jetpack: { seat: 46, stand: true, h: 100 },
+  };
   function wheel(c, x, y, r, spin, col = "#2B2F3A") {
     c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
     c.fillStyle = "#C9CED8"; c.beginPath(); c.arc(x, y, r * 0.5, 0, TAU); c.fill();
@@ -471,6 +522,80 @@
       } else { c.strokeStyle = "#1E1E24"; c.lineWidth = 5; c.lineCap = "round"; c.beginPath(); c.moveTo(20, -70); c.lineTo(36, -70); c.stroke(); }
       return;
     }
+    if (id === "hoverboard") {
+      if (part !== "back") return;
+      const bob = Math.sin(spin * 0.8) * 2;
+      c.fillStyle = "rgba(90,220,255,.28)"; c.beginPath(); c.ellipse(0, -2, 40, 7, 0, 0, TAU); c.fill();
+      c.fillStyle = "rgba(90,220,255,.55)"; c.beginPath(); c.ellipse(0, -2, 26, 4, 0, 0, TAU); c.fill();
+      c.fillStyle = lin(c, 0, -26 + bob, 0, -14 + bob, ["#A07BFF", "#6A3FD8"]); rr(c, -40, -26 + bob, 80, 11, 6); c.fill();
+      c.fillStyle = "#5CF2FF"; rr(c, -30, -18 + bob, 60, 3, 2); c.fill();
+      return;
+    }
+    if (id === "golfcart") {
+      if (part === "back") {
+        wheel(c, -34, -12, 12, spin); wheel(c, 36, -12, 12, spin);
+        // roof on two posts
+        c.fillStyle = "#C9CED8"; c.fillRect(-40, -140, 5, 110); c.fillRect(36, -140, 5, 100);
+        c.fillStyle = "#2EB872"; rr(c, -52, -150, 104, 14, 6); c.fill();
+        c.fillStyle = "#FFFFFF"; for (let x = -46; x < 50; x += 20) c.fillRect(x, -150, 10, 14);
+        c.fillStyle = lin(c, 0, -52, 0, -14, ["#FFFFFF", "#DCE3EA"]);
+        c.beginPath(); c.moveTo(-54, -20); c.lineTo(-52, -48); c.lineTo(-20, -48); c.lineTo(-16, -34); c.lineTo(42, -34); c.quadraticCurveTo(58, -32, 56, -18); c.closePath(); c.fill();
+        c.fillStyle = "#2EB872"; c.fillRect(-54, -26, 110, 6);
+        c.fillStyle = "#8E5A2E"; rr(c, -46, -60, 24, 16, 4); c.fill(); // golf bag
+        c.strokeStyle = "#C9CED8"; c.lineWidth = 2; [-40, -34, -28].forEach((x) => { c.beginPath(); c.moveTo(x, -60); c.lineTo(x - 2, -74); c.stroke(); });
+      } else { c.strokeStyle = "#1E1E24"; c.lineWidth = 3.5; c.beginPath(); c.moveTo(20, -36); c.lineTo(28, -62); c.stroke(); c.beginPath(); c.ellipse(28, -64, 8, 3, 0.4, 0, TAU); c.stroke(); }
+      return;
+    }
+    if (id === "unicorn") {
+      if (part !== "back") return;
+      const g = Math.sin(spin * 1.3);
+      // legs (a gallop when moving)
+      c.strokeStyle = "#E6E0F0"; c.lineWidth = 7; c.lineCap = "round";
+      [[-26, g], [-14, -g], [18, -g], [30, g]].forEach(([x, s]) => { c.beginPath(); c.moveTo(x, -34); c.lineTo(x + s * 8, -4); c.stroke(); });
+      c.fillStyle = "#B89BD8"; [[-26, g], [-14, -g], [18, -g], [30, g]].forEach(([x, s]) => { c.beginPath(); c.arc(x + s * 8, -3, 4, 0, TAU); c.fill(); });
+      // rainbow tail
+      ["#FF5C8A", "#FFB020", "#FFD23F", "#2EB872", "#2F9BFF"].forEach((col, i) => { c.strokeStyle = col; c.lineWidth = 4; c.beginPath(); c.moveTo(-40, -48 + i * 2); c.quadraticCurveTo(-60 - i * 2, -40 + i * 3, -54 - i, -14 + i * 2); c.stroke(); });
+      // body, neck and head
+      c.fillStyle = lin(c, 0, -60, 0, -28, ["#FFFFFF", "#EDE6F7"]);
+      c.beginPath(); c.ellipse(0, -44, 42, 17, 0, 0, TAU); c.fill();
+      c.beginPath(); c.moveTo(24, -54); c.quadraticCurveTo(36, -86, 46, -96); c.lineTo(58, -86); c.quadraticCurveTo(46, -66, 40, -44); c.closePath(); c.fill();
+      c.beginPath(); c.ellipse(56, -92, 16, 10, 0.5, 0, TAU); c.fill();
+      c.fillStyle = "#FFB7CF"; c.beginPath(); c.ellipse(66, -86, 4, 3, 0.5, 0, TAU); c.fill();
+      c.fillStyle = "#2B2F3A"; c.beginPath(); c.arc(54, -96, 2.4, 0, TAU); c.fill();
+      c.fillStyle = "#FFD23F"; c.beginPath(); c.moveTo(50, -102); c.lineTo(60, -126); c.lineTo(58, -100); c.closePath(); c.fill();
+      // rainbow mane
+      ["#FF5C8A", "#FFB020", "#7C5CFF"].forEach((col, i) => { c.fillStyle = col; c.beginPath(); c.ellipse(38 - i * 5, -84 + i * 12, 7, 11, 0.6, 0, TAU); c.fill(); });
+      return;
+    }
+    if (id === "gokart") {
+      if (part === "back") {
+        wheel(c, -34, -13, 13, spin, "#1E1E24"); wheel(c, 36, -10, 10, spin, "#1E1E24");
+        c.fillStyle = "#1E1E24"; c.fillRect(-58, -48, 6, 24); rr(c, -64, -52, 22, 7, 3); c.fill(); // spoiler
+        c.fillStyle = lin(c, 0, -34, 0, -12, ["#FF6B5C", "#C8281E"]);
+        c.beginPath(); c.moveTo(-54, -14); c.lineTo(-50, -30); c.lineTo(-12, -32); c.lineTo(30, -24); c.lineTo(56, -20); c.lineTo(56, -12); c.closePath(); c.fill();
+        c.fillStyle = "#FFFFFF"; c.beginPath(); c.arc(30, -18, 7, 0, TAU); c.fill();
+        c.fillStyle = "#1E1E24"; c.font = "700 10px sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("1", 30, -17.5);
+        c.fillStyle = "#2B2F3A"; rr(c, -36, -44, 22, 16, 4); c.fill();
+      } else { c.strokeStyle = "#1E1E24"; c.lineWidth = 3.5; c.beginPath(); c.moveTo(10, -26); c.lineTo(20, -44); c.stroke(); c.beginPath(); c.ellipse(20, -46, 7, 3, 0.5, 0, TAU); c.stroke(); }
+      return;
+    }
+    if (id === "jetpack") {
+      if (part !== "back") return;
+      const now = performance.now() / 1000;
+      // flames and a puff of smoke under the rider
+      for (const x of [-26, -12]) {
+        const f = 16 + Math.sin(now * 30 + x) * 5;
+        c.fillStyle = "rgba(255,140,40,.85)"; c.beginPath(); c.moveTo(x - 6, -54); c.quadraticCurveTo(x, -54 + f * 2.2, x + 6, -54); c.fill();
+        c.fillStyle = "rgba(255,230,120,.95)"; c.beginPath(); c.moveTo(x - 3, -54); c.quadraticCurveTo(x, -54 + f * 1.3, x + 3, -54); c.fill();
+      }
+      c.fillStyle = "rgba(200,210,225,.35)"; c.beginPath(); c.ellipse(-18, -2, 26, 6, 0, 0, TAU); c.fill();
+      // twin tanks on the rider's back
+      c.fillStyle = lin(c, -34, 0, -4, 0, ["#C9CED8", "#8E96A6"]);
+      rr(c, -34, -112, 14, 58, 7); c.fill(); rr(c, -20, -112, 14, 58, 7); c.fill();
+      c.fillStyle = "#D8342A"; c.fillRect(-34, -100, 28, 6);
+      c.fillStyle = "#3A4252"; rr(c, -32, -58, 10, 6, 2); c.fill(); rr(c, -18, -58, 10, 6, 2); c.fill();
+      return;
+    }
     if (id === "motorbike") {
       if (part === "back") {
         wheel(c, -36, -15, 15, spin); wheel(c, 38, -15, 15, spin);
@@ -484,6 +609,67 @@
         c.fillStyle = "#FFF3B0"; c.beginPath(); c.arc(32, -52, 5, 0, TAU); c.fill();
       } else { c.strokeStyle = "#1E1E24"; c.lineWidth = 4; c.lineCap = "round"; c.beginPath(); c.moveTo(20, -62); c.lineTo(34, -60); c.stroke(); }
     }
+  };
+
+  // ---------- Star Shop pets (side view, facing right, ground at y = 0) ----------
+  A.drawPet = (c, id, t = 0, moving = false) => {
+    const step = moving ? Math.sin(t * 14) : 0;
+    c.save();
+    if (id === "puppy" || id === "kitten") {
+      const cat = id === "kitten", body = cat ? "#F2A65A" : "#E3AA5E", dark = cat ? "#C97A32" : "#B97A34";
+      c.strokeStyle = dark; c.lineWidth = 5; c.lineCap = "round";
+      [[-12, step], [-6, -step], [8, -step], [14, step]].forEach(([x, s]) => { c.beginPath(); c.moveTo(x, -12); c.lineTo(x + s * 4, -2); c.stroke(); });
+      // tail: a wag for the puppy, a curl for the kitten
+      c.strokeStyle = body; c.lineWidth = cat ? 5 : 6; c.beginPath(); c.moveTo(-16, -18);
+      if (cat) c.quadraticCurveTo(-30, -24, -26, -40 + Math.sin(t * 3) * 3); else c.quadraticCurveTo(-26, -22, -28, -30 + Math.sin(t * 18) * 5); c.stroke();
+      c.fillStyle = body; c.beginPath(); c.ellipse(0, -18, 19, 10, 0, 0, TAU); c.fill();
+      c.beginPath(); c.arc(18, -28, 11, 0, TAU); c.fill();
+      if (cat) {
+        c.beginPath(); c.moveTo(11, -34); c.lineTo(13, -46); c.lineTo(19, -37); c.fill(); c.beginPath(); c.moveTo(19, -38); c.lineTo(25, -46); c.lineTo(27, -33); c.fill();
+        c.strokeStyle = "rgba(255,255,255,.8)"; c.lineWidth = 1; [[26, -26, 36, -28], [26, -24, 36, -22]].forEach(([a, b, x, y]) => { c.beginPath(); c.moveTo(a, b); c.lineTo(x, y); c.stroke(); });
+        c.fillStyle = dark; [-6, 2].forEach((x) => c.fillRect(x, -27, 3, 8));
+      } else {
+        c.fillStyle = dark; c.beginPath(); c.ellipse(12, -26, 5, 9, 0.3, 0, TAU); c.fill();
+        c.fillStyle = "#2B2F3A"; c.beginPath(); c.arc(29, -27, 2.6, 0, TAU); c.fill();
+        c.fillStyle = "#E8453C"; c.fillRect(8, -21, 12, 3); // collar
+      }
+      c.fillStyle = "#2B2F3A"; c.beginPath(); c.arc(21, -30, 2, 0, TAU); c.fill();
+    } else if (id === "bunny") {
+      const hop = moving ? Math.abs(Math.sin(t * 9)) * 10 : 0;
+      c.translate(0, -hop);
+      c.fillStyle = "#FFFFFF"; c.beginPath(); c.arc(-14, -14, 6, 0, TAU); c.fill();
+      c.beginPath(); c.ellipse(0, -14, 15, 12, 0, 0, TAU); c.fill();
+      c.beginPath(); c.arc(13, -24, 9, 0, TAU); c.fill();
+      [0, 1].forEach((i) => { c.save(); c.translate(10 + i * 5, -30); c.rotate(-0.2 + i * 0.3 + Math.sin(t * 2 + i) * 0.06); c.fillStyle = "#FFFFFF"; c.beginPath(); c.ellipse(0, -11, 4, 12, 0, 0, TAU); c.fill(); c.fillStyle = "#FFB7CF"; c.beginPath(); c.ellipse(0, -10, 2, 8, 0, 0, TAU); c.fill(); c.restore(); });
+      c.fillStyle = "#2B2F3A"; c.beginPath(); c.arc(17, -26, 1.8, 0, TAU); c.fill();
+      c.fillStyle = "#FF8FB1"; c.beginPath(); c.arc(21.5, -23, 1.8, 0, TAU); c.fill();
+    } else if (id === "penguin") {
+      c.rotate(moving ? Math.sin(t * 12) * 0.12 : 0);
+      c.fillStyle = "#FF9A2E"; c.beginPath(); c.ellipse(-5, -1, 6, 3, 0, 0, TAU); c.ellipse(6, -1, 6, 3, 0, 0, TAU); c.fill();
+      c.fillStyle = "#23262E"; c.beginPath(); c.ellipse(0, -20, 14, 20, 0, 0, TAU); c.fill();
+      c.fillStyle = "#FFFFFF"; c.beginPath(); c.ellipse(4, -18, 9, 15, 0, 0, TAU); c.fill();
+      c.fillStyle = "#23262E"; c.beginPath(); c.ellipse(-10, -20, 4, 11, 0.3 + (moving ? Math.sin(t * 12) * 0.3 : 0), 0, TAU); c.fill();
+      c.fillStyle = "#FFFFFF"; c.beginPath(); c.arc(8, -32, 3.4, 0, TAU); c.fill();
+      c.fillStyle = "#23262E"; c.beginPath(); c.arc(9, -32, 1.8, 0, TAU); c.fill();
+      c.fillStyle = "#FF9A2E"; c.beginPath(); c.moveTo(12, -30); c.lineTo(20, -28); c.lineTo(12, -26); c.fill();
+    } else if (id === "dragon") {
+      const fly = 34 + Math.sin(t * 3) * 6, flap = Math.sin(t * 10);
+      c.fillStyle = "rgba(0,0,0,.12)"; c.beginPath(); c.ellipse(0, 0, 16, 4, 0, 0, TAU); c.fill();
+      c.translate(0, -fly);
+      c.fillStyle = "#7BD66A"; // wings
+      c.beginPath(); c.moveTo(-4, -16); c.quadraticCurveTo(-14, -38 - flap * 10, -30, -34 - flap * 12); c.quadraticCurveTo(-20, -24, -10, -12); c.closePath(); c.fill();
+      c.fillStyle = "#3FA34A"; c.beginPath(); c.moveTo(-18, -12); c.quadraticCurveTo(-34, -10, -40, -20); c.lineTo(-34, -16); c.closePath(); c.fill(); // tail
+      c.beginPath(); c.ellipse(0, -12, 16, 11, 0, 0, TAU); c.fill();
+      c.fillStyle = "#FFE08A"; c.beginPath(); c.ellipse(4, -8, 9, 6, 0, 0, TAU); c.fill();
+      c.fillStyle = "#3FA34A"; c.beginPath(); c.arc(16, -22, 10, 0, TAU); c.fill();
+      c.fillStyle = "#FFD23F"; c.beginPath(); c.moveTo(12, -30); c.lineTo(10, -40); c.lineTo(16, -31); c.fill(); c.beginPath(); c.moveTo(18, -31); c.lineTo(20, -41); c.lineTo(22, -30); c.fill();
+      c.fillStyle = "#FFFFFF"; c.beginPath(); c.arc(19, -24, 3.4, 0, TAU); c.fill();
+      c.fillStyle = "#2B2F3A"; c.beginPath(); c.arc(20, -24, 1.8, 0, TAU); c.fill();
+      // a little puff of flame now and then
+      const puff = (t * 0.5) % 3;
+      if (puff < 0.5) { c.fillStyle = `rgba(255,140,40,${1 - puff * 2})`; c.beginPath(); c.ellipse(30 + puff * 20, -18, 5 + puff * 10, 3 + puff * 5, 0, 0, TAU); c.fill(); }
+    }
+    c.restore();
   };
 
   function drawTorso(c, s, hipY, T, bw, back) {

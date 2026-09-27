@@ -1065,6 +1065,7 @@
     flowerBed(Pz.x - 150, 1520, 90, 30, 31); flowerBed(Pz.x + 150, 1520, 90, 30, 32);
 
     buildStarShop();
+    buildPet();
     buildGarden();
     buildWitchMountain();
     buildIceMountain();
@@ -1744,6 +1745,41 @@
     c.fillStyle = "#FFD23F"; c.beginPath(); c.arc(18, -52, 4, 0, TAU); c.fill();
     c.fillStyle = "#FFFFFF"; A.rr(c, -22, -96, 44, 18, 4); c.fill();
     A.text(c, "OPEN", 0, -87, 11, "#2EB872", { weight: 700 });
+  }
+  // Your pet from the Star Shop trots along behind you everywhere (and flies over on the sea plane).
+  function buildPet() {
+    const PET_LINES = {
+      puppy: ["Woof!", "Arf arf!", "*wags tail*"], kitten: ["Meow!", "Purrrr...", "Mrrp?"],
+      bunny: ["*nose wiggle*", "*hop hop*", "*munch munch*"], penguin: ["Honk!", "*waddle waddle*", "Squawk!"],
+      dragon: ["Rawr!", "*tiny flame*", "Rawrrr! (friendly)"],
+    };
+    add({
+      kind: "pet", x: 0, y: 0, box: [-44, -110, 44, 10], hidden: true, t: 0, moving: false, dir: 1, bubbleH: 70, id: null,
+      update(e, dt) {
+        const P = E.player, id = RW.save && RW.save.shop && RW.save.shop.pet;
+        e.hidden = !id || !P || P.hidden || E.mode !== "play";
+        if (e.hidden) { e.id = null; return; }
+        e.t += dt;
+        const tx = P.x - P.dir * 62, ty = P.y + 8, dx = tx - e.x, dy = ty - e.y, d = Math.hypot(dx, dy);
+        if (e.id !== id || d > 700) { e.x = tx; e.y = ty; e.id = id; if (d > 700) E.burst(e.x, e.y, 20, "sparkle", 8); } // new pet, or catching up after a flight
+        else if (d > 14) {
+          const sp = Math.min(d * 5, 1100);
+          e.x += (dx / d) * sp * dt; e.y += (dy / d) * sp * dt;
+          if (Math.abs(dx) > 4) e.dir = dx > 0 ? 1 : -1;
+        }
+        e.moving = d > 18;
+        e.bubbleH = id === "dragon" ? 110 : 70;
+      },
+      draw(c, E2, e) { c.scale(e.dir, 1); A.drawPet(c, e.id, e.t, e.moving); },
+      tap: {
+        reach: "remote",
+        act(E2, e) {
+          if (e.cool > E2.t) return; e.cool = E2.t + 1.2;
+          RW.sfx.play("giggle"); E2.say(e, U.pick(PET_LINES[e.id] || ["!"]), 1.6);
+          E2.burst(e.x, e.y, e.id === "dragon" ? 80 : 40, "heart", 6);
+        },
+      },
+    });
   }
   function buildStarShop() {
     add({
