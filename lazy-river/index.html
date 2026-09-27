@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0B4F6C">
-<title>Lazy River</title>
+<title>Lazy River Pirates</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@500;700;800&display=swap">
@@ -13,16 +13,17 @@
 <body>
 <div class="app">
   <div class="stage" id="stage">
-    <canvas id="river" aria-label="A lazy river seen from above, with Reuben, Jonah and Ellie floating in tubes"></canvas>
+    <canvas id="river" aria-label="A lazy river seen from above. You and Dad swim a race, weaving around people floating on tubes"></canvas>
 
     <!-- HUD -->
     <div class="hud" id="hud" hidden>
       <div class="hud-row">
-        <div class="pill score" title="Shells">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 3.5 9.5A10 10 0 0 1 20.5 9.5Z" fill="#FFC3B1" stroke="#D9735A" stroke-width="1.4" stroke-linejoin="round"/><path d="M12 21 7 6M12 21V4.5M12 21l5-15" stroke="#D9735A" stroke-width="1.2"/></svg>
+        <div class="pill score" title="Treasure">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#FFD23F" stroke="#C98A10" stroke-width="1.6"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#C98A10" stroke-width="1.2"/><path d="M12 8.5v7" stroke="#C98A10" stroke-width="1.4" stroke-linecap="round"/></svg>
           <b id="score">0</b>
         </div>
-        <div class="pill zone" id="zoneChip">Smooth Seas</div>
+        <div class="pill lap" id="lapChip">Lap 1/3</div>
+        <div class="pill race" id="raceChip">1st</div>
         <div class="hud-btns">
           <button class="icon" id="muteBtn" aria-label="Sound off">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="off" d="m16 9 6 6m0-6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -32,22 +33,37 @@
           </button>
         </div>
       </div>
-      <div class="map" id="map" aria-hidden="true"><div class="map-track" id="mapTrack"></div><div class="map-dot" id="mapDot"></div></div>
-      <div class="crew" id="crew" hidden>Float party ×2</div>
+      <div class="map" id="map" aria-hidden="true">
+        <div class="map-track" id="mapTrack"></div>
+        <div class="map-dot dad" id="dadDot">D</div>
+        <div class="map-dot you" id="youDot">R</div>
+      </div>
+      <div class="zone-tag" id="zoneChip">Smooth Seas</div>
     </div>
+
+    <button class="dive" id="diveBtn" hidden aria-label="Dive under">
+      <span class="dive-ring" id="diveRing"></span>
+      <span class="dive-label">DIVE</span>
+    </button>
 
     <div class="banner" id="banner" aria-live="polite"><b id="bannerTitle"></b><span id="bannerSub"></span></div>
 
     <!-- Start -->
     <section class="screen" id="startScreen">
       <div class="card">
-        <h1>Lazy River</h1>
-        <p class="lede">Float the whole loop with Reuben, Jonah and Ellie. Scoop up shells, wave at the turtles, and hang on when the water gets wild.</p>
-        <h2>Who's steering?</h2>
+        <p class="kicker">Dad says we're pirates</p>
+        <h1>Lazy River Pirates</h1>
+        <p class="lede">No tubes for pirates! Swim three laps of the lazy river and race Captain Dad to the finish. Weave around the rafters and plunder their stuff as you go.</p>
+        <h2>Who's racing Dad?</h2>
         <div class="riders" id="riders"></div>
-        <ul class="zones" id="zoneList"></ul>
-        <button class="btn primary" id="startBtn">Start floating</button>
-        <p class="hint">Drag to steer, or use the ← → keys. Keep your crew close for double shells.</p>
+        <ul class="howto">
+          <li><b>Steer</b><span>Drag left and right, or use the ← → keys.</span></li>
+          <li><b>Plunder</b><span>Swim right beside a rafter's <em>sparkly</em> stuff to grab it.</span></li>
+          <li><b>Dive</b><span>Tap DIVE (or Space) to swim under rafts. Plunder from underneath for double!</span></li>
+          <li><b>Careful</b><span>Crashing into rafts, rocks and waterfalls slows you down.</span></li>
+        </ul>
+        <button class="btn primary" id="startBtn">Race Dad!</button>
+        <p class="hint">3 laps, about 10 minutes. Smooth seas, rough seas, a waterfall grotto, whirlpools and waves.</p>
       </div>
     </section>
 
@@ -55,8 +71,8 @@
     <section class="screen" id="pauseScreen" hidden>
       <div class="card small">
         <h2 class="big">Paused</h2>
-        <p class="lede">Just floating. Take your time.</p>
-        <button class="btn primary" id="resumeBtn">Keep floating</button>
+        <p class="lede">Dad is treading water. He'll wait.</p>
+        <button class="btn primary" id="resumeBtn">Keep racing</button>
         <button class="btn ghost" id="quitBtn">Back to start</button>
       </div>
     </section>
@@ -64,13 +80,17 @@
     <!-- End -->
     <section class="screen" id="endScreen" hidden>
       <div class="card">
-        <p class="kicker">Lap complete!</p>
-        <div class="result"><b id="endScore">0</b><span>shells</span></div>
-        <p class="rank" id="endRank"></p>
+        <p class="kicker" id="endKicker">Race over!</p>
+        <h2 class="big center" id="endTitle"></h2>
+        <p class="lede" id="endSub"></p>
+        <div class="versus">
+          <div><span id="endYouName">You</span><b id="endScore">0</b><small>treasure</small></div>
+          <div class="dad"><span>Dad</span><b id="endDad">0</b><small>treasure</small></div>
+        </div>
         <p class="best" id="endBest"></p>
         <dl class="stats" id="endStats"></dl>
-        <button class="btn primary" id="againBtn">Float again</button>
-        <button class="btn ghost" id="switchBtn">Change rider</button>
+        <button class="btn primary" id="againBtn">Race again</button>
+        <button class="btn ghost" id="switchBtn">Change pirate</button>
       </div>
     </section>
   </div>

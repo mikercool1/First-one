@@ -1,4 +1,4 @@
-// Lazy River: Reuben, Jonah and Ellie float one lap of a resort lazy river.
+// Lazy River Pirates: race Dad around the lazy river, weaving past (and plundering) the rafters.
 (() => {
   "use strict";
   const $ = (s) => document.querySelector(s);
@@ -10,50 +10,66 @@
   const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
   const rgb = (r, g, b, a = 1) => `rgba(${r | 0},${g | 0},${b | 0},${a})`;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const FAST = location.hash.includes("fast") ? 5 : 1;   // test hook
+  const FAST = location.hash.includes("fast") ? 6 : 1;   // test hook
   const TAU = Math.PI * 2;
   const W = 400;   // river world is 400 units wide
   const R = 25;    // tube radius
+  const SR = 13;   // swimmer radius
 
   const store = {
     get(k, d) { try { const v = localStorage.getItem("lazyRiver." + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
     set(k, v) { try { localStorage.setItem("lazyRiver." + k, JSON.stringify(v)); } catch {} },
   };
 
-  // ---------- the three riders ----------
-  const RIDERS = {
-    reuben: { name: "Reuben", tube: "#FF8A1F", stripe: "#FFFFFF", suit: "#2563EB", suit2: "#1D3F9E", hair: "#6B4423", skin: "#F2C29B", style: "short", trunks: true },
-    jonah:  { name: "Jonah",  tube: "#22C55E", stripe: "#FDE047", suit: "#E23B3B", suit2: "#9B1C1C", hair: "#2B1B12", skin: "#EDBB92", style: "curly", trunks: true },
-    ellie:  { name: "Ellie",  tube: "#F0529C", stripe: "#FFFFFF", suit: "#8B5CF6", suit2: "#6D28D9", hair: "#B7793A", skin: "#F6CFAE", style: "pigtails", trunks: false },
+  // ---------- the pirates ----------
+  const KIDS = {
+    reuben: { name: "Reuben", skin: "#F2C29B", hair: "#6B4423", style: "short", suit: "#2563EB", suit2: "#1D3F9E", band: "#E23B3B", dots: "#FFFFFF" },
+    jonah:  { name: "Jonah",  skin: "#EDBB92", hair: "#2B1B12", style: "curly", suit: "#22A35A", suit2: "#146B3A", band: "#1B2430", dots: "#FFFFFF" },
+    ellie:  { name: "Ellie",  skin: "#F6CFAE", hair: "#B7793A", style: "pigtails", suit: "#8B5CF6", suit2: "#6D28D9", band: "#F0529C", dots: "#FFE066" },
   };
+  const DAD = { name: "Dad", skin: "#EAB98F", hair: "#5A4030", style: "short", suit: "#1B2430", suit2: "#111820", stripes: true, adult: true };
   const ORDER = ["reuben", "jonah", "ellie"];
 
-  // ---------- the river: zones around one lap ----------
-  const ZONES = {
-    smooth: { name: "Smooth Seas", sub: "Kick back and scoop up shells", speed: 85, hw: 150, water: [56, 204, 214], rough: 0, dark: 0, color: "#38CCD6" },
-    rough:  { name: "Rough Seas", sub: "Hold on tight and dodge the rocks!", speed: 165, hw: 118, water: [30, 124, 178], rough: 1, dark: 0, color: "#1E6FA8" },
-    grotto: { name: "Waterfall Grotto", sub: "Find the gap or get soaked", speed: 95, hw: 128, water: [26, 104, 124], rough: 0.1, dark: 1, color: "#1F4F5E" },
-    whirl:  { name: "Whirlpool Cove", sub: "Swirls pull you in. Steer wide!", speed: 90, hw: 165, water: [44, 180, 204], rough: 0.15, dark: 0, color: "#7C6FE0" },
-    surge:  { name: "Wave Surge", sub: "Ride the waves. Wheee!", speed: 105, hw: 150, water: [40, 158, 216], rough: 0.35, dark: 0, color: "#FFB547" },
+  const DAD_LINES = {
+    start: ["Arr! Race ye 'round the river, matey!", "Pirates don't need tubes! Swim!"],
+    idle: ["Weave 'round the landlubbers!", "Those rafters be guardin' treasure!", "Dive under 'em, matey!", "Arrr!", "Yo ho ho!", "Grab the sparkly loot!"],
+    plunder: ["Heh heh, mine now!", "Booty for the captain!", "Sorry, sir! Pirate business!", "Yo ho ho!", "Into me treasure chest!"],
+    bump: ["Blimey! Sorry!", "Pardon me, landlubber!", "Shiver me timbers!", "Oops! Excuse me!"],
+    passed: ["Ye sneaky scallywag!", "Come back here, matey!", "Arr, ye swim like a dolphin!"],
+    passing: ["See ye at the finish!", "Catch me if ye can!", "Ahoy! Comin' through!"],
+    rough: "Rough seas! Hold fast!", grotto: "A secret pirate cave! Arr!", whirl: "Whirlpools! Don't get sucked in!", surge: "Ride the waves, matey!",
+    lap: ["Another lap, me hearty!", "Round we go again!"],
   };
-  const LAP = [["smooth", 2200], ["rough", 2600], ["smooth", 1200], ["grotto", 2100], ["whirl", 2200], ["surge", 2000], ["rough", 2400], ["smooth", 1500]];
+
+  // ---------- the river: zones around one lap, three laps a race ----------
+  const ZONES = {
+    smooth: { name: "Smooth Seas", sub: "Easy water. Plunder away!", current: 55, hw: 150, water: [56, 204, 214], rough: 0, dark: 0, color: "#38CCD6", every: [140, 190], two: 0.45 },
+    rough:  { name: "Rough Seas", sub: "Fast water, rocks and bumpy rafts!", current: 130, hw: 125, water: [30, 124, 178], rough: 1, dark: 0, color: "#1E6FA8", every: [230, 300], two: 0.15 },
+    grotto: { name: "Waterfall Grotto", sub: "Find the gap, or dive through!", current: 70, hw: 132, water: [26, 104, 124], rough: 0.1, dark: 1, color: "#1F4F5E", every: [190, 250], two: 0.3 },
+    whirl:  { name: "Whirlpool Cove", sub: "Swirls pull you in. Swim wide!", current: 65, hw: 165, water: [44, 180, 204], rough: 0.15, dark: 0, color: "#7C6FE0", every: [170, 220], two: 0.35 },
+    surge:  { name: "Wave Surge", sub: "Catch a wave for a speed boost!", current: 80, hw: 150, water: [40, 158, 216], rough: 0.35, dark: 0, color: "#FFB547", every: [160, 210], two: 0.4 },
+  };
+  const LAP = [["smooth", 4900], ["rough", 4500], ["smooth", 2500], ["grotto", 4100], ["whirl", 4000], ["surge", 3600], ["rough", 3800], ["smooth", 2500]];
+  const LAPS = 3;
   const STARTS = []; let LAP_LEN = 0;
   for (const [, len] of LAP) { STARTS.push(LAP_LEN); LAP_LEN += len; }
-  const FINISH = LAP_LEN - 420;
-  const zoneIndex = (s) => { let i = 0; while (i < LAP.length - 1 && s >= STARTS[i + 1]) i++; return i; };
+  const RACE_LEN = LAP_LEN * LAPS;
+  const local = (s) => ((s % LAP_LEN) + LAP_LEN) % LAP_LEN;
+  const lapOf = (s) => clamp(Math.floor(s / LAP_LEN), 0, LAPS - 1);
+  const zoneIndex = (sl) => { let i = 0; while (i < LAP.length - 1 && sl >= STARTS[i + 1]) i++; return i; };
 
   function params(s, out) {
-    s = Math.max(0, s);
-    const i = zoneIndex(s), z = ZONES[LAP[i][0]], pz = i ? ZONES[LAP[i - 1][0]] : z;
-    const t = smooth(clamp((s - STARTS[i]) / 320, 0, 1));
+    const sl = local(s), i = zoneIndex(sl), z = ZONES[LAP[i][0]], pz = ZONES[LAP[(i + LAP.length - 1) % LAP.length][0]];
+    const t = smooth(clamp((sl - STARTS[i]) / 320, 0, 1));
     out.i = i;
-    out.speed = lerp(pz.speed, z.speed, t); out.hw = lerp(pz.hw, z.hw, t);
+    out.current = lerp(pz.current, z.current, t); out.hw = lerp(pz.hw, z.hw, t);
     out.r = lerp(pz.water[0], z.water[0], t); out.g = lerp(pz.water[1], z.water[1], t); out.b = lerp(pz.water[2], z.water[2], t);
     out.rough = lerp(pz.rough, z.rough, t); out.dark = lerp(pz.dark, z.dark, t);
     return out;
   }
   const P0 = {}, P1 = {}, P2 = {};
-  const centerX = (s, hw) => 200 + (200 - hw - 26) * (0.7 * Math.sin(s / 520) + 0.3 * Math.sin(s / 190 + 1));
+  // the river's bends repeat exactly once per lap
+  const centerX = (s, hw) => { const ph = (TAU * local(s)) / LAP_LEN; return 200 + (200 - hw - 26) * (0.7 * Math.sin(10 * ph) + 0.3 * Math.sin(27 * ph + 1)); };
   function riverAt(s) { params(s, P2); return { cx: centerX(s, P2.hw), hw: P2.hw }; }
   const posX = (s, u) => { const q = riverAt(s); return q.cx + u * q.hw; };
 
@@ -61,95 +77,84 @@
   const canvas = $("#river"), ctx = canvas.getContext("2d");
   let dpr = 1, scale = 1, viewH = 800, baseY = 560;
   const G = {
-    running: false, paused: false, attract: true, t: 0, camS: 0, rider: store.get("rider", "reuben"),
-    objs: [], decor: [], overheads: [], waves: [], parts: [], pops: [],
-    riders: [], score: 0, stats: null, zoneI: -1, crew: false, shake: 0, nextWave: 0,
-    finishing: false, finishT: 0, boingCd: 0,
+    running: false, paused: false, t: 0, camS: 0, kid: store.get("kid", "reuben"),
+    objs: [], over: [], decor: [], rafts: [], waves: [], parts: [], pops: [],
+    you: null, dad: null, zoneKey: "", lap: 0, shake: 0, spawnS: 0, nextWave: 0, boingCd: 0,
+    raceT: 0, ending: false, endT: 0, lead: 0, talkCd: 0, idleTalk: 10, dadLine: null, stats: null,
   };
-  if (!RIDERS[G.rider]) G.rider = "reuben";
+  if (!KIDS[G.kid]) G.kid = "reuben";
 
-  function makeRider(key, isPlayer, slot) {
-    return { key, rd: RIDERS[key], isPlayer, x: 200 + slot.dx, py: slot.dy, vx: 0, vy: 0, slot, rot: 0, spinT: 0, liftT: 0,
-      inv: 0, wet: 0, whirlCd: 0, phase: Math.random() * 10, chill: 0, ripple: Math.random() * 2 };
-  }
-  function setupRiders() {
-    const others = ORDER.filter((k) => k !== G.rider);
-    G.riders = [
-      makeRider(G.rider, true, { dx: 0, dy: 0 }),
-      makeRider(others[0], false, { dx: -62, dy: 52 }),
-      makeRider(others[1], false, { dx: 62, dy: 60 }),
-    ];
+  function makeSwimmer(look, isDad, x, s) {
+    return { look, isDad, key: isDad ? "dad" : "you", x, s, vx: 0, vs: 0, slowT: 0, diveT: 0, diveCd: 0, boost: 0, rot: 0, spinT: 0, whirlCd: 0,
+      t: Math.random() * 5, score: 0, happyT: 0, ouchT: 0, target: x, thinkT: 0, distractT: 0, greedy: true, greedT: 3, finishT: null };
   }
 
-  // ---------- building one lap ----------
+  // ---------- building the course ----------
+  let uid = 0;
   function rockShape(r) { const pts = []; for (let k = 0; k < 9; k++) { const a = (k / 9) * TAU; const rr = r * rand(0.78, 1.08); pts.push([Math.cos(a) * rr, Math.sin(a) * rr * 0.85]); } return pts; }
   function add(type, s, u, extra) {
-    const o = Object.assign({ type, s, u, x: posX(s, u), dead: false, seed: Math.random() * 100 }, extra);
+    const o = Object.assign({ id: uid++, type, s, u, x: posX(s, u), dead: false, seed: Math.random() * 100, hit: {} }, extra);
     G.objs.push(o); return o;
   }
-  const VALUE = { shell: 1, star: 3, conch: 10, gem: 5 };
+  function coinLine(s, n) { const u0 = rand(-0.65, 0.65), du = rand(-0.1, 0.1); for (let j = 0; j < n; j++) add("coin", s + j * 30, clamp(u0 + du * j, -0.82, 0.82)); }
+  const lowerBound = (arr, s) => { let a = 0, b = arr.length; while (a < b) { const m = (a + b) >> 1; if (arr[m].s < s) a = m + 1; else b = m; } return a; };
+  function eachObj(lo, hi, fn) { for (let i = lowerBound(G.objs, lo); i < G.objs.length && G.objs[i].s <= hi; i++) fn(G.objs[i]); }
 
-  function buildLap() {
-    G.objs = []; G.decor = []; G.overheads = []; G.waves = [];
-    LAP.forEach(([k, len], i) => {
-      const a = STARTS[i], b = a + len;
-      if (k === "smooth") {
-        for (let s = a + 220; s < b - 120; s += rand(70, 120)) {
-          if (Math.random() < 0.22) { // a curving line of shells
-            const u0 = rand(-0.6, 0.6), du = rand(-0.12, 0.12);
-            for (let j = 0; j < 4; j++) add("shell", s + j * 34, clamp(u0 + du * j, -0.82, 0.82));
-            s += 110;
-          } else add("shell", s, rand(-0.8, 0.8));
+  function buildRace() {
+    G.objs = []; G.over = [];
+    for (let L = 0; L < LAPS; L++) {
+      const base = L * LAP_LEN;
+      LAP.forEach(([k, len], i) => {
+        const a = base + STARTS[i], b = a + len;
+        if (k === "smooth") {
+          for (let s = a + (L === 0 && i === 0 ? 700 : 260); s < b - 150; s += rand(260, 380)) coinLine(s, 4);
+          if (Math.random() < 0.7) add("chest", a + len * rand(0.3, 0.8), rand(-0.6, 0.6));
+          for (let j = 0; j < Math.floor(len / 1400); j++) add(Math.random() < 0.6 ? "turtle" : "ray", a + rand(300, len - 200), rand(-0.6, 0.6));
+          add("fish", a + rand(200, len - 100), rand(-0.6, 0.6));
+        } else if (k === "rough") {
+          for (let s = a + 380; s < b - 200; s += rand(260, 340)) {
+            const n = Math.random() < 0.4 ? 2 : 1, us = [];
+            while (us.length < n) { const u = rand(-0.78, 0.78); if (us.every((v) => Math.abs(v - u) > 0.75)) us.push(u); }
+            us.forEach((u) => { const r = rand(17, 24); add("rock", s + rand(-20, 20), u, { r, pts: rockShape(r) }); });
+            let su = 0, tries = 0;
+            do { su = rand(-0.8, 0.8); tries++; } while (tries < 20 && us.some((v) => Math.abs(v - su) < 0.45));
+            add("coin", s + 120, su); add("coin", s + 150, su);
+          }
+        } else if (k === "grotto") {
+          G.over.push({ type: "cave", s: a + 40 }, { type: "cave", s: b + 150, exit: true });
+          for (let s = a + 480; s < b - 250; s += rand(420, 520)) {
+            const gu = rand(-0.55, 0.55);
+            add("falls", s, 0, { gu, gw: 96 });
+            add("gem", s + 170, rand(-0.7, 0.7), { hue: pick(["#7CF3FF", "#C9A2FF", "#8CFFB4"]) });
+            add("gem", s - 160, gu, { hue: pick(["#7CF3FF", "#C9A2FF", "#8CFFB4"]) });
+          }
+        } else if (k === "whirl") {
+          let side = Math.random() < 0.5 ? -1 : 1;
+          for (let s = a + 450; s < b - 300; s += rand(480, 560)) {
+            const u = side * rand(0.28, 0.46); side = -side;
+            add("whirl", s, u, { r: 62, side });
+            for (let j = 0; j < 5; j++) { const ang = Math.PI + -side * (0.4 + j * 0.35); add("coin", s + Math.sin(ang) * 86, clamp(u + (Math.cos(ang) * 86) / 165, -0.85, 0.85)); }
+          }
+        } else if (k === "surge") {
+          for (let s = a + 300; s < b - 200; s += rand(280, 380)) coinLine(s, 3);
         }
-        for (let s = a + 380; s < b - 150; s += rand(380, 520)) add("star", s, rand(-0.75, 0.75));
-        if (i === 0 || i === LAP.length - 1) add("conch", a + len * rand(0.55, 0.75), rand(-0.7, 0.7));
-        const critters = Math.floor(len / 800) + 1;
-        for (let j = 0; j < critters; j++) add(Math.random() < 0.6 ? "turtle" : "ray", a + rand(300, len - 200), rand(-0.6, 0.6), { swim: rand(28, 42) });
-        for (let j = 0; j < 2; j++) add("fish", a + rand(200, len - 100), rand(-0.6, 0.6), { swim: rand(20, 50) });
-        if (len > 1400) add("ball", a + rand(500, len - 300), rand(-0.5, 0.5), { vx: 0, vs: 0, spin: 0, bumped: false });
-      } else if (k === "rough") {
-        for (let s = a + 260; s < b - 160; s += rand(150, 210)) {
-          const n = Math.random() < 0.45 ? 2 : 1, us = [];
-          while (us.length < n) { const u = rand(-0.8, 0.8); if (us.every((v) => Math.abs(v - u) > 0.7)) us.push(u); }
-          us.forEach((u) => { const r = rand(17, 25); add("rock", s + rand(-20, 20), u, { r, pts: rockShape(r) }); });
-          let su = 0, tries = 0;
-          do { su = rand(-0.8, 0.8); tries++; } while (tries < 20 && us.some((v) => Math.abs(v - su) < 0.45));
-          add("shell", s + 85, su);
-        }
-        add("star", a + len * 0.5, 0);
-      } else if (k === "grotto") {
-        G.overheads.push({ type: "cave", s: a + 40 }, { type: "cave", s: b + 150, exit: true });
-        for (let s = a + 420; s < b - 220; s += rand(340, 420)) {
-          add("falls", s, 0, { gu: rand(-0.55, 0.55), gw: 92, hit: {} });
-          add("gem", s + 150, rand(-0.7, 0.7), { hue: pick(["#7CF3FF", "#C9A2FF", "#8CFFB4"]) });
-          add("gem", s - 140, rand(-0.7, 0.7), { hue: pick(["#7CF3FF", "#C9A2FF", "#8CFFB4"]) });
-        }
-      } else if (k === "whirl") {
-        let side = Math.random() < 0.5 ? -1 : 1;
-        for (let s = a + 420; s < b - 260; s += rand(380, 450)) {
-          const u = side * rand(0.28, 0.48); side = -side;
-          const w = add("whirl", s, u, { r: 64 });
-          if (Math.random() < 0.5) add("star", s, u);
-          for (let j = 0; j < 5; j++) { const ang = Math.PI + side * (0.4 + j * 0.35); add("shell", s + Math.sin(ang) * 88, clamp(u + (Math.cos(ang) * 88) / 165, -0.85, 0.85)); }
-          w.side = side;
-        }
-      } else if (k === "surge") {
-        for (let s = a + 300; s < b - 200; s += rand(110, 170)) add("shell", s, rand(-0.8, 0.8));
-        for (let j = 0; j < 2; j++) add("ball", a + rand(300, len - 300), rand(-0.6, 0.6), { vx: 0, vs: 0, spin: 0, bumped: false });
-        add("star", a + len * rand(0.3, 0.7), rand(-0.6, 0.6));
-      }
-    });
+      });
+      [2400, STARTS[2] + 1250, STARTS[4] + 2000, STARTS[7] + 1250].forEach((ls) => {
+        const heads = []; const n = 3 + Math.floor(Math.random() * 3);
+        for (let j = 0; j < n; j++) heads.push({ u: rand(-0.9, 0.9), c: pick(["#FF6B5B", "#FFD166", "#3BC6A0", "#6C8CFF", "#F58CC8", "#FFFFFF"]), skin: pick(SKINS), p: Math.random() * 6 });
+        G.over.push({ type: "bridge", s: base + ls, heads });
+      });
+      G.over.push({ type: "lapline", s: base + LAP_LEN, n: L + 2 });
+    }
+    G.over.push({ type: "lapline", s: 0, n: 1 });
     G.objs.sort((p, q) => p.s - q.s);
-    // bridges overhead
-    [STARTS[0] + 1500, STARTS[2] + 650, STARTS[4] + 1150, STARTS[7] + 450].forEach((s) => {
-      const heads = []; const n = 3 + Math.floor(Math.random() * 3);
-      for (let j = 0; j < n; j++) heads.push({ u: rand(-0.9, 0.9), c: pick(["#FF6B5B", "#FFD166", "#3BC6A0", "#6C8CFF", "#F58CC8", "#FFFFFF"]), skin: pick(["#F2C29B", "#C98E63", "#8A5A3C", "#F6D5B8"]), p: Math.random() * 6 });
-      G.overheads.push({ type: "bridge", s, heads });
-    });
-    G.overheads.push({ type: "finish", s: FINISH });
-    // bank decoration
+  }
+
+  // bank decoration: one lap's worth, repeated every lap
+  function buildDecor() {
+    G.decor = [];
     for (const side of [-1, 1]) {
-      for (let s = -700; s < LAP_LEN + 900; s += rand(52, 92)) {
+      for (let s = 0; s < LAP_LEN; s += rand(52, 92)) {
         params(s, P1);
         let type;
         if (P1.dark > 0.5) type = pick(["crystal", "crystal", "lantern", "stal", "stal"]);
@@ -162,10 +167,87 @@
     }
     G.decor.sort((p, q) => p.s - q.s);
   }
+  function visibleDecor(m) {
+    const lo = G.camS - (viewH - baseY) - m, hi = G.camS + baseY + m, out = [];
+    for (let L = Math.floor(lo / LAP_LEN); L <= Math.floor(hi / LAP_LEN); L++) {
+      const base = L * LAP_LEN;
+      for (let i = lowerBound(G.decor, lo - base); i < G.decor.length && G.decor[i].s <= hi - base; i++) out.push([G.decor[i], G.decor[i].s + base]);
+    }
+    return out;
+  }
+
+  // ---------- rafters ----------
+  const SKINS = ["#F6D5B8", "#F2C29B", "#E0A878", "#C98E63", "#8A5A3C", "#6B4226"];
+  const HAIRS = ["#2B1B12", "#5A3A22", "#B7793A", "#E8C77A", "#9A9A9A", "#C0462A", "#1B1B1B"];
+  const TUBES = [["#FF8A1F", "#FFFFFF"], ["#22C55E", "#FDE047"], ["#3D7BFF", "#FFFFFF"], ["#F0529C", "#FFFFFF"], ["#FFD23F", "#FF6B5B"], ["#14B8A6", "#E0F7FA"], ["#A855F7", "#FDE68A"]];
+  const SUITS = [["#E23B3B", "#9B1C1C"], ["#2563EB", "#1D3F9E"], ["#F59E0B", "#B45309"], ["#10B981", "#047857"], ["#EC4899", "#9D174D"], ["#111827", "#374151"], ["#FFFFFF", "#CBD5E1"]];
+  function randomPerson() {
+    const [tube, stripe] = pick(TUBES), [suit, suit2] = pick(SUITS);
+    return { tube, stripe, suit, suit2, skin: pick(SKINS), hair: pick(HAIRS), style: pick(["short", "short", "curly", "pigtails", "bald"]), trunks: Math.random() < 0.5 };
+  }
+  const LOOT = [
+    { k: "shades", n: "sunglasses", v: 8 }, { k: "hat", n: "sun hat", v: 8 }, { k: "flop", n: "flip-flop", v: 5 },
+    { k: "juice", n: "juice box", v: 6 }, { k: "snack", n: "snacks", v: 6 }, { k: "duck", n: "rubber duck", v: 10 },
+    { k: "ball", n: "beach ball", v: 7 }, { k: "gold", n: "golden duck", v: 25 },
+  ];
+  const randomLoot = () => (Math.random() < 0.05 ? LOOT[7] : pick(LOOT.slice(0, 7)));
+  function spawnRaft(s, u, dbl) {
+    const q = riverAt(s);
+    G.rafts.push({ s, x: q.cx + u * q.hw, dbl, drift: rand(72, 88), people: dbl ? [randomPerson(), randomPerson()] : [randomPerson()], rot: 0, vx: 0,
+      loot: Math.random() < 0.32 ? randomLoot() : null, lootSide: Math.random() < 0.5 ? -1 : 1, bumpCd: {}, reactT: 0, mood: "wow",
+      calm: Math.random() < 0.5 ? "chill" : "happy", seed: Math.random() * 100 });
+  }
+  function spawnRow(s) {
+    params(s, P1);
+    const z = ZONES[LAP[P1.i][0]], n = Math.random() < z.two ? 2 : 1, us = [];
+    let tries = 0;
+    while (us.length < n && tries++ < 20) { const u = rand(-0.72, 0.72); if (us.every((v) => Math.abs(v - u) > 0.8)) us.push(u); }
+    for (const u of us) {
+      const x = posX(s, u);
+      let bad = false;
+      eachObj(s - 160, s + 160, (o) => { if ((o.type === "whirl" || o.type === "rock") && Math.abs(o.x - x) < (o.r || 30) + 55) bad = true; });
+      if (!bad) spawnRaft(s + rand(-30, 30), u, Math.random() < 0.35 && P1.hw > 130);
+    }
+    return rand(z.every[0], z.every[1]);
+  }
+  function spawnAhead() {
+    const front = Math.min(G.you.s + 1500, RACE_LEN - 250);
+    while (G.spawnS < front) G.spawnS += spawnRow(G.spawnS);
+    G.rafts = G.rafts.filter((r) => r.s > G.you.s - 1200);
+  }
+  function tubes(r) {
+    const y = objY(r.s);
+    if (!r.dbl) return [[r.x, y]];
+    const c = Math.cos(r.rot) * 26, s = Math.sin(r.rot) * 26;
+    return [[r.x - c, y - s], [r.x + c, y + s]];
+  }
+  const lootPos = (r) => [r.x + r.lootSide * (r.dbl ? 60 : 33), objY(r.s) + 4];
+
+  function updateRafts(dt) {
+    for (const r of G.rafts) {
+      params(r.s, P1);
+      r.s += r.drift * FAST * dt;
+      const half = r.dbl ? 52 : 26;
+      r.vx += (P1.rough * 120 * Math.sin(G.t * 1.1 + r.seed) + Math.sin(G.t * 0.3 + r.seed) * 10) * dt;
+      r.vx *= 1 - 1.5 * dt; r.x += r.vx * dt;
+      const cx = centerX(r.s, P1.hw), lo = cx - P1.hw + half, hi = cx + P1.hw - half;
+      if (r.x < lo) { r.x = lo; r.vx = Math.abs(r.vx) * 0.5; }
+      if (r.x > hi) { r.x = hi; r.vx = -Math.abs(r.vx) * 0.5; }
+      r.rot = Math.sin(G.t * (0.3 + P1.rough * 0.9) + r.seed) * (r.dbl ? 0.3 : 0.5);
+      r.reactT = Math.max(0, r.reactT - dt);
+    }
+    // rafts nudge each other apart instead of overlapping
+    for (let i = 0; i < G.rafts.length; i++) for (let j = i + 1; j < G.rafts.length; j++) {
+      const a = G.rafts[i], b = G.rafts[j], ds = b.s - a.s;
+      if (ds > 60 || ds < -60) continue;
+      const dx = b.x - a.x, min = (a.dbl ? 52 : 26) + (b.dbl ? 52 : 26);
+      if (Math.abs(dx) < min && Math.abs(ds) < 50) { const push = (dx < 0 ? -1 : 1) * 40 * dt; a.x -= push; b.x += push; }
+    }
+  }
 
   // ---------- sound ----------
   const Snd = (() => {
-    let ac = null, master, noiseBuf, ambF, ambG, musicG, muted = store.get("muted", false), next = 0, step = 0, tempo = 100, mode = "smooth", timer = 0;
+    let ac = null, master, noiseBuf, ambF, ambG, musicG, muted = store.get("muted", false), next = 0, step = 0, tempo = 100, mode = "smooth";
     function init() {
       if (ac) return;
       try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch { ac = null; return; }
@@ -178,7 +260,7 @@
       amb.connect(ambF).connect(ambG).connect(master); amb.start();
       musicG = ac.createGain(); musicG.gain.value = 0.2; musicG.connect(master);
       next = ac.currentTime + 0.1;
-      timer = setInterval(sched, 30);
+      setInterval(sched, 30);
     }
     function resume() { if (ac && ac.state === "suspended") ac.resume(); }
     function tone(f, t0, dur, type, vol, dest, f2) {
@@ -195,10 +277,11 @@
     }
     // steel pan: a sine with bright, fast-fading partials
     function pan(f, t0, vol) { tone(f, t0, 0.65, "sine", vol, musicG); tone(f * 2, t0, 0.3, "sine", vol * 0.35, musicG); tone(f * 3.01, t0, 0.14, "sine", vol * 0.12, musicG); }
-    const CH = [[261.63, 329.63, 392.0], [349.23, 440.0, 523.25], [392.0, 493.88, 587.33], [261.63, 329.63, 392.0]];
-    const BASS = [130.81, 174.61, 196.0, 130.81];
+    // a minor-key shanty: Am F G Am
+    const CH = [[220, 261.63, 329.63], [174.61, 220, 261.63], [196, 246.94, 293.66], [220, 261.63, 329.63]];
+    const BASS = [110, 87.31, 98, 110];
     const RHY = [1, 0, 1, 1, 0, 1, 1, 0];
-    const TEMPO = { smooth: 100, rough: 132, grotto: 84, whirl: 104, surge: 114 };
+    const TEMPO = { smooth: 108, rough: 138, grotto: 88, whirl: 112, surge: 120 };
     function sched() {
       if (!ac || !G.running || G.paused) { if (ac) next = Math.max(next, ac.currentTime + 0.05); return; }
       while (next < ac.currentTime + 0.12) { play(step, next); next += 60 / tempo / 2; step = (step + 1) % 32; }
@@ -230,20 +313,25 @@
     return {
       init, resume, setMode, setMuted, get muted() { return muted; },
       quiet(q) { if (ambG && ac) ambG.gain.setTargetAtTime(q ? 0.0001 : 0.05, ac.currentTime, 0.2); },
-      bling: guard((big) => { const t = now(); tone(big ? 988 : 1319, t, 0.12, "sine", 0.22); tone(big ? 1319 : 1760, t + 0.06, big ? 0.35 : 0.16, "sine", 0.2); if (big) tone(1976, t + 0.14, 0.4, "sine", 0.16); }),
+      coin: guard(() => { const t = now(); tone(1319, t, 0.1, "square", 0.05); tone(1760, t + 0.05, 0.16, "square", 0.05); }),
+      plunder: guard((big) => { const t = now(); [784, 988, 1175, 1568].forEach((f, i) => tone(f, t + i * 0.05, 0.18, "sine", 0.2)); if (big) [1319, 1760, 2093].forEach((f, i) => tone(f, t + 0.22 + i * 0.07, 0.25, "sine", 0.16)); }),
+      treasure: guard(() => { const t = now(); [523, 659, 784, 1047, 1319].forEach((f, i) => pan(f, t + i * 0.07, 0.4)); }),
       bonk: guard(() => { const t = now(); tone(220, t, 0.25, "sine", 0.5, null, 70); noise(t, 0.2, "lowpass", 900, 0.3); }),
-      splash: guard((big) => { const t = now(); noise(t, big ? 0.9 : 0.45, "bandpass", 1200, big ? 0.5 : 0.25, 400, 0.8); noise(t + 0.05, 0.6, "highpass", 3000, 0.12); }),
+      splash: guard(() => { const t = now(); noise(t, 0.8, "bandpass", 1200, 0.45, 400, 0.8); noise(t + 0.05, 0.6, "highpass", 3000, 0.12); }),
+      dive: guard(() => { const t = now(); tone(600, t, 0.3, "sine", 0.25, null, 180); noise(t, 0.4, "lowpass", 1400, 0.2, 300, 1); [0.15, 0.3, 0.42].forEach((d) => tone(rand(900, 1400), t + d, 0.06, "sine", 0.08, null, 2000)); }),
       whoosh: guard(() => { const t = now(); noise(t, 0.9, "bandpass", 300, 0.4, 2200, 3); tone(500, t, 0.8, "sine", 0.12, null, 150); }),
       boing: guard(() => { const t = now(); tone(260, t, 0.22, "sine", 0.25, null, 520); }),
       wave: guard(() => { const t = now(); noise(t, 0.8, "lowpass", 400, 0.35, 1600, 1); tone(392, t + 0.1, 0.18, "sine", 0.18, null, 784); }),
       hi: guard(() => { const t = now(); tone(880, t, 0.1, "sine", 0.18, null, 1320); tone(1320, t + 0.09, 0.14, "sine", 0.15, null, 990); }),
-      zone: guard((rough) => { const t = now(); if (rough) { [196, 185, 175].forEach((f, i) => tone(f, t + i * 0.12, 0.3, "sawtooth", 0.06)); noise(t, 1.2, "lowpass", 300, 0.3, 1800, 1); } else [523, 659, 784].forEach((f, i) => pan(f, t + i * 0.09, 0.4)); }),
-      fanfare: guard(() => { const t = now(); [523, 659, 784, 1047, 784, 1047].forEach((f, i) => pan(f, t + i * 0.13, 0.5)); }),
+      zone: guard((rough) => { const t = now(); if (rough) { [196, 185, 175].forEach((f, i) => tone(f, t + i * 0.12, 0.3, "sawtooth", 0.06)); noise(t, 1.2, "lowpass", 300, 0.3, 1800, 1); } else [440, 523, 659].forEach((f, i) => pan(f, t + i * 0.09, 0.4)); }),
+      bell: guard(() => { const t = now(); [0, 0.35].forEach((d) => { tone(1568, t + d, 0.9, "sine", 0.25); tone(2352, t + d, 0.5, "sine", 0.08); }); }),
+      win: guard(() => { const t = now(); [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => pan(f, t + i * 0.13, 0.5)); }),
+      lose: guard(() => { const t = now(); [392, 370, 349, 330].forEach((f, i) => tone(f, t + i * 0.28, i === 3 ? 0.8 : 0.3, "triangle", 0.25, null, i === 3 ? 300 : 0)); }),
     };
   })();
 
   // ---------- input ----------
-  const input = { active: false, x: 200, left: false, right: false, idle: 0 };
+  const input = { active: false, x: 200, left: false, right: false };
   function pointerX(e) { const r = canvas.getBoundingClientRect(); return ((e.clientX - r.left) / r.width) * W; }
   canvas.addEventListener("pointerdown", (e) => { input.active = true; input.x = pointerX(e); try { canvas.setPointerCapture(e.pointerId); } catch {} });
   canvas.addEventListener("pointermove", (e) => { if (input.active || e.pointerType === "mouse") { input.x = pointerX(e); if (e.pointerType === "mouse") input.active = true; } });
@@ -254,240 +342,299 @@
   addEventListener("keydown", (e) => {
     if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") { input.left = true; e.preventDefault(); }
     if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") { input.right = true; e.preventDefault(); }
+    if ((e.key === " " || e.key === "ArrowUp") && G.running && !G.paused) { startDive(G.you); e.preventDefault(); }
     if ((e.key === "p" || e.key === "P" || e.key === "Escape") && G.running) setPaused(!G.paused);
   });
   addEventListener("keyup", (e) => {
     if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") input.left = false;
     if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") input.right = false;
   });
+  $("#diveBtn").addEventListener("pointerdown", (e) => { e.preventDefault(); if (G.running && !G.paused) startDive(G.you); });
 
   // ---------- effects ----------
   function pop(text, x, y, color = "#fff", size = 18) { G.pops.push({ text, x, y, color, size, t: 0 }); }
   function burst(x, y, n, color, speed = 120, kind = "drop") {
     for (let i = 0; i < n; i++) { const a = rand(0, TAU), v = rand(0.3, 1) * speed; G.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - speed * 0.3, life: rand(0.5, 0.9), t: 0, r: rand(1.5, 3.5), color, kind, rot: rand(0, TAU) }); }
   }
-  const riderS = (r) => G.camS - r.py;
-  const riderY = (r) => baseY + r.py;
   const objY = (s) => baseY - (s - G.camS);
-
-  function addScore(n, x, y, label) {
-    const mult = G.crew ? 2 : 1, v = n * mult;
-    G.score += v;
-    pop(`${label ? label + " " : ""}+${v}`, x, y, mult > 1 ? "#FFD166" : "#FFFFFF", v >= 10 ? 24 : 18);
-    const el = $("#score"); el.textContent = G.score; el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump");
+  const onScreen = (sw) => Math.abs(sw.s - G.you.s) < 950;
+  function bumpScore() { const el = $("#score"); el.textContent = G.you.score; el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+  function gain(sw, v, x, y, label, color = "#FFFFFF", size = 18) {
+    sw.score += v;
+    if (!sw.isDad) { pop(`${label ? label + " " : ""}+${v}`, x, y, color, size); bumpScore(); }
+  }
+  function dadSay(text, force) {
+    if (!force && G.talkCd > 0) return;
+    G.dadLine = { text: Array.isArray(text) ? pick(text) : text, t: 0 }; G.talkCd = 4.5;
   }
 
-  // ---------- update ----------
-  function riverForces(r, dt, isPlayer) {
-    const s = riderS(r);
-    params(s, P1);
-    if (P1.rough > 0) {
-      r.vx += P1.rough * 190 * Math.sin(G.t * 1.25 + s / 230 + r.phase) * dt;
-      r.vy += P1.rough * 70 * Math.sin(G.t * 2.1 + r.phase * 2) * dt;
-      if (Math.random() < P1.rough * dt * 1.2) r.vx += rand(-90, 90);
+  // ---------- swimming ----------
+  function startDive(sw) {
+    if (!sw || sw.diveCd > 0 || sw.diveT > 0) return;
+    sw.diveT = 1.1; sw.diveCd = 4.2;
+    if (!sw.isDad) Snd.dive();
+    if (onScreen(sw)) burst(sw.x, objY(sw.s), 10, "#FFFFFF", 110);
+  }
+  function dadSwim() { const gap = G.dad.s - G.you.s; return 94 - clamp(gap / 30, -20, 24); }
+
+  function dadThink(d, dt) {
+    d.thinkT -= dt; d.distractT -= dt; d.greedT -= dt;
+    if (d.greedT <= 0) { d.greedy = Math.random() < 0.65; d.greedT = rand(3, 7); }
+    if (d.thinkT > 0) return;
+    d.thinkT = 0.18;
+    if (d.distractT > 0) return;
+    if (Math.random() < 0.03) { d.distractT = rand(0.5, 1.1); return; }   // even captains daydream
+    params(d.s + 120, P1);
+    const cx = centerX(d.s + 120, P1.hw), hw = P1.hw - 20;
+    let best = d.target, bestCost = Infinity;
+    for (let k = 0; k <= 10; k++) {
+      const x = cx - hw + (2 * hw * k) / 10;
+      let cost = Math.abs(x - d.x) * 0.12 - (Math.abs(x - d.target) < 20 ? 8 : 0);
+      for (const r of G.rafts) {
+        const ahead = r.s - d.s;
+        if (ahead < -30 || ahead > 300) continue;
+        const w = 1 - ahead / 450;
+        const pts = r.dbl ? [r.x - 26 * Math.cos(r.rot), r.x + 26 * Math.cos(r.rot)] : [r.x];
+        for (const px of pts) { const dx = Math.abs(px - x); if (dx < 46) cost += (46 - dx) * 3 * w; }
+        if (r.loot && d.greedy && Math.abs(r.x + r.lootSide * (r.dbl ? 60 : 33) - x) < 14) cost -= 45 * w;
+      }
+      eachObj(d.s - 20, d.s + 320, (o) => {
+        const dx = Math.abs(o.x - x);
+        if (o.type === "rock" && dx < o.r + 26) cost += 120;
+        else if (o.type === "whirl" && dx < o.r * 1.2) cost += 160;
+        else if (o.type === "falls" && !o.hit.dad && Math.abs(posX(o.s, o.gu) - x) > o.gw / 2 - 12) cost += 80;
+        else if ((o.type === "coin" || o.type === "gem" || o.type === "chest") && !o.dead && dx < 14) cost -= o.type === "chest" ? 30 : 6;
+      });
+      if (cost < bestCost) { bestCost = cost; best = x; }
     }
-    for (const o of G.objs) {
-      if (o.type !== "whirl" || Math.abs(o.s - s) > o.r * 1.9) continue;
-      const dx = o.x - r.x, dy = G.camS - o.s - r.py, d = Math.hypot(dx, dy) || 1, reach = o.r * 1.75;
-      if (d > reach) continue;
-      const f = 1 - d / reach, pull = (isPlayer ? 330 : 240) * f, swirl = 260 * f;
-      r.vx += (dx / d * pull - dy / d * swirl) * dt;
-      r.vy += (dy / d * pull + dx / d * swirl) * dt;
-      if (d < 16 && r.whirlCd <= 0) spinOut(r, o);
+    d.target = best;
+    if (d.diveCd <= 0) for (const r of G.rafts) {
+      const ahead = r.s - d.s;
+      if (ahead > 10 && ahead < 70 && Math.abs(r.x - d.x) < (r.dbl ? 60 : 34) && Math.random() < 0.5) { startDive(d); break; }
     }
-    // stay inside the river walls
-    const cx = centerX(s, P1.hw), lo = cx - P1.hw + R - 3, hi = cx + P1.hw - R + 3;
-    if (r.x < lo) { r.x = lo; r.vx = Math.abs(r.vx) * 0.4 + 20; }
-    if (r.x > hi) { r.x = hi; r.vx = -Math.abs(r.vx) * 0.4 - 20; }
-    return P1.rough;
   }
 
-  function spinOut(r, o) {
-    r.whirlCd = 2.2; r.spinT = 1.3;
-    const a = rand(0, TAU); r.vx = Math.cos(a) * 60 + (r.x < o.x ? -260 : 260); r.vy = Math.sin(a) * 120;
-    Snd.whoosh();
-    if (r.isPlayer) {
-      G.stats.spins++;
-      const lost = Math.min(2, G.score); G.score -= lost; $("#score").textContent = G.score;
-      pop(lost ? `Spun out! −${lost}` : "Spun out!", r.x, riderY(r) - 40, "#E4DBFF", 20);
-      for (let i = 0; i < lost; i++) burst(r.x, riderY(r), 1, "#FFC3B1", 180, "shell");
-    } else pop(`${r.rd.name}: Wheee-oh!`, r.x, riderY(r) - 36, "#E4DBFF", 14);
-  }
-
-  function bonk(r, o) {
-    r.inv = 1.1; r.spinT = Math.max(r.spinT, 0.45);
-    const dx = r.x - o.x, dy = r.py - (G.camS - o.s), d = Math.hypot(dx, dy) || 1;
-    r.vx = (dx / d) * 260; r.vy = (dy / d) * 160 + 60;
-    Snd.bonk(); burst((r.x + o.x) / 2, (riderY(r) + objY(o.s)) / 2, 12, "#FFFFFF", 150);
-    if (r.isPlayer) {
-      G.stats.bonks++; G.shake = 0.5;
-      const lost = Math.min(3, G.score); G.score -= lost; $("#score").textContent = G.score;
-      pop(lost ? `Bonk! −${lost}` : "Bonk!", r.x, riderY(r) - 42, "#FFB4A8", 22);
-      for (let i = 0; i < lost; i++) burst(r.x, riderY(r), 1, "#FFC3B1", 200, "shell");
-    } else pop(`${r.rd.name}: Oof!`, r.x, riderY(r) - 36, "#FFFFFF", 14);
-  }
-
-  function lift(r) {
-    r.liftT = 0.9;
-    if (r.isPlayer) { G.stats.waves++; Snd.wave(); addScore(2, r.x, riderY(r) - 44, "Wheee!"); }
-    burst(r.x, riderY(r) + 10, 8, "#FFFFFF", 110);
-  }
-
-  function updateRider(r, dt) {
-    const p = G.riders[0];
-    r.inv = Math.max(0, r.inv - dt); r.wet = Math.max(0, r.wet - dt); r.whirlCd = Math.max(0, r.whirlCd - dt);
-    r.liftT = Math.max(0, r.liftT - dt); r.ripple += dt;
-    if (r.isPlayer) {
+  function updateSwimmer(sw, dt) {
+    sw.t += dt;
+    for (const k of ["slowT", "diveT", "diveCd", "spinT", "whirlCd", "happyT", "ouchT"]) sw[k] = Math.max(0, sw[k] - dt);
+    sw.boost *= 1 - 1.4 * dt;
+    params(sw.s, P1);
+    const full = !sw.isDad || onScreen(sw);
+    if (!sw.isDad) {
       let desired = 0, active = false;
       if (input.left || input.right) { desired = (input.right - input.left) * 240; active = true; }
-      else if (input.active) { desired = clamp((input.x - r.x) * 5, -320, 320); active = true; }
-      const acc = active ? (desired - r.vx) * 6 : -r.vx * 1.4;
-      r.vx += acc * dt;
-      r.vy += (-r.py * 3 - r.vy * 2) * dt;
-      input.idle = active && Math.abs(desired) > 30 ? 0 : input.idle + dt;
+      else if (input.active) { desired = clamp((input.x - sw.x) * 5, -320, 320); active = true; }
+      sw.vx += (active ? (desired - sw.vx) * 7 : -sw.vx * 2) * dt;
+    } else if (full) {
+      dadThink(sw, dt);
+      sw.vx += (clamp((sw.target - sw.x) * 4.5, -250, 250) - sw.vx) * 6 * dt;
     } else {
-      let tx = p.x + r.slot.dx;
-      const s = riderS(r);
-      for (const o of G.objs) {
-        if (o.s < s || o.s > s + 180) continue;
-        if (o.type === "rock" && Math.abs(o.x - r.x) < o.r + R + 20) tx = r.x + (r.x < o.x ? -90 : 90);
-        if (o.type === "whirl" && Math.abs(o.x - r.x) < o.r + 10) tx = r.x + (r.x < o.x ? -110 : 110);
-        if (o.type === "falls" && o.s < s + 160 && hash(o.seed + r.phase) > 0.45) tx = posX(o.s, o.gu);
-      }
-      params(s, P1);
-      const grip = 1 - 0.65 * P1.rough;
-      r.vx += (clamp((tx - r.x) * 2.2, -170, 170) - r.vx) * 2.4 * grip * dt;
-      r.vy += ((r.slot.dy - r.py) * 2.2 - r.vy * 1.6) * dt;
+      // far away: Dad swims on without the details
+      sw.vx = (centerX(sw.s, P1.hw) - sw.x) * 2;
+      if (Math.random() < dt * FAST * 0.1) sw.score += pick([5, 6, 7, 8, 10]);
+      if (Math.random() < dt * FAST * 0.06) sw.slowT = 0.6;
     }
-    const rough = riverForces(r, dt, r.isPlayer);
-    r.x += r.vx * dt; r.py += r.vy * dt;
-    r.py = clamp(r.py, -baseY + 70, viewH - baseY - 40);
-    // wobble and spin
-    if (r.spinT > 0) { r.spinT -= dt; r.rot += 13 * dt; if (r.spinT <= 0) r.rot = ((r.rot % TAU) + TAU) % TAU; }
-    else {
-      let target = Math.sin(G.t * 0.8 + r.phase) * 0.12 + rough * Math.sin(G.t * 3 + r.phase) * 0.25 + r.vx * 0.0009;
-      let diff = ((target - r.rot + Math.PI) % TAU + TAU) % TAU - Math.PI;
-      r.rot += diff * Math.min(1, 4 * dt);
+    if (full && P1.rough > 0) {
+      sw.vx += P1.rough * 150 * Math.sin(G.t * 1.25 + sw.s / 230 + (sw.isDad ? 2 : 0)) * dt;
+      if (Math.random() < P1.rough * dt) sw.vx += rand(-80, 80);
     }
+    if (full) eachObj(sw.s - 150, sw.s + 150, (o) => {
+      if (o.type !== "whirl") return;
+      const dx = o.x - sw.x, dy = sw.s - o.s, d = Math.hypot(dx, dy) || 1, reach = o.r * 1.8;
+      if (d > reach) return;
+      const f = 1 - d / reach, pull = 300 * f, swirl = 240 * f * o.side;
+      sw.vx += (dx / d * pull - dy / d * swirl) * dt;
+      sw.vs -= (dy / d * pull + dx / d * swirl) * dt;
+      if (d < 16 && sw.whirlCd <= 0) spinOut(sw, o);
+    });
+    const swim = (sw.isDad ? dadSwim() : 95) * (sw.slowT > 0 ? 0.3 : 1) * (sw.diveT > 0 ? 1.6 : 1);
+    sw.vs *= 1 - 2 * dt;
+    const done = sw.finishT != null ? 0.35 : 1;
+    sw.s += (P1.current + (swim + sw.boost) * done + sw.vs) * FAST * dt;
+    sw.x += sw.vx * dt;
+    const cx = centerX(sw.s, P1.hw), lo = cx - P1.hw + SR + 6, hi = cx + P1.hw - SR - 6;
+    if (sw.x < lo) { sw.x = lo; sw.vx = Math.abs(sw.vx) * 0.3; }
+    if (sw.x > hi) { sw.x = hi; sw.vx = -Math.abs(sw.vx) * 0.3; }
+    if (sw.spinT > 0) sw.rot += 12 * dt;
+    else { const diff = ((clamp(sw.vx * 0.0018, -0.4, 0.4) - sw.rot + Math.PI) % TAU + TAU) % TAU - Math.PI; sw.rot += diff * Math.min(1, 6 * dt); }
+    if (full) collideSwimmer(sw);
   }
 
-  function tubeBumps() {
-    const rs = G.riders;
-    for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) {
-      const a = rs[i], b = rs[j], dx = b.x - a.x, dy = b.py - a.py, d = Math.hypot(dx, dy) || 1, min = R * 2 - 2;
-      if (d >= min) continue;
-      const nx = dx / d, ny = dy / d, push = (min - d) / 2;
-      a.x -= nx * push; a.py -= ny * push; b.x += nx * push; b.py += ny * push;
-      const rel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
-      if (rel < 0) {
-        const imp = -rel * 0.9;
-        a.vx -= nx * imp; a.vy -= ny * imp; b.vx += nx * imp; b.vy += ny * imp;
-        if (imp > 50 && G.boingCd <= 0) { Snd.boing(); G.boingCd = 0.3; burst(a.x + nx * R, riderY(a) + ny * R, 5, "#FFFFFF", 70); }
-      }
-    }
+  function spinOut(sw, o) {
+    sw.whirlCd = 2.2; sw.spinT = 1.1; sw.slowT = 0.9;
+    sw.vx = sw.x < o.x ? -260 : 260; sw.vs = -60;
+    if (!sw.isDad) { Snd.whoosh(); G.stats.spins++; pop("Whoa! Spun out!", sw.x, objY(sw.s) - 44, "#E4DBFF", 20); }
+    else dadSay("Whoooa! Arr, me head!", true);
   }
 
-  function collide(r, dt) {
-    const s = riderS(r), y = riderY(r);
-    for (const o of G.objs) {
-      if (o.dead) continue;
-      const ds = o.s - s;
+  function collideSwimmer(sw) {
+    const key = sw.key, y = objY(sw.s), diving = sw.diveT > 0;
+    for (const r of G.rafts) {
+      if (Math.abs(r.s - sw.s) > 95) continue;
+      if (r.loot) {
+        const [lx, ly] = lootPos(r);
+        let got = Math.hypot(lx - sw.x, ly - y) < 24, sneak = false;
+        if (diving && Math.hypot(lx - sw.x, ly - y) < 34) { got = true; sneak = true; }
+        if (got) plunder(sw, r, sneak, lx, ly);
+      }
+      if (diving) continue;
+      for (const [tx, ty] of tubes(r)) {
+        const dx = sw.x - tx, dy = objY(sw.s) - ty, d = Math.hypot(dx, dy) || 1, min = R + SR - 3;
+        if (d >= min) continue;
+        // no swimming through tubes: slide back out to the edge
+        sw.x = tx + (dx / d) * min; sw.s -= (ty + (dy / d) * min) - objY(sw.s);
+        if (!((r.bumpCd[key] || 0) > G.t)) bumpRaft(sw, r, dx / d, dy / d);
+      }
+    }
+    eachObj(sw.s - 110, sw.s + 110, (o) => {
+      if (o.dead) return;
       if (o.type === "falls") {
-        if (!o.hit[r.key] && ds <= 0) {
-          o.hit[r.key] = true;
-          const gx = posX(o.s, o.gu), dry = Math.abs(r.x - gx) < o.gw / 2 - 6;
-          if (dry) { if (r.isPlayer) addScore(3, r.x, y - 44, "Stayed dry!"); }
+        if (!o.hit[key] && sw.s >= o.s) {
+          o.hit[key] = true;
+          const gx = posX(o.s, o.gu);
+          if (diving || Math.abs(sw.x - gx) < o.gw / 2 - 6) { if (!sw.isDad) pop(diving ? "Dove through!" : "Through the gap!", sw.x, y - 44, "#BFF6FF", 16); }
           else {
-            r.wet = 2.4; Snd.splash(r.isPlayer); burst(r.x, y - 10, r.isPlayer ? 26 : 14, "#DDF8FF", 170);
-            if (r.isPlayer) { G.stats.soaks++; pop("SPLASH! Soaked!", r.x, y - 46, "#BFF6FF", 22); G.shake = 0.25; }
-            else pop(`${r.rd.name} got soaked!`, r.x, y - 38, "#BFF6FF", 14);
+            sw.slowT = 0.8; burst(sw.x, y - 10, 20, "#DDF8FF", 170);
+            if (!sw.isDad) { Snd.splash(); G.stats.splashes++; pop("SPLASH!", sw.x, y - 46, "#BFF6FF", 24); G.shake = 0.25; }
+            else dadSay("Blimey, that's cold!", true);
           }
         }
-        continue;
+        return;
       }
-      if (ds > 120 || ds < -120) continue;
-      const dx = o.x - r.x, dy = objY(o.s) - y, d = Math.hypot(dx, dy);
-      if (o.type === "rock") { if (d < R + o.r - 5 && r.inv <= 0) bonk(r, o); continue; }
-      if (o.type === "ball") {
-        if (d < R + 14) {
-          const nx = dx / (d || 1), ny = dy / (d || 1);
-          o.vx = nx * 220 + r.vx * 0.5; o.vs = -ny * 220; o.spin = rand(-8, 8);
-          if (G.boingCd <= 0) { Snd.boing(); G.boingCd = 0.25; }
-          if (r.isPlayer && !o.bumped) { o.bumped = true; addScore(1, o.x, objY(o.s) - 24, "Boing!"); }
+      const dx = o.x - sw.x, dy = objY(o.s) - y, d = Math.hypot(dx, dy);
+      if (o.type === "rock") {
+        if (d < SR + o.r - 2 && !(o.hit[key] > G.t)) {
+          o.hit[key] = G.t + 1; sw.slowT = 0.8; sw.vx = -dx / (d || 1) * 220; sw.vs = -40;
+          burst(sw.x, y, 10, "#FFFFFF", 140);
+          if (!sw.isDad) { Snd.bonk(); G.stats.bumps++; sw.ouchT = 0.8; G.shake = 0.4; pop("Bonk!", sw.x, y - 42, "#FFB4A8", 22); }
+          else dadSay(DAD_LINES.bump, true);
         }
-        continue;
+        return;
       }
-      if (!r.isPlayer) continue;
-      if (VALUE[o.type] && d < R + 16) {
-        o.dead = true;
-        const v = VALUE[o.type];
-        if (o.type === "shell") G.stats.shells++;
-        if (o.type === "gem") G.stats.gems++;
-        addScore(v, o.x, objY(o.s) - 20, o.type === "conch" ? "Golden conch!" : o.type === "star" ? "Starfish!" : o.type === "gem" ? "Gem!" : "");
-        Snd.bling(v >= 3);
-        burst(o.x, objY(o.s), v >= 3 ? 14 : 6, o.type === "gem" ? o.hue : "#FFF3C4", 110, "spark");
+      if (o.type === "coin" || o.type === "gem" || o.type === "chest") {
+        if (d < SR + (o.type === "chest" ? 20 : 13)) {
+          o.dead = true;
+          const v = o.type === "chest" ? 20 : o.type === "gem" ? 3 : 1;
+          gain(sw, v, o.x, objY(o.s) - 20, o.type === "chest" ? "Treasure chest!" : "", o.type === "chest" ? "#FFD166" : "#FFF3C4", o.type === "chest" ? 24 : 16);
+          if (!sw.isDad) { G.stats.coins += v; o.type === "chest" ? Snd.treasure() : Snd.coin(); }
+          else if (o.type === "chest") dadSay("A treasure chest! Arrr!", true);
+          burst(o.x, objY(o.s), o.type === "coin" ? 5 : 16, o.type === "gem" ? o.hue : "#FFE27A", 110, "spark");
+        }
+        return;
       }
-      if ((o.type === "turtle" || o.type === "ray") && !o.greeted && d < 80) {
-        o.greeted = true; G.stats.critters++; Snd.hi();
-        addScore(2, o.x, objY(o.s) - 26, o.type === "turtle" ? "Hi, turtle!" : "Hi, stingray!");
+      if ((o.type === "turtle" || o.type === "ray") && !sw.isDad && !o.greeted && d < 80) {
+        o.greeted = true; Snd.hi();
+        gain(sw, 2, o.x, objY(o.s) - 26, o.type === "turtle" ? "Ahoy, turtle!" : "Ahoy, stingray!");
       }
-    }
+    });
   }
 
-  function updateObjs(dt, speed) {
-    for (const o of G.objs) {
-      if (o.dead || Math.abs(o.s - G.camS) > 1200) continue;
-      if (o.type === "turtle" || o.type === "ray" || o.type === "fish") {
-        o.s += o.swim * dt; o.u = clamp(o.u + Math.sin(G.t * 0.4 + o.seed) * 0.05 * dt, -0.75, 0.75); o.x = posX(o.s, o.u);
-      } else if (o.type === "ball") {
-        o.s += (speed * 0.55 + o.vs) * dt;
-        const q = riverAt(o.s); o.x += o.vx * dt;
-        const lo = q.cx - q.hw + 14, hi = q.cx + q.hw - 14;
-        if (o.x < lo) { o.x = lo; o.vx = Math.abs(o.vx) * 0.6; } if (o.x > hi) { o.x = hi; o.vx = -Math.abs(o.vx) * 0.6; }
-        o.vx *= 1 - 1.2 * dt; o.vs *= 1 - 1.2 * dt; o.spin *= 1 - 0.8 * dt; o.rot = (o.rot || 0) + o.spin * dt;
-      }
-    }
+  function plunder(sw, r, sneak, lx, ly) {
+    const loot = r.loot, v = loot.v * (sneak ? 2 : 1);
+    r.loot = null; r.reactT = 2.2; r.mood = "wow";
+    const who = sw.isDad ? "Dad" : "pirate";
+    pop(pick([`Hey! My ${loot.n}!`, `My ${loot.n}!`, `Hey, ${who}!`, "Come back here!", "Not again!"]), r.x, objY(r.s) - 42, "#FFFFFF", 13);
+    burst(lx, ly, 14, "#FFE27A", 130, "spark");
+    if (!sw.isDad) {
+      G.stats.loot++; if (sneak) G.stats.sneaks++; sw.happyT = 1.2;
+      gain(sw, v, lx, ly - 22, sneak ? "Sneak plunder!" : "Arrr!", "#FFD166", v >= 15 ? 24 : 20);
+      Snd.plunder(sneak || v >= 15);
+    } else { gain(sw, v); if (onScreen(sw)) dadSay(DAD_LINES.plunder); }
   }
 
+  function bumpRaft(sw, r, nx, ny) {
+    r.bumpCd[sw.key] = G.t + 1; r.reactT = 1.5; r.mood = "ouch"; r.vx -= nx * 70;
+    sw.slowT = 0.6; sw.vx += nx * 170; sw.vs -= ny * 50;
+    burst(sw.x - nx * SR, objY(sw.s) - ny * SR, 7, "#FFFFFF", 90);
+    if (G.boingCd <= 0) { Snd.boing(); G.boingCd = 0.25; }
+    if (!sw.isDad) {
+      G.stats.bumps++; sw.ouchT = 0.7; G.shake = 0.15;
+      pop(pick(["Watch it!", "Hey!", "Oof!", "Excuse you!", "Careful, pirate!"]), r.x, objY(r.s) - 40, "#FFFFFF", 13);
+    } else if (Math.random() < 0.6) dadSay(DAD_LINES.bump);
+  }
+
+  // ---------- waves ----------
   function updateWaves(dt) {
-    const zk = LAP[zoneIndex(G.camS)][0], i = zoneIndex(G.camS);
-    if (zk === "surge" && G.camS < STARTS[i] + LAP[i][1] - 450) {
+    params(G.you.s, P0);
+    const i = P0.i, zk = LAP[i][0], sl = local(G.you.s);
+    if (zk === "surge" && sl < STARTS[i] + LAP[i][1] - 450) {
       G.nextWave -= dt;
-      if (G.nextWave <= 0) { G.waves.push({ s: G.camS + baseY + 60, hit: {} }); G.nextWave = rand(2.1, 2.9); }
+      if (G.nextWave <= 0) { G.waves.push({ s: G.you.s + baseY + 60, hit: {} }); G.nextWave = rand(2.3, 3.1) / FAST; }
     }
     for (const w of G.waves) {
-      w.s -= 125 * dt;
-      for (const r of G.riders) if (!w.hit[r.key] && w.s <= riderS(r)) { w.hit[r.key] = true; lift(r); r.vy += 90; }
+      w.s -= 125 * FAST * dt;
+      for (const sw of [G.you, G.dad]) if (!w.hit[sw.key] && w.s <= sw.s && onScreen(sw)) {
+        w.hit[sw.key] = true; sw.boost = 120;
+        burst(sw.x, objY(sw.s) + 10, 10, "#FFFFFF", 120);
+        if (!sw.isDad) { G.stats.waves++; Snd.wave(); pop("Wave boost!", sw.x, objY(sw.s) - 44, "#FFFFFF", 18); }
+      }
     }
-    G.waves = G.waves.filter((w) => w.s > G.camS - (viewH - baseY) - 100);
+    G.waves = G.waves.filter((w) => w.s > G.you.s - (viewH - baseY) - 100);
   }
 
+  // ---------- the race ----------
   function update(dt) {
-    G.t += dt; G.shake = Math.max(0, G.shake - dt); G.boingCd = Math.max(0, G.boingCd - dt);
-    params(G.camS, P0);
-    let speed = P0.speed * FAST;
-    if (G.finishing) { G.finishT += dt; speed *= Math.max(0.15, 1 - G.finishT * 0.7); if (G.finishT > 2) return endLap(); }
-    G.camS += speed * dt;
+    G.t += dt; G.raceT += dt * FAST;
+    G.shake = Math.max(0, G.shake - dt); G.boingCd = Math.max(0, G.boingCd - dt); G.talkCd = Math.max(0, G.talkCd - dt);
+    const you = G.you, dad = G.dad;
+    updateSwimmer(you, dt);
+    updateSwimmer(dad, dt);
+    // you and Dad bump shoulders instead of overlapping
+    const sx = dad.x - you.x, sy = you.s - dad.s, sd = Math.hypot(sx, sy) || 1;
+    if (sd < SR * 2 + 4) { const push = (SR * 2 + 4 - sd) / 2, nx = sx / sd; you.x -= nx * push; dad.x += nx * push; you.vx -= nx * 30; dad.vx += nx * 30; }
+    G.camS = you.s;
+    spawnAhead(); updateRafts(dt); updateWaves(dt);
 
-    const zi = zoneIndex(G.camS);
-    if (zi !== G.zoneI) { G.zoneI = zi; enterZone(LAP[zi][0]); }
+    // laps and zones
+    const lap = lapOf(you.s);
+    params(you.s, P0);
+    const zk = LAP[P0.i][0], key = lap + ":" + P0.i;
+    if (key !== G.zoneKey && you.s < RACE_LEN) {
+      const newLap = lap !== G.lap;
+      G.zoneKey = key; G.lap = lap;
+      if (newLap) { showBanner(`Lap ${lap + 1} of ${LAPS}`, lap === LAPS - 1 ? "Last lap! Give it everything!" : "Round the river again!", ""); Snd.bell(); dadSay(lap === LAPS - 1 ? "Last lap, matey! Swim for it!" : DAD_LINES.lap, true); }
+      else if (G.t > 1) { showBanner(ZONES[zk].name, ZONES[zk].sub, zk === "rough" || zk === "grotto" ? zk : ""); Snd.zone(zk === "rough"); if (DAD_LINES[zk]) dadSay(DAD_LINES[zk], true); }
+      enterZone(zk);
+      $("#lapChip").textContent = `Lap ${lap + 1}/${LAPS}`;
+    }
 
-    for (const r of G.riders) updateRider(r, dt);
-    tubeBumps();
-    updateObjs(dt, speed);
-    updateWaves(dt);
-    for (const r of G.riders) collide(r, dt);
+    // who's winning?
+    const gap = dad.s - you.s;
+    const lead = gap > 25 ? 1 : gap < -25 ? -1 : G.lead;
+    if (lead !== G.lead) { if (G.lead !== 0 && you.finishT == null && dad.finishT == null) dadSay(lead > 0 ? DAD_LINES.passing : DAD_LINES.passed, true); G.lead = lead; }
+    G.idleTalk -= dt;
+    if (G.idleTalk <= 0) { dadSay(DAD_LINES.idle); G.idleTalk = rand(14, 24); }
+    if (G.dadLine) { G.dadLine.t += dt; if (G.dadLine.t > 3.2) G.dadLine = null; }
 
-    // float party: everyone close together
-    const p = G.riders[0];
-    const crew = G.riders.slice(1).every((b) => Math.hypot(b.x - p.x, b.py - p.py) < 125);
-    if (crew !== G.crew) { G.crew = crew; $("#crew").hidden = !crew; }
-    if (crew) G.stats.crewTime += dt;
+    // finish line
+    if (dad.finishT == null && dad.s >= RACE_LEN) {
+      dad.finishT = G.raceT;
+      if (you.finishT == null) { showBanner("Dad finished!", "Keep swimming, you're almost there!", ""); dadSay("Arr! Beat ye! Now finish, matey!", true); }
+    }
+    if (you.finishT == null && you.s >= RACE_LEN) {
+      you.finishT = G.raceT; G.ending = true; G.endT = 0;
+      const won = dad.finishT == null;
+      if (won) { Snd.win(); showBanner("You win!", "You beat Dad to the finish!", ""); dadSay("Shiver me timbers! Ye beat me!", true); }
+      else { Snd.lose(); showBanner("Finished!", "Dad got there first this time.", ""); }
+      burst(you.x, objY(you.s) - 20, 50, "#FFD166", 240, "confetti"); burst(you.x, objY(you.s) - 20, 30, "#FF6B5B", 220, "confetti");
+    }
+    if (G.ending) { G.endT += dt; if (G.endT > 3) return endRace(); }
 
     updateFx(dt);
-    const prog = clamp(G.camS / FINISH, 0, 1);
-    $("#mapDot").style.left = (prog * 100).toFixed(2) + "%";
-    if (!G.finishing && G.camS >= FINISH) { G.finishing = true; Snd.fanfare(); showBanner("Lap complete!", "Nice floating, crew!", ""); burst(p.x, riderY(p) - 20, 40, pick(["#FFD166", "#FF6B5B", "#3BC6A0"]), 220, "confetti"); }
+    updateHud();
+  }
+
+  function updateHud() {
+    const you = G.you, dad = G.dad;
+    $("#youDot").style.left = (clamp(you.s / RACE_LEN, 0, 1) * 100).toFixed(2) + "%";
+    $("#dadDot").style.left = (clamp(dad.s / RACE_LEN, 0, 1) * 100).toFixed(2) + "%";
+    const gap = dad.s - you.s;
+    const chip = $("#raceChip"), first = gap <= 0;
+    const html = `<b>${first ? "1st" : "2nd"}</b>&nbsp;place`;
+    if (chip.innerHTML !== html) { chip.innerHTML = html; chip.classList.toggle("first", first); }
+    const ready = 1 - you.diveCd / 4.2;
+    $("#diveRing").style.setProperty("--ready", ready.toFixed(3));
+    $("#diveBtn").classList.toggle("cooling", ready < 1);
   }
 
   function updateFx(dt) {
@@ -497,20 +644,18 @@
     G.pops = G.pops.filter((q) => q.t < 1.3);
   }
 
-  // ---------- zone banners ----------
+  // ---------- banners ----------
   let bannerTimer = 0;
   function showBanner(title, sub, cls) {
     const b = $("#banner");
     $("#bannerTitle").textContent = title; $("#bannerSub").textContent = sub;
     b.className = "banner show " + (cls || "");
-    clearTimeout(bannerTimer); bannerTimer = setTimeout(() => b.classList.remove("show"), 1900);
+    clearTimeout(bannerTimer); bannerTimer = setTimeout(() => b.classList.remove("show"), 2000);
   }
   function enterZone(k) {
-    const z = ZONES[k];
-    showBanner(z.name, z.sub, k === "rough" || k === "grotto" ? k : "");
-    const chip = $("#zoneChip"); chip.textContent = z.name; chip.className = "pill zone " + (k === "rough" || k === "grotto" ? k : "");
-    Snd.setMode(k); Snd.zone(k === "rough");
-    if (k === "surge") G.nextWave = 1.2;
+    const chip = $("#zoneChip"); chip.textContent = ZONES[k].name; chip.className = "zone-tag " + (k === "rough" || k === "grotto" ? k : "");
+    Snd.setMode(k);
+    if (k === "surge") G.nextWave = 1.2 / FAST;
   }
 
   // ---------- drawing: characters ----------
@@ -519,7 +664,7 @@
     const lift = st.lift || 0, t = st.t || 0, sc = (st.scale || 1) * (1 + 0.22 * lift);
     c.save(); c.translate(x, y);
     // shadow on the water
-    c.fillStyle = "rgba(0,40,70,.25)"; c.beginPath(); c.ellipse(5 + 12 * lift, 8 + 16 * lift, 27 * sc, 22 * sc, 0, 0, TAU); c.fill();
+    if (!st.noShadow) { c.fillStyle = "rgba(0,40,70,.25)"; c.beginPath(); c.ellipse(5 + 12 * lift, 8 + 16 * lift, 27 * sc, 22 * sc, 0, 0, TAU); c.fill(); }
     c.scale(sc, sc); c.rotate(st.rot || 0);
     // tube
     ring(c, 13, 25, 0, TAU); c.fillStyle = rd.tube; c.fill();
@@ -551,6 +696,7 @@
     c.restore();
   }
   function drawHair(c, rd) {
+    if (rd.style === "bald") { c.fillStyle = "rgba(255,255,255,.35)"; c.beginPath(); c.arc(-3, -18, 2.4, 0, TAU); c.fill(); return; }
     c.fillStyle = rd.hair;
     if (rd.style === "short") {
       c.beginPath(); c.arc(0, -14, 10.2, Math.PI * 0.95, Math.PI * 2.05);
@@ -604,16 +750,6 @@
   function shade(hex, amt) {
     const n = parseInt(hex.slice(1), 16);
     return rgb(clamp((n >> 16) + amt, 0, 255), clamp(((n >> 8) & 255) + amt, 0, 255), clamp((n & 255) + amt, 0, 255));
-  }
-  function moodOf(r) {
-    if (r.spinT > 0.1) return "dizzy";
-    if (r.inv > 0.3) return "ouch";
-    if (r.wet > 0) return "wet";
-    if (r.liftT > 0.15) return "wheee";
-    params(riderS(r), P1);
-    if (P1.rough > 0.5) return "wow";
-    if (P1.rough < 0.05 && P1.dark < 0.3 && (r.isPlayer ? input.idle > 1.6 : Math.abs(r.vx) < 30) && Math.sin(G.t * 0.25 + r.phase) > -0.3) return "chill";
-    return "happy";
   }
 
   // ---------- drawing: world ----------
@@ -732,10 +868,10 @@
   }
   function heart(c, x, y, s) { c.beginPath(); c.moveTo(x, y + s * 0.9); c.bezierCurveTo(x - s * 1.6, y - s * 0.2, x - s * 0.6, y - s * 1.4, x, y - s * 0.4); c.bezierCurveTo(x + s * 0.6, y - s * 1.4, x + s * 1.6, y - s * 0.2, x, y + s * 0.9); c.fill(); }
 
+
   function drawDecor(c) {
-    for (const d of G.decor) {
-      if (!inView(d.s, 90)) continue;
-      const y = objY(d.s), x = d.x;
+    for (const [d, ds] of visibleDecor(90)) {
+      const y = objY(ds), x = d.x;
       c.save(); c.translate(x, y);
       switch (d.type) {
         case "palm": {
@@ -810,6 +946,7 @@
   }
   function roundRect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 
+
   function drawDark(c) {
     const cam = G.camS, step = 8;
     let any = false;
@@ -820,9 +957,9 @@
     }
     if (!any) return;
     c.save(); c.globalCompositeOperation = "lighter";
-    for (const d of G.decor) {
-      if ((d.type !== "crystal" && d.type !== "lantern") || !inView(d.s, 90)) continue;
-      const y = objY(d.s), r = d.type === "lantern" ? 46 : 36, fl = 0.85 + 0.15 * Math.sin(G.t * 5 + d.seed);
+    for (const [d, ds] of visibleDecor(90)) {
+      if (d.type !== "crystal" && d.type !== "lantern") continue;
+      const y = objY(ds), r = d.type === "lantern" ? 46 : 36, fl = 0.85 + 0.15 * Math.sin(G.t * 5 + d.seed);
       const gr = c.createRadialGradient(d.x, y, 0, d.x, y, r);
       gr.addColorStop(0, d.type === "lantern" ? `rgba(255,190,90,${0.45 * fl})` : `rgba(120,220,255,${0.35 * fl})`); gr.addColorStop(1, "rgba(0,0,0,0)");
       c.fillStyle = gr; c.beginPath(); c.arc(d.x, y, r, 0, TAU); c.fill();
@@ -868,90 +1005,6 @@
     }
   }
 
-  function drawItems(c) {
-    for (const o of G.objs) {
-      if (o.dead || !inView(o.s)) continue;
-      const y = objY(o.s), t = G.t + o.seed;
-      switch (o.type) {
-        case "shell": {
-          c.save(); c.translate(o.x, y + Math.sin(t * 2) * 1.5); c.rotate(Math.sin(t) * 0.15);
-          c.strokeStyle = "rgba(255,255,255,.35)"; c.lineWidth = 1.5; c.beginPath(); c.arc(0, 0, 14 + (t * 6) % 6, 0, TAU); c.stroke();
-          c.fillStyle = "#FFC3B1"; c.beginPath(); c.moveTo(0, 8); c.arc(0, 8, 14, -Math.PI * 0.85, -Math.PI * 0.15); c.closePath(); c.fill();
-          c.strokeStyle = "#E07D63"; c.lineWidth = 1.2; c.beginPath();
-          for (let k = 1; k < 6; k++) { const a = -Math.PI * 0.85 + (k / 6) * Math.PI * 0.7; c.moveTo(0, 8); c.lineTo(Math.cos(a) * 14, 8 + Math.sin(a) * 14); }
-          c.stroke(); c.fillStyle = "#E89A84"; c.fillRect(-3, 6, 6, 4);
-          c.restore(); break;
-        }
-        case "star": {
-          c.save(); c.translate(o.x, y); c.rotate(t * 0.6);
-          c.fillStyle = "rgba(255,210,120,.3)"; c.beginPath(); c.arc(0, 0, 20, 0, TAU); c.fill();
-          c.fillStyle = "#FF8A3D"; c.beginPath();
-          for (let k = 0; k < 10; k++) { const a = (k / 10) * TAU - Math.PI / 2, rr = k % 2 ? 6 : 14; c.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
-          c.closePath(); c.fill();
-          c.fillStyle = "#FFD08A"; for (let k = 0; k < 5; k++) { const a = (k / 5) * TAU - Math.PI / 2; c.beginPath(); c.arc(Math.cos(a) * 7, Math.sin(a) * 7, 1.3, 0, TAU); c.fill(); }
-          c.restore(); break;
-        }
-        case "conch": {
-          c.save(); c.translate(o.x, y + Math.sin(t * 2) * 2);
-          const gr = c.createRadialGradient(0, 0, 0, 0, 0, 30); gr.addColorStop(0, "rgba(255,230,120,.7)"); gr.addColorStop(1, "rgba(255,230,120,0)");
-          c.fillStyle = gr; c.beginPath(); c.arc(0, 0, 30, 0, TAU); c.fill();
-          c.fillStyle = "#F5B82E"; c.beginPath(); c.moveTo(-12, 4); c.quadraticCurveTo(-6, -16, 12, -12); c.quadraticCurveTo(14, 4, 2, 12); c.closePath(); c.fill();
-          c.fillStyle = "#FFE08A"; c.beginPath(); c.ellipse(2, -2, 6, 7, 0.5, 0, TAU); c.fill();
-          c.strokeStyle = "#C98A10"; c.lineWidth = 1.2; c.beginPath(); c.arc(2, -2, 3, 0, 5); c.stroke();
-          sparkle(c, 12 * Math.cos(t * 2), -14, 3 + Math.sin(t * 5)); sparkle(c, -12, 10 * Math.sin(t * 2), 2.5);
-          c.restore(); break;
-        }
-        case "gem": {
-          c.save(); c.translate(o.x, y + Math.sin(t * 2) * 2);
-          c.globalCompositeOperation = "lighter";
-          const gr = c.createRadialGradient(0, 0, 0, 0, 0, 26); gr.addColorStop(0, o.hue + "AA"); gr.addColorStop(1, o.hue + "00");
-          c.fillStyle = gr; c.beginPath(); c.arc(0, 0, 26, 0, TAU); c.fill();
-          c.globalCompositeOperation = "source-over";
-          c.fillStyle = o.hue; c.beginPath(); c.moveTo(0, -12); c.lineTo(9, -3); c.lineTo(0, 12); c.lineTo(-9, -3); c.closePath(); c.fill();
-          c.fillStyle = "rgba(255,255,255,.6)"; c.beginPath(); c.moveTo(0, -12); c.lineTo(4, -3); c.lineTo(0, 2); c.lineTo(-4, -3); c.closePath(); c.fill();
-          c.restore(); break;
-        }
-        case "rock": {
-          c.save(); c.translate(o.x, y);
-          // foam piles up on the upstream side, a wake trails downstream
-          c.fillStyle = "rgba(255,255,255,.55)"; c.beginPath(); c.ellipse(0, o.r * 0.6, o.r * 1.25, o.r * 0.6, 0, 0, Math.PI); c.fill();
-          c.strokeStyle = "rgba(255,255,255,.3)"; c.lineWidth = 2.5;
-          c.beginPath(); c.moveTo(-o.r * 0.8, -o.r * 0.4); c.quadraticCurveTo(-o.r * 1.3, -o.r, -o.r * 1.2, -o.r * 1.7); c.moveTo(o.r * 0.8, -o.r * 0.4); c.quadraticCurveTo(o.r * 1.3, -o.r, o.r * 1.2, -o.r * 1.7); c.stroke();
-          c.fillStyle = "#6E7784"; c.beginPath(); o.pts.forEach(([px, py], k) => (k ? c.lineTo(px, py) : c.moveTo(px, py))); c.closePath(); c.fill();
-          c.fillStyle = "#98A2AE"; c.beginPath(); o.pts.forEach(([px, py], k) => (k ? c.lineTo(px * 0.6 - 3, py * 0.6 - 3) : c.moveTo(px * 0.6 - 3, py * 0.6 - 3))); c.closePath(); c.fill();
-          c.fillStyle = "rgba(255,255,255,.5)"; c.beginPath(); c.arc(-o.r * 0.35, -o.r * 0.35, 2.4, 0, TAU); c.fill();
-          c.restore(); break;
-        }
-        case "ball": {
-          c.save(); c.translate(o.x, y);
-          c.fillStyle = "rgba(0,40,70,.22)"; c.beginPath(); c.ellipse(4, 6, 14, 12, 0, 0, TAU); c.fill();
-          c.rotate(o.rot || 0);
-          const cols = ["#FF4D4D", "#FFFFFF", "#FFD23F", "#FFFFFF", "#3D7BFF", "#FFFFFF"];
-          cols.forEach((col, k) => { c.fillStyle = col; c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, 13, (k / 6) * TAU, ((k + 1) / 6) * TAU); c.closePath(); c.fill(); });
-          c.fillStyle = "#fff"; c.beginPath(); c.arc(0, 0, 3.5, 0, TAU); c.fill();
-          c.fillStyle = "rgba(255,255,255,.5)"; c.beginPath(); c.arc(-5, -5, 3, 0, TAU); c.fill();
-          c.restore(); break;
-        }
-      }
-    }
-  }
-  function sparkle(c, x, y, s) { c.fillStyle = "#fff"; c.beginPath(); c.moveTo(x, y - s * 2); c.lineTo(x + s * 0.4, y - s * 0.4); c.lineTo(x + s * 2, y); c.lineTo(x + s * 0.4, y + s * 0.4); c.lineTo(x, y + s * 2); c.lineTo(x - s * 0.4, y + s * 0.4); c.lineTo(x - s * 2, y); c.lineTo(x - s * 0.4, y - s * 0.4); c.fill(); }
-
-  function drawRiders(c) {
-    const list = G.riders.slice().sort((a, b) => a.py - b.py);
-    for (const r of list) {
-      const y = riderY(r), rr = (r.ripple % 1.8) / 1.8;
-      c.strokeStyle = `rgba(255,255,255,${0.4 * (1 - rr)})`; c.lineWidth = 1.6;
-      c.beginPath(); c.arc(r.x, y + 2, R + 3 + rr * 18, 0, TAU); c.stroke();
-      if (r.inv > 0 && Math.floor(r.inv * 10) % 2) c.globalAlpha = 0.6;
-      drawRider(c, r.x, y, r.rd, { rot: r.rot, lift: r.liftT > 0 ? Math.sin(Math.PI * (1 - r.liftT / 0.9)) : 0, mood: moodOf(r), t: G.t + r.phase, wet: r.wet });
-      c.globalAlpha = 1;
-      c.font = "800 10px Nunito, system-ui, sans-serif"; c.textAlign = "center";
-      c.lineWidth = 3; c.strokeStyle = "rgba(10,50,80,.55)"; c.strokeText(r.rd.name, r.x, y + 40);
-      c.fillStyle = r.isPlayer ? "#FFE58A" : "#FFFFFF"; c.fillText(r.rd.name, r.x, y + 40);
-    }
-  }
-
   function drawOverheads(c) {
     for (const o of G.objs) {
       if (o.type !== "falls" || !inView(o.s, 60)) continue;
@@ -974,7 +1027,7 @@
       // arrow over the gap
       c.fillStyle = "rgba(255,230,140,.95)"; c.beginPath(); c.moveTo(gx, y - 34); c.lineTo(gx - 7, y - 44); c.lineTo(gx + 7, y - 44); c.closePath(); c.fill();
     }
-    for (const o of G.overheads) {
+    for (const o of G.over) {
       if (!inView(o.s, 80)) continue;
       const y = objY(o.s);
       if (o.type === "bridge") {
@@ -999,13 +1052,14 @@
         c.fillStyle = "#3E8F4E"; for (let x = 8; x < W; x += 26) { c.beginPath(); c.arc(x, y - 34 + hash(x) * 6, 5 + hash(x * 7) * 4, 0, TAU); c.fill(); }
         c.fillStyle = "#FFE7A8"; c.font = "800 13px 'Baloo 2', system-ui, sans-serif"; c.textAlign = "center";
         c.fillText(o.exit ? "BACK INTO THE SUN" : "WATERFALL GROTTO", 200, y + 2);
-      } else if (o.type === "finish") {
-        const q = riverAt(o.s), L = q.cx - q.hw - 14, Rr = q.cx + q.hw + 14;
+      } else if (o.type === "lapline") {
+        const q = riverAt(o.s), L = q.cx - q.hw - 14, Rr = q.cx + q.hw + 14, last = o.n > LAPS;
         c.fillStyle = "#7A5230"; c.fillRect(L - 4, y - 10, 8, 20); c.fillRect(Rr - 4, y - 10, 8, 20);
         const n = Math.floor((Rr - L) / 10);
-        for (let k = 0; k < n; k++) for (let j = 0; j < 2; j++) { c.fillStyle = (k + j) % 2 ? "#123049" : "#FFFFFF"; c.fillRect(L + k * 10, y - 8 + j * 8, 10, 8); }
-        c.fillStyle = "#FF6B5B"; roundRect(c, 200 - 64, y - 30, 128, 22, 8); c.fill();
-        c.fillStyle = "#fff"; c.font = "800 14px 'Baloo 2', system-ui, sans-serif"; c.textAlign = "center"; c.fillText("LAP COMPLETE", 200, y - 14);
+        for (let k = 0; k < n; k++) for (let j = 0; j < 2; j++) { c.fillStyle = (k + j) % 2 ? (last ? "#123049" : "#FF6B5B") : "#FFFFFF"; c.fillRect(L + k * 10, y - 8 + j * 8, 10, 8); }
+        const label = o.n === 1 ? "START" : last ? "FINISH" : `LAP ${o.n}`;
+        c.fillStyle = last ? "#123049" : "#FF6B5B"; roundRect(c, 200 - 50, y - 32, 100, 22, 8); c.fill();
+        c.fillStyle = "#fff"; c.font = "800 14px 'Baloo 2', system-ui, sans-serif"; c.textAlign = "center"; c.fillText(label, 200, y - 16);
       }
     }
   }
@@ -1032,13 +1086,247 @@
   }
   function sparkleC(c, x, y, s, col) { c.fillStyle = col; c.beginPath(); c.moveTo(x, y - s * 2); c.lineTo(x + s * 0.5, y - s * 0.5); c.lineTo(x + s * 2, y); c.lineTo(x + s * 0.5, y + s * 0.5); c.lineTo(x, y + s * 2); c.lineTo(x - s * 0.5, y + s * 0.5); c.lineTo(x - s * 2, y); c.lineTo(x - s * 0.5, y - s * 0.5); c.fill(); }
 
+
+  // ---------- drawing: swimmers ----------
+  function drawSwimmer(c, x, y, sw, opts = {}) {
+    const L = sw.look, t = sw.t, sc = (opts.scale || 1) * (L.adult ? 1.22 : 1), diving = sw.diveT > 0;
+    c.save(); c.translate(x, y); c.scale(sc, sc); c.rotate(sw.rot || 0);
+    if (diving) {
+      c.globalAlpha = 0.4;
+    } else if (!opts.still) {
+      // kick splash
+      c.fillStyle = "rgba(255,255,255,.75)";
+      for (let k = 0; k < 4; k++) { c.beginPath(); c.arc(Math.sin(t * 14 + k * 1.7) * 6, 30 + k * 5, 3.6 - k * 0.6, 0, TAU); c.fill(); }
+    }
+    const kick = opts.still ? 0 : Math.sin(t * 14) * 3, ph = opts.still ? 1.2 : t * 6.5;
+    // legs
+    c.strokeStyle = L.skin; c.lineWidth = 5.5; c.lineCap = "round";
+    c.beginPath(); c.moveTo(-4, 12); c.lineTo(-5 + kick, 28); c.moveTo(4, 12); c.lineTo(5 - kick, 28); c.stroke();
+    c.strokeStyle = L.suit2; c.lineWidth = 7.5; c.lineCap = "butt";
+    c.beginPath(); c.moveTo(-4, 10); c.lineTo(-4.4, 17); c.moveTo(4, 10); c.lineTo(4.4, 17); c.stroke(); c.lineCap = "round";
+    // body
+    c.fillStyle = L.suit; c.beginPath(); c.ellipse(0, 4, 9.5, 12.5, 0, 0, TAU); c.fill();
+    if (L.stripes) {
+      c.save(); c.clip(); c.fillStyle = "#F4F1EA";
+      for (let k = -8; k < 18; k += 5) c.fillRect(-10, k, 20, 2.2);
+      c.restore();
+    }
+    // arms: freestyle strokes
+    for (const side of [-1, 1]) {
+      const reach = Math.sin(ph + (side > 0 ? Math.PI : 0));
+      const hx = side * (11 + 3 * Math.cos(ph)), hy = -6 - 18 * reach;
+      c.strokeStyle = L.skin; c.lineWidth = 4.6;
+      c.beginPath(); c.moveTo(side * 7.5, -4); c.quadraticCurveTo(side * 14, -2 - 8 * reach, hx, hy); c.stroke();
+      c.fillStyle = L.skin; c.beginPath(); c.arc(hx, hy, 2.8, 0, TAU); c.fill();
+      if (!diving && reach > 0.85 && !opts.still) { c.fillStyle = "rgba(255,255,255,.8)"; c.beginPath(); c.arc(hx, hy - 4, 3.5, 0, TAU); c.arc(hx + side * 4, hy - 1, 2.5, 0, TAU); c.fill(); }
+    }
+    // head, bandana (or Dad's captain hat) on top
+    const hr = L.adult ? 9.4 : 8.8;
+    c.fillStyle = L.hair;
+    if (L.style === "pigtails") { c.beginPath(); c.arc(-10, -9, 4.2, 0, TAU); c.arc(10, -9, 4.2, 0, TAU); c.fill(); }
+    c.fillStyle = L.skin; c.beginPath(); c.arc(0, -12, hr, 0, TAU); c.fill();
+    if (L.adult) {
+      c.strokeStyle = "#6B4A34"; c.lineWidth = 2.6; c.beginPath(); c.arc(0, -12, hr - 1, 0.18 * Math.PI, 0.82 * Math.PI); c.stroke();
+      drawSwimFace(c, sw, -11.6, true);
+      c.fillStyle = "#6B4A34"; c.beginPath(); c.moveTo(-5, -8.4); c.quadraticCurveTo(0, -10.4, 5, -8.4); c.quadraticCurveTo(0, -7.6, -5, -8.4); c.fill();
+      c.fillStyle = "#15171C"; c.beginPath(); c.moveTo(-17, -14); c.quadraticCurveTo(-8, -17, 0, -28); c.quadraticCurveTo(8, -17, 17, -14); c.quadraticCurveTo(0, -18.5, -17, -14); c.fill();
+      c.strokeStyle = "#E8B84A"; c.lineWidth = 1.3; c.beginPath(); c.moveTo(-17, -14); c.quadraticCurveTo(0, -18.5, 17, -14); c.stroke();
+      c.fillStyle = "#fff"; c.beginPath(); c.arc(0, -21, 2.6, 0, TAU); c.fill(); c.fillRect(-1.6, -19.2, 3.2, 1.8);
+      c.fillStyle = "#15171C"; c.fillRect(-1.5, -21.8, 1.1, 1.1); c.fillRect(0.4, -21.8, 1.1, 1.1);
+    } else {
+      c.fillStyle = L.hair;
+      if (L.style === "curly") { c.beginPath(); for (const a of [0.97, 1.08, 1.2, 1.8, 1.92, 2.03]) c.arc(Math.cos(a * Math.PI) * hr, -12 + Math.sin(a * Math.PI) * hr, 2.6, 0, TAU); c.fill(); }
+      else { c.beginPath(); c.ellipse(-hr + 1.2, -12.5, 2.2, 3.6, 0, 0, TAU); c.ellipse(hr - 1.2, -12.5, 2.2, 3.6, 0, 0, TAU); c.fill(); }
+      drawSwimFace(c, sw, -11.4, false);
+      // pirate bandana, knot flapping off the side
+      c.fillStyle = L.band; c.beginPath(); c.arc(0, -12, hr + 0.5, Math.PI * 0.97, Math.PI * 2.03); c.quadraticCurveTo(0, -12.5, -hr - 0.5, -11.8); c.fill();
+      const fl = Math.sin(t * 9) * 1.5;
+      c.beginPath(); c.moveTo(hr - 1, -15); c.lineTo(hr + 6, -19 + fl); c.lineTo(hr + 4, -14); c.lineTo(hr + 7, -10 - fl); c.lineTo(hr - 1, -12); c.fill();
+      c.fillStyle = L.dots; for (const [dx, dy] of [[-4.5, -16], [0, -18.5], [4.5, -16], [-1.5, -14.5], [2.8, -13.8]]) { c.beginPath(); c.arc(dx, dy, 0.9, 0, TAU); c.fill(); }
+    }
+    c.restore();
+    if (diving) {
+      c.fillStyle = "rgba(255,255,255,.8)";
+      for (let k = 0; k < 4; k++) { const by = y - 10 - ((t * 40 + k * 9) % 34); c.beginPath(); c.arc(x + Math.sin(t * 5 + k * 2) * 8, by, 2 + (k % 2), 0, TAU); c.fill(); }
+    }
+  }
+  function drawSwimFace(c, sw, ey, patch) {
+    const ink = "#2A1A12", my = ey + 4;
+    c.fillStyle = "rgba(255,120,120,.35)"; c.beginPath(); c.arc(-5.6, ey + 2.6, 1.9, 0, TAU); c.arc(5.6, ey + 2.6, 1.9, 0, TAU); c.fill();
+    c.strokeStyle = ink; c.fillStyle = ink; c.lineWidth = 1.3; c.lineCap = "round";
+    if (sw.ouchT > 0) {
+      for (const ex of [-3.4, 3.4]) { c.beginPath(); c.moveTo(ex - 1.3, ey - 1.3); c.lineTo(ex + 1.3, ey + 1.3); c.moveTo(ex + 1.3, ey - 1.3); c.lineTo(ex - 1.3, ey + 1.3); c.stroke(); }
+    } else if (sw.spinT > 0) {
+      for (const ex of [-3.4, 3.4]) { c.beginPath(); c.arc(ex, ey, 1.6, sw.t * 12, sw.t * 12 + 4.8); c.stroke(); }
+    } else if (sw.happyT > 0) {
+      for (const ex of [-3.4, 3.4]) { c.beginPath(); c.arc(ex, ey + 0.8, 1.6, Math.PI * 1.1, Math.PI * 1.9); c.stroke(); }
+    } else {
+      c.beginPath(); c.arc(-3.4, ey, 1.4, 0, TAU); c.arc(3.4, ey, 1.4, 0, TAU); c.fill();
+      c.fillStyle = "#fff"; c.beginPath(); c.arc(-2.9, ey - 0.5, 0.5, 0, TAU); c.arc(3.9, ey - 0.5, 0.5, 0, TAU); c.fill();
+    }
+    if (patch) {
+      c.fillStyle = "#15171C"; c.beginPath(); c.ellipse(-3.4, ey, 2.6, 2.3, 0, 0, TAU); c.fill();
+      c.strokeStyle = "#15171C"; c.lineWidth = 0.9; c.beginPath(); c.moveTo(-9, ey - 4); c.lineTo(8.6, ey - 5.5); c.stroke();
+    }
+    c.fillStyle = "#7A2630"; c.strokeStyle = "#7A2630";
+    if (sw.ouchT > 0 || sw.spinT > 0) { c.beginPath(); c.ellipse(0, my + 0.5, 1.8, 2.1, 0, 0, TAU); c.fill(); }
+    else if (sw.happyT > 0 || sw.diveT > 0) { c.beginPath(); c.moveTo(-3.4, my - 0.6); c.quadraticCurveTo(0, my + 4.4, 3.4, my - 0.6); c.closePath(); c.fill(); }
+    else if (!patch) { c.lineWidth = 1.3; c.beginPath(); c.arc(0, my - 1.8, 2.8, 0.2 * Math.PI, 0.8 * Math.PI); c.stroke(); }
+  }
+
+  // ---------- drawing: rafters and their loot ----------
+  function drawRafts(c) {
+    for (const r of G.rafts) {
+      if (!inView(r.s, 90)) continue;
+      const y = objY(r.s), mood = r.reactT > 0 ? r.mood : r.calm;
+      if (r.dbl) {
+        c.save(); c.translate(r.x, y); c.rotate(r.rot);
+        c.fillStyle = "rgba(0,40,70,.2)"; c.beginPath(); c.ellipse(6, 9, 56, 24, 0, 0, TAU); c.fill();
+        drawRider(c, -26, 0, r.people[0], { mood, t: G.t + r.seed, rot: -0.1, noShadow: true });
+        drawRider(c, 26, 0, r.people[1], { mood: r.reactT > 0 ? r.mood : "happy", t: G.t + r.seed + 2, rot: 0.1, noShadow: true });
+        c.fillStyle = "#D6DCE4"; roundRect(c, -5, -6, 10, 12, 3); c.fill();
+        c.restore();
+      } else drawRider(c, r.x, y, r.people[0], { mood, t: G.t + r.seed, rot: r.rot });
+      if (r.loot) {
+        const [lx, ly] = lootPos(r), pulse = 0.5 + 0.5 * Math.sin(G.t * 5 + r.seed);
+        c.strokeStyle = `rgba(255,214,90,${0.5 + 0.4 * pulse})`; c.lineWidth = 2.5;
+        c.beginPath(); c.arc(lx, ly, 14 + pulse * 3, 0, TAU); c.stroke();
+        drawLoot(c, r.loot.k, lx, ly);
+        sparkle(c, lx + 10, ly - 12, 1.5 + pulse);
+      }
+    }
+  }
+  function drawLoot(c, k, x, y) {
+    c.save(); c.translate(x, y);
+    switch (k) {
+      case "shades":
+        c.fillStyle = "#15171C"; c.beginPath(); c.ellipse(-5, 0, 4.6, 3.6, 0, 0, TAU); c.ellipse(5, 0, 4.6, 3.6, 0, 0, TAU); c.fill();
+        c.strokeStyle = "#15171C"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(-1, -1); c.lineTo(1, -1); c.stroke();
+        c.fillStyle = "rgba(255,255,255,.5)"; c.beginPath(); c.arc(-6.5, -1.2, 1.1, 0, TAU); c.arc(3.5, -1.2, 1.1, 0, TAU); c.fill(); break;
+      case "hat":
+        c.fillStyle = "#E9C77B"; c.beginPath(); c.arc(0, 0, 10, 0, TAU); c.fill();
+        c.fillStyle = "#D9AF55"; c.beginPath(); c.arc(0, 0, 5.5, 0, TAU); c.fill();
+        c.strokeStyle = "#E23B3B"; c.lineWidth = 2; c.beginPath(); c.arc(0, 0, 6.3, 0, TAU); c.stroke(); break;
+      case "flop":
+        c.rotate(0.4); c.fillStyle = "#3D7BFF"; c.beginPath(); c.ellipse(0, 0, 4.8, 9.5, 0, 0, TAU); c.fill();
+        c.strokeStyle = "#fff"; c.lineWidth = 1.6; c.beginPath(); c.moveTo(-4, 1); c.lineTo(0, -5); c.lineTo(4, 1); c.stroke(); break;
+      case "juice":
+        c.fillStyle = "#FF8A3D"; roundRect(c, -5, -7, 10, 14, 1.5); c.fill();
+        c.fillStyle = "#fff"; c.fillRect(-5, -1, 10, 4);
+        c.strokeStyle = "#fff"; c.lineWidth = 1.4; c.beginPath(); c.moveTo(2, -7); c.lineTo(4, -12); c.stroke(); break;
+      case "snack":
+        c.fillStyle = "#E23B3B"; c.beginPath(); c.moveTo(-6, -8); c.lineTo(6, -8); c.lineTo(7, 8); c.lineTo(-7, 8); c.closePath(); c.fill();
+        c.fillStyle = "#FFD23F"; c.fillRect(-6.5, -2, 13, 4); c.fillStyle = "#fff"; c.fillRect(-6, -8, 12, 2); break;
+      case "ball": {
+        const cols = ["#FF4D4D", "#FFFFFF", "#FFD23F", "#FFFFFF", "#3D7BFF", "#FFFFFF"];
+        cols.forEach((col, i) => { c.fillStyle = col; c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, 8.5, (i / 6) * TAU + G.t, ((i + 1) / 6) * TAU + G.t); c.closePath(); c.fill(); });
+        break;
+      }
+      case "gold": case "duck": {
+        const body = k === "gold" ? "#F5B82E" : "#FFD93D";
+        if (k === "gold") { const gr = c.createRadialGradient(0, 0, 0, 0, 0, 24); gr.addColorStop(0, "rgba(255,220,100,.7)"); gr.addColorStop(1, "rgba(255,220,100,0)"); c.fillStyle = gr; c.beginPath(); c.arc(0, 0, 24, 0, TAU); c.fill(); }
+        c.fillStyle = body; c.beginPath(); c.ellipse(1, 3, 8, 6, 0, 0, TAU); c.fill();
+        c.beginPath(); c.arc(-3, -4, 4.6, 0, TAU); c.fill();
+        c.fillStyle = "#FF8A1F"; c.beginPath(); c.moveTo(-7, -4); c.lineTo(-11, -3); c.lineTo(-7, -2); c.fill();
+        c.fillStyle = "#1B1B25"; c.beginPath(); c.arc(-4, -5, 0.9, 0, TAU); c.fill();
+        break;
+      }
+    }
+    c.restore();
+  }
+
+  // ---------- drawing: things in the water ----------
+  function drawItems(c) {
+    for (const o of G.objs) {
+      if (o.dead || !inView(o.s)) continue;
+      const y = objY(o.s), t = G.t + o.seed;
+      switch (o.type) {
+        case "coin": {
+          c.save(); c.translate(o.x, y + Math.sin(t * 2) * 1.5); c.scale(Math.max(0.25, Math.abs(Math.cos(t * 2.4))), 1);
+          c.fillStyle = "#C98A10"; c.beginPath(); c.arc(0, 1, 8.5, 0, TAU); c.fill();
+          c.fillStyle = "#FFD23F"; c.beginPath(); c.arc(0, 0, 8.5, 0, TAU); c.fill();
+          c.strokeStyle = "#E0A21A"; c.lineWidth = 1.4; c.beginPath(); c.arc(0, 0, 5.4, 0, TAU); c.stroke();
+          c.fillStyle = "rgba(255,255,255,.7)"; c.beginPath(); c.arc(-3, -3, 1.6, 0, TAU); c.fill();
+          c.restore(); break;
+        }
+        case "chest": {
+          c.save(); c.translate(o.x, y + Math.sin(t * 1.6) * 2); c.rotate(Math.sin(t) * 0.1);
+          const gr = c.createRadialGradient(0, 0, 0, 0, 0, 34); gr.addColorStop(0, "rgba(255,220,100,.6)"); gr.addColorStop(1, "rgba(255,220,100,0)");
+          c.fillStyle = gr; c.beginPath(); c.arc(0, 0, 34, 0, TAU); c.fill();
+          c.fillStyle = "#7A4A22"; roundRect(c, -14, -10, 28, 20, 3); c.fill();
+          c.fillStyle = "#9C6232"; roundRect(c, -14, -10, 28, 8, 3); c.fill();
+          c.fillStyle = "#E8B84A"; c.fillRect(-14, -3, 28, 2.4); c.fillRect(-8, -10, 2.4, 20); c.fillRect(5.6, -10, 2.4, 20);
+          c.fillStyle = "#FFD23F"; roundRect(c, -3, -4, 6, 7, 1.5); c.fill();
+          sparkle(c, 14 * Math.cos(t * 2), -14, 2.5 + Math.sin(t * 5));
+          c.restore(); break;
+        }
+        case "gem": {
+          c.save(); c.translate(o.x, y + Math.sin(t * 2) * 2);
+          c.globalCompositeOperation = "lighter";
+          const gr = c.createRadialGradient(0, 0, 0, 0, 0, 26); gr.addColorStop(0, o.hue + "AA"); gr.addColorStop(1, o.hue + "00");
+          c.fillStyle = gr; c.beginPath(); c.arc(0, 0, 26, 0, TAU); c.fill();
+          c.globalCompositeOperation = "source-over";
+          c.fillStyle = o.hue; c.beginPath(); c.moveTo(0, -12); c.lineTo(9, -3); c.lineTo(0, 12); c.lineTo(-9, -3); c.closePath(); c.fill();
+          c.fillStyle = "rgba(255,255,255,.6)"; c.beginPath(); c.moveTo(0, -12); c.lineTo(4, -3); c.lineTo(0, 2); c.lineTo(-4, -3); c.closePath(); c.fill();
+          c.restore(); break;
+        }
+        case "rock": {
+          c.save(); c.translate(o.x, y);
+          // foam piles up on the upstream side, a wake trails downstream
+          c.fillStyle = "rgba(255,255,255,.55)"; c.beginPath(); c.ellipse(0, o.r * 0.6, o.r * 1.25, o.r * 0.6, 0, 0, Math.PI); c.fill();
+          c.strokeStyle = "rgba(255,255,255,.3)"; c.lineWidth = 2.5;
+          c.beginPath(); c.moveTo(-o.r * 0.8, -o.r * 0.4); c.quadraticCurveTo(-o.r * 1.3, -o.r, -o.r * 1.2, -o.r * 1.7); c.moveTo(o.r * 0.8, -o.r * 0.4); c.quadraticCurveTo(o.r * 1.3, -o.r, o.r * 1.2, -o.r * 1.7); c.stroke();
+          c.fillStyle = "#6E7784"; c.beginPath(); o.pts.forEach(([px, py], k) => (k ? c.lineTo(px, py) : c.moveTo(px, py))); c.closePath(); c.fill();
+          c.fillStyle = "#98A2AE"; c.beginPath(); o.pts.forEach(([px, py], k) => (k ? c.lineTo(px * 0.6 - 3, py * 0.6 - 3) : c.moveTo(px * 0.6 - 3, py * 0.6 - 3))); c.closePath(); c.fill();
+          c.fillStyle = "rgba(255,255,255,.5)"; c.beginPath(); c.arc(-o.r * 0.35, -o.r * 0.35, 2.4, 0, TAU); c.fill();
+          c.restore(); break;
+        }
+      }
+    }
+  }
+  function sparkle(c, x, y, s) { c.fillStyle = "#fff"; c.beginPath(); c.moveTo(x, y - s * 2); c.lineTo(x + s * 0.4, y - s * 0.4); c.lineTo(x + s * 2, y); c.lineTo(x + s * 0.4, y + s * 0.4); c.lineTo(x, y + s * 2); c.lineTo(x - s * 0.4, y + s * 0.4); c.lineTo(x - s * 2, y); c.lineTo(x - s * 0.4, y - s * 0.4); c.fill(); }
+
+  function drawSwimmers(c) {
+    // the one further back (lower on screen) is drawn last so it sits on top
+    const list = [G.you, G.dad].filter((sw) => inView(sw.s, 60)).sort((a, b) => b.s - a.s);
+    for (const sw of list) {
+      const y = objY(sw.s);
+      drawSwimmer(c, sw.x, y, sw);
+      c.font = "800 10px Nunito, system-ui, sans-serif"; c.textAlign = "center";
+      c.lineWidth = 3; c.strokeStyle = "rgba(10,50,80,.6)"; c.strokeText(sw.look.name, sw.x, y + 44);
+      c.fillStyle = sw.isDad ? "#FFFFFF" : "#FFE58A"; c.fillText(sw.look.name, sw.x, y + 44);
+    }
+  }
+
+  function drawDadTalk(c) {
+    const d = G.dad, y = objY(d.s), top = 150, bottom = viewH - 70;
+    // arrow when Dad is off screen
+    if (y < top - 20 || y > viewH + 10) {
+      const up = y < top, ay = up ? top - 8 : viewH - 120, ax = clamp(d.x, 40, W - 40);
+      c.fillStyle = "rgba(21,23,28,.85)"; roundRect(c, ax - 34, ay - 12, 68, 24, 12); c.fill();
+      c.fillStyle = "#fff"; c.font = "800 12px Nunito, system-ui, sans-serif"; c.textAlign = "center";
+      c.fillText(up ? "Dad ▲" : "Dad ▼", ax, ay + 4);
+    }
+    if (!G.dadLine) return;
+    const txt = G.dadLine.text, a = clamp(Math.min(G.dadLine.t * 6, (3.2 - G.dadLine.t) * 4), 0, 1);
+    c.font = "800 12.5px Nunito, system-ui, sans-serif";
+    const w = Math.min(c.measureText(txt).width + 20, W - 24);
+    const bx = clamp(d.x, w / 2 + 10, W - w / 2 - 10), by = clamp(y - 72, top + 22, bottom);
+    c.globalAlpha = a;
+    c.fillStyle = "#FFFFFF"; roundRect(c, bx - w / 2, by - 15, w, 28, 12); c.fill();
+    if (y - 72 > top + 22 && y < viewH) { c.beginPath(); c.moveTo(clamp(d.x, bx - w / 2 + 14, bx + w / 2 - 14) - 6, by + 12); c.lineTo(clamp(d.x, 20, W - 20), by + 24); c.lineTo(clamp(d.x, bx - w / 2 + 14, bx + w / 2 - 14) + 6, by + 12); c.fill(); }
+    c.fillStyle = "#15171C"; c.textAlign = "center"; c.fillText(txt, bx, by + 4, W - 40);
+    c.globalAlpha = 1;
+  }
+
   function render() {
     const c = ctx;
     c.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
     c.save();
     if (G.shake > 0 && !reduced) c.translate((Math.random() - 0.5) * G.shake * 14, (Math.random() - 0.5) * G.shake * 10);
     drawBase(c); drawWater(c); drawCreatures(c); drawDecor(c); drawDark(c);
-    drawWhirls(c); drawWaves(c); drawItems(c); drawRiders(c); drawOverheads(c); drawFx(c);
+    drawWhirls(c); drawWaves(c); drawItems(c); drawRafts(c); drawSwimmers(c); drawOverheads(c); drawFx(c);
+    if (G.running) drawDadTalk(c);
     c.restore();
   }
 
@@ -1047,52 +1335,68 @@
     const r = $("#stage").getBoundingClientRect();
     dpr = Math.min(window.devicePixelRatio || 1, 2.5);
     canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr);
-    scale = r.width / W; viewH = r.height / scale; baseY = viewH * 0.7;
+    scale = r.width / W; viewH = r.height / scale; baseY = viewH * 0.68;
   }
   addEventListener("resize", resize);
 
   // ---------- flow ----------
-  function freshStats() { return { shells: 0, gems: 0, critters: 0, waves: 0, soaks: 0, bonks: 0, spins: 0, crewTime: 0 }; }
+  function freshStats() { return { loot: 0, sneaks: 0, coins: 0, bumps: 0, splashes: 0, spins: 0, waves: 0 }; }
+  function setupRace() {
+    buildRace();
+    G.rafts = []; G.waves = []; G.parts = []; G.pops = [];
+    const q = riverAt(0);
+    G.you = makeSwimmer(KIDS[G.kid], false, q.cx + 40, 0);
+    G.dad = makeSwimmer(DAD, true, q.cx - 40, 0);
+    G.camS = 0; G.spawnS = 420;
+    spawnAhead();
+  }
   function start() {
     Snd.init(); Snd.resume(); Snd.quiet(false);
-    store.set("rider", G.rider);
-    buildLap(); setupRiders();
-    Object.assign(G, { running: true, paused: false, attract: false, t: 0, camS: 0, score: 0, stats: freshStats(), zoneI: -1, crew: false, parts: [], pops: [], finishing: false, finishT: 0 });
-    input.idle = 0; input.active = false;
-    $("#score").textContent = "0";
-    $("#startScreen").hidden = true; $("#endScreen").hidden = true; $("#pauseScreen").hidden = true; $("#hud").hidden = false; $("#crew").hidden = true;
+    store.set("kid", G.kid);
+    setupRace();
+    Object.assign(G, { running: true, paused: false, t: 0, raceT: 0, stats: freshStats(), zoneKey: "", lap: 0, lead: 0, ending: false, endT: 0, talkCd: 0, idleTalk: 12, dadLine: null });
+    input.active = false;
+    $("#score").textContent = "0"; $("#youDot").textContent = KIDS[G.kid].name[0];
+    $("#lapChip").textContent = `Lap 1/${LAPS}`;
+    $("#startScreen").hidden = true; $("#endScreen").hidden = true; $("#pauseScreen").hidden = true; $("#hud").hidden = false; $("#diveBtn").hidden = false;
+    dadSay(DAD_LINES.start, true);
   }
-  function endLap() {
-    G.running = false; Snd.quiet(true);
-    $("#hud").hidden = true; $("#banner").classList.remove("show");
-    const st = G.stats, score = G.score;
-    const bests = store.get("best", {}); const prev = bests[G.rider] || 0;
-    if (score > prev) { bests[G.rider] = score; store.set("best", bests); }
-    $("#endScore").textContent = score;
-    $("#endRank").textContent = score >= 200 ? "Lazy River Legend" : score >= 130 ? "Captain of the Current" : score >= 70 ? "Tube Pro" : "Splash Rookie";
-    $("#endBest").textContent = score > prev && prev > 0 ? `New best for ${RIDERS[G.rider].name}! (old best: ${prev})` : score > prev ? `${RIDERS[G.rider].name}'s first lap is on the board.` : `${RIDERS[G.rider].name}'s best: ${prev}`;
-    const rows = [["Turtles & rays waved at", st.critters], ["Waves ridden", st.waves], ["Grotto gems", st.gems], ["Times soaked", st.soaks], ["Rocks bonked", st.bonks], ["Whirlpool spins", st.spins]];
-    $("#endStats").innerHTML = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("") + `<div style="grid-column:1/-1"><dt>Float party time (crew together)</dt><dd>${Math.round(st.crewTime)}s</dd></div>`;
+  const clock = (sec) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, "0")}`;
+  function endRace() {
+    G.running = false; G.ending = false; Snd.quiet(true);
+    $("#hud").hidden = true; $("#diveBtn").hidden = true; $("#banner").classList.remove("show");
+    const you = G.you, dad = G.dad, st = G.stats, name = KIDS[G.kid].name;
+    const dadT = dad.finishT != null ? dad.finishT : you.finishT + Math.max(1, (RACE_LEN - dad.s) / 150);
+    const won = you.finishT < dadT, margin = Math.max(1, Math.round(Math.abs(dadT - you.finishT)));
+    $("#endKicker").textContent = `Race over in ${clock(you.finishT)}`;
+    $("#endTitle").textContent = won ? "You beat Dad!" : "Dad won this time!";
+    $("#endSub").textContent = won ? `By ${margin} second${margin > 1 ? "s" : ""}. Captain Dad has to walk the plank!` : `By ${margin} second${margin > 1 ? "s" : ""}. "Arr! Rematch, matey?"`;
+    $("#endYouName").textContent = name;
+    $("#endScore").textContent = you.score; $("#endDad").textContent = dad.score;
+    const bests = store.get("best", {}), prev = bests[G.kid] || { treasure: 0, wins: 0 };
+    const now = { treasure: Math.max(prev.treasure || 0, you.score), wins: (prev.wins || 0) + (won ? 1 : 0) };
+    bests[G.kid] = now; store.set("best", bests);
+    $("#endBest").textContent = `${you.score > (prev.treasure || 0) && prev.treasure ? "New treasure record! " : ""}${now.wins ? `${name} has beaten Dad ${now.wins} time${now.wins === 1 ? "" : "s"}.` : `${name} is still hunting that first win over Dad.`} Best haul: ${now.treasure}.`;
+    const rows = [["Loot plundered", st.loot], ["Sneak plunders", st.sneaks], ["Coins & gems", st.coins], ["Rafts bumped", st.bumps], ["Splashes", st.splashes], ["Waves caught", st.waves]];
+    $("#endStats").innerHTML = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
     $("#endScreen").hidden = false;
-    toAttract();
   }
-  function toAttract() { G.attract = true; }
   function setPaused(p) {
     G.paused = p; $("#pauseScreen").hidden = !p; Snd.quiet(p);
     if (!p) Snd.resume();
   }
 
-  // Idle river behind the menus
+  // the river keeps flowing behind the menus
   function attract(dt) {
-    G.t += dt; G.camS += 45 * dt;
-    if (G.camS > STARTS[1] - 500) G.camS = 200;
-    const q = riverAt(G.camS);
-    G.riders.forEach((r, k) => {
-      r.x = lerp(r.x, q.cx + [0, -62, 62][k] + Math.sin(G.t * 0.6 + k * 2) * 18, 0.05);
-      r.py = lerp(r.py, [0, 52, 60][k] - 120 + Math.sin(G.t * 0.5 + k) * 8, 0.05);
-      r.rot = Math.sin(G.t * 0.7 + r.phase) * 0.2; r.liftT = 0; r.inv = 0; r.spinT = 0; r.ripple += dt;
-    });
-    updateFx(dt);
+    G.t += dt;
+    for (const sw of [G.you, G.dad]) {
+      sw.t += dt; params(sw.s, P1);
+      sw.s += (P1.current + 40) * dt;
+      sw.x = lerp(sw.x, centerX(sw.s, P1.hw) + (sw.isDad ? -45 : 45), 0.03);
+    }
+    G.camS = G.you.s - 160;
+    spawnAhead(); updateRafts(dt); updateFx(dt);
+    if (G.you.s > STARTS[1] - 600) setupRace();
   }
 
   let last = 0;
@@ -1100,7 +1404,7 @@
     requestAnimationFrame(frame);
     const dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts;
     if (G.running && !G.paused) update(dt);
-    else if (G.attract && !G.running) attract(dt);
+    else if (!G.running) attract(dt);
     render();
   }
 
@@ -1109,28 +1413,23 @@
     const box = $("#riders");
     ORDER.forEach((k) => {
       const b = document.createElement("button");
-      b.className = "rider"; b.type = "button"; b.dataset.k = k; b.setAttribute("aria-pressed", String(k === G.rider));
+      b.className = "rider"; b.type = "button"; b.dataset.k = k; b.setAttribute("aria-pressed", String(k === G.kid));
       const cv = document.createElement("canvas"); cv.width = 156; cv.height = 156;
       const c = cv.getContext("2d");
       const gr = c.createRadialGradient(78, 70, 10, 78, 78, 78); gr.addColorStop(0, "#6FE0E6"); gr.addColorStop(1, "#23A6C6");
       c.fillStyle = gr; c.beginPath(); c.arc(78, 78, 76, 0, TAU); c.fill();
       c.strokeStyle = "rgba(255,255,255,.4)"; c.lineWidth = 3; c.beginPath(); c.arc(78, 84, 66, 0.2, 1.2); c.stroke();
-      drawRider(c, 78, 78, RIDERS[k], { scale: 2.1, mood: k === "ellie" ? "chill" : k === "jonah" ? "wheee" : "happy", t: 0.5 });
-      b.append(cv, document.createTextNode(RIDERS[k].name));
+      drawSwimmer(c, 78, 90, { look: KIDS[k], t: 0.3, rot: 0, diveT: 0, ouchT: 0, spinT: 0, happyT: 1 }, { scale: 2.3, still: true });
+      b.append(cv, document.createTextNode(KIDS[k].name));
       b.addEventListener("click", () => {
-        G.rider = k; store.set("rider", k);
+        G.kid = k; store.set("kid", k);
         box.querySelectorAll(".rider").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.k === k)));
-        setupRiders();
+        G.you.look = KIDS[k];
       });
       box.append(b);
     });
-    const seen = new Set();
-    $("#zoneList").innerHTML = LAP.map(([k]) => k).filter((k) => !seen.has(k) && seen.add(k))
-      .map((k) => `<li><i style="background:${ZONES[k].color}"></i><b>${ZONES[k].name}</b><span>${ZONES[k].sub}</span></li>`).join("");
-    $("#mapTrack").innerHTML = LAP.map(([k, len], i) => {
-      const seg = i === LAP.length - 1 ? len - (LAP_LEN - FINISH) : len;
-      return `<i style="flex:${seg};background:${ZONES[k].color}"></i>`;
-    }).join("");
+    const segs = LAP.map(([k, len]) => `<i style="flex:${len};background:${ZONES[k].color}"></i>`).join("");
+    $("#mapTrack").innerHTML = Array.from({ length: LAPS }, () => segs).join('<i class="lapmark"></i>');
   }
 
   const muteBtn = $("#muteBtn");
@@ -1138,15 +1437,15 @@
   muteBtn.addEventListener("click", () => { Snd.init(); Snd.setMuted(!Snd.muted); syncMute(); });
   $("#pauseBtn").addEventListener("click", () => setPaused(true));
   $("#resumeBtn").addEventListener("click", () => setPaused(false));
-  $("#quitBtn").addEventListener("click", () => { setPaused(false); G.running = false; $("#hud").hidden = true; $("#startScreen").hidden = false; toAttract(); });
+  $("#quitBtn").addEventListener("click", () => { setPaused(false); G.running = false; $("#hud").hidden = true; $("#diveBtn").hidden = true; $("#startScreen").hidden = false; setupRace(); });
   $("#startBtn").addEventListener("click", start);
   $("#againBtn").addEventListener("click", start);
-  $("#switchBtn").addEventListener("click", () => { $("#endScreen").hidden = true; $("#startScreen").hidden = false; });
+  $("#switchBtn").addEventListener("click", () => { $("#endScreen").hidden = true; $("#startScreen").hidden = false; setupRace(); });
   document.addEventListener("visibilitychange", () => { if (document.hidden && G.running && !G.paused) setPaused(true); });
 
-  resize(); buildMenus(); syncMute(); buildLap(); setupRiders(); G.camS = 200;
+  resize(); buildDecor(); buildMenus(); syncMute(); setupRace();
   requestAnimationFrame(frame);
 
   // test hook
-  window.__lazyRiver = { G, start, endLap };
+  window.__lazyRiver = { G, start, endRace, RACE_LEN, LAP_LEN };
 })();
