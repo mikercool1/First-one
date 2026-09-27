@@ -531,6 +531,22 @@
     if (world.destStatus(d) !== "locked" && d.portal) setTimeout(() => enterPortal(d), 350);
   }
   $("#mapBtn").addEventListener("click", openMap);
+  RW.bus.on("openMap", () => { if (E.mode === "play" && !RW.host.current) openMap(); });
+
+  // Area names: pop up for a moment when you walk into a new neighbourhood
+  const zoneEl = $("#zone");
+  let zoneNow = null, zoneTimer = 0;
+  setInterval(() => {
+    const P = E.player;
+    if (!P || E.mode !== "play" || RW.host.current || P.hidden) return;
+    const z = world.zoneAt(P.x, P.y);
+    if (!z || z === zoneNow) { if (!z) zoneNow = null; return; }
+    zoneNow = z;
+    zoneEl.style.setProperty("--c", z.color);
+    zoneEl.innerHTML = `<span>${z.icon}</span><span>${z.name}</span>`;
+    zoneEl.classList.add("on");
+    clearTimeout(zoneTimer); zoneTimer = setTimeout(() => zoneEl.classList.remove("on"), 2200);
+  }, 400);
   $("#mapClose").addEventListener("click", closeMap);
   mapEl.addEventListener("click", (ev) => { if (ev.target === mapEl) closeMap(); });
 

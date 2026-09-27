@@ -89,6 +89,15 @@ is `games/rosenboggle/words.js` (common English words, rude words removed).
 folder. The old standalone links at the top of the repo (`index.html` for The Word Game, `buckets/`,
 `lox-run/`) now just open the copy in here.
 
+## Finding your way
+
+- **Signposts** stand at the main crossroads. Each arrow board names a neighbourhood (Home, Sports
+  Zone, Baha Mar, Ice Cream…); tap a board and you walk there (Baha Mar walks you to the sea plane).
+  Tap the post itself to open the map.
+- **Area names** pop up at the bottom of the screen as you walk into a neighbourhood.
+- The neighbourhoods, their colors and where their signs send you are `PLACES` in `js/world.js`;
+  the posts are in `buildSignposts()`.
+
 ## Files
 
 - `js/games.js`: **the game registry. The one file to edit when adding games.**

@@ -405,12 +405,14 @@
       const b = e.hit || e.box;
       if (!b) continue;
       let x0 = e.x + b[0], y0 = e.y + b[1], x1 = e.x + b[2], y1 = e.y + b[3];
+      // a tap right inside a target beats one that only lands in another's forgiving margin
+      const inside = wx > x0 && wx < x1 && wy > y0 && wy < y1;
       // forgiving: every target is at least 76 units square
       const pad = 12, minS = 76;
       if (x1 - x0 < minS) { const cx = (x0 + x1) / 2; x0 = cx - minS / 2; x1 = cx + minS / 2; }
       if (y1 - y0 < minS) { const cy = (y0 + y1) / 2; y0 = cy - minS / 2; y1 = cy + minS / 2; }
       if (wx > x0 - pad && wx < x1 + pad && wy > y0 - pad && wy < y1 + pad) {
-        const sy = (e.sortY != null ? e.sortY : e.y) + (e.tapPriority || 0);
+        const sy = (e.sortY != null ? e.sortY : e.y) + (e.tapPriority || 0) + (inside ? 100 : 0);
         if (sy > bestY) { bestY = sy; hit = e; }
       }
     }

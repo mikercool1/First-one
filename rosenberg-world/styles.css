@@ -200,6 +200,19 @@ body:not(.ready) #title { opacity: 0; }
 }
 #toast.on { transform: translate(-50%, 0); opacity: 1; }
 #toast .ti { font-size: 24px; }
+
+/* ---------- area name ---------- */
+#zone {
+  --c: #2F6BD6;
+  position: fixed; z-index: 14; left: 50%; bottom: calc(var(--safe-b) + 150px);
+  display: flex; align-items: center; gap: 10px; padding: 8px 22px 9px; border-radius: 999px;
+  background: var(--c); color: #FFFFFF; font-size: clamp(20px, 2.6vw, 28px); letter-spacing: .06em; white-space: nowrap;
+  box-shadow: 0 6px 0 color-mix(in srgb, var(--c) 60%, #10183A), 0 14px 30px rgba(10,20,60,.3);
+  transform: translate(-50%, 20px) scale(.9); opacity: 0; transition: transform .35s cubic-bezier(.3,1.4,.5,1), opacity .3s ease;
+  pointer-events: none;
+}
+#zone.on { transform: translate(-50%, 0) scale(1); opacity: 1; }
+body:has(#host:not([hidden])) #zone, body:has(#portal.on) #zone { visibility: hidden; }
 @media (max-width: 900px) { #toast { top: calc(var(--safe-t) + 84px); font-size: 15px; } }
 
 /* ---------- overlays ---------- */

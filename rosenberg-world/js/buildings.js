@@ -332,9 +332,15 @@
     // mysterious door with a glowing ?
     c.fillStyle = "rgba(40,30,20,.25)"; rr(c, -40, -104, 80, 104, 12); c.fill();
     c.fillStyle = "#FFFFFF"; rr(c, -38, -102, 76, 102, 12); c.fill();
-    c.fillStyle = lin(c, 0, -96, 0, 0, ["#3A3F6E", "#23264A"]); rr(c, -31, -95, 62, 95, 30); c.fill();
-    c.fillStyle = "rgba(255,210,63,.25)"; c.beginPath(); c.arc(0, -56, 24, 0, TAU); c.fill();
-    text(c, "?", 0, -54, 38, "#FFD23F", { weight: 700 });
+    if (o.open) { // an open game: a friendly green door instead of the mystery ?
+      c.fillStyle = lin(c, 0, -96, 0, 0, ["#3CC77E", "#1F8A4C"]); rr(c, -31, -95, 62, 95, 30); c.fill();
+      c.fillStyle = "rgba(255,255,255,.18)"; rr(c, -24, -86, 20, 78, 10); c.fill();
+      c.fillStyle = "#FFD23F"; c.beginPath(); c.arc(18, -46, 4.5, 0, TAU); c.fill();
+    } else {
+      c.fillStyle = lin(c, 0, -96, 0, 0, ["#3A3F6E", "#23264A"]); rr(c, -31, -95, 62, 95, 30); c.fill();
+      c.fillStyle = "rgba(255,210,63,.25)"; c.beginPath(); c.arc(0, -56, 24, 0, TAU); c.fill();
+      text(c, "?", 0, -54, 38, "#FFD23F", { weight: 700 });
+    }
     if (o.label) plate(c, o.label, 0, -h + 12, 14, o.labelBg || shade(o.roof, -0.2), "#FFFFFF", { r: 8 });
   };
 

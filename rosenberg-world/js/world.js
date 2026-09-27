@@ -52,6 +52,40 @@
     if (d.kind === "travel") return "travel";
     return RW.games.status(RW.games.forDestination(d.id));
   };
+  // =====================================================================
+  // PLACES: the neighbourhoods. Signposts point to them and their names pop up as you walk in.
+  // go: a destination id (walk in / fly) or a point to walk to. zone: [x0, y0, x1, y1].
+  // =====================================================================
+  const PLACES = world.PLACES = {
+    home:     { name: "HOME", icon: "🏠", color: "#2F6BD6", go: [2405, 1800], zone: [2040, 1380, 2920, 1860] },
+    baseball: { name: "BASEBALL", icon: "⚾", color: "#2E8B57", go: "baseball", zone: [2020, 600, 2920, 1380] },
+    space:    { name: "SPACE ZONE", icon: "🚀", color: "#7B3FE4", go: [3620, 980], zone: [3300, 540, 4150, 1090] },
+    academy:  { name: "MATH BLASTER", icon: "✖️", color: "#2F5BEA", go: "mathblaster", zone: [1200, 620, 1820, 1090] },
+    raceway:  { name: "RACEWAY", icon: "🏎️", color: "#E8453C", go: "raceway", zone: [120, 540, 1040, 1160] },
+    kitchen:  { name: "KITCHEN", icon: "🍳", color: "#E8743C", go: "kitchen", zone: [1150, 1480, 1800, 1860] },
+    sports:   { name: "SPORTS ZONE", icon: "⚽", color: "#1F8A4C", go: [1500, 2200], zone: [880, 1960, 2000, 3060] },
+    playground: { name: "PLAYGROUND", icon: "🛝", color: "#F2A93B", zone: [2000, 1960, 2270, 2330] },
+    arcade:   { name: "ARCADE", icon: "🕹️", color: "#8A3FE4", go: "arcade", zone: [2150, 2380, 2800, 2820] },
+    icecream: { name: "ICE CREAM", icon: "🍦", color: "#E8558A", go: "icecream", zone: [3000, 2320, 3500, 2820] },
+    plaza:    { name: "PLAZA", icon: "⛲", color: "#6C4AC9", go: [3500, 1880], zone: [3200, 1400, 3800, 2000] },
+    beach:    { name: "BEACH", icon: "🏖️", color: "#1E8FC4", go: [4100, 2100], zone: [3960, 900, 4320, 3060] },
+    bahamar:  { name: "BAHA MAR", icon: "🏝️", color: "#18A0B8", go: "seaplane" },
+    woods:    { name: "WOODS", icon: "🌲", color: "#3E7A3A", go: [640, 1900], zone: [110, 1160, 880, 3060] },
+  };
+  world.zoneAt = (x, y) => {
+    if (E && E.onIsland(x, y)) return PLACES.bahamar;
+    for (const k in PLACES) { const z = PLACES[k].zone; if (z && x > z[0] && x < z[2] && y > z[1] && y < z[3]) return PLACES[k]; }
+    return null;
+  };
+  world.goToPlace = (pl) => {
+    const P = E.player;
+    if (!P || P.lock) return;
+    RW.sfx.play("tap");
+    if (typeof pl.go === "string") { goPlay(E, DEST[pl.go]); return; }
+    E.walkTo(pl.go[0], pl.go[1]);
+    E.say(P, U.pick([`To the ${pl.name.toLowerCase()}!`, "This way!", "Let's go!"]), 1.3);
+  };
+
   world.destTitle = (d) => {
     const g = RW.games.forDestination(d.id);
     return g && g.unlocked && g.title ? g.title : d.name;
@@ -204,6 +238,7 @@
     buildArcade();
     buildBahaBay();
     buildIceCream();
+    buildSignposts();
     buildBeach();
     buildRaceway();
     buildWoods();
@@ -1072,7 +1107,7 @@
     add({
       kind: "building", x: 1710, y: 2995, box: [-140, -230, 140, 24], sprite: true, occludes: true,
       solid: [{ r: [-110, -80, 110, -4] }],
-      draw: (c) => B.futureBuilding(c, { w: 220, h: 110, wall: "#F4FFF4", roof: "#2EB872", label: "TENNIS CLUB", rise: 70 }),
+      draw: (c) => B.futureBuilding(c, { w: 220, h: 110, wall: "#F4FFF4", roof: "#2EB872", label: "TENNIS CLUB", rise: 70, open: world.destStatus(DEST["sports-tennis"]) !== "locked" }),
       live(c) { if (world.destStatus(DEST["sports-tennis"]) === "locked") P_.ribbon(c, "COMING SOON", 140, "#FF5C8A"); else { c.save(); c.translate(0, -2); P_.ribbon(c, "JONAH'S TENNIS", 170, "#2EB872"); c.restore(); } },
       tap: portalTap("sports-tennis"),
     });
@@ -1250,6 +1285,54 @@
   // ---------------------------------------------------------------------
   // BAHA BAY (the water park: Splash Down slides and the Lazy River)
   // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // SIGNPOSTS at the crossroads. Each arrow board walks you to its place when tapped.
+  // ---------------------------------------------------------------------
+  const BOARD_W = 196, BOARD_H = 34, BOARD_GAP = 8;
+  function signpost(x, y, arms) {
+    KEEP_CLEAR.push([x - 210, y - 40, x + 210, y + 110]); // no random trees in front of a signpost
+    const top = -(arms.length * (BOARD_H + BOARD_GAP)) - 40;
+    const boardY = (i) => top + 14 + i * (BOARD_H + BOARD_GAP);
+    const boardX = (dir) => (dir === "L" ? -BOARD_W + 18 : dir === "R" ? -18 : -BOARD_W / 2);
+    staticProp(x, y, [-BOARD_W - 10, top - 10, BOARD_W + 10, 10], (c) => {
+      // post
+      c.fillStyle = "#7A5236"; A.rr(c, -7, top, 14, -top, 5); c.fill();
+      c.fillStyle = "#FFD23F"; c.beginPath(); c.arc(0, top, 11, 0, TAU); c.fill();
+      arms.forEach(([key, dir], i) => {
+        const pl = PLACES[key], by = boardY(i), bx = boardX(dir), tip = 18;
+        c.fillStyle = "rgba(0,0,0,.18)";
+        const shape = (ox, oy) => {
+          c.beginPath();
+          if (dir === "R") { c.moveTo(bx + ox, by + oy); c.lineTo(bx + BOARD_W - tip + ox, by + oy); c.lineTo(bx + BOARD_W + ox, by + BOARD_H / 2 + oy); c.lineTo(bx + BOARD_W - tip + ox, by + BOARD_H + oy); c.lineTo(bx + ox, by + BOARD_H + oy); }
+          else if (dir === "L") { c.moveTo(bx + BOARD_W + ox, by + oy); c.lineTo(bx + tip + ox, by + oy); c.lineTo(bx + ox, by + BOARD_H / 2 + oy); c.lineTo(bx + tip + ox, by + BOARD_H + oy); c.lineTo(bx + BOARD_W + ox, by + BOARD_H + oy); }
+          else A.rr(c, bx + ox, by + oy, BOARD_W, BOARD_H, 9);
+          c.closePath();
+        };
+        shape(0, 4); c.fill();
+        shape(0, 0); c.fillStyle = pl.color; c.fill();
+        c.strokeStyle = "rgba(255,255,255,.85)"; c.lineWidth = 2.5; c.stroke();
+        const arrow = dir === "U" ? " ↑" : dir === "D" ? " ↓" : "";
+        const cx = bx + BOARD_W / 2 + (dir === "R" ? -tip / 2 : dir === "L" ? tip / 2 : 0);
+        A.text(c, `${pl.icon} ${pl.name}${arrow}`, cx, by + BOARD_H / 2 + 1, 15, "#FFFFFF", { weight: 700 });
+      });
+    }, { kind: "signpost", shadow: [30, 8], solid: [{ c: [0, -2, 9] }], sortY: y,
+      tap: { reach: "remote", act() { RW.bus.emit("openMap"); } } });
+    // one tap target per board
+    arms.forEach(([key, dir], i) => {
+      const by = boardY(i), bx = boardX(dir);
+      hotspot(x, y, [bx - 4, by - 4, bx + BOARD_W + 4, by + BOARD_H + 6], { reach: "remote", act() { world.goToPlace(PLACES[key]); } }, y + 1);
+    });
+  }
+  function buildSignposts() {
+    signpost(2590, 1992, [["home", "U"], ["sports", "L"], ["bahamar", "R"], ["arcade", "D"]]);     // boulevard, below the house
+    signpost(1236, 1992, [["kitchen", "U"], ["woods", "L"], ["sports", "D"]]);                     // boulevard, west of the sports gate
+    signpost(3392, 1992, [["plaza", "U"], ["home", "L"], ["beach", "R"], ["bahamar", "R"]]);       // boulevard at the plaza
+    signpost(4150, 1995, [["beach", "U"], ["bahamar", "D"], ["icecream", "D"]]);                   // on the sand, where the trail heads south
+    signpost(1880, 900, [["academy", "L"], ["raceway", "L"], ["baseball", "R"], ["home", "D"]]);  // north lane, west of the ballpark
+    signpost(3080, 1190, [["baseball", "L"], ["space", "R"], ["home", "D"]]);                       // north lane, east of the ballpark
+    signpost(2600, 2735, [["home", "U"], ["sports", "L"], ["icecream", "R"], ["bahamar", "R"]]);   // south street by the arcade
+  }
+
   // ---------------------------------------------------------------------
   // FROZENBERGS ICE CREAM STAND (the Frozenbergs game)
   // ---------------------------------------------------------------------
@@ -1507,8 +1590,6 @@
 
     // dock sign on the mainland
     sign(4235, 2300, ["FLY TO", "BAHA MAR ✈"], { size: 18, board: "#FFFFFF", edge: "#18A0B8", ink: "#1B6FB4", ent: { tap: { reach: "remote", act() { world.flyTo("bahamar"); } } } });
-    // a signpost where the water park used to be
-    sign(3560, 2860, ["BAHA MAR →", "sea plane at the dock"], { size: 15, board: "#EAF6FF", edge: "#18A0B8", ink: "#1B6FB4", ent: { tap: { reach: "remote", act() { world.flyTo("bahamar"); } } } });
 
     // ---- the island ----
     // a little landing dock where the plane ties up
@@ -1741,7 +1822,6 @@
       },
       tap: portalTap("woods-cave"),
     });
-    sign(420, 1640, ["MORE ADVENTURES", "COMING SOON"], { size: 16, board: "#F7F1E3" });
     // woods treehouse
     add({
       kind: "treehouse", x: 700, y: 2240, box: [-110, -300, 110, 16], sprite: true, solid: [{ c: [0, -4, 20] }], shadow: [70, 18], bubbleH: 280,
@@ -1764,9 +1844,6 @@
       tap: { reach: "remote", act(E2, e) { if (e.cool > E2.t) return; e.cool = E2.t + 2; RW.sfx.play("rustle"); E2.say(e, "Secret club meetings… coming soon!", 2); } },
     });
     // trail signs at the map edges (paths continue beyond)
-    sign(180, 2150, ["MORE ADVENTURES", "COMING SOON"], { size: 15 });
-    sign(200, 1790, ["TRAIL CONTINUES…", "COMING SOON"], { size: 15 });
-    sign(190, 1290, ["???"], { size: 20 });
     // mushrooms & logs
     [[620, 1500], [360, 2320], [760, 1950], [300, 1720]].forEach(([x, y], i) => staticProp(x, y, [-30, -30, 30, 6], (c) => {
       if (i % 2) { c.fillStyle = A.lin(c, 0, -18, 0, 0, ["#9A6B45", "#6E4A30"]); A.rr(c, -26, -18, 52, 18, 9); c.fill(); c.fillStyle = "#E3B37A"; A.ell(c, 26, -9, 6, 9); c.fill(); }
@@ -1783,7 +1860,6 @@
       solid: [{ r: [-110, -70, 110, -4] }], draw: (c) => B.gondola(c), tap: portalTap("gondola"),
       live(c) { P_.lockBadge(c, 0, -52, 1); },
     });
-    sign(2980, 530, ["WINTER MOUNTAIN", "COMING SOON"], { size: 16, board: "#EAF4FF", edge: "#2F5FA8", ink: "#2F5FA8" });
   }
 
   // ---------------------------------------------------------------------
