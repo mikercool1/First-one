@@ -25,9 +25,9 @@ they walk out of that game's door and the stars they earned fly into the total.
 
 ### A brand-new game with no building yet
 
-There are 8 future slots (`futureGame01` to `futureGame08` in `js/games.js`). Each one already has
-a locked place in the world: the Hoops Gym, Field House, Mystery Cave, the Dock, Winter Mountain,
-Mystery Island, the construction lot and the Mystery Plaza building. To open one, give it a `title`,
+There are 6 future slots (in `js/games.js`). Each one already has a locked place in the world:
+the Hoops Gym, Field House, Mystery Cave, Winter Mountain, the construction lot and the Mystery
+Plaza building. To open one, give it a `title`,
 `icon`, `color`, set `unlocked: true` and an `entry`. Locked places stay off the map and show no
 PLAY card; the construction lot and the plaza building show "???" until their game arrives, then
 their signs show its title automatically.
@@ -69,8 +69,12 @@ door and the stars you earned fly into your total.
 | Soccer field (Sports Complex) | Backyard Soccer | `games/backyard-soccer` |
 | Beach volleyball court | Jonah's Volley | `games/jonahs-volley` |
 | Rosenberg House front door | The Game Room: Rosenboggle and The Word Game | `games/game-room`, `games/rosenboggle`, `games/word-game` |
-| Baha Bay water park (main gate) | Splash Down | `games/water-slide` |
-| Baha Bay Lazy River hut (and the floating tubes) | Lazy River Pirates | `games/lazy-river` |
+| Baha Bay water park on Baha Mar island (main gate) | Splash Down | `games/water-slide` |
+| Baha Bay Lazy River hut on Baha Mar (and the floating tubes) | Lazy River Pirates | `games/lazy-river` |
+
+Baha Mar is an island out in the ocean. Take the sea plane at the end of the beach dock ("FLY TO
+BAHA MAR"), or just tap the island; the plane on the island flies you home. The flight lives in
+`world.flyTo` in `js/world.js`, the island's shape is `RW.layout.island` in `js/ground.js`.
 | Rosenberg Arcade (and its orange cabinet) | Max-Man | `games/max-man` |
 | Tennis court (Sports Complex) | Jonah's Tennis | `games/jonahs-tennis` |
 | Rosenberg Raceway (and the go-kart) | Racecar Rally | `games/racecar` |

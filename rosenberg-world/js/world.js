@@ -34,12 +34,13 @@
     { id: "raceway", name: "Rosenberg Raceway", icon: "🏎️", kind: "future", portal: [640, 1000], portalR: 100, arrive: [640, 1030], map: [640, 760] },
     { id: "woods", name: "Adventure Woods", icon: "🌲", kind: "place", map: [560, 1780], arrive: [640, 1900] },
     { id: "woods-cave", name: "Mystery Cave", icon: "🔦", kind: "future", portal: [270, 1585], portalR: 85, arrive: [300, 1600], map: [270, 1480] },
-    { id: "waterworld", name: "Baha Bay", icon: "🌊", kind: "future", portal: [3550, 2720], portalR: 100, arrive: [3550, 2700], map: [3330, 2900] },
-    { id: "lazyriver", name: "Baha Bay Lazy River", icon: "🛟", kind: "future", portal: [3862, 2716], portalR: 70, arrive: [3862, 2700], map: [3810, 3010] },
+    { id: "waterworld", name: "Baha Bay", icon: "🌊", kind: "future", portal: [5100, 1680], portalR: 100, arrive: [5100, 1660], map: [4850, 1820] },
+    { id: "lazyriver", name: "Baha Bay Lazy River", icon: "🛟", kind: "future", portal: [5412, 1676], portalR: 70, arrive: [5412, 1660], map: [5430, 2030] },
     { id: "beach", name: "Rosenberg Beach", icon: "🏖️", kind: "place", map: [4150, 1860], arrive: [4100, 2260] },
-    { id: "beach-dock", name: "The Dock", icon: "⛵", kind: "future", portal: [4630, 2352], portalR: 80, arrive: [4600, 2352], map: [4650, 2352] },
+    // sea planes between the dock and Baha Mar (travel, not games)
+    { id: "seaplane", name: "Fly to Baha Mar", icon: "✈️", kind: "travel", to: "bahamar", portal: [4630, 2352], portalR: 70, arrive: [4610, 2352], map: [4650, 2352] },
+    { id: "seaplane-home", name: "Fly Home", icon: "✈️", kind: "travel", to: "mainland", portal: [4990, 1392], portalR: 60, arrive: [4995, 1410], map: [4980, 1300] },
     { id: "gondola", name: "Winter Mountain", icon: "🏔️", kind: "future", portal: [3160, 515], portalR: 85, arrive: [3160, 540], map: [3300, 150] },
-    { id: "island", name: "Mystery Island", icon: "🏝️", kind: "future", map: [4780, 1100], unreachable: true },
   ];
   const DEST = world.DEST = {};
   DESTINATIONS.forEach((d) => (DEST[d.id] = d));
@@ -47,6 +48,7 @@
   // What does this destination currently offer? "place" | "playable" | "placeholder" | "locked"
   world.destStatus = (d) => {
     if (d.kind === "place") return "place";
+    if (d.kind === "travel") return "travel";
     return RW.games.status(RW.games.forDestination(d.id));
   };
   world.destTitle = (d) => {
@@ -1246,12 +1248,15 @@
   // ---------------------------------------------------------------------
   // BAHA BAY (the water park: Splash Down slides and the Lazy River)
   // ---------------------------------------------------------------------
+  // Baha Bay water park, out on Baha Mar island. Its layout was drawn for its old spot
+  // on the mainland, so everything is shifted by L.park.
   function buildBahaBay() {
-    const fy = L.waterFenceY;
-    E.addSolid({ r: [3120, fy - 16, 3980, fy + 40] });
-    for (let x = 3130; x < 3960; x += 200) {
-      const w = Math.min(200, 3960 - x);
-      if (x + w > 3430 && x < 3670) continue; // gate gap
+    const fy = L.waterFenceY, { dx, dy } = L.park;
+    E.addSolid({ r: [3120 + dx, fy - 16, 3980 + dx, fy + 40] });
+    E.addSolid({ r: [3120 + dx, fy, 3980 + dx, fy + 600] }); // the park grounds (you play it through the gates)
+    for (let x = 3130 + dx; x < 3960 + dx; x += 200) {
+      const w = Math.min(200, 3960 + dx - x);
+      if (x + w > 3430 + dx && x < 3670 + dx) continue; // gate gap
       staticProp(x + w / 2, fy, [-w / 2 - 4, -70, w / 2 + 4, 6], (c) => {
         c.fillStyle = "#EAF6FF";
         for (let k = -w / 2; k <= w / 2; k += 14) { A.rr(c, k - 3, -60, 6, 60, 3); c.fill(); }
@@ -1259,12 +1264,12 @@
       }, { kind: "fence" });
     }
     const wwOpen = world.destStatus(DEST.waterworld) !== "locked";
-    staticProp(3550, fy + 2, [-200, -280, 200, 10], (c) => B.waterGate(c, wwOpen), { kind: "gate", tap: portalTap("waterworld"), solid: [{ r: [-172, -12, 172, 6] }] });
-    staticProp(3240, 2960, [-130, -220, 150, 10], (c) => { c.scale(0.78, 0.78); B.slides(c); }, { kind: "slides" });
-    staticProp(3870, 2990, [-150, -220, 130, 10], (c) => { c.scale(-0.78, 0.78); B.slides(c); }, { kind: "slides" });
+    staticProp(3550 + dx, fy + 2, [-200, -280, 200, 10], (c) => B.waterGate(c, wwOpen), { kind: "gate", tap: portalTap("waterworld"), solid: [{ r: [-172, -12, 172, 6] }] });
+    staticProp(3260 + dx, 2960 + dy, [-130, -220, 150, 10], (c) => { c.scale(0.78, 0.78); B.slides(c); }, { kind: "slides" });
+    staticProp(3850 + dx, 2990 + dy, [-150, -220, 130, 10], (c) => { c.scale(-0.78, 0.78); B.slides(c); }, { kind: "slides" });
     // tipping splash bucket
     add({
-      kind: "bucket", x: 3400, y: 3000, box: [-60, -230, 60, 10], tip: 0, t0: 0,
+      kind: "bucket", x: 3400 + dx, y: 3000 + dy, box: [-60, -230, 60, 10], tip: 0, t0: 0,
       draw(c, E2, e) {
         c.fillStyle = "#F2C230"; c.fillRect(-40, -200, 8, 200); c.fillRect(32, -200, 8, 200);
         c.fillStyle = "#2F6BD6"; c.fillRect(-44, -206, 88, 10);
@@ -1276,16 +1281,16 @@
       },
       update(e, dt) { e.t0 += dt; const cyc = e.t0 % 7; e.tip = cyc > 5.5 ? Math.min(1, (cyc - 5.5) * 3) : Math.max(0, e.tip - dt * 2); },
     });
-    sign(3330, 2700, ["SPLASH DOWN", "WATER SLIDES"], { size: 15, board: "#EAF6FF", edge: "#1E8FC4", ink: "#156A99" });
+    sign(3330 + dx, 2700 + dy, ["SPLASH DOWN", "WATER SLIDES"], { size: 15, board: "#EAF6FF", edge: "#1E8FC4", ink: "#156A99" });
 
     // Lazy River entrance: a tiki hut with a tube stack, just east of the main gate
     const lrOpen = world.destStatus(DEST.lazyriver) !== "locked";
-    staticProp(3862, fy + 4, [-110, -230, 110, 10], (c) => B.riverHut(c, lrOpen), {
+    staticProp(3862 + dx, fy + 4, [-110, -230, 110, 10], (c) => B.riverHut(c, lrOpen), {
       kind: "gate", tap: portalTap("lazyriver"), shadow: [90, 10],
       solid: [{ r: [-92, -10, -66, 4] }, { r: [66, -10, 92, 4] }],
     });
     // tubes floating round the lazy river inside the park
-    const RIVER = { x: 3550, y: 3050, rx: 360, ry: 90 };
+    const RIVER = { x: 3550 + dx, y: 3050 + dy, rx: 330, ry: 80 };
     const riders = [["#FF5C8A", "#F4D273"], ["#FFB020", "#7B4A26"], ["#2EB872", "#5B2330"], ["#7C5CFF", "#2B2B2B"], ["#FF7A1F", "#C98A4A"], ["#1E9FD9", "#F4D273"]];
     riders.forEach(([col, hair], i) => {
       add({
@@ -1312,7 +1317,7 @@
   }
 
   // ---------------------------------------------------------------------
-  // BEACH, DOCK, MYSTERY ISLAND
+  // BEACH AND DOCK
   // ---------------------------------------------------------------------
   function buildBeach() {
     sign(3985, 1830, ["ROSENBERG", "BEACH"], { size: 20, board: "#FFF4D6", edge: "#2F9BD0", ink: "#1E6B99" });
@@ -1371,38 +1376,164 @@
       c.strokeStyle = "rgba(90,60,30,.35)"; c.lineWidth = 2;
       for (let x = -200; x < 240; x += 18) { c.beginPath(); c.moveTo(x, -30); c.lineTo(x, 32); c.stroke(); }
     }, { layer: "ground" });
-    add({
-      kind: "boat", x: 4770, y: 2372, box: [-80, -140, 90, 20], sortY: 2372,
-      draw(c, E2) {
-        const bob = Math.sin(E2.t * 1.6) * 3;
-        c.translate(0, bob);
-        c.fillStyle = "rgba(20,70,120,.25)"; A.ell(c, 0, 8, 80, 12); c.fill();
-        c.fillStyle = A.lin(c, 0, -30, 0, 10, ["#FFFFFF", "#DCE4EE"]);
-        c.beginPath(); c.moveTo(-76, -30); c.lineTo(76, -30); c.quadraticCurveTo(66, 8, 40, 10); c.lineTo(-50, 10); c.quadraticCurveTo(-70, 0, -76, -30); c.closePath(); c.fill();
-        c.fillStyle = "#E8453C"; c.fillRect(-72, -18, 144, 6);
-        A.line(c, 0, -30, 0, -130, 4, "#8A6A44");
-        c.fillStyle = "#FFFFFF"; c.beginPath(); c.moveTo(4, -126); c.lineTo(60, -40); c.lineTo(4, -40); c.closePath(); c.fill();
-        c.fillStyle = "#2F9BD0"; c.beginPath(); c.moveTo(-4, -120); c.lineTo(-50, -44); c.lineTo(-4, -44); c.closePath(); c.fill();
-        B.plate(c, "SOON", 30, -64, 10, "#FF5C8A", "#FFFFFF");
-      },
-      tap: portalTap("beach-dock"),
-    });
-    // Mystery Island with its floating question mark
-    add({
-      kind: "island", x: 4785, y: 1170, box: [-160, -330, 160, 40], sortY: 1170,
-      draw(c, E2) {
-        [[-60, -10, 1.1], [30, -20, 0.95], [80, 6, 0.8]].forEach(([x, y, s]) => { c.save(); c.translate(x, y); A.tree(c, "palm", s, 3, Math.sin(E2.t * 1.3 + x) * 0.03); c.restore(); });
-        const bob = Math.sin(E2.t * 1.8) * 10;
-        c.fillStyle = "rgba(255,210,63,.18)"; c.beginPath(); c.arc(0, -250 + bob, 70 + Math.sin(E2.t * 3) * 6, 0, TAU); c.fill();
-        A.text(c, "?", 0, -250 + bob, 120, "#FFD23F", { weight: 700, stroke: "#B46A00", strokeW: 10 });
-        c.globalAlpha = 0.6 + Math.sin(E2.t * 4) * 0.4;
-        c.fillStyle = "#FFFFFF"; A.starPath(c, 40, -300 + bob, 9, 4, 0.3); c.fill(); A.starPath(c, -46, -220 + bob, 6, 4, 0.3); c.fill();
-        c.globalAlpha = 1;
-      },
-      tap: { reach: "remote", act(E2) { RW.sfx.play("magic"); E2.toast("Mystery Island… how will we ever get there?", "🏝️"); } },
-      hit: [-140, -340, 140, 30],
+    buildSeaplanes();
+  }
+
+  // ---------------------------------------------------------------------
+  // SEA PLANES to Baha Mar, and the island itself
+  // ---------------------------------------------------------------------
+  // A little float plane, side view, facing right. Drawn at its waterline.
+  function drawSeaplane(c, t, o = {}) {
+    const flying = !!o.flying;
+    // floats and struts
+    c.strokeStyle = "#5A6478"; c.lineWidth = 4;
+    [[-30, -34], [34, -34]].forEach(([x, y]) => { c.beginPath(); c.moveTo(x, -6); c.lineTo(x + 6, y); c.stroke(); });
+    c.fillStyle = A.lin(c, 0, -10, 0, 6, ["#FFD23F", "#E8A21C"]);
+    c.beginPath(); c.moveTo(-70, -8); c.lineTo(62, -8); c.quadraticCurveTo(84, -6, 88, 0); c.lineTo(-64, 2); c.quadraticCurveTo(-72, -2, -70, -8); c.closePath(); c.fill();
+    // body
+    c.fillStyle = A.lin(c, 0, -80, 0, -30, ["#FFFFFF", "#E2ECF4"]);
+    c.beginPath();
+    c.moveTo(-96, -74); c.lineTo(-84, -76); c.quadraticCurveTo(-40, -56, 20, -80); c.quadraticCurveTo(66, -80, 78, -58);
+    c.quadraticCurveTo(80, -40, 64, -34); c.lineTo(-40, -36); c.quadraticCurveTo(-80, -44, -96, -74); c.closePath(); c.fill();
+    // tail fin
+    c.fillStyle = "#18A0B8"; c.beginPath(); c.moveTo(-96, -74); c.lineTo(-112, -118); c.lineTo(-88, -118); c.lineTo(-66, -70); c.closePath(); c.fill();
+    c.fillStyle = "#FF7A45"; c.beginPath(); c.moveTo(-104, -100); c.lineTo(-110, -116); c.lineTo(-90, -116); c.lineTo(-86, -104); c.closePath(); c.fill();
+    // stripe + name
+    c.fillStyle = "#18A0B8"; c.beginPath(); c.moveTo(-80, -52); c.lineTo(70, -54); c.lineTo(72, -46); c.lineTo(-70, -44); c.closePath(); c.fill();
+    c.fillStyle = "#FF7A45"; c.fillRect(-60, -44, 124, 3);
+    c.save(); c.translate(-6, -63); c.scale(o.dir || 1, 1); A.text(c, "BAHA MAR", 0, 0, 13, "#1B6FB4", { weight: 700 }); c.restore(); // reads right either way
+    // windows
+    c.fillStyle = "#2B4A6E"; A.rr(c, 30, -76, 30, 16, 6); c.fill();
+    c.fillStyle = "#9FDBFF"; [-44, -24].forEach((x) => { A.rr(c, x, -58, 12, 9, 3); c.fill(); });
+    c.fillStyle = "rgba(255,255,255,.6)"; A.rr(c, 34, -74, 10, 5, 2); c.fill();
+    // high wing (seen edge-on) with its strut
+    c.strokeStyle = "#5A6478"; c.lineWidth = 3; c.beginPath(); c.moveTo(0, -40); c.lineTo(22, -88); c.stroke();
+    c.fillStyle = "#18A0B8"; A.rr(c, -30, -94, 96, 11, 5); c.fill();
+    c.fillStyle = "#FFFFFF"; A.rr(c, -24, -92, 30, 4, 2); c.fill();
+    // nose + propeller
+    c.fillStyle = "#FF7A45"; A.ell(c, 80, -58, 8, 12); c.fill();
+    const spin = o.prop ? t * 60 : 0.6;
+    c.fillStyle = "rgba(60,60,70,.8)";
+    if (o.prop) { c.globalAlpha = 0.35; A.ell(c, 88, -58, 4, 30); c.fill(); c.globalAlpha = 1; }
+    else { c.save(); c.translate(88, -58); c.rotate(spin); c.fillRect(-2, -28, 4, 56); c.restore(); }
+    c.fillStyle = "#3A4252"; A.ell(c, 88, -58, 4, 5); c.fill();
+    if (!flying) { c.fillStyle = "rgba(255,255,255,.55)"; A.ell(c, 0, 4, 90, 5); c.fill(); }
+  }
+
+  // the flight path: out over the water, round, and down at the other end
+  const FLIGHT = { from: [4775, 2378], to: [4985, 1300], c1: [5700, 2650], c2: [5650, 1050] };
+  const bez = (u, a, b, c2, d) => { const v = 1 - u; return v * v * v * a + 3 * v * v * u * b + 3 * v * u * u * c2 + u * u * u * d; };
+  const planes = {};
+
+  function buildSeaplanes() {
+    const F = FLIGHT, I = L.island;
+    const mkPlane = (key, x, y, dir, destId) => {
+      const e = add({
+        kind: "seaplane", x, y, box: [-120, -130, 100, 14], sortY: y, dir, home: [x, y], bubbleH: 150,
+        draw(c, E2, e2) {
+          if (e2.hide) return;
+          const bob = e2.fly ? 0 : Math.sin(E2.t * 1.6 + x) * 2.5;
+          if (e2.fly) { // shadow on the water below
+            c.save(); c.fillStyle = "rgba(20,70,120,.22)"; A.ell(c, 0, 6, 70 * (1 - e2.z / 600), 10); c.fill(); c.restore();
+            c.translate(0, -e2.z); c.rotate(e2.tilt || 0);
+          }
+          c.translate(0, bob); c.scale(e2.dir, 1);
+          drawSeaplane(c, E2.t, { prop: e2.fly || e2.revving, flying: e2.fly && e2.z > 10, dir: e2.dir });
+        },
+        update(e2, dt) { if (e2.flight) e2.flight(dt); },
+        tap: { reach: "remote", act(E2) { world.flyTo(key === "main" ? "bahamar" : "mainland"); } },
+      });
+      planes[key] = e;
+      return e;
+    };
+    mkPlane("main", F.from[0], F.from[1], -1);
+    mkPlane("island", F.to[0], F.to[1], -1);
+
+    // dock sign on the mainland
+    sign(4235, 2300, ["FLY TO", "BAHA MAR ✈"], { size: 18, board: "#FFFFFF", edge: "#18A0B8", ink: "#1B6FB4", ent: { tap: { reach: "remote", act() { world.flyTo("bahamar"); } } } });
+    // a signpost where the water park used to be
+    sign(3560, 2860, ["BAHA MAR →", "sea plane at the dock"], { size: 15, board: "#EAF6FF", edge: "#18A0B8", ink: "#1B6FB4", ent: { tap: { reach: "remote", act() { world.flyTo("bahamar"); } } } });
+
+    // ---- the island ----
+    // a little landing dock where the plane ties up
+    staticProp(4990, 1342, [-60, -20, 60, 30], (c) => {
+      c.fillStyle = "#6B4A30"; [-44, -4, 36].forEach((x) => { A.rr(c, x - 4, 10, 8, 20, 3); c.fill(); });
+      c.fillStyle = A.lin(c, 0, -16, 0, 16, ["#D8A870", "#B8834E"]); A.rr(c, -56, -16, 112, 32, 5); c.fill();
+      c.strokeStyle = "rgba(90,60,30,.35)"; c.lineWidth = 2; for (let x = -50; x < 56; x += 14) { c.beginPath(); c.moveTo(x, -16); c.lineTo(x, 16); c.stroke(); }
+    }, { layer: "ground" });
+    sign(4850, 1400, ["FLY HOME ✈"], { size: 17, board: "#FFFFFF", edge: "#18A0B8", ink: "#1B6FB4", ent: { tap: { reach: "remote", act() { world.flyTo("mainland"); } } } });
+    sign(4820, 1560, ["WELCOME TO", "BAHA MAR"], { size: 20, board: "#FFF4D6", edge: "#FF7A45", ink: "#C24E1C" });
+    // palms and beach umbrellas round the island
+    [[4560, 1650], [4660, 1500], [4780, 1420], [5250, 1380], [5460, 1450], [5620, 1580], [5680, 1760], [4520, 1880], [5640, 1960]].forEach(([x, y], i) => tree(x, y, "palm", 0.9 + (i % 3) * 0.08));
+    [[5300, 1480, "#FF5C8A", "#FFFFFF"], [5560, 1560, "#FFD23F", "#2F9BFF"], [4700, 1720, "#2EB872", "#FFFFFF"]].forEach(([x, y, a, b]) => {
+      staticProp(x, y, [-62, -104, 62, 8], (c) => P_.umbrella(c, a, b), { shadow: [52, 14, 0, 6, 0.16], solid: [{ c: [0, -2, 5] }] });
     });
   }
+
+  // Fly between the mainland dock and Baha Mar.
+  let flying = false;
+  world.flyTo = (to) => {
+    const P = E.player;
+    if (!P || flying || RW.host.current || E.mode !== "play") return;
+    const going = to === "bahamar";
+    if (going === E.onIsland(P.x, P.y)) return; // already there
+    const dep = going ? planes.main : planes.island, arr = going ? planes.island : planes.main;
+    const board = going ? DEST.seaplane : DEST["seaplane-home"], land = going ? DEST["seaplane-home"] : DEST.seaplane;
+    flying = true;
+    P.lock = true; P.path = null; P.pose = null;
+    // if you're not at the plane, the plane's crew whisks you there first
+    if (Math.hypot(P.x - board.arrive[0], P.y - board.arrive[1]) > 120) {
+      E.burst(P.x, P.y, 40, "puff", 10);
+      P.x = board.arrive[0]; P.y = board.arrive[1]; P.emerge = 0; E.snap();
+      E.burst(P.x, P.y, 40, "sparkle", 12);
+    }
+    RW.sfx.play("tap");
+    E.say(P, going ? U.pick(["Baha Mar, here we come!", "Wheee, a sea plane!", "Let's fly!"]) : U.pick(["Bye, Baha Mar!", "Home time!", "Fly me home!"]), 1.4);
+    dep.revving = true;
+    E.later(0.9, () => {
+      // climb aboard
+      P.hidden = true;
+      E.burst(dep.x, dep.y - 50, 20, "sparkle", 8);
+      RW.sfx.play("rumble");
+      arr.hide = true;
+      const F = FLIGHT, dur = 4.2;
+      dep.fly = true; dep.z = 0; dep.sortY = 1e6;
+      let t = 0, last = [dep.x, dep.y];
+      const step = (dt) => {
+        t += dt;
+        let u = Math.min(1, t / dur);
+        u = u * u * (3 - 2 * u); // ease in and out
+        const k = going ? u : 1 - u; // the return trip runs the path backwards
+        const x = bez(k, F.from[0], F.c1[0], F.c2[0], F.to[0]), y = bez(k, F.from[1], F.c1[1], F.c2[1], F.to[1]);
+        dep.x = x; dep.y = y;
+        dep.z = Math.pow(Math.sin(Math.PI * u), 0.7) * 260;
+        const vx = x - last[0];
+        if (Math.abs(vx) > 0.3) dep.dir = vx > 0 ? 1 : -1;
+        dep.tilt = U.clamp((y - last[1]) * 0.02, -0.18, 0.18) * dep.dir;
+        last = [x, y];
+        E.camTarget = { x, y: y - dep.z - 60 };
+        if (Math.random() < dt * 8) E.burst(x - dep.dir * 90, y - dep.z - 58, 0, "puff", 1);
+        return u < 1;
+      };
+      dep.flight = (dt) => {
+        if (!step(dt)) {
+          dep.flight = null;
+          // touch down: the plane at the far end takes over, this one quietly goes home
+          RW.sfx.play("splash");
+          E.burst(arr.x, arr.y, 20, "sparkle", 10);
+          arr.hide = false;
+          dep.fly = false; dep.revving = false; dep.z = 0; dep.tilt = 0; dep.x = dep.home[0]; dep.y = dep.home[1]; dep.sortY = dep.home[1]; dep.dir = -1;
+          dep.hide = false;
+          P.x = land.arrive[0]; P.y = land.arrive[1]; P.hidden = false; P.emerge = 0; P.dir = 1;
+          E.camTarget = null; E.snap();
+          E.burst(P.x, P.y, 40, "sparkle", 12);
+          P.lock = false; flying = false;
+          E.later(0.4, () => { E.act("celebrate", 1.2, { lock: false }); E.say(P, going ? "Welcome to Baha Mar!" : "Home sweet home!", 1.8); });
+          if (going) RW.bus.emit("toast", { text: "Baha Mar! Splash Down and the Lazy River are through the gates.", icon: "🏝️" });
+        }
+      };
+    });
+  };
 
   // Beach volleyball court (Jonah's Volley)
   function buildVolleyball() {
@@ -1914,7 +2045,6 @@
     [880, 2040, 1900, 3050],  // sports complex
     [1900, 2020, 2260, 2320], // playground
     [2150, 2380, 2780, 2820], // arcade and its front lawn
-    [3100, 2600, 4000, 3100], // Baha Bay
     [3200, 1350, 4050, 2260], // plaza + lot
     [3350, 540, 4100, 1060],  // fart man zone
     [120, 540, 1030, 1230],   // raceway + garage

@@ -224,9 +224,7 @@
     ["futureGame01", "sports-hoops", "🏀"],
     ["futureGame02", "sports-stadium", "🏈"],
     ["futureGame03", "woods-cave", "🔦"],
-    ["futureGame04", "beach-dock", "⛵"],
     ["futureGame05", "gondola", "🏔️"],
-    ["futureGame06", "island", "🏝️"],
     ["futureGame07", "plaza-lot", "🚧"],
     ["futureGame08", "plaza-building", "❓"],
   ];

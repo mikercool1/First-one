@@ -7,7 +7,7 @@ window.RW = window.RW || {};
   const RW = window.RW;
 
   // The playable world. Ground coordinates: x to the right, y toward the viewer.
-  RW.WORLD = { W: 5000, H: 3400, minX: 110, maxX: 4300, minY: 360, maxY: 3060 };
+  RW.WORLD = { W: 6200, H: 3400, minX: 110, maxX: 4300, minY: 360, maxY: 3060 };
 
   // ---------- helpers ----------
   const U = RW.util = {

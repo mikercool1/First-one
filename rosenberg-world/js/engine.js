@@ -68,9 +68,12 @@
   }
   E.addSolid = (s) => addSolids({ x: 0, y: 0, solid: [s] });
   const onDock = (x, y) => y > 2322 && y < 2384 && x > 4150 && x < 4690;
+  // Baha Mar island: walkable sand inside its shoreline (only reachable by sea plane)
+  const onIsland = (x, y) => { const I = RW.layout.island; return ((x - I.x) / (I.rx - 36)) ** 2 + ((y - I.y) / (I.ry - 30)) ** 2 < 1; };
+  E.onIsland = onIsland;
   E.blocked = (x, y, r = 16) => {
-    if (x < WORLD.minX || x > WORLD.maxX + 400 || y < WORLD.minY || y > WORLD.maxY) return true;
-    if (x > RW.layout.shoreX(y) - 24 && !onDock(x, y)) return true;
+    if (x < WORLD.minX || y < WORLD.minY || y > WORLD.maxY) return true;
+    if (x > RW.layout.shoreX(y) - 24 && !onDock(x, y) && !onIsland(x, y)) return true;
     const list = hash.get(Math.floor(x / CELL) + "," + Math.floor(y / CELL));
     if (list) for (const s of list) {
       if (s.type === "r") { if (x > s.x0 - r && x < s.x1 + r && y > s.y0 - r * 0.6 && y < s.y1 + r * 0.6) return true; }
@@ -131,7 +134,19 @@
     if (gridDirty || !grid) buildGrid();
     const s = Math.floor(sy / G) * GW + Math.floor(sx / G);
     let goal = Math.floor(ty / G) * GW + Math.floor(tx / G);
-    if (grid[goal]) return [[tx, ty]];
+    if (grid[goal]) {
+      // the target sits right against something solid (a gate, a fence): aim for the nearest open cell
+      const gx0 = goal % GW, gy0 = Math.floor(goal / GW);
+      let best = -1, bd = Infinity;
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+        const nx = gx0 + dx, ny = gy0 + dy;
+        if (nx < 0 || ny < 0 || nx >= GW || ny >= GH || grid[ny * GW + nx]) continue;
+        const d = Math.hypot(nx * G + G / 2 - tx, ny * G + G / 2 - ty);
+        if (d < bd) { bd = d; best = ny * GW + nx; }
+      }
+      if (best < 0) return [[tx, ty]];
+      goal = best;
+    }
     const open = [s], gScore = new Map([[s, 0]]), came = new Map(), closed = new Set();
     const hFn = (i) => Math.hypot((i % GW) - (goal % GW), Math.floor(i / GW) - Math.floor(goal / GW));
     const f = new Map([[s, hFn(s)]]);
@@ -408,6 +423,10 @@
     if (!P || P.lock) return;
     const e = hitTest(wx, wy);
     if (e) { useEntity(e); return; }
+    // tapping Baha Mar from the mainland (or the mainland from Baha Mar) takes the sea plane
+    const onI = E.onIsland(P.x, P.y);
+    if (!onI && E.onIsland(wx, wy)) { RW.world.flyTo("bahamar"); return; }
+    if (onI && wx < RW.layout.shoreX(wy) - 30) { RW.world.flyTo("mainland"); return; }
     E.walkTo(wx, wy);
     RW.sfx.play("tap");
   }
@@ -640,6 +659,7 @@
       tx = P.x; ty = P.y - 60 - (P.lift > 250 ? P.lift * 0.85 : P.lift * 0.4);
     } else if (E.titleCam) { tx = E.titleCam[0]; ty = E.titleCam[1]; }
     if (cam.lookT > 0) { cam.lookT -= dt; tx = cam.lookX; ty = cam.lookY; }
+    if (E.camTarget) { tx = E.camTarget.x; ty = E.camTarget.y; } // e.g. following the sea plane
     const k = E.snapCam ? 1 : Math.min(1, dt * (cam.lookT > 0 ? 2.2 : 4.5));
     E.snapCam = false;
     cam.x = U.lerp(cam.x, tx, k); cam.y = U.lerp(cam.y, ty, k);
@@ -787,6 +807,7 @@
   }
 
   function drawPlayer(P, ghost) {
+    if (P.hidden) return;
     c.save();
     c.translate(P.x, P.y);
     if (!ghost) A.shadow(c, 0, 0, 24 * Math.max(0.4, 1 - P.lift / 500), 9, 0.26);

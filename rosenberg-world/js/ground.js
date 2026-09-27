@@ -17,7 +17,10 @@
     hill: { x: 3700, y: 790, rx: 440, ry: 250 },
     track: { x: 640, y: 760, rx: 320, ry: 175 },
     plaza: { x: 3500, y: 1760, r: 250 },
-    waterFenceY: 2760,
+    // Baha Mar: the water park island, reached by sea plane from the dock
+    island: { x: 5100, y: 1800, rx: 640, ry: 460 },
+    park: { dx: 1550, dy: -1040 },        // the water park's old spot, moved onto the island
+    waterFenceY: 1720,
     paths: [
       // main boulevard, west trail out of the woods to the beach
       { w: 100, pts: [[-120, 1880], [110, 1895], [300, 1905], [620, 1900], [1000, 1900], [1420, 1900], [2450, 1900], [3200, 1900], [3900, 1880], [4080, 1860]], kind: "stone" },
@@ -307,34 +310,44 @@
     c.beginPath();
     c.moveTo(shoreX(-400) - 330, -400);
     for (let y = -400; y <= 3600; y += 40) c.lineTo(shoreX(y) - 300 + Math.sin(y / 130) * 30, y);
-    c.lineTo(6000, 3600); c.lineTo(6000, -400); c.closePath();
+    c.lineTo(7000, 3600); c.lineTo(7000, -400); c.closePath();
     c.fillStyle = A.lin(c, 3950, 0, 4280, 0, ["#F2DDA8", "#F8E8BE", "#F0D9A0"]);
     c.fill();
     // wet sand + ocean
     c.beginPath();
     c.moveTo(shoreX(-400), -400);
     for (let y = -400; y <= 3600; y += 30) c.lineTo(shoreX(y) - 18, y);
-    c.lineTo(6000, 3600); c.lineTo(6000, -400); c.closePath();
+    c.lineTo(7000, 3600); c.lineTo(7000, -400); c.closePath();
     c.fillStyle = "#DCC38C"; c.fill();
     c.beginPath();
     c.moveTo(shoreX(-400), -400);
     for (let y = -400; y <= 3600; y += 30) c.lineTo(shoreX(y), y);
-    c.lineTo(6000, 3600); c.lineTo(6000, -400); c.closePath();
+    c.lineTo(7000, 3600); c.lineTo(7000, -400); c.closePath();
     c.fillStyle = A.lin(c, 4260, 0, 5000, 0, [[0, "#7FDDE6"], [0.08, "#4EC3DD"], [0.35, "#2A9BD0"], [1, "#1B6FB4"]]);
     c.fill();
-    // mystery island shallows
-    c.fillStyle = "rgba(140,230,240,.6)"; A.ell(c, 4780, 1180, 190, 105); c.fill();
-    c.fillStyle = "#F4DEA6"; A.ell(c, 4780, 1170, 140, 72); c.fill();
-    c.fillStyle = "#7CC766"; A.ell(c, 4785, 1160, 105, 52); c.fill();
+    // Baha Mar island: shallows, sand, a grassy middle
+    const I = L.island;
+    c.fillStyle = "rgba(140,230,240,.55)"; A.ell(c, I.x, I.y + 10, I.rx + 110, I.ry + 80); c.fill();
+    c.fillStyle = "rgba(170,240,245,.6)"; A.ell(c, I.x, I.y + 6, I.rx + 50, I.ry + 36); c.fill();
+    c.fillStyle = "#DCC38C"; A.ell(c, I.x, I.y + 4, I.rx + 12, I.ry + 10); c.fill();
+    c.fillStyle = A.lin(c, I.x - I.rx, 0, I.x + I.rx, 0, ["#F2DDA8", "#F8E8BE", "#F0D9A0"]); A.ell(c, I.x, I.y, I.rx, I.ry); c.fill();
+    c.fillStyle = grassPattern || "#8CD06A"; A.ell(c, I.x + 10, I.y - 20, I.rx - 150, I.ry - 120); c.fill();
+    // boardwalk from the sea plane landing to the park gates
+    c.lineCap = "round";
+    const walk = [[4990, 1380], [5010, 1500], [5100, 1610], [5412, 1612]];
+    smoothPath(c, walk); c.strokeStyle = PATH_COLORS.board[0]; c.lineWidth = 82; c.stroke();
+    smoothPath(c, walk); c.strokeStyle = PATH_COLORS.board[1]; c.lineWidth = 70; c.stroke();
+    smoothPath(c, walk); c.strokeStyle = PATH_COLORS.board[2]; c.lineWidth = 35; c.setLineDash([4, 14]); c.stroke(); c.setLineDash([]);
 
-    // Baha Bay pool and lazy river, behind its fence
-    c.fillStyle = "#E4D8C2"; A.rr(c, 3140, 2780, 820, 420, 30); c.fill();
-    c.fillStyle = "#3CC3E8"; A.rr(c, 3420, 2860, 260, 130, 40); c.fill();
-    c.fillStyle = "#7FDDF5"; A.rr(c, 3432, 2870, 236, 40, 20); c.fill();
+    // Baha Bay pool and lazy river, behind its fence (on the island)
+    const { dx, dy } = L.park;
+    c.fillStyle = "#E4D8C2"; A.rr(c, 3180 + dx, 2780 + dy, 740, 400, 30); c.fill();
+    c.fillStyle = "#3CC3E8"; A.rr(c, 3420 + dx, 2860 + dy, 260, 130, 40); c.fill();
+    c.fillStyle = "#7FDDF5"; A.rr(c, 3432 + dx, 2870 + dy, 236, 40, 20); c.fill();
     c.strokeStyle = "#3CC3E8"; c.lineWidth = 46;
-    A.ell(c, 3550, 3050, 360, 90); c.stroke();
+    A.ell(c, 3550 + dx, 3050 + dy, 330, 80); c.stroke();
     c.strokeStyle = "#8BE3F7"; c.lineWidth = 12; c.setLineDash([30, 30]);
-    A.ell(c, 3550, 3050, 360, 90); c.stroke(); c.setLineDash([]);
+    A.ell(c, 3550 + dx, 3050 + dy, 330, 80); c.stroke(); c.setLineDash([]);
   }
 
   function paintPaths(c) {
@@ -346,12 +359,12 @@
       c.setLineDash(p.kind === "board" ? [4, 14] : [2, 26]); c.stroke(); c.setLineDash([]);
     });
     // road beyond the southern hedge
-    c.fillStyle = "#6B7080"; c.fillRect(-500, 3130, 6000, 110);
-    c.fillStyle = "#8A8F9E"; c.fillRect(-500, 3122, 6000, 10); c.fillRect(-500, 3240, 6000, 10);
+    c.fillStyle = "#6B7080"; c.fillRect(-500, 3130, 4800, 110);
+    c.fillStyle = "#8A8F9E"; c.fillRect(-500, 3122, 4800, 10); c.fillRect(-500, 3240, 4800, 10);
     c.strokeStyle = "#F2D14B"; c.lineWidth = 4; c.setLineDash([40, 30]);
-    c.beginPath(); c.moveTo(-500, 3185); c.lineTo(5500, 3185); c.stroke(); c.setLineDash([]);
+    c.beginPath(); c.moveTo(-500, 3185); c.lineTo(4300, 3185); c.stroke(); c.setLineDash([]);
     // sidewalk and far lawns
-    c.fillStyle = "#E3DCCB"; c.fillRect(-500, 3250, 6000, 30);
+    c.fillStyle = "#E3DCCB"; c.fillRect(-500, 3250, 4800, 30);
   }
 
   function paintDetails(c, x0, y0, x1, y1) {
@@ -438,11 +451,21 @@
       for (let i = 0; i < 26; i++) {
         const y = vy0 + ((i * 137 + t * 12) % (vy1 - vy0 + 200)) - 100;
         const x = shoreX(y) + 60 + ((i * 263) % 600);
+        const I = L.island;
+        if (((x - I.x) / (I.rx + 60)) ** 2 + ((y - I.y) / (I.ry + 50)) ** 2 < 1) continue; // not on Baha Mar
         const w = 20 + (i % 3) * 10, ph = Math.sin(t * 2 + i);
         c.globalAlpha = 0.4 + ph * 0.3;
         c.beginPath(); c.moveTo(x - w, y); c.quadraticCurveTo(x, y - 6, x + w, y); c.stroke();
       }
       c.globalAlpha = 1;
+    }
+    // surf around Baha Mar
+    const I = L.island;
+    if (vx1 > I.x - I.rx - 100 && vy1 > I.y - I.ry - 100 && vy0 < I.y + I.ry + 100) {
+      c.strokeStyle = "rgba(255,255,255,.7)"; c.lineWidth = 5;
+      c.setLineDash([46, 22]); c.lineDashOffset = -t * 18;
+      A.ell(c, I.x, I.y + 6, I.rx + 14 + Math.sin(t * 1.3) * 5, I.ry + 12 + Math.sin(t * 1.3) * 4); c.stroke();
+      c.setLineDash([]); c.lineDashOffset = 0;
     }
     // stream sparkle
     if (vx0 < 700) {

@@ -224,6 +224,15 @@
     portalDest = d;
     if (!d || E.mode !== "play") { portalCard.classList.remove("on"); setTimeout(() => { if (!portalDest) show(portalCard, false); }, 250); return; }
     const status = world.destStatus(d);
+    if (status === "travel") { // the sea plane: a FLY card instead of PLAY
+      portalCard.style.setProperty("--c", "#18A0B8");
+      portalCard.innerHTML = `<div class="p-ico">✈️</div><div class="p-txt"><div class="p-title">${d.name.toUpperCase()}</div><div class="p-sub">${d.to === "bahamar" ? "Splash Down and the Lazy River are on the island!" : "Back to Rosenberg World"}</div></div><button class="p-btn" type="button">FLY</button>`;
+      portalCard.querySelector(".p-btn").addEventListener("click", (ev) => { ev.stopPropagation(); world.flyTo(d.to); });
+      show(portalCard, true);
+      requestAnimationFrame(() => portalCard.classList.add("on"));
+      RW.sfx.play("pop");
+      return;
+    }
     const g = RW.games.forDestination(d.id);
     const locked = status === "locked";
     const titleTxt = locked ? d.name : world.destTitle(d);
@@ -244,6 +253,7 @@
   RW.bus.on("portalEnter", (d) => enterPortal(d));
   function enterPortal(d) {
     const status = world.destStatus(d);
+    if (status === "travel") { world.flyTo(d.to); return; }
     if (status === "locked") {
       RW.sfx.play("lock");
       portalCard.classList.remove("shake"); void portalCard.offsetWidth; portalCard.classList.add("shake");
@@ -445,7 +455,7 @@
   // MAP
   // =====================================================================
   const mapEl = $("#map"), mapCv = $("#mapCanvas"), pins = $("#pins");
-  const MAP = { x0: -100, y0: 90, x1: 5020, y1: 3260 };
+  const MAP = { x0: -100, y0: 90, x1: 6100, y1: 3260 };
   let mapDirty = true;
   RW.bus.on("stars", () => (mapDirty = true));
   function renderMapCanvas() {
@@ -473,7 +483,7 @@
     world.DESTINATIONS.forEach((d) => {
       if (d.noPin) return;
       const status = world.destStatus(d);
-      if (status === "locked" || status === "place") return; // only games you can play
+      if (status === "locked" || status === "place" || status === "travel") return; // only games you can play
       const [px, py] = pct(d.map[0], d.map[1]);
       const p = el("button", `pin ${status}`);
       p.type = "button";
