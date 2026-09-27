@@ -631,7 +631,7 @@
   // MAP
   // =====================================================================
   const mapEl = $("#map"), mapCv = $("#mapCanvas"), pins = $("#pins");
-  const MAP = { x0: -100, y0: 90, x1: 6100, y1: 3260 };
+  const MAP = { x0: -100, y0: 90, x1: 6800, y1: 3260 };
   let mapDirty = true;
   RW.bus.on("stars", () => (mapDirty = true));
   function renderMapCanvas() {

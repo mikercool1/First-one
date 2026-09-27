@@ -255,17 +255,27 @@
 
   G.register({
     id: "bahaMarHotel",
-    title: "Baha Mar Hotel",
-    subtitle: "",
+    title: "Checking In",
+    subtitle: "Work the front desk at Baha Mar: the right bracelets for every guest!",
     destination: "hotel",
-    unlocked: false,
-    entry: null,
+    unlocked: true,
+    entry: "games/checking-in/index.html",
     color: "#E86A8A",
     icon: "🏨",
   });
 
   // Ice Mountain (bottom-left): winter games on their way
-  [["hotChocolate", "Hot Chocolate", "hotchoc", "#8A5A3C", "☕"], ["skiRun", "Ski Run", "skirun", "#2F6BD6", "⛷️"], ["sledHill", "Sled Hill", "sledhill", "#E8453C", "🛷"]]
+  G.register({
+    id: "hotChocolate",
+    title: "Cocoa Party",
+    subtitle: "Run the hot chocolate stand on Ice Mountain!",
+    destination: "hotchoc",
+    unlocked: true,
+    entry: "games/coco-party/index.html",
+    color: "#8A5A3C",
+    icon: "☕",
+  });
+  [["skiRun", "Ski Run", "skirun", "#2F6BD6", "⛷️"], ["sledHill", "Sled Hill", "sledhill", "#E8453C", "🛷"]]
     .forEach(([id, title, destination, color, icon]) => G.register({ id, title, subtitle: "", destination, unlocked: false, entry: null, color, icon }));
 
   G.register({

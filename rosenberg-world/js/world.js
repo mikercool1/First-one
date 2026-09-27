@@ -26,12 +26,12 @@
     { id: "witchmtn", name: "Witch Mountain", icon: "🧙", kind: "game", portal: [3170, 668], portalR: 80, arrive: [3170, 690], map: [3170, 560] },
     { id: "frogpond", name: "Frog Pond", icon: "🐸", kind: "game", portal: [2080, 2842], portalR: 80, arrive: [2080, 2830], map: [2080, 2900] },
     // Ice Mountain: winter games on their way
-    { id: "hotchoc", name: "Hot Chocolate", icon: "☕", kind: "game", portal: [820, 2612], portalR: 70, arrive: [820, 2630], map: [820, 2480] },
+    { id: "hotchoc", name: "Cocoa Party", icon: "☕", kind: "game", portal: [820, 2612], portalR: 70, arrive: [820, 2630], map: [820, 2480] },
     { id: "skirun", name: "Ski Run", icon: "⛷️", kind: "game", portal: [300, 2742], portalR: 80, arrive: [300, 2760], map: [280, 2560] },
     { id: "sledhill", name: "Sled Hill", icon: "🛷", kind: "game", portal: [660, 2992], portalR: 80, arrive: [660, 3010], map: [660, 2880] },
     { id: "garden", name: "Grampa Simon's Garden", icon: "🍅", kind: "game", portal: [1070, 1442], portalR: 80, arrive: [1070, 1464], map: [1040, 1240] },
     { id: "shop", name: "Star Shop", icon: "⭐", kind: "shop", portal: [3690, 2186], portalR: 80, arrive: [3690, 2206], map: [3690, 2040] },
-    { id: "icecream", name: "Frozenbergs Ice Cream", icon: "🍦", kind: "game", portal: [4690, 1652], portalR: 70, arrive: [4690, 1668], map: [4690, 1470] },
+    { id: "icecream", name: "Frozenbergs Ice Cream", icon: "🍦", kind: "game", portal: [5780, 1478], portalR: 70, arrive: [5780, 1496], map: [5780, 1330] },
     { id: "court", name: "Basketball Court", icon: "🏀", kind: "game", portal: [1630, 2175], portalR: 80, arrive: [1630, 2190], map: [1710, 2175] },
     { id: "plaza", name: "Mystery Plaza", icon: "⛲", kind: "place", map: [3500, 1760], arrive: [3500, 1880] },
     { id: "sports", name: "Sports Complex", icon: "🏟️", kind: "place", map: [1500, 2090], arrive: [1500, 2200] },
@@ -39,13 +39,13 @@
     { id: "arcade", name: "Rosenberg Arcade", icon: "🕹️", kind: "future", portal: [2450, 2600], portalR: 90, arrive: [2450, 2640], map: [2450, 2470] },
     { id: "raceway", name: "Rosenberg Raceway", icon: "🏎️", kind: "future", portal: [640, 1000], portalR: 100, arrive: [640, 1030], map: [640, 760] },
     { id: "woods", name: "Adventure Woods", icon: "🌲", kind: "place", map: [560, 1780], arrive: [640, 1900] },
-    { id: "waterworld", name: "Baha Bay", icon: "🌊", kind: "future", portal: [5100, 1680], portalR: 100, arrive: [5100, 1660], map: [4850, 1820] },
-    { id: "lazyriver", name: "Baha Bay Lazy River", icon: "🛟", kind: "future", portal: [5412, 1676], portalR: 70, arrive: [5412, 1660], map: [5430, 2030] },
+    { id: "waterworld", name: "Baha Bay", icon: "🌊", kind: "future", portal: [5250, 1640], portalR: 90, arrive: [5250, 1618], map: [5020, 1880] },
+    { id: "lazyriver", name: "Baha Bay Lazy River", icon: "🛟", kind: "future", portal: [5562, 1636], portalR: 70, arrive: [5562, 1616], map: [5560, 2010] },
     { id: "beach", name: "Rosenberg Beach", icon: "🏖️", kind: "place", map: [4150, 1860], arrive: [4100, 2260] },
     // sea planes between the dock and Baha Mar (travel, not games)
     { id: "seaplane", name: "Fly to Baha Mar", icon: "✈️", kind: "travel", to: "bahamar", portal: [4630, 2352], portalR: 70, arrive: [4610, 2352], map: [4650, 2352] },
-    { id: "hotel", name: "Baha Mar Hotel", icon: "🏨", kind: "game", portal: [5730, 1822], portalR: 80, arrive: [5730, 1842], map: [5730, 1640] },
-    { id: "seaplane-home", name: "Fly Home", icon: "✈️", kind: "travel", to: "mainland", portal: [4990, 1392], portalR: 60, arrive: [4995, 1410], map: [4980, 1300] },
+    { id: "hotel", name: "Baha Mar Hotel", icon: "🏨", kind: "game", portal: [6260, 1972], portalR: 80, arrive: [6260, 1992], map: [6260, 1740] },
+    { id: "seaplane-home", name: "Fly Home", icon: "✈️", kind: "travel", to: "mainland", portal: [4870, 1408], portalR: 60, arrive: [4880, 1428], map: [4800, 1250] },
   ];
   const DEST = world.DEST = {};
   DESTINATIONS.forEach((d) => (DEST[d.id] = d));
@@ -71,9 +71,9 @@
     sports:   { name: "SPORTS ZONE", icon: "⚽", color: "#1F8A4C", go: [1500, 2200], zone: [880, 1960, 2000, 3060] },
     playground: { name: "PLAYGROUND", icon: "🛝", color: "#F2A93B", zone: [2000, 1960, 2270, 2330] },
     arcade:   { name: "ARCADE", icon: "🕹️", color: "#8A3FE4", go: "arcade", zone: [2150, 2380, 2800, 2820] },
-    icecream: { name: "ICE CREAM", icon: "🍦", color: "#E8558A", go: "icecream", zone: [4520, 1400, 4880, 1690] }, // on Baha Mar
+    icecream: { name: "ICE CREAM", icon: "🍦", color: "#E8558A", go: "icecream", zone: [5610, 1200, 5950, 1470] }, // on Baha Mar
     witch:    { name: "WITCH MOUNTAIN", icon: "🧙", color: "#5E2CA5", go: "witchmtn", zone: [2980, 420, 3380, 770] },
-    hotel:    { name: "BAHA MAR HOTEL", icon: "🏨", color: "#E86A8A", go: "hotel", zone: [5580, 1560, 5900, 1900] },
+    hotel:    { name: "BAHA MAR HOTEL", icon: "🏨", color: "#E86A8A", go: "hotel", zone: [6040, 1560, 6560, 2140] },
     splash:   { name: "SPLASH DOWN", icon: "🛟", color: "#1E8FC4", go: "waterworld" },
     lazyriver:{ name: "LAZY RIVER", icon: "🏴‍☠️", color: "#0B8FB0", go: "lazyriver" },
     flyhome:  { name: "FLY HOME", icon: "✈️", color: "#18A0B8", go: "seaplane-home" },
@@ -84,7 +84,7 @@
     beach:    { name: "BEACH", icon: "🏖️", color: "#1E8FC4", go: [4100, 2100], zone: [3960, 900, 4320, 3060] },
     bahamar:  { name: "BAHA MAR", icon: "🏝️", color: "#18A0B8", go: "seaplane" },
     woods:    { name: "WOODS", icon: "🌲", color: "#3E7A3A", go: [640, 1900], zone: [110, 1160, 880, 2340] },
-    hotchoc:  { name: "HOT CHOCOLATE", icon: "☕", color: "#8A5A3C", go: "hotchoc", zone: [700, 2400, 900, 2640] },
+    hotchoc:  { name: "COCOA PARTY", icon: "☕", color: "#8A5A3C", go: "hotchoc", zone: [700, 2400, 900, 2640] },
     ski:      { name: "SKI RUN", icon: "⛷️", color: "#2F6BD6", go: "skirun", zone: [100, 2400, 470, 2800] },
     sled:     { name: "SLED HILL", icon: "🛷", color: "#E8453C", go: "sledhill", zone: [460, 2800, 860, 3060] },
     icemtn:   { name: "ICE MOUNTAIN", icon: "❄️", color: "#4A90D9", go: [720, 2430], zone: [100, 2340, 900, 3070] },
@@ -1353,7 +1353,7 @@
     signpost(4150, 1995, [["beach", "U"], ["bahamar", "D"]]);                                        // on the sand, where the trail heads south
     signpost(1880, 900, [["academy", "L"], ["raceway", "L"], ["baseball", "R"], ["home", "D"]]);  // north lane, west of the ballpark
     signpost(3080, 1190, [["witch", "U"], ["baseball", "L"], ["space", "R"], ["home", "D"]]);      // north lane, east of the ballpark
-    signpost(5230, 1500, [["icecream", "L"], ["splash", "D"], ["lazyriver", "R"], ["hotel", "R"], ["flyhome", "U"]]);  // on Baha Mar, by the plane
+    signpost(5000, 1420, [["icecream", "R"], ["hotel", "R"], ["splash", "D"], ["lazyriver", "D"], ["flyhome", "L"]]);  // on Baha Mar, by the plane
     signpost(2600, 2735, [["home", "U"], ["frogs", "L"], ["sports", "L"], ["bahamar", "R"]]);      // south street by the arcade
   }
 
@@ -1490,7 +1490,7 @@
     c.fillStyle = "#FFE6F0"; c.beginPath(); c.arc(-8, -32, 6, 0, TAU); c.arc(6, -34, 6, 0, TAU); c.fill(); // marshmallows
     c.restore();
     c.fillStyle = "#FFFFFF"; A.rr(c, -86, -30, 172, 26, 8); c.fill();
-    A.text(c, "HOT CHOCOLATE", 0, -17, 16, "#8A5A3C", { weight: 700 });
+    A.text(c, "COCOA PARTY", 0, -17, 17, "#8A5A3C", { weight: 700 });
   }
   function drawSkiPeak(c) {
     // a big snowy peak with a zig-zag ski run and slalom flags
@@ -1711,7 +1711,7 @@
     c.restore();
   }
   // Frozenbergs lives on Baha Mar, on the lawn between the sea plane and the park gates
-  const ICE = { x: 4690, y: 1600 }; // the west end of the island, clear of the park gates
+  const ICE = { x: 5780, y: 1428 }; // on the north side of the promenade, facing it
   function buildIceCream() {
     const sx = ICE.x, sy = ICE.y;
     staticProp(sx, sy, [-160, -330, 160, 10], (c) => {}, {
@@ -1760,8 +1760,11 @@
     }
     const wwOpen = world.destStatus(DEST.waterworld) !== "locked";
     staticProp(3550 + dx, fy + 2, [-200, -280, 200, 10], (c) => B.waterGate(c, wwOpen), { kind: "gate", tap: portalTap("waterworld"), solid: [{ r: [-172, -12, 172, 6] }] });
-    staticProp(3260 + dx, 2960 + dy, [-130, -220, 150, 10], (c) => { c.scale(0.78, 0.78); B.slides(c); }, { kind: "slides" });
-    staticProp(3850 + dx, 2990 + dy, [-150, -220, 130, 10], (c) => { c.scale(-0.78, 0.78); B.slides(c); }, { kind: "slides" });
+    // tap the water slides to ride Splash Down, or the lazy river to float it
+    staticProp(3260 + dx, 2960 + dy, [-130, -220, 150, 10], (c) => { c.scale(0.78, 0.78); B.slides(c); }, { kind: "slides", tap: portalTap("waterworld") });
+    staticProp(3850 + dx, 2990 + dy, [-150, -220, 130, 10], (c) => { c.scale(-0.78, 0.78); B.slides(c); }, { kind: "slides", tap: portalTap("waterworld") });
+    hotspot(3550 + dx, 3050 + dy, [-360, -110, 360, 110], portalTap("lazyriver"), 3050 + dy - 200);
+    hotspot(3550 + dx, 2925 + dy, [-140, -70, 140, 60], portalTap("waterworld"), 2925 + dy - 200); // the splash pool
     // tipping splash bucket
     add({
       kind: "bucket", x: 3400 + dx, y: 3000 + dy, box: [-60, -230, 60, 10], tip: 0, t0: 0,
@@ -1916,7 +1919,7 @@
   }
 
   // the flight path: out over the water, round, and down at the other end
-  const FLIGHT = { from: [4775, 2378], to: [4985, 1300], c1: [5700, 2650], c2: [5650, 1050] };
+  const FLIGHT = { from: [4775, 2378], to: [4830, 1290], c1: [5900, 2700], c2: [5700, 950] };
   const bez = (u, a, b, c2, d) => { const v = 1 - u; return v * v * v * a + 3 * v * v * u * b + 3 * v * u * u * c2 + u * u * u * d; };
   const planes = {};
 
@@ -1949,16 +1952,17 @@
 
     // ---- the island ----
     // a little landing dock where the plane ties up
-    staticProp(4990, 1342, [-60, -20, 60, 30], (c) => {
+    staticProp(4850, 1345, [-60, -20, 60, 30], (c) => {
       c.fillStyle = "#6B4A30"; [-44, -4, 36].forEach((x) => { A.rr(c, x - 4, 10, 8, 20, 3); c.fill(); });
       c.fillStyle = A.lin(c, 0, -16, 0, 16, ["#D8A870", "#B8834E"]); A.rr(c, -56, -16, 112, 32, 5); c.fill();
       c.strokeStyle = "rgba(90,60,30,.35)"; c.lineWidth = 2; for (let x = -50; x < 56; x += 14) { c.beginPath(); c.moveTo(x, -16); c.lineTo(x, 16); c.stroke(); }
     }, { layer: "ground" });
-    sign(4850, 1400, ["FLY HOME ✈"], { size: 17, board: "#FFFFFF", edge: "#18A0B8", ink: "#1B6FB4", ent: { tap: { reach: "remote", act() { world.flyTo("mainland"); } } } });
+    sign(4680, 1380, ["FLY HOME ✈"], { size: 17, board: "#FFFFFF", edge: "#18A0B8", ink: "#1B6FB4", ent: { tap: { reach: "remote", act() { world.flyTo("mainland"); } } } });
     buildHotel();
-    // palms and beach umbrellas round the island
-    [[4540, 1720], [4880, 1420], [5420, 1440], [5560, 1500], [4520, 1880], [5870, 1660], [5880, 1930], [5600, 2020]].forEach(([x, y], i) => tree(x, y, "palm", 0.9 + (i % 3) * 0.08));
-    [[5380, 1560, "#2EB872", "#FFFFFF"]].forEach(([x, y, a, b]) => {
+    sign(4700, 1560, ["WELCOME TO", "BAHA MAR"], { size: 20, board: "#FFF4D6", edge: "#FF7A45", ink: "#C24E1C" });
+    // palms round the shore, and umbrellas along the north beach
+    [[4640, 1600], [4640, 1900], [4800, 2130], [5000, 1290], [5300, 1230], [5540, 1210], [6060, 1260], [6380, 1360], [6570, 1660], [6560, 2020], [6150, 2270], [5820, 2300], [4700, 1760]].forEach(([x, y], i) => tree(x, y, "palm", 0.9 + (i % 3) * 0.08));
+    [[5420, 1330, "#FF5C8A", "#FFFFFF"], [6160, 1390, "#FFD23F", "#2F9BFF"], [6420, 1520, "#2EB872", "#FFFFFF"], [5160, 1320, "#FF7A45", "#FFFFFF"]].forEach(([x, y, a, b]) => {
       staticProp(x, y, [-62, -104, 62, 8], (c) => P_.umbrella(c, a, b), { shadow: [52, 14, 0, 6, 0.16], solid: [{ c: [0, -2, 5] }] });
     });
   }
@@ -1997,17 +2001,18 @@
     [-140, 140].forEach((fx, i) => { A.line(c, fx, -86, fx, -150, 3, "#8E96A6"); c.fillStyle = i ? "#2EC4B6" : "#FF8A6A"; c.beginPath(); c.moveTo(fx, -150); c.lineTo(fx + 28, -142); c.lineTo(fx, -134); c.closePath(); c.fill(); });
   }
   function buildHotel() {
-    const x = 5730, y = 1790;
-    staticProp(x, y, [-170, -380, 170, 20], (c) => drawHotel(c), {
-      kind: "building", occludes: true, shadow: [150, 18], solid: [{ r: [-150, -40, -30, 4] }, { r: [30, -40, 150, 4] }, { r: [-30, -40, 30, -18] }],
-      live(c) { c.save(); c.translate(0, -400); comingRibbon(c, "hotel", 0, "#E86A8A"); c.restore(); },
+    const x = 6260, y = 1930, k = 1.3; // drawn 1.3x: the grandest building on the island
+    staticProp(x, y, [-230, -500, 230, 26], (c) => { c.scale(k, k); drawHotel(c); }, {
+      kind: "building", occludes: true, shadow: [195, 22], solid: [{ r: [-195, -50, -40, 5] }, { r: [40, -50, 195, 5] }, { r: [-40, -50, 40, -24] }],
+      live(c) { c.save(); c.translate(0, -520); comingRibbon(c, "hotel", 0, "#E86A8A"); c.restore(); },
       tap: portalTap("hotel"),
     });
-    // a little pool and loungers out front
-    staticProp(x - 10, y + 110, [-80, -20, 80, 30], (c) => {
-      c.fillStyle = "#E4D8C2"; A.rr(c, -78, -14, 156, 40, 12); c.fill();
-      c.fillStyle = "#3CC3E8"; A.rr(c, -66, -6, 132, 24, 10); c.fill();
-      c.fillStyle = "rgba(255,255,255,.35)"; A.rr(c, -56, -2, 50, 5, 3); c.fill();
+    // the hotel pool and loungers out front
+    staticProp(x, y + 150, [-150, -30, 150, 50], (c) => {
+      c.fillStyle = "#E4D8C2"; A.rr(c, -150, -24, 300, 64, 16); c.fill();
+      c.fillStyle = "#3CC3E8"; A.rr(c, -134, -12, 268, 40, 14); c.fill();
+      c.fillStyle = "rgba(255,255,255,.35)"; A.rr(c, -120, -6, 90, 6, 3); c.fill();
+      [-110, -60, 60, 110].forEach((lx) => { c.fillStyle = "#FFFFFF"; A.rr(c, lx - 18, 32, 36, 12, 4); c.fill(); });
     }, { layer: "ground" });
   }
 
