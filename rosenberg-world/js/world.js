@@ -265,7 +265,8 @@
       act: (E2) => {
         if (E2.player.lock) return;
         RW.sfx.play("tap");
-        E2.say(E2.player, U.pick(["Game time!", "Hi Sarah, I'm home!", "Let's play!"]), 1.2);
+        const mom = RW.callName("sarah", E2.player.id); // Mom, or Aunt Sarah when Max is playing
+        E2.say(E2.player, U.pick(["Game time!", mom === "Mom" ? "Hi Mom, I'm home!" : `Hi ${mom}!`, "Let's play!"]), 1.2);
         E2.later(0.5, () => RW.bus.emit("portalEnter", DEST.gameroom));
       },
     }, hy + 3);

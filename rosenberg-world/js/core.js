@@ -112,6 +112,40 @@ window.RW = window.RW || {};
     RW.bus.emit("stars", { total: RW.save.stars, added: n, source });
   };
 
+  // ---------- the family ----------
+  // Grandma Cari and Grampa Simon have three kids: Molly, Michael and Ariel.
+  // Molly married Ikey; their son is Max. Michael married Sarah; their kids are Reuben, Jonah and Ellie.
+  // Nana is Sarah's mom.
+  const FAMILY = RW.FAMILY = {
+    cari:    { name: "Cari", female: true, spouse: "simon", kids: ["molly", "michael", "ariel"] },
+    simon:   { name: "Simon", spouse: "cari", kids: ["molly", "michael", "ariel"] },
+    nana:    { name: "Nana", female: true, kids: ["sarah"] },
+    molly:   { name: "Molly", female: true, spouse: "ikey", kids: ["max"] },
+    ikey:    { name: "Ikey", spouse: "molly", kids: ["max"] },
+    michael: { name: "Michael", spouse: "sarah", kids: ["reuben", "jonah", "ellie"] },
+    sarah:   { name: "Sarah", female: true, spouse: "michael", kids: ["reuben", "jonah", "ellie"] },
+    ariel:   { name: "Ariel", female: true, kids: [] },
+    reuben:  { name: "Reuben", kids: [] },
+    jonah:   { name: "Jonah", kids: [] },
+    ellie:   { name: "Ellie", female: true, kids: [] },
+    max:     { name: "Max", kids: [] },
+  };
+  const parentsOf = (id) => Object.keys(FAMILY).filter((p) => FAMILY[p].kids.includes(id));
+  // What does kid `kid` call family member `who`? ("Mom", "Aunt Molly", "Grampa Simon", "Nana", ...)
+  RW.callName = (who, kid) => {
+    const f = FAMILY[who];
+    if (!f || !FAMILY[kid]) return f ? f.name : who;
+    if (who === "nana") return "Nana";
+    const mine = parentsOf(kid);
+    if (mine.includes(who)) return f.female ? "Mom" : "Dad";
+    if (mine.some((p) => parentsOf(p).includes(who))) return f.female ? "Grandma " + f.name : "Grampa " + f.name;
+    const auntUncle = mine.flatMap((p) => parentsOf(p).flatMap((g) => FAMILY[g].kids)).filter((x) => !mine.includes(x));
+    if (auntUncle.includes(who) || auntUncle.some((x) => FAMILY[x].spouse === who)) return (f.female ? "Aunt " : "Uncle ") + f.name;
+    return f.name; // brothers, sisters and cousins just use names
+  };
+  // Is `a` the brother or sister of `b`? (otherwise the kids are cousins)
+  RW.siblings = (a, b) => a !== b && parentsOf(a).some((p) => parentsOf(b).includes(p));
+
   // ---------- Star Shop ----------
   RW.SHOP = [
     { id: "skateboard", type: "ride", name: "Skateboard", price: 5, speed: 430 },

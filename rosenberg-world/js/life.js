@@ -150,7 +150,7 @@
     simon: ["Radio check... Fart Man, do you copy?", "Mission control online!", "Testing, testing!"],
     michael: ["One sec, buddy...", "Just checking the score.", "Hi! Nice moves!"],
     cari: ["Hi honey!", "Time to wash up soon!", "Having fun?"],
-    nana: ["Hello, sweetheart!", "I'm knitting you a sweater!", "Have you eaten?", "Come give Nana a hug!"],
+    nana: ["Hello, sweetheart!", "I'm knitting a sweater!", "Have you eaten?"], // grandkid lines are in familyLine
     max: ["Hehehe!", "Can't catch me!", "I have a spoon!", "Nope!"],
     molly: ["Hi sweetie!", "Chag sameach!", "Look how big you're getting!"],
     doctor: ["Let me tell you about Tremfya!", "Did you ask me about Tremfya yet?"],
@@ -220,9 +220,22 @@
       RW.sfx.play("chirp");
       return;
     }
-    E2.say(n, U.pick(LINES[n.charId] || ["Hi!"]), 2);
+    // family: your kid says hi the way they really would ("Hi Mom!", "Hi Uncle Ikey!"), and they answer back
+    const P = E2.player, rel = P && RW.callName(n.charId, P.id);
+    if (P && rel && !P.lock) E2.say(P, `Hi ${rel}!`, 1.2);
+    E2.later(0.9, () => E2.say(n, familyLine(n.charId, P ? P.id : null, rel), 2.2));
     E2.burst(n.x, n.y, 100, "heart", 3);
     RW.sfx.play("giggle");
+  }
+  function familyLine(who, kid, rel) {
+    const name = kid ? RW.FAMILY[kid].name : "sweetie";
+    const f = RW.FAMILY[kid] || {}, grand = f.female ? "granddaughter" : "grandson", nib = f.female ? "niece" : "nephew";
+    let extra = [];
+    if (rel === "Mom" || rel === "Dad") extra = [`Love you, ${name}!`, `Having fun, ${name}?`, rel === "Dad" ? "Nice moves, buddy!" : "Hi sweetie!"];
+    else if (rel && rel.startsWith("Grand")) extra = [`There's my favorite ${grand}!`, `Come give ${rel.split(" ")[0]} a hug!`, `Hi ${name}! Have you eaten?`];
+    else if (rel && (rel.startsWith("Aunt") || rel.startsWith("Uncle"))) extra = [`There's my favorite ${nib}!`, `Hi ${name}! Look how big you're getting!`];
+    else if (who === "nana") extra = RW.siblings(kid, "reuben") || kid === "reuben" ? [`Come give Nana a hug, ${name}!`, `There's my ${grand}!`] : [`Hello, ${name}! So nice to see you!`];
+    return U.pick([...(LINES[who] || []), ...extra, ...extra]);
   }
 
   // ---- Max ----
@@ -274,9 +287,12 @@
     { id: "sarah", near: [2400, 2200], make: () => makeNPC("sarah", 2300, 2640, [{ to: [2290, 2300] }, { to: [2330, 1990] }, { to: [2440, 1905] }, { to: [2405, 1765] }, { wait: 0.5, say: "I'm home!" }, { vanish: true }]) },
     { id: "simon", near: [3200, 1200], make: () => makeNPC("simon", 2405, 1760, [{ to: [2960, 1900] }, { to: [2985, 1640] }, { to: [2940, 1340] }, { to: [3000, 1100] }, { to: [3300, 1000] }, { to: [3620, 900] }, { wait: 14, pose: "carry", say: "Mission control online!" }, { to: [3300, 1000] }, { vanish: true }], { walkPose: "carry", speed: 85 }) },
     { id: "michael", near: [2450, 1850], make: () => makeNPC("michael", 2620, 1840, [{ wait: 1, pose: "phone" }, { to: [2560, 1860], speed: 30 }, { wait: 4, pose: "phone" }, { to: [2340, 1845], speed: 30 }, { wait: 1.4, say: "Oops! Almost hit the mailbox." }, { wait: 4, pose: "phone" }, { to: [2405, 1765] }, { vanish: true }], { walkPose: "phone" }) },
-    { id: "molly", near: [3700, 1800], make: () => makeNPC("molly", 4050, 1870, [{ to: [3780, 1890] }, { to: [3420, 1890] }, { to: [3345, 1905] }, { wait: 3, say: "Hi Nana! Love the scarf!" }, { to: [3000, 1905] }, { to: [2600, 1905] }, { to: [2405, 1765] }, { vanish: true }]) },
-    { id: "cari", near: [3300, 1850], make: () => makeNPC("cari", 2405, 1760, [{ to: [2600, 1905] }, { to: [3250, 1905] }, { to: [3330, 1840] }, { wait: 3, say: "Hi Nana!" }, { to: [3250, 1905] }, { to: [2600, 1905] }, { to: [2405, 1765] }, { vanish: true }]) },
+    { id: "molly", near: [3700, 1800], make: () => makeNPC("molly", 4050, 1870, [{ to: [3780, 1890] }, { to: [3420, 1890] }, { to: [3345, 1905] }, { wait: 3, say: "Hi! I love the scarf!" }, { to: [3000, 1905] }, { to: [2600, 1905] }, { to: [2405, 1765] }, { vanish: true }]) },
+    { id: "cari", near: [3300, 1850], make: () => makeNPC("cari", 2405, 1760, [{ to: [2600, 1905] }, { to: [3250, 1905] }, { to: [3330, 1840] }, { wait: 3, say: "Hello! Beautiful knitting!" }, { to: [3250, 1905] }, { to: [2600, 1905] }, { to: [2405, 1765] }, { vanish: true }]) },
   ];
+
+  // bring out a family member by id (used by tests; cameos normally arrive on their own)
+  world.cameo = (id) => { const cm = CAMEOS.find((x) => x.id === id); if (cm && !world.cameoActive(id)) cm.make(); };
 
   // Cari walking past the upstairs windows (drawn by the house)
   function updateCariWindow(dt) {

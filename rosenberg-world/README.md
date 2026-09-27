@@ -90,6 +90,19 @@ is `games/rosenboggle/words.js` (common English words, rude words removed).
 folder. The old standalone links at the top of the repo (`index.html` for The Word Game, `buckets/`,
 `lox-run/`) now just open the copy in here.
 
+## The family
+
+- Grandma **Cari** and Grampa **Simon** have three kids: **Molly**, **Michael** and **Ariel**.
+- Molly married **Ikey**; their son is **Max**.
+- Michael married **Sarah**; their kids are **Reuben**, **Jonah** and **Ellie**.
+- **Nana** is Sarah's mom.
+
+So for Reuben, Jonah and Ellie: Sarah is Mom, Michael is Dad, Molly and Ariel are aunts, Ikey is an
+uncle, and Max is their cousin. For Max: Molly is Mom, Ikey is Dad, Sarah is Aunt Sarah and Michael
+is Uncle Michael. The tree is `RW.FAMILY` in `js/core.js`, and `RW.callName(who, kid)` says what a kid
+calls someone ("Mom", "Aunt Molly", "Grampa Simon"). Tap a family member in the world and your kid
+greets them that way.
+
 ## Star Shop
 
 The Star Shop (next to the plaza) is a little store you walk into. Hats cost 1 star and sit on the

@@ -484,7 +484,7 @@
   }
 
   // =====================================================================
-  // STAR SHOP: hats on the shelf, rides on the floor, Grandpa Ikey at the counter
+  // STAR SHOP: hats on the shelf, rides on the floor, Ikey (Max's dad) at the counter
   // =====================================================================
   const shopEl = $("#shop"), shopPanel = $("#shopPanel");
   let shopSel = null, shopRaf = 0, roomDrawn = false;
@@ -522,7 +522,7 @@
     // a rug for the rides
     c.fillStyle = "rgba(123,63,228,.16)"; c.beginPath(); c.ellipse(800, 800, 700, 110, 0, 0, Math.PI * 2); c.fill();
     c.strokeStyle = "rgba(255,210,63,.6)"; c.lineWidth = 6; c.beginPath(); c.ellipse(800, 800, 670, 95, 0, 0, Math.PI * 2); c.stroke();
-    // Grandpa Ikey behind the little counter in the corner, with a bell
+    // Ikey (Max's dad) behind the little counter in the corner, with a bell
     c.save(); c.translate(1440, 600); c.scale(2.3, 2.3);
     A.drawChar(c, A.CHARS.ikey, { t: 1, move: 0, side: 0, dir: -1, pose: "wave", pt: 0 });
     c.restore();
