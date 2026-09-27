@@ -2,11 +2,13 @@
 
 A tap game for the family, made for a phone held upright. Open `index.html`; there's no build step.
 
-- One person at a time sits down and shows the dish they want. Tap the matching picture and Ariel serves it.
-- **Patience:** a bar under each order runs down. If it empties, they leave grumpy and you lose a heart. A wrong tap costs patience.
-- **Memory:** after the first few, the order hides behind a "?" after a moment, so remember it.
-- **Max:** on most orders he sneaks in from the left and leaps for the food. Tap him to shoo him (he may try again), or he grabs a dish and you lose a heart.
-- It speeds up as you go: patience gets shorter, orders hide sooner, a fourth choice appears, and Max gets quicker.
+- Each person asks for **two dishes**. You see them for 3 seconds, then they hide behind "? ?".
+- All five dishes are always on the buttons, so you have to remember. Tap both to serve them.
+- A wrong tap costs patience. If someone's patience bar runs out they leave grumpy and you lose a heart.
+- **Max is always running around.** He jumps in front of the order while you're memorizing it, and every few
+  seconds he dashes and leaps at Ariel to steal. Tap him to knock him back. If he gets you, he takes back a
+  dish you already picked (tap it again), or snatches a snack and costs patience.
+- It speeds up as you go: shorter patience and a faster, pushier Max.
 - Serve 10 to save Passover. Stars = hearts left. Lose all 3 hearts and you try again.
 
 Eaters: Grandpa (Simon), Grandma (Cari), Nana, Michael, Ikey, Sarah, Molly, and Reuben, Jonah and Ellie.

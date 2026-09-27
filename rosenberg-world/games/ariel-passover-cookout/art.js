@@ -452,7 +452,7 @@ const ART = (() => {
   // ---------- MOLLY (about 40, navy wrap dress; standing, faces left) ----------
   function molly(c, x, y, s, o) {
     const t = o.t, sk = SK.molly, st = o.state;
-    const HAIR_COLS = ["#C99A5E", "#A87A42", "#86592C"];
+    const HAIR_COLS = ["#8A5A3A", "#6B4128", "#4E2D1A"];
     c.save(); c.translate(x, y); c.scale(s, s);
     shadow(c, 0, 2, 46, 11, .26);
     c.scale(-1, 1);
@@ -483,7 +483,7 @@ const ART = (() => {
     let expr = "calm";
     if (st === "outburst") expr = "annoyed"; else if (st === "eating") expr = "eat"; else if (st === "wrong") expr = "gasp";
     head(c, 0, -194, 34, { ...sk, expr, t, blink: o.blink, lashes: true, lip: "#B8475A", earrings: "#FFFFFF", look: [1, 0], blush: .34,
-      hairFront: HAIR.longFront(HAIR_COLS), browCol: "#6E4A28" });
+      hairFront: HAIR.longFront(HAIR_COLS), browCol: "#4E2D1A" });
     if (st === "eating") { c.save(); c.translate(22, -120); food(c, o.plate || "kugel", 0, 0, 50, t); c.restore(); }
     c.restore();
   }

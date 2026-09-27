@@ -20,7 +20,7 @@
 
   // ---------- save ----------
   const KEY = "splashDown.v1";
-  const save = { best: {}, muted: false };
+  const save = { best: {}, muted: false, kid: "reuben" };
   try { Object.assign(save, JSON.parse(localStorage.getItem(KEY)) || {}); } catch {}
   const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch {} };
 
@@ -123,42 +123,96 @@
     g.fillStyle = sh; g.beginPath(); g.arc(0, 0, 118, 0, 7); g.fill();
   });
 
-  // the rider, from behind, sitting in an inner tube. Units are world units; 0,0 is where the tube touches the water.
-  function drawRider(g, x, y, sc, rot, lean, armsUp, t, alpha = 1) {
+  // The rider, from behind, sitting in an inner tube: Reuben, Jonah or Ellie, in the same
+  // colors as kids.js (the shared drawings the other family games use). Units are world
+  // units; 0,0 is where the tube touches the water.
+  const KA = typeof KIDS_ART !== "undefined" ? KIDS_ART : null; // kids.js declares a global const, not a window property
+  const KID = KA ? KA.KIDS : {};
+  const RIDERS = {
+    reuben: { size: 1, tube: "#FF5E62", shirt: "#FFFFFF", trim: "#1F2F6B", num: "99" },
+    jonah: { size: 0.92, tube: "#FF8A1F", shirt: "#FFFFFF", stripe: "#79C6F2", trim: "#1B1F33", num: "10" },
+    ellie: { size: 0.8, tube: "#FF7FB8", shirt: "#F28AA8", ruffle: "#FFB9CB", trim: "#C9607F" },
+  };
+  const riderId = () => (RIDERS[save.kid] ? save.kid : "reuben");
+  function drawRider(g, x, y, sc, rot, lean, armsUp, t, alpha = 1, id = riderId()) {
+    const K = KID[id] || { skin: "#F2C09A", skinD: "#D99A74", hair: "#4A2E1E", hairD: "#2E1A10" }, Rd = RIDERS[id];
     g.save();
     g.globalAlpha = alpha;
     g.translate(x, y); g.rotate(rot); g.scale(sc, sc);
     g.fillStyle = "rgba(255,255,255,.55)";
     g.beginPath(); g.ellipse(0, -8, 320, 70, 0, 0, 7); g.fill();
     const tube = (a0, a1) => {
-      g.lineWidth = 92; g.strokeStyle = "#FF5E62";
+      g.lineWidth = 92; g.strokeStyle = Rd.tube;
       g.beginPath(); g.ellipse(0, -80, 245, 96, 0, a0, a1); g.stroke();
       g.lineWidth = 22; g.strokeStyle = "rgba(255,255,255,.4)";
       g.beginPath(); g.ellipse(0, -100, 245, 90, 0, a0 + 0.15, a1 - 0.15); g.stroke();
     };
     tube(Math.PI, Math.PI * 2);
     g.save();
-    g.translate(0, -90); g.rotate(lean * 0.3); g.translate(0, 90);
-    // arms: hold the handles, or fling them up when you're flying
+    // smaller kids sit lower in the same tube
+    g.translate(0, -90); g.rotate(lean * 0.3); g.scale(Rd.size, Rd.size); g.translate(0, 90 / Rd.size);
     const sh = [[-80, -285], [80, -285]];
-    const hands = [[lerp(-215, -200, armsUp), lerp(-120, -470, armsUp) + Math.sin(t * 9) * 12 * armsUp], [lerp(215, 200, armsUp), lerp(-120, -470, armsUp) + Math.cos(t * 9) * 12 * armsUp]];
-    g.lineCap = "round"; g.lineWidth = 46; g.strokeStyle = "#E9A97F";
+    const hands = [[lerp(-215, -200, armsUp) / Rd.size, lerp(-120, -470, armsUp) + Math.sin(t * 9) * 12 * armsUp], [lerp(215, 200, armsUp) / Rd.size, lerp(-120, -470, armsUp) + Math.cos(t * 9) * 12 * armsUp]];
+    g.lineCap = "round";
     for (let i = 0; i < 2; i++) {
-      g.beginPath(); g.moveTo(sh[i][0], sh[i][1]);
-      g.quadraticCurveTo(sh[i][0] * 1.9, lerp(-200, -380, armsUp), hands[i][0], hands[i][1]); g.stroke();
+      const mid = [sh[i][0] * 1.9, lerp(-200, -380, armsUp)];
+      g.lineWidth = 50; g.strokeStyle = K.skinD;
+      g.beginPath(); g.moveTo(sh[i][0], sh[i][1]); g.quadraticCurveTo(mid[0], mid[1], hands[i][0], hands[i][1]); g.stroke();
+      g.lineWidth = 42; g.strokeStyle = K.skin;
+      g.beginPath(); g.moveTo(sh[i][0], sh[i][1]); g.quadraticCurveTo(mid[0], mid[1], hands[i][0], hands[i][1]); g.stroke();
     }
-    // rash guard
-    g.fillStyle = "#FFD23F";
-    g.beginPath(); g.moveTo(-92, -300); g.quadraticCurveTo(0, -330, 92, -300); g.lineTo(80, -70); g.quadraticCurveTo(0, -50, -80, -70); g.closePath(); g.fill();
-    g.fillStyle = "#1FA6D6"; g.fillRect(-86, -210, 172, 34);
-    // head from behind: hair, ears, goggle strap
-    g.fillStyle = "#E9A97F";
+    // back of the shirt (Ellie: swimsuit with a ruffle)
+    const torso = () => { g.beginPath(); g.moveTo(-92, -300); g.quadraticCurveTo(0, -330, 92, -300); g.lineTo(80, -70); g.quadraticCurveTo(0, -50, -80, -70); g.closePath(); };
+    torso(); g.fillStyle = Rd.shirt; g.fill();
+    g.save(); torso(); g.clip();
+    if (Rd.stripe) { g.fillStyle = Rd.stripe; for (let yy = -290; yy < -60; yy += 52) g.fillRect(-100, yy, 200, 22); }
+    if (Rd.ruffle) { g.fillStyle = Rd.ruffle; for (let xx = -90; xx <= 90; xx += 36) { g.beginPath(); g.arc(xx, -300, 24, 0, Math.PI); g.fill(); } }
+    g.fillStyle = Rd.trim; g.fillRect(-100, -318, 200, 16); // collar
+    g.restore();
+    g.lineWidth = 6; g.strokeStyle = Rd.trim; torso(); g.stroke();
+    if (Rd.num) {
+      g.fillStyle = Rd.trim; g.textAlign = "center"; g.textBaseline = "middle";
+      g.font = `96px ${DISPLAY}`; g.fillText(Rd.num, 0, -190);
+    }
+    // head from behind
+    g.fillStyle = K.skin;
     g.beginPath(); g.arc(-66, -380, 16, 0, 7); g.arc(66, -380, 16, 0, 7); g.fill();
-    g.fillStyle = "#4A2E1E"; g.beginPath(); g.arc(0, -392, 70, 0, 7); g.fill();
-    g.fillStyle = "#3A6FF7"; g.fillRect(-70, -402, 140, 18);
+    g.fillStyle = K.skin; g.fillRect(-26, -330, 52, 30); // neck
+    if (id === "ellie") {
+      for (const sd of [-1, 1]) { // pigtails with pink ties
+        g.fillStyle = K.hair;
+        g.beginPath(); g.ellipse(sd * 104, -372, 44, 26, sd * 0.5 + Math.sin(t * 6) * 0.12 * sd, 0, 7); g.fill();
+        g.fillStyle = "#FF9EBB"; g.beginPath(); g.arc(sd * 68, -392, 13, 0, 7); g.fill();
+      }
+      g.fillStyle = K.hair; g.beginPath(); g.arc(0, -392, 72, 0, 7); g.fill();
+      g.strokeStyle = K.hairD; g.lineWidth = 5; g.beginPath(); g.moveTo(0, -462); g.lineTo(0, -330); g.stroke(); // part
+    } else if (id === "jonah") {
+      g.fillStyle = K.hair; g.beginPath(); g.arc(0, -390, 70, 0, 7); g.fill();
+      g.beginPath(); // messy tufts on top
+      const tufts = [[-70, -410], [-62, -452], [-30, -478], [-6, -462], [18, -490], [40, -462], [66, -470], [72, -420]];
+      g.moveTo(-70, -380); for (const [tx, ty] of tufts) g.lineTo(tx, ty); g.lineTo(70, -380); g.closePath(); g.fill();
+      g.strokeStyle = K.hairD; g.lineWidth = 5; g.beginPath(); g.moveTo(-30, -420); g.quadraticCurveTo(-10, -380, -30, -340); g.moveTo(24, -430); g.quadraticCurveTo(40, -390, 24, -345); g.stroke();
+    } else {
+      g.fillStyle = K.hair; g.beginPath(); g.arc(0, -394, 71, 0, 7); g.fill();
+      g.fillStyle = K.hairD; g.beginPath(); g.ellipse(0, -336, 58, 14, 0, 0, Math.PI); g.fill();
+      g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 8; g.beginPath(); g.arc(-10, -400, 48, Math.PI * 1.1, Math.PI * 1.55); g.stroke();
+    }
     g.restore();
     tube(0, Math.PI);
     g.restore();
+  }
+
+  // Front-view portraits for the picker and the results screen, straight from kids.js.
+  function drawPortrait(cnv, id, pose, t) {
+    const r = cnv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    const w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+    if (!w || !h) return;
+    if (cnv.width !== w || cnv.height !== h) { cnv.width = w; cnv.height = h; }
+    const c = cnv.getContext("2d");
+    c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, w, h);
+    if (!KA) return;
+    const k = h / 150;
+    KA.draw(c, id, w / 2, h * 0.93, k, { pose, face: 1 }, t);
   }
 
   // ---------- audio ----------
@@ -302,6 +356,10 @@
     });
   }
 
+  const kidCards = [...document.querySelectorAll(".kcard")];
+  function selKid() { kidCards.forEach((b) => { b.classList.toggle("sel", b.dataset.k === riderId()); b.setAttribute("aria-pressed", b.dataset.k === riderId()); }); }
+  kidCards.forEach((b) => b.addEventListener("click", () => { audio(); save.kid = b.dataset.k; persist(); selKid(); sfx.duck(); }));
+
   // ---------- update ----------
   const H_STEP = 1 / 120;
   function handle(ev, p) {
@@ -342,7 +400,7 @@
       save.best[s.id] = { stars: Math.max(stars, prev ? prev.stars : 0), time: Math.min(total, prev ? prev.time : Infinity), ducks: Math.max(G.ducks, prev ? prev.ducks : 0) };
       persist();
     }
-    $("#resSlide").textContent = s.name;
+    $("#resSlide").textContent = `${s.name} · ${KID[riderId()] ? KID[riderId()].name : ""}`;
     $("#resStars").innerHTML = starsHTML(stars);
     $("#resBest").innerHTML = prev && fastest ? '<span class="new-best">New best time</span>' : "";
     const row = (label, val, note, ok) => `<li><span>${label}</span><span><b>${val}</b>${note ? `<em class="${ok ? "" : "miss"}">${note}</em>` : ""}</span></li>`;
@@ -772,6 +830,7 @@
 
   resize();
   syncMute();
+  selKid();
   if (coarse) $("#keysHint").textContent = "Hold the left or right side of the screen to lean.";
   const firstOpen = SLIDES.reduce((a, s, i) => (unlocked(i) ? i : a), 0);
   G.slideIdx = firstOpen;
@@ -784,6 +843,8 @@
     if (!G.paused) update(dt);
     render();
     hud();
+    if (!$("#title").hidden) kidCards.forEach((b) => drawPortrait(b.querySelector("canvas"), b.dataset.k, b.dataset.k === riderId() ? "armsUp" : "wave", now / 1000));
+    else if (!$("#results").hidden) drawPortrait($("#resKid"), riderId(), "armsUp", now / 1000);
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);

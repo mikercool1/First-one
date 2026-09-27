@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-<script src="../rw-bridge.js"></script>
 <meta charset="utf-8">
+<script src="../rw-bridge.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Splash Down</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -58,8 +58,8 @@ body { background: #0B4A6F; color: var(--foam); font: 700 15px/1.35 var(--sans);
 @media (hover: hover) and (pointer: fine) { .pad span { display: none; } }
 
 /* overlays */
-.overlay { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; overflow-y: auto; background: radial-gradient(120% 80% at 50% 40%, rgba(4,20,40,.0), rgba(4,20,40,.5)); }
-.panel { width: min(460px, 100%); text-align: center; background: rgba(6, 36, 66, .72); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%); border: 1px solid var(--glass-edge); border-radius: 30px; padding: 24px 20px 20px; box-shadow: 0 30px 80px rgba(0,0,0,.35); animation: rise .55s cubic-bezier(.2,.9,.3,1.1); }
+.overlay { position: absolute; inset: 0; display: flex; padding: 16px; overflow-y: auto; background: radial-gradient(120% 80% at 50% 40%, rgba(4,20,40,.0), rgba(4,20,40,.5)); }
+.panel { margin: auto; width: min(460px, 100%); text-align: center; background: rgba(6, 36, 66, .72); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%); border: 1px solid var(--glass-edge); border-radius: 30px; padding: 24px 20px 20px; box-shadow: 0 30px 80px rgba(0,0,0,.35); animation: rise .55s cubic-bezier(.2,.9,.3,1.1); }
 @keyframes rise { from { transform: translateY(18px); opacity: 0; } }
 .kicker { margin: 0; font: 900 11px var(--sans); letter-spacing: .26em; text-transform: uppercase; color: var(--sun); }
 .logo { margin: 4px 0 4px; font: 400 clamp(52px, 15vw, 76px)/.92 var(--display); letter-spacing: .01em; color: #fff; text-shadow: 0 4px 0 #1C7FB8, 0 10px 30px rgba(0,0,0,.3); }
@@ -79,6 +79,16 @@ body { background: #0B4A6F; color: var(--foam); font: 700 15px/1.35 var(--sans);
 .stars { font-size: 17px; letter-spacing: 1px; color: rgba(255,255,255,.22); white-space: nowrap; text-align: right; }
 .stars .on { color: var(--sun); }
 .stars small { display: block; font: 800 11px var(--sans); color: rgba(244,251,255,.6); letter-spacing: 0; }
+.pickline { margin: 0 0 10px; font: 400 20px/1 var(--display); letter-spacing: .03em; color: #fff; }
+.pickline span { color: var(--sun); }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 16px; }
+.kcard { position: relative; border: 3px solid transparent; background: rgba(255,255,255,.94); border-radius: 22px; padding: 6px 6px 9px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; font: inherit; box-shadow: 0 5px 0 rgba(0,0,0,.18); transition: transform .25s cubic-bezier(.2,1.4,.4,1), border-color .2s; }
+.kcard canvas { width: 100%; height: clamp(84px, 15vh, 130px); border-radius: 16px; display: block; background: linear-gradient(180deg, #BFEBFF 0%, #E6F8FF 58%, #6FD6E8 59%, #36B9D6 100%); }
+.kcard .nm { font: 400 clamp(18px, 5vw, 24px)/1 var(--display); color: var(--kc); letter-spacing: .02em; }
+.kcard .tg { font: 900 10px/1 var(--sans); letter-spacing: .12em; color: #5A6B85; }
+.kcard.sel { border-color: var(--kc); transform: translateY(-4px) scale(1.03); }
+.kcard.sel::after { content: "✓"; position: absolute; top: -11px; right: -8px; width: 30px; height: 30px; border-radius: 50%; background: var(--kc); color: #fff; display: grid; place-items: center; font: 400 18px/1 var(--display); box-shadow: 0 3px 0 rgba(0,0,0,.2); }
+.res-kid { display: block; width: 150px; height: 130px; margin: 0 auto -6px; }
 .keys { margin: 0; font: 700 12.5px var(--sans); color: rgba(244,251,255,.6); }
 kbd { font: 800 11px var(--sans); border: 1px solid rgba(255,255,255,.35); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; }
 .go { border: 0; cursor: pointer; font: 400 21px var(--display); letter-spacing: .04em; color: var(--ink); background: linear-gradient(180deg, #FFE580, var(--sun) 55%, var(--sun-2)); padding: 13px 34px 12px; border-radius: 999px; box-shadow: 0 6px 0 #C77F00, 0 14px 30px rgba(0,0,0,.25); transition: transform .08s, box-shadow .08s; }
@@ -129,7 +139,14 @@ h2 { margin: 2px 0 6px; font: 400 44px/1 var(--display); color: #fff; text-shado
     <div class="panel">
       <p class="kicker">Tidewater Falls Water Park</p>
       <h1 class="logo">Splash<span>Down!</span></h1>
-      <p class="sub"><b>Lean into the turns</b> or the slide flings you over the edge. Grab rubber ducks, hit the boost pads, dodge beach balls.</p>
+      <p class="sub" id="titleSub"><b>Lean into the turns</b> or you'll fly over the edge. Grab the rubber ducks, dodge the beach balls.</p>
+      <p class="pickline">CHOOSE YOUR <span>RIDER</span></p>
+      <div class="cards" id="kidCards">
+        <button class="kcard" type="button" data-k="reuben" style="--kc:#1F2F6B"><canvas></canvas><span class="nm">REUBEN</span><span class="tg">#99 · AGE 9</span></button>
+        <button class="kcard" type="button" data-k="jonah" style="--kc:#2F93D8"><canvas></canvas><span class="nm">JONAH</span><span class="tg">#10 · AGE 6</span></button>
+        <button class="kcard" type="button" data-k="ellie" style="--kc:#E8559B"><canvas></canvas><span class="nm">ELLIE</span><span class="tg">AGE 3</span></button>
+      </div>
+      <p class="pickline">PICK A <span>SLIDE</span></p>
       <div class="slides" id="slideList"></div>
       <p class="keys" id="keysHint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> or <kbd>A</kbd> <kbd>D</kbd> to lean &middot; on a phone, hold the left or right side</p>
     </div>
@@ -150,6 +167,7 @@ h2 { margin: 2px 0 6px; font: 400 44px/1 var(--display); color: #fff; text-shado
   <div class="overlay" id="results" hidden>
     <div class="panel">
       <p class="kicker" id="resSlide"></p>
+      <canvas class="res-kid" id="resKid"></canvas>
       <h2>Splash!</h2>
       <div class="big-stars" id="resStars"></div>
       <div id="resBest"></div>
@@ -164,6 +182,7 @@ h2 { margin: 2px 0 6px; font: 400 44px/1 var(--display); color: #fff; text-shado
   </div>
 </div>
 
+<script src="kids.js"></script>
 <script src="course.js"></script>
 <script src="game.js"></script>
 </body>
