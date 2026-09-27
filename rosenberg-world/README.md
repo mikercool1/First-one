@@ -1,6 +1,6 @@
 # Rosenberg World
 
-The home base for the Rosenberg family games. Reuben, Jonah and Ellie walk around a cartoon
+The home base for the Rosenberg family games. Reuben, Jonah, Ellie and Max walk around a cartoon
 neighborhood, find hidden Rosenberg Stars, tap things to see what happens, and go through
 doors into mini-games.
 
@@ -56,6 +56,7 @@ Every linked game is also one tap away from the ALL GAMES button in the HUD.
 | Basketball court (Sports Complex) | Buckets | `games/buckets` |
 | Ariel's Kitchen | Ariel's Passover Cookout | `games/ariel-passover-cookout` |
 | Fart Man Landing Zone | Fart Man Lander | `games/fart-man-lander` |
+| The big white rocket (Fart Man Landing Zone) | Lunar Lander | `games/lunar-lander` |
 | Math Blaster Academy | Reuben's Math Blaster | `games/math-blaster` |
 | Soccer field (Sports Complex) | Backyard Soccer | `games/backyard-soccer` |
 | Beach volleyball court | Jonah's Volley | `games/jonahs-volley` |
@@ -88,7 +89,7 @@ needs copying in here again (keeping its `rw-bridge.js` lines).
 
 ## Progress and player memory
 
-Picking Reuben, Jonah or Ellie on the character screen logs in to that player's own profile:
+Picking Reuben, Jonah, Ellie or Max on the character screen logs in to that player's own profile:
 their Rosenberg Stars, hidden stars found, collectibles, secrets, house upgrades, high scores
 and play time are all kept separately, on this device (`localStorage`). The character cards show
 each kid's stars and time played, and the game remembers who played last.

@@ -49,12 +49,12 @@
   let selAnim = null, switching = false;
   function buildSelect() {
     const wrap = $("#cards");
-    ["reuben", "jonah", "ellie"].forEach((id) => {
+    RW.PLAYERS.forEach((id) => {
       const s = A.CHARS[id];
       const b = el("button", "card");
       b.type = "button";
       b.style.setProperty("--c", s.color);
-      b.innerHTML = `<canvas width="360" height="420"></canvas><span class="nm">${s.name.toUpperCase()}</span><span class="tag">${s.tag}</span><span class="age">AGE ${s.age}</span><span class="mem"></span>`;
+      b.innerHTML = `<canvas width="360" height="420"></canvas><span class="nm">${s.name.toUpperCase()}</span><span class="tag">${s.tag}</span>${s.age ? `<span class="age">AGE ${s.age}</span>` : ""}<span class="mem"></span>`;
       b.addEventListener("click", () => choose(id, b));
       wrap.appendChild(b);
       cards.push({ id, b, cv: b.querySelector("canvas") });
@@ -84,10 +84,10 @@
         c.save();
         const k = 3.3 * (cd.id === "ellie" ? 1.12 : cd.id === "jonah" ? 1.05 : 1);
         c.translate(180, 372); c.scale(k, k);
-        const pose = cd.b.classList.contains("picked") ? "celebrate" : ["fist", "jump", "wave"][i];
+        const pose = cd.b.classList.contains("picked") ? "celebrate" : ["fist", "jump", "wave", "spoon"][i];
         const hop = pose === "jump" ? Math.abs(Math.sin(t * 3.2)) * 18 : 0;
         c.translate(0, -hop);
-        A.drawChar(c, s, { t: t + i, move: 0, side: 0, dir: 1, pose: t % 6 < 2.2 ? pose : null, pt: 0.9, blink: (t + i * 1.3) % 3.2 < 0.12, prop: cd.id === "reuben" && t % 6 >= 2.2 ? "bat" : null });
+        A.drawChar(c, s, { t: t + i, move: 0, side: 0, dir: 1, pose: t % 6 < 2.2 ? pose : null, pt: 0.9, blink: (t + i * 1.3) % 3.2 < 0.12, prop: cd.id === "reuben" && t % 6 >= 2.2 ? "bat" : cd.id === "max" ? "spoon" : null });
         c.restore();
       });
       selAnim = requestAnimationFrame(loop);
@@ -110,6 +110,7 @@
     // "log in": switch to this player's own stars, items, records and play time
     const returning = RW.totalTime(RW.profile(id)) > 0;
     if (RW.profileId !== id) { RW.useProfile(id); world.refreshProgress(); mapDirty = true; }
+    if (id === "max") world.clearMaxCameos();
     RW.store.last = id;
     RW.save.time.sessions = (RW.save.time.sessions || 0) + 1;
     RW.persist();
@@ -134,7 +135,7 @@
     show(hud, true);
     syncStars(true);
     RW.sfx.play("whoosh");
-    E.later(0.7, () => E.say(E.player, { reuben: "Let's go, Rosenbergs!", jonah: "Race you!", ellie: "Yay! Me turn!" }[id], 2));
+    E.later(0.7, () => E.say(E.player, { reuben: "Let's go, Rosenbergs!", jonah: "Race you!", ellie: "Yay! Me turn!", max: "Hehehe! My turn!" }[id], 2));
     E.later(1.2, () => toast(returning ? `Welcome back, ${A.CHARS[id].name}! ⭐ ${RW.save.stars}` : `Hi ${A.CHARS[id].name}! This is your own Rosenberg World.`, "👋"));
     if (firstRun) {
       E.later(2.2, () => toast("Drag anywhere to walk, or tap where you want to go!", "👆"));
@@ -666,7 +667,7 @@
     const body = $("#statsBody");
     body.innerHTML = "";
     const today = RW.today();
-    ["reuben", "jonah", "ellie"].forEach((id) => {
+    RW.PLAYERS.forEach((id) => {
       const s = A.CHARS[id], pr = RW.profile(id);
       const col = el("div", "st-kid");
       col.style.setProperty("--c", s.color);

@@ -76,6 +76,8 @@ window.RW = window.RW || {};
     RW.profileId = id;
     return RW.save;
   };
+  // everyone who can log in, in character-select order
+  RW.PLAYERS = ["reuben", "jonah", "ellie", "max"];
   RW.profile = (id) => RW.store.profiles[id] || null;
   RW.useProfile(RW.store.last || "reuben");
   RW.persist = () => { try { localStorage.setItem(KEY, JSON.stringify(RW.store)); } catch (e) { /* ignore */ } };

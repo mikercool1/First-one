@@ -22,7 +22,7 @@
 // attribute (a hidden "BACK TO THE GAME ROOM" button) is then shown and goes back to the room.
 //
 // RosenbergBridge.inWorld tells you if the game is running inside Rosenberg World,
-// and RosenbergBridge.player is "reuben", "jonah" or "ellie" (or null when standalone).
+// and RosenbergBridge.player is "reuben", "jonah", "ellie" or "max" (or null when standalone).
 // When the game is opened on its own, everything here does nothing, so the same file
 // works standalone and inside the hub.
 

@@ -157,7 +157,10 @@
   };
   const cameos = [];
   world.cameoActive = (id) => cameos.some((n) => n.charId === id && !n.dead);
-  world.maxActive = () => world.cameoActive("max");
+  // playing as Max: he can't also be running around as a guest
+  world.maxIsPlayer = () => !!(E.player && E.player.id === "max");
+  world.maxActive = () => world.maxIsPlayer() || world.cameoActive("max");
+  world.clearMaxCameos = () => cameos.forEach((n) => { if (n.charId === "max" && !n.dead) n.fading = true; });
 
   function makeNPC(charId, x, y, script, o = {}) {
     const spec = A.CHARS[charId];
@@ -413,7 +416,7 @@
     if (world.maxWindow != null) { world.maxWindow += dt * 0.7; if (world.maxWindow > 1) world.maxWindow = null; }
     if (E2.mode !== "play") return;
     const t = E2.t;
-    if (t > nextKitchenMax) { nextKitchenMax = t + U.rand(10, 18); world.maxWindow = 0; }
+    if (t > nextKitchenMax) { nextKitchenMax = t + U.rand(10, 18); if (!world.maxIsPlayer()) world.maxWindow = 0; }
     if (t > nextCari) { nextCari = t + U.rand(22, 40); if (!world.cariWindow) world.cariWindow = { x: U.chance(0.5) ? -280 : 280, dir: 0 }; world.cariWindow.dir = world.cariWindow.x < 0 ? 1 : -1; }
     if (t > nextCameo) {
       nextCameo = t + U.rand(16, 28);

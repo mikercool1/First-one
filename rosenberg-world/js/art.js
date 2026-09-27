@@ -184,7 +184,7 @@
     },
     // Family designs match Ariel's Passover Cookout.
     max: {
-      id: "max", name: "Max", L: 15, T: 18, R: 18, bw: 24, belly: 1.15, legW: 8.5, armW: 7, stride: 15,
+      id: "max", name: "Max", tag: "Spoon Bandit", color: "#F07C4A", L: 15, T: 18, R: 18, bw: 24, belly: 1.15, legW: 8.5, armW: 7, stride: 15,
       skin: "#F8D4BA", hair: "#A8713D", hairStyle: "curly", curl: true,
       outfit: "shirt", shirt: "#F9C74F", pattern: "hstripe", patternCol: "#F07C4A",
       legs: [[0, 0.4, "#5A86C8"], [0.4, 0.82, "#F8D4BA"], [0.82, 1, "#FFFFFF"]], shoe: "#FFFFFF", shoeAccent: "#8FB9E6", prop: "spoon",

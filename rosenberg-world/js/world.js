@@ -15,6 +15,7 @@
     { id: "house", name: "Rosenberg House", icon: "🏠", kind: "place", map: [2450, 1560], arrive: [2405, 1765], noPin: true },
     { id: "gameroom", name: "The Game Room", icon: "🎲", kind: "future", portal: [2405, 1748], portalR: 55, arrive: [2405, 1765], map: [2450, 1560] },
     { id: "baseball", name: "Backyard Baseball", icon: "⚾", kind: "game", portal: [2640, 1205], portalR: 95, arrive: [2640, 1228], map: [2450, 860] },
+    { id: "lunar", name: "Lunar Lander Rocket", icon: "🌙", kind: "game", portal: [3515, 860], portalR: 70, arrive: [3515, 880], map: [2960, 690] },
     { id: "fartman", name: "Fart Man Landing Zone", icon: "🚀", kind: "game", portal: [3720, 925], portalR: 120, arrive: [3720, 950], map: [3720, 720] },
     { id: "mathblaster", name: "Math Blaster Academy", icon: "✖️", kind: "game", portal: [1450, 935], portalR: 95, arrive: [1450, 965], map: [1450, 760] },
     { id: "kitchen", name: "Ariel's Kitchen", icon: "🍳", kind: "game", portal: [1570, 1755], portalR: 90, arrive: [1570, 1790], map: [1420, 1570] },
@@ -760,7 +761,15 @@
     staticProp(3545, 790, [-60, -290, 60, 10], (c) => drawRocket(c, 1.05, "#F4F6FF", "#7B3FE4"), {
       kind: "rocket", solid: [{ c: [0, -6, 36] }], shadow: [46, 12], bubbleH: 280,
       live(c, E2) { if (Math.sin(E2.t * 0.7) > 0.6) { c.fillStyle = "rgba(255,255,255,.5)"; c.beginPath(); c.arc(-30 - ((E2.t * 30) % 30), -8, 12, 0, TAU); c.fill(); } },
-      tap: { reach: "remote", act(E2, e) { if (e.cool > E2.t) return; e.cool = E2.t + 3; RW.sfx.play("rumble"); E2.shake(4); E2.burst(e.x, e.y, 6, "smoke", 14, { sp: 120, up: 40 }); E2.say(e, "3... 2... 1... just kidding!", 2); } },
+      tap: {
+        reach: "remote",
+        act(E2, e) {
+          if (e.cool > E2.t) return; e.cool = E2.t + 3; RW.sfx.play("rumble"); E2.shake(4); E2.burst(e.x, e.y, 6, "smoke", 14, { sp: 120, up: 40 }); E2.say(e, "3... 2... 1... blast off to the moon!", 2);
+          // the big rocket is Lunar Lander: walk to its hatch
+          const d = DEST.lunar;
+          if (!E2.player.lock && E2.nearPortal !== d) E2.walkTo(d.portal[0], d.portal[1]);
+        },
+      },
     });
     staticProp(3890, 725, [-40, -190, 40, 10], (c) => drawRocket(c, 0.62, "#FFE45C", "#2EB872"), { kind: "rocket", solid: [{ c: [0, -4, 22] }], shadow: [26, 8] });
     // launch gantry

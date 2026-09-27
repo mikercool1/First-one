@@ -180,7 +180,7 @@
     const spec = A.CHARS[id];
     const P = {
       kind: "player", id, spec, x, y, dir: 1, back: false, side: 0, move: 0, anim: 0,
-      speed: id === "jonah" ? 190 : id === "ellie" ? 160 : 175,
+      speed: id === "jonah" ? 190 : id === "max" ? 195 : id === "ellie" ? 160 : 175,
       pose: null, poseT: 0, poseDur: 0, lock: false, lift: 0, liftV: 0,
       path: null, target: null, onArrive: null, idleT: 0, blinkT: 2, blink: false,
       quirkT: 6, wrongT: 0, wrongDir: 0, lookT: 0, emerge: 1, prop: null, sitOn: null,
@@ -322,6 +322,7 @@
     const id = P.id;
     if (id === "reuben") { E.act("fist", 1.2, { lock: false }); E.say(P, U.pick(["Let's play!", "Batter up!", "Where's the next star?"]), 1.6); }
     else if (id === "jonah") { E.act("jump", 0.5, { lock: false }); E.jump(360); E.later(0.6, () => { E.act("jump", 0.5, { lock: false }); E.jump(360); }); E.say(P, U.pick(["GOOOAL!", "I'm so fast!", "Let's go!"]), 1.5); }
+    else if (id === "max") { E.act("spoon", 1.4, { lock: false }); E.jump(300); E.say(P, U.pick(["Hehehe!", "Can't catch me!", "I have a spoon!", "Is it cookie time?"]), 1.5); }
     else { E.act("wave", 1.4, { lock: false }); E.say(P, U.pick(["Hi!", "Hehe!", "Where Max?", "Up! Up!"]), 1.5); }
   }
 

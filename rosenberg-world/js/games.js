@@ -51,6 +51,17 @@
   });
 
   G.register({
+    id: "lunarLander",
+    title: "Lunar Lander",
+    subtitle: "Steer with your finger and land softly on the moon.",
+    destination: "lunar",
+    unlocked: true,
+    entry: "games/lunar-lander/index.html",
+    color: "#3A4E9C",
+    icon: "🌙",
+  });
+
+  G.register({
     id: "mathBlaster",
     title: "Math Blaster",
     subtitle: "Reuben's multiplication mission",

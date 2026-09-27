@@ -81,6 +81,7 @@ body:not(.ready) #title { opacity: 0; }
 .names .r { background: linear-gradient(180deg, #34478A, #1E2B57); }
 .names .j { background: linear-gradient(180deg, #7ACDF6, #3FA6E0); }
 .names .e { background: linear-gradient(180deg, #F58BB8, #E8559B); }
+.names .m { background: linear-gradient(180deg, #FFA36C, #F07C4A); }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 .tap-enter {
   position: absolute; left: 50%; bottom: calc(var(--safe-b) + 5vh); transform: translateX(-50%);
@@ -107,14 +108,14 @@ body:not(.ready) #title { opacity: 0; }
 .card {
   --c: #2F6BFF;
   position: relative; display: flex; flex-direction: column; align-items: center;
-  width: clamp(150px, 27vw, 290px); padding: 10px 10px 16px;
+  width: clamp(140px, 21.5vw, 260px); padding: 10px 10px 16px;
   border-radius: 34px;
   background: linear-gradient(180deg, #FFFFFF 0%, color-mix(in srgb, var(--c) 18%, #FFFFFF) 100%);
   box-shadow: 0 8px 0 color-mix(in srgb, var(--c) 55%, #10183A), 0 20px 40px rgba(10,20,60,.4);
   animation: cardIn .5s cubic-bezier(.3,1.4,.5,1) both;
   transition: transform .15s ease;
 }
-.card:nth-child(2) { animation-delay: .08s; } .card:nth-child(3) { animation-delay: .16s; }
+.card:nth-child(2) { animation-delay: .08s; } .card:nth-child(3) { animation-delay: .16s; } .card:nth-child(4) { animation-delay: .24s; }
 @keyframes cardIn { from { opacity: 0; transform: translateY(40px) scale(.9); } to { opacity: 1; transform: none; } }
 .card:active { transform: translateY(5px) scale(.97); }
 .card canvas { width: 100%; height: auto; aspect-ratio: 360 / 420; border-radius: 26px; background: radial-gradient(90% 70% at 50% 35%, color-mix(in srgb, var(--c) 30%, #FFFFFF), color-mix(in srgb, var(--c) 10%, #FFFFFF)); }
@@ -124,7 +125,7 @@ body:not(.ready) #title { opacity: 0; }
 .card.last::after { content: "LAST PLAYED"; position: absolute; top: 18px; left: 18px; font-size: 11px; background: var(--gold); color: var(--ink); padding: 4px 9px; border-radius: 999px; }
 .card.picked { animation: picked .6s ease both; }
 @keyframes picked { 0% { transform: scale(1); } 40% { transform: scale(1.1) rotate(-2deg); box-shadow: 0 8px 0 color-mix(in srgb, var(--c) 55%, #10183A), 0 0 0 10px rgba(255,210,63,.8), 0 20px 50px rgba(255,210,63,.6); } 100% { transform: scale(1.04); } }
-@media (max-height: 520px) { .card { width: clamp(130px, 22vw, 240px); } .sel-title { font-size: 28px; } #select { gap: 12px; } }
+@media (max-height: 520px) { .card { width: clamp(120px, 19vw, 220px); } .sel-title { font-size: 28px; } #select { gap: 12px; } }
 
 /* ---------- HUD ---------- */
 #hud { position: fixed; inset: 0; z-index: 15; pointer-events: none; }
