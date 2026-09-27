@@ -11,23 +11,10 @@
 </head>
 <body>
 <div class="app">
-  <header class="hud" aria-label="Scoreboard">
-    <div class="hud-total">
-      <span class="lbl">Total spent</span>
-      <span class="val" id="total">$0</span>
-    </div>
-    <div class="hud-side">
-      <div class="hud-bags"><span class="lbl">Bags</span><span class="val2" id="bags">0 / 12</span></div>
-      <div class="hud-full">
-        <span class="lbl full-row"><span>Fullness</span><em id="fullWord">Peckish</em></span>
-        <div class="meter"><i id="fullBar"></i></div>
-      </div>
-    </div>
-  </header>
 
   <main class="stage-wrap">
     <div class="stage" id="stage">
-      <svg id="scene" viewBox="0 -60 400 620" aria-label="Billy on the couch in a chic studio apartment while Debbie brings in shopping">
+      <svg id="scene" viewBox="0 -160 400 800" preserveAspectRatio="xMidYMid slice" aria-label="Billy on the couch in a chic studio apartment while Debbie brings in shopping">
         <defs>
           <linearGradient id="gWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3EBE0"/><stop offset="1" stop-color="#E4D6C4"/></linearGradient>
           <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#46507F"/><stop offset=".55" stop-color="#B98FA8"/><stop offset="1" stop-color="#F7C79A"/></linearGradient>
@@ -49,13 +36,13 @@
         </defs>
 
         <!-- room -->
-        <rect y="-60" width="400" height="432" fill="url(#gWall)"/>
-        <rect y="-60" width="400" height="22" fill="#FBF7F0"/><rect y="-38" width="400" height="3" fill="#E0D2BF"/><rect y="-35" width="400" height="2" fill="#EFE3D3"/>
+        <rect x="-100" y="-160" width="600" height="532" fill="url(#gWall)"/>
+        <rect x="-100" y="-160" width="600" height="80" fill="#F7F1E8"/><rect x="-100" y="-82" width="600" height="3" fill="#E0D2BF"/><rect x="-100" y="-79" width="600" height="2" fill="#EFE3D3"/><rect x="-100" y="-40" width="600" height="3" fill="#EDE2D3"/>
         <g stroke="#D9CAB5" stroke-width="1.4" fill="none">
           <rect x="160" y="236" width="68" height="118" rx="2"/><rect x="236" y="236" width="70" height="118" rx="2"/>
         </g>
         <!-- pendant -->
-        <path d="M200 -38 L200 34" stroke="#9C7634" stroke-width="1.5"/><ellipse cx="200" cy="-37" rx="8" ry="2.5" fill="url(#gGold)"/>
+        <path d="M200 -80 L200 34" stroke="#9C7634" stroke-width="1.5"/><ellipse cx="200" cy="-79" rx="8" ry="2.5" fill="url(#gGold)"/>
         <g fill="url(#gGold)"><circle cx="200" cy="40" r="6"/></g>
         <g stroke="#C9A45C" stroke-width="1.4"><path d="M200 40 L180 30 M200 40 L220 30 M200 40 L184 52 M200 40 L216 52 M200 40 L200 58"/></g>
         <g fill="#FFF3D1"><circle cx="180" cy="30" r="3"/><circle cx="220" cy="30" r="3"/><circle cx="184" cy="52" r="3"/><circle cx="216" cy="52" r="3"/><circle cx="200" cy="58" r="3"/></g>
@@ -110,13 +97,13 @@
             <circle cx="329" cy="268" r="3.4" fill="url(#gGold)"/>
           </g>
         </g>
-        <rect x="0" y="364" width="400" height="8" fill="#FBF7F0"/>
+        <rect x="-100" y="364" width="600" height="8" fill="#FBF7F0"/>
 
         <!-- floor -->
-        <rect y="372" width="400" height="188" fill="url(#pFloor)"/>
-        <rect y="372" width="400" height="188" fill="#FFF3E0" opacity=".12"/>
-        <rect y="500" width="400" height="60" fill="#5A3A20" opacity=".08"/>
-        <rect y="372" width="400" height="10" fill="#000" opacity=".06"/>
+        <rect x="-100" y="372" width="600" height="268" fill="url(#pFloor)"/>
+        <rect x="-100" y="372" width="600" height="268" fill="#FFF3E0" opacity=".12"/>
+        <rect x="-100" y="540" width="600" height="100" fill="#5A3A20" opacity=".10"/>
+        <rect x="-100" y="372" width="600" height="10" fill="#000" opacity=".06"/>
         <!-- rug -->
         <ellipse cx="176" cy="436" rx="160" ry="46" fill="#EFE6D8"/>
         <ellipse cx="176" cy="436" rx="146" ry="38" fill="none" stroke="#D7C4AA" stroke-width="3"/>
@@ -158,7 +145,7 @@
         </g>
 
         <g id="clutterBack"></g>
-        <g id="spot" opacity="0"><polygon points="300,-60 340,-60 430,560 190,560" fill="url(#gSpot)"/></g>
+        <g id="spot" opacity="0"><polygon points="300,-160 340,-160 440,640 180,640" fill="url(#gSpot)"/></g>
         <g id="party"></g>
         <g id="clutter"></g>
         <g id="stageBag"></g>
@@ -176,21 +163,36 @@
       </div>
       <div class="chomp" id="chomp">CHOMP</div>
       <div class="flash" id="flash"></div>
+      <header class="hud" aria-label="Scoreboard">
+        <div class="hud-total">
+          <span class="lbl">Total spent</span>
+          <span class="val" id="total">$0</span>
+        </div>
+        <div class="hud-side">
+          <div class="hud-bags"><span class="lbl">Bags</span><span class="val2" id="bags">0 / 12</span></div>
+          <div class="hud-full">
+            <span class="lbl full-row"><span>Fullness</span><em id="fullWord">Peckish</em></span>
+            <div class="meter"><i id="fullBar"></i></div>
+          </div>
+        </div>
+      </header>
+      <footer class="controls">
+        <p class="status" id="status">Debbie's on her way up&hellip;</p>
+        <div class="panel off" id="panel">
+        <div class="guess" id="guess" role="group" aria-label="Optional guess">
+          <span class="guess-lbl">Guess? <b id="streak"></b></span>
+          <div class="chips">
+            <button type="button" class="chip" data-g="low">Under $700</button>
+            <button type="button" class="chip" data-g="mid">$700–$1,100</button>
+            <button type="button" class="chip" data-g="high">Over $1,100</button>
+          </div>
+        </div>
+        <button type="button" class="reveal" id="revealBtn">REVEAL PRICE</button>
+        </div>
+      </footer>
     </div>
   </main>
 
-  <footer class="controls">
-    <div class="guess" id="guess" role="group" aria-label="Optional guess">
-      <span class="guess-lbl">Guess? <b id="streak"></b></span>
-      <div class="chips">
-        <button type="button" class="chip" data-g="low">Under $700</button>
-        <button type="button" class="chip" data-g="mid">$700–$1,100</button>
-        <button type="button" class="chip" data-g="high">Over $1,100</button>
-      </div>
-    </div>
-    <button type="button" class="reveal" id="revealBtn">REVEAL PRICE</button>
-    <p class="status" id="status">Debbie's on her way up&hellip;</p>
-  </footer>
 </div>
 
 <div class="overlay" id="title">

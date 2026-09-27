@@ -55,8 +55,8 @@
   const CART_DX = -78, BILLY_X = 118, STAGE = { x: 200, y: 322 }, TABLE = { x: 190, y: 388 };
   const MOUTH = { x: BILLY_X - 2, y: 224 };
   const SLOTS = [
-    { x: 34, y: 500, s: 0.8, r: -6 }, { x: 368, y: 520, s: 0.86, r: 5 }, { x: 88, y: 530, s: 0.82, r: 4 },
-    { x: 262, y: 534, s: 0.82, r: -4 }, { x: 390, y: 462, s: 0.66, r: 8 }, { x: 18, y: 440, s: 0.62, r: -3 },
+    { x: 40, y: 500, s: 0.8, r: -6 }, { x: 360, y: 522, s: 0.86, r: 5 }, { x: 88, y: 530, s: 0.82, r: 4 },
+    { x: 262, y: 534, s: 0.82, r: -4 }, { x: 370, y: 470, s: 0.66, r: 8 }, { x: 32, y: 440, s: 0.62, r: -3 },
     { x: 180, y: 540, s: 0.8, r: 6 }, { x: 236, y: 334, s: 0.5, r: -8 }, { x: 52, y: 258, s: 0.42, r: 0 },
     { x: 30, y: 450, s: 0.62, r: 10 }, { x: 196, y: 386, s: 0.46, r: -5 }, { x: 206, y: 336, s: 0.5, r: 6 },
   ];
@@ -212,19 +212,31 @@
     return tween(900, (t) => { el.textContent = money(lerp(from, to, t)); }, easeOut);
   }
   const bubbleT = {};
+  // pin an overlay element to a point in the scene, kept inside the screen
+  function pin(el, wx, wy) {
+    const svg = $("#scene"), m = svg.getScreenCTM(), r = $("#stage").getBoundingClientRect();
+    if (!m) return;
+    let x = m.a * wx + m.e - r.left;
+    const y = m.d * wy + m.f - r.top;
+    const w = el.offsetWidth || 0;
+    x = clamp(x, w / 2 + 8, r.width - w / 2 - 8);
+    el.style.left = x + "px"; el.style.top = y + "px";
+  }
   function say(who, text, ms = 1700) {
     const el = who === "billy" ? $("#bBilly") : $("#bDebbie");
-    el.textContent = text; el.classList.add("show");
+    el.textContent = text;
+    if (who === "billy") pin(el, BILLY_X, 166 - billy.lean * 6);
+    else pin(el, party.x - 4, party.y - 226 * party.s);
+    el.classList.add("show");
     clearTimeout(bubbleT[who]); bubbleT[who] = setTimeout(() => el.classList.remove("show"), ms * Math.max(SPEED, 0.5));
   }
   function status(t) { $("#status").textContent = t; }
   function controls(on) {
     const b = $("#revealBtn");
     b.disabled = !on; b.classList.toggle("ready", on);
-    $("#guess").classList.toggle("off", !on);
-    b.hidden = false;
+    $("#panel").classList.toggle("off", !on);
   }
-  function chomp(text = "CHOMP") { const c = $("#chomp"); c.textContent = text; c.classList.remove("go"); void c.offsetWidth; c.classList.add("go"); }
+  function chomp(text = "CHOMP") { const c = $("#chomp"); c.textContent = text; pin(c, BILLY_X + 104, 184); c.classList.remove("go"); void c.offsetWidth; c.classList.add("go"); }
   function flash() { const f = $("#flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); }
 
   // ---------- Billy's resting face for this point in the run ----------
@@ -445,7 +457,7 @@
     $("#clutter").insertAdjacentHTML("beforeend", `<g transform="translate(${slot.x} ${slot.y}) rotate(${slot.r}) scale(${slot.s})">${ART.bag(B.brand, 42, 50, 1)}</g>`);
     // tissue paper, receipts and extra boxes pile up too
     for (let k = 0; k < 1 + Math.floor(S.i / 4); k++) {
-      const x = 20 + Math.random() * 360, y = 446 + Math.random() * 100;
+      const x = 30 + Math.random() * 340, y = 446 + Math.random() * 120;
       const extra = Math.random() < 0.55 ? ART.tissue() : ART.receipt(10 + Math.random() * 14);
       $("#clutter").insertAdjacentHTML("afterbegin", `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) rotate(${Math.round(Math.random() * 60 - 30)}) scale(${(0.8 + Math.random() * 0.5).toFixed(2)})">${extra}</g>`);
     }
@@ -474,7 +486,7 @@
   }
 
   async function ending() {
-    S.busy = true; controls(false); $("#revealBtn").hidden = true; $("#guess").classList.add("off");
+    S.busy = true; controls(false);
     status("");
     // Debbie admires the place; Billy has given up
     Object.assign(billy, { mood: "defeated", eyes: "closed", mouth: "wobble", lean: 1, sweat: true, arm: 0 }); renderBilly();
@@ -549,7 +561,7 @@
   (() => { let o = ""; for (let i = 0; i < 46; i++) o += `<rect x="${(26 + Math.random() * 120).toFixed(0)}" y="${(135 + Math.random() * 115).toFixed(0)}" width="2.2" height="3" opacity="${(0.5 + Math.random() * 0.5).toFixed(2)}"/>`; $("#cityLights").innerHTML = o; })();
 
   // idle scene behind the title card
-  newRun(); setDoor(0); restingFace(); controls(false); $("#revealBtn").hidden = false;
+  newRun(); setDoor(0); restingFace(); controls(false);
   try { const b = +localStorage.getItem("debbieShops.best"); if (b) $("#bestLine").textContent = `Biggest spree so far: ${money(b)}`; } catch {}
   if (location.hash.includes("autotest")) window.__ds = () => ({ S, billy, ready: !!revealResolve });
 })();
