@@ -1,14 +1,17 @@
-// Rosenberg Mini Golf: the three holes.
+// Rosenberg Mini Golf: the nine holes.
 //
 // Each hole is a small floating island drawn on a grid of 1×1 tiles.
 //   ' ' sky (no island)      '.' grass            '~' pond (decoration)
 //   'g' putting green        'T' tee (green)      'H' cup (green)
-//   's' sand                 'w' water hazard     'b' wooden bridge over water
-//   'M' under the windmill   't' tunnel through the windmill
+//   's' sand (snow drift)    'w' water/lava hazard 'b' wooden bridge over water
+//   'i' ice                  'd' drawbridge (water when it's up)
+//   'M' under a building     't' tunnel through a building
 //   '1'-'4' green with one corner cut on a diagonal (1 = bottom-right missing,
-//           2 = bottom-left, 3 = top-left, 4 = top-right); the cut half is grass.
+//           2 = bottom-left, 3 = top-left, 4 = top-right); the cut half is grass,
+//           and the other half matches the ice or sand beside it.
 // Walls go up automatically wherever green meets anything that isn't green.
-// hp(x, y) is the height of the playing surface, hd(x, y) of the grass around it.
+// hp(x, y) is the height of the playing surface, hd(x, y, i, j) of the grass around it
+// (i, j is the tile, so a grass tile can sit on a cliff top rather than slope off it).
 (() => {
   const bump = (x, y, cx, cy, r, h) => h * Math.exp(-((x - cx) ** 2 + (y - cy) ** 2) / (r * r));
   const smooth = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
@@ -17,6 +20,18 @@
   // Hole 3's ramp climbs from the lower corridor (y = 12) up to the moon terrace (y = 7).
   const RAMP_TOP = 7, RAMP_BOT = 12, TERRACE = 1.2;
   const ramp = (y) => TERRACE * smooth((RAMP_BOT - y) / (RAMP_BOT - RAMP_TOP));
+
+  // Hole 5 drops down three canyon terraces: 1.6 → 0.8 → 0.
+  const rampA = (y) => 1.6 - 0.8 * smooth((y - 3) / 3);
+  const rampB = (y) => 0.8 - 0.8 * smooth((y - 8) / 3);
+  const canyon = (y) => (y < 3 ? 1.6 : y < 6 ? rampA(y) : y < 8 ? 0.8 : y < 11 ? rampB(y) : 0);
+
+  // Hole 9's volcano: a lower slope, a shelf to rest on, the summit, and a crater around the cup.
+  const volcano = (x, y) => {
+    const d = Math.hypot(x - 5.5, y - 5.5);
+    return 0.85 * smooth((5.3 - d) / 1.1) + 0.95 * smooth((3.0 - d) / 1.0)
+      + 0.24 * Math.exp(-((d - 1.1) ** 2) / 0.12) - 0.1 * Math.exp(-(d * d) / 0.3);
+  };
 
   window.HOLES = [
     {
@@ -154,6 +169,7 @@
         return TERRACE * smooth((8.6 - y) / 2) + roll(x, y, 0.04);
       },
       chevrons: [[2, 10.2], [2, 8.4]],
+      detail: 14,
       spinner: { x: 5.5, y: 13.5, r: 1.36, speed: 1.15 },
       bumpers: [{ x: 2.3, y: 2.5, r: 0.3 }, { x: 4.6, y: 1.9, r: 0.3 }, { x: 4.4, y: 5.1, r: 0.3 }],
       objects: [
@@ -177,6 +193,302 @@
         grass: "#3F7B5E", green: "#389C6E", sand: "#CDB88F", water: "#2D6690", beach: "#CDB88F",
         wallTop: "#D8573F", wallSide: "#8E2A26", lip: "#2F6048",
         earth: ["#5E4B72", "#3E3152", "#211A30"], light: [0.45, -0.6, 0.85], mist: "#F2B08C", night: true,
+      },
+    },
+    {
+      name: "Frosty Peak",
+      par: 3,
+      blurb: "The rink barely slows you down. Say hi to the snowman.",
+      map: [
+        "  .......  ",
+        " ..3ggg4.. ",
+        " .3ggHgg4. ",
+        " .ggggggg. ",
+        " .2ggggg1. ",
+        " ...gg.... ",
+        " .3iiiii4. ",
+        " .iiiiiii. ",
+        " .iiiiiii. ",
+        " .iiiiiii. ",
+        " .2iiiii1. ",
+        " ...ggg... ",
+        " ..3ggg4.. ",
+        " ..ggggg.. ",
+        " ..2gTg1.. ",
+        " ......... ",
+        "  .......  ",
+      ],
+      hp: (x, y) => -bump(x, y, 5.5, 2.5, 1.3, 0.24),
+      hd: (x, y) => roll(x, y, 0.09) + 0.05,
+      bumpers: [{ x: 5.5, y: 8.4, r: 0.3, style: "snowman", bouncy: false }],
+      objects: [
+        { type: "pine", x: 1.3, y: 3.4, s: 1.0, snow: true },
+        { type: "pine", x: 9.4, y: 5.5, s: 0.9, snow: true },
+        { type: "pine", x: 2.5, y: 0.6, s: 0.75, snow: true },
+        { type: "pine", x: 1.2, y: 12.6, s: 0.95, snow: true },
+        { type: "pine", x: 9.5, y: 12.2, s: 1.05, snow: true },
+        { type: "pine", x: 8.6, y: 0.8, s: 0.7, snow: true },
+        { type: "snowman", x: 8.3, y: 14.2, s: 1 },
+        { type: "rock", x: 2.5, y: 15.4, s: 0.7, snowy: true },
+        { type: "rock", x: 9.4, y: 8.8, s: 0.6, snowy: true },
+        { type: "fence", x0: 4.2, y0: 15.9, x1: 6.8, y1: 15.9 },
+      ],
+      critters: "snow",
+      flowers: ["#FFFFFF", "#DDEBFA"],
+      theme: {
+        sky: ["#86AEE3", "#C4DAF4", "#F6D8E4"], sun: { x: 0.78, y: 0.16, c: "#FFFFFF" }, cloud: "#FFFFFF",
+        grass: "#EEF4FA", green: "#4FB37A", sand: "#FFFFFF", water: "#9FD2EE", beach: "#FFFFFF", ice: "#BFE4F6",
+        wallTop: "#F7FAFD", wallSide: "#C8453A", lip: "#E2ECF6",
+        earth: ["#9AA8BE", "#6A788F", "#3E4A60"], light: [-0.4, -0.6, 0.85], mist: "#F6E4EE",
+      },
+    },
+    {
+      name: "Canyon Run",
+      par: 3,
+      blurb: "Three terraces down. Ride the arrows.",
+      map: [
+        "...........",
+        ".3Tgggggg4.",
+        ".2gggggggg.",
+        "........gg.",
+        "........gg.",
+        "........gg.",
+        ".3gggggggg.",
+        ".gggggggg1.",
+        ".gg........",
+        ".gg........",
+        ".gg........",
+        ".gggggggg4.",
+        ".ggggggHgg.",
+        ".2ggggggg1.",
+        "...........",
+        " ......... ",
+      ],
+      hp: (x, y) => canyon(y) - bump(x, y, 7.5, 12.5, 1.2, 0.22),
+      hd: (x, y, i = Math.floor(x), j = Math.floor(y)) =>
+        j <= 2 ? 1.6 : j <= 5 ? (i >= 8 ? rampA(y) : 1.6) : j <= 7 ? 0.8 : j <= 10 ? (i <= 2 ? rampB(y) : 0.8) : roll(x, y, 0.05),
+      boosts: [{ x: 3.4, y: 6.15, w: 3.4, h: 1.7, dx: -1, dy: 0 }, { x: 2.3, y: 11.15, w: 2.2, h: 2.7, dx: 1, dy: 0 }],
+      objects: [
+        { type: "cactus", x: 1.4, y: 4.4, s: 1.0 },
+        { type: "cactus", x: 5.2, y: 3.8, s: 0.8 },
+        { type: "cactus", x: 9.5, y: 8.9, s: 0.9 },
+        { type: "cactus", x: 4.3, y: 9.6, s: 1.1 },
+        { type: "cactus", x: 9.4, y: 14.4, s: 0.8 },
+        { type: "rock", x: 3.2, y: 4.8, s: 0.9, c: "#B8653E" },
+        { type: "rock", x: 6.8, y: 9.3, s: 0.8, c: "#B8653E" },
+        { type: "rock", x: 1.6, y: 14.6, s: 0.7, c: "#B8653E" },
+        { type: "rock", x: 7.2, y: 4.4, s: 0.6, c: "#C97A4A" },
+        { type: "bush", x: 1.3, y: 0.5, s: 0.6, c: "#8A9A4A" },
+      ],
+      critters: "tumbleweed",
+      flowers: ["#F5D36B", "#F08A5D", "#FFFFFF"],
+      theme: {
+        sky: ["#352865", "#B9567E", "#F59D5A", "#FFD99A"], sun: { x: 0.74, y: 0.5, c: "#FFD27A" }, cloud: "#FFC9A8",
+        grass: "#D9A36A", green: "#58AB68", sand: "#F1CE92", water: "#3FA7C9", beach: "#E8B57B",
+        wallTop: "#F2C58E", wallSide: "#B8643A", lip: "#C98A52",
+        earth: ["#CC6C3C", "#9B4A2B", "#5E2C1E"], light: [0.5, -0.45, 0.8], mist: "#FFC99A",
+      },
+    },
+    {
+      name: "Castle Moat",
+      par: 3,
+      blurb: "Wait for the drawbridge. The fountain guards the flag.",
+      map: [
+        "  .......  ",
+        " .3ggggg4. ",
+        " .ggggggg. ",
+        " .gHggggg. ",
+        " .ggggggg. ",
+        " .2ggggg1. ",
+        " ..MMtMM.. ",
+        " .wwwdwww. ",
+        " .wwwdwww. ",
+        " .ggggggg. ",
+        " .ggggggg. ",
+        " .2ggggg1. ",
+        " ..ggggg.. ",
+        " ..2gTg1.. ",
+        " ......... ",
+        "  .......  ",
+      ],
+      hp: (x, y) => -bump(x, y, 3.5, 3.5, 1.2, 0.2) + bump(x, y, 5.5, 11, 1.4, 0.18),
+      hd: (x, y) => roll(x, y, 0.06),
+      gatehouse: { x0: 3, x1: 8, y0: 6, y1: 7 },
+      drawbridge: { x0: 5, x1: 6, y0: 7, y1: 9, period: 6 },
+      bumpers: [{ x: 5.6, y: 2.6, r: 0.5, style: "fountain", bouncy: false }],
+      objects: [
+        { type: "tower", x: 1.5, y: 6.5, r: 0.45, h: 2.0, c: "#3D6FC4" },
+        { type: "tower", x: 9.5, y: 6.5, r: 0.45, h: 2.0, c: "#3D6FC4" },
+        { type: "tower", x: 1.6, y: 0.8, r: 0.4, h: 1.6, c: "#C8453A" },
+        { type: "tower", x: 9.4, y: 0.8, r: 0.4, h: 1.6, c: "#C8453A" },
+        { type: "bush", x: 1.3, y: 3.2, s: 0.7 },
+        { type: "bush", x: 9.5, y: 3.4, s: 0.7 },
+        { type: "tree", x: 9.3, y: 11.8, s: 0.85 },
+        { type: "tree", x: 1.4, y: 10.2, s: 0.8 },
+        { type: "bush", x: 2.6, y: 14.6, s: 0.7 },
+        { type: "rock", x: 8.3, y: 14.5, s: 0.6 },
+      ],
+      critters: "butterflies",
+      flowers: ["#FFFFFF", "#FFD84D", "#E8423B", "#9FB8FF"],
+      theme: {
+        sky: ["#4FA3E3", "#9FD2F2", "#EAF4E6"], sun: { x: 0.2, y: 0.15, c: "#FFF6D0" }, cloud: "#FFFFFF",
+        grass: "#7CC35E", green: "#3FAF5E", sand: "#ECD59C", water: "#3B8FD1", beach: "#ECD8A6",
+        wallTop: "#DCD8D0", wallSide: "#9C968C", lip: "#5E9E48",
+        earth: ["#A08D77", "#716251", "#403830"], light: [-0.5, -0.55, 0.9], mist: "#EEF6F0",
+      },
+    },
+    {
+      name: "Orchard Barn",
+      par: 3,
+      blurb: "Hay carts coming through. The hill leans right.",
+      map: [
+        "  .......  ",
+        " ..3ggg4.. ",
+        " .3ggHgg4. ",
+        " .ggggggg. ",
+        " .ggggggg. ",
+        " .ggggggg. ",
+        " .ggggggg. ",
+        " .ggggggg. ",
+        " .2gggggg. ",
+        " ..2ggggg. ",
+        " ...ggggg. ",
+        " ...ggggg. ",
+        " ...ggggg. ",
+        " ...ggggg. ",
+        " ...2gTg1. ",
+        " ......... ",
+        "  .......  ",
+      ],
+      hp: (x, y) => -bump(x, y, 5.5, 2.5, 1.0, 0.1) + 0.34 * ((9 - x) / 5) * smooth((y - 9.2) / 0.8) * smooth((14.2 - y) / 0.8),
+      hd: (x, y) => roll(x, y, 0.07),
+      sliders: [
+        { cx: 5.5, y: 5.5, amp: 2.3, w: 1.4, d: 0.7, period: 4.4, phase: 0 },
+        { cx: 6.5, y: 11.2, amp: 1.55, w: 1.2, d: 0.65, period: 3.4, phase: 2 },
+      ],
+      bumpers: [{ x: 3.4, y: 3.9, r: 0.28, style: "pumpkin", bouncy: false }, { x: 7.6, y: 3.7, r: 0.28, style: "pumpkin", bouncy: false }],
+      objects: [
+        { type: "barn", x0: 1.05, x1: 3.2, y0: 10.3, y1: 12.7 },
+        { type: "tree", x: 1.3, y: 3.2, s: 1.0, c: "#E07A2E" },
+        { type: "tree", x: 9.4, y: 4.6, s: 0.9, c: "#D2452F" },
+        { type: "tree", x: 9.4, y: 9.4, s: 0.85, c: "#E8B03A" },
+        { type: "tree", x: 2.6, y: 0.6, s: 0.7, c: "#D2452F" },
+        { type: "tree", x: 8.4, y: 0.7, s: 0.7, c: "#E8B03A" },
+        { type: "haybale", x: 2.9, y: 14.2 },
+        { type: "haybale", x: 2.1, y: 13.7 },
+        { type: "pumpkin", x: 9.4, y: 13.3, s: 1 },
+        { type: "pumpkin", x: 9.6, y: 14.2, s: 0.8 },
+        { type: "pumpkin", x: 1.4, y: 7.6, s: 0.9 },
+        { type: "fence", x0: 4.4, y0: 15.9, x1: 8.2, y1: 15.9 },
+      ],
+      critters: "leaves",
+      flowers: ["#E8B03A", "#D2452F", "#FFFFFF"],
+      theme: {
+        sky: ["#E3935A", "#F4C58A", "#FBE6C4"], sun: { x: 0.18, y: 0.24, c: "#FFE7B0" }, cloud: "#FFF4E2",
+        grass: "#B5B25A", green: "#58A858", sand: "#E6C98A", water: "#5AA3C8", beach: "#E6C98A",
+        wallTop: "#DDA46C", wallSide: "#8C4A2B", lip: "#8FA048",
+        earth: ["#A0663F", "#744629", "#46291A"], light: [-0.45, -0.5, 0.85], mist: "#FFE9C8",
+      },
+    },
+    {
+      name: "Mushroom Hollow",
+      par: 3,
+      blurb: "No path across the creek. The stumps know a way.",
+      map: [
+        "  .......  ",
+        " ..3ggg4.. ",
+        " .3gHggg4. ",
+        " .ggggggg. ",
+        " .ggggggg. ",
+        " .2ggggg1. ",
+        " ......... ",
+        "~~~~~~~~~~~",
+        " ......... ",
+        " .3ggggg4. ",
+        " .ggggggg. ",
+        " .ggggggg. ",
+        " .2ggggg1. ",
+        " ...gTg... ",
+        " ......... ",
+        "  .......  ",
+      ],
+      hp: (x, y) => -bump(x, y, 4.5, 2.5, 0.9, 0.08),
+      hd: (x, y) => roll(x, y, 0.07),
+      warps: [
+        { ax: 3.3, ay: 10.1, bx: 3.0, by: 4.5, dx: 0, dy: -1, c: "#7CF3D0" },
+        { ax: 7.7, ay: 10.1, bx: 8.0, by: 4.5, dx: -0.2, dy: -1, c: "#FFB86B" },
+      ],
+      bumpers: [
+        { x: 4.3, y: 11.1, r: 0.3, style: "mushroom" },
+        { x: 2.6, y: 11.3, r: 0.26, style: "mushroom" },
+        { x: 6.4, y: 3.3, r: 0.3, style: "mushroom" },
+      ],
+      objects: [
+        { type: "mushroom", x: 1.3, y: 6.4, s: 1.1 },
+        { type: "mushroom", x: 9.3, y: 6.3, s: 0.8 },
+        { type: "mushroom", x: 9.4, y: 10.5, s: 1.0 },
+        { type: "mushroom", x: 1.4, y: 13.6, s: 0.9 },
+        { type: "glowshroom", x: 1.3, y: 3.6 },
+        { type: "glowshroom", x: 9.4, y: 2.8 },
+        { type: "glowshroom", x: 5.2, y: 8.5 },
+        { type: "glowshroom", x: 8.6, y: 13.8 },
+        { type: "glowshroom", x: 3.4, y: 6.5 },
+        { type: "tree", x: 2.6, y: 0.6, s: 0.9, c: "#2E6B5A" },
+        { type: "tree", x: 8.5, y: 0.6, s: 0.8, c: "#2E6B5A" },
+        { type: "rock", x: 6.6, y: 6.5, s: 0.6 },
+      ],
+      critters: "fireflies",
+      fireflyColor: "150,255,220",
+      flowers: ["#9FF3FF", "#FFB3E6", "#FFFFFF"],
+      theme: {
+        sky: ["#0C2238", "#1C4F60", "#3F8C84", "#9FD3AE"], stars: true, cloud: "#6FA8A0",
+        grass: "#2F6150", green: "#3E9A78", sand: "#CDB88F", water: "#2B7A88", beach: "#CDB88F",
+        wallTop: "#9C7650", wallSide: "#5A3E2A", lip: "#2A5040",
+        earth: ["#4A4058", "#332C40", "#1C1826"], light: [0.3, -0.6, 0.8], mist: "#7FC8B0", night: true,
+      },
+    },
+    {
+      name: "Volcano Summit",
+      par: 4,
+      blurb: "Climb to the crater. Don't touch the lava.",
+      map: [
+        "  .......  ",
+        " ..3ggg4.. ",
+        " .3ggggg4. ",
+        " .ggggggg. ",
+        " .ggggggg. ",
+        " .gggHggg. ",
+        " .gggggwg. ",
+        " .gwggggg. ",
+        " .ggggggg. ",
+        " .gggwggg. ",
+        " .2ggwgg1. ",
+        " ..ggggg.. ",
+        " ..ggggg.. ",
+        " ..2gTg1.. ",
+        " ....~.... ",
+        "  ...~...  ",
+      ],
+      hp: volcano,
+      detail: 16,
+      hd: (x, y) => volcano(x, y) + roll(x, y, 0.06),
+      objects: [
+        { type: "rock", x: 1.4, y: 3.2, s: 1.0, c: "#3E3A44" },
+        { type: "rock", x: 9.4, y: 4.4, s: 0.9, c: "#3E3A44" },
+        { type: "rock", x: 9.4, y: 11.2, s: 1.1, c: "#3E3A44" },
+        { type: "rock", x: 1.5, y: 12.4, s: 0.8, c: "#3E3A44" },
+        { type: "rock", x: 2.7, y: 14.4, s: 0.7, c: "#3E3A44" },
+        { type: "rock", x: 7.6, y: 14.5, s: 0.7, c: "#3E3A44" },
+        { type: "deadtree", x: 1.3, y: 8.4, s: 1 },
+        { type: "deadtree", x: 9.5, y: 8.2, s: 0.8 },
+      ],
+      critters: "embers",
+      flowers: ["#FF8A3D", "#FFD06A"],
+      theme: {
+        sky: ["#0B0712", "#2A0F1E", "#6E1E24", "#E0532E"], stars: true, cloud: "#6E2A30",
+        grass: "#4B4852", green: "#6B4A42", sand: "#8A7F7A", water: "#FF6A1F", beach: "#8A7F7A",
+        wallTop: "#6E6874", wallSide: "#2E2A33", lip: "#3A3940",
+        earth: ["#3A3038", "#241D25", "#120D12"], light: [0.3, -0.5, 0.8], mist: "#FF7A3A", night: true, lava: true,
       },
     },
   ];
