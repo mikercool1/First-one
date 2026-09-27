@@ -3,156 +3,100 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#2A1D33">
+<meta name="theme-color" content="#3B2946">
 <title>Ariel Passover Cookout</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Playfair+Display:ital,wght@1,700;1,800&display=swap">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Playfair+Display:ital,wght@1,800&display=swap">
+<style>
+:root {
+  --plum: #3B2946; --plum-2: #2A1D33; --cream: #FBF7F0; --ink: #3A2A24; --soft: #7A6658;
+  --gold: #C9A45C; --gold-hi: #F1DA9E; --gold-lo: #9C7634; --good: #4CC38A; --bad: #E5484D;
+  --round: "Fredoka", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  --serif: "Playfair Display", Georgia, serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
+body { background: radial-gradient(120% 80% at 50% 20%, #4A3456, var(--plum-2)); color: var(--ink); font: 600 18px/1.25 var(--round);
+  -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+button { font-family: var(--round); cursor: pointer; }
+button:focus-visible { outline: 3px solid var(--gold-hi); outline-offset: 3px; }
+
+.app { position: relative; height: 100%; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px calc(env(safe-area-inset-bottom, 0px) + 14px); }
+
+.top { display: flex; align-items: center; gap: 10px; color: var(--cream); }
+.plates { flex: 1; display: flex; gap: 5px; }
+.plates i { flex: 1; height: 14px; border-radius: 7px; background: rgba(255,255,255,.18); transition: background .3s; }
+.plates i.on { background: linear-gradient(180deg, #FBE7B0, var(--gold)); box-shadow: 0 0 10px rgba(241,218,158,.6); }
+.count { font-size: 17px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mute { width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgba(255,255,255,.14); color: var(--cream); font-size: 18px; }
+.mute.off { opacity: .45; }
+
+.scene { flex: 1; min-height: 0; display: grid; place-items: end center; }
+#cv { display: block; border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,.35), 0 0 0 3px rgba(201,164,92,.6); touch-action: manipulation; }
+
+.choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.choice { border: 0; border-radius: 26px; padding: 8px 4px 12px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: linear-gradient(180deg, #FFFFFF, #F1E7D8); color: var(--ink); font-size: 17px;
+  box-shadow: 0 6px 0 #CDB99A, 0 12px 24px rgba(0,0,0,.3); transition: transform .08s, opacity .2s; }
+.choice img { width: min(88px, 22vw); height: min(88px, 22vw); }
+.choice:active { transform: translateY(4px); box-shadow: 0 2px 0 #CDB99A; }
+.choice:disabled { opacity: .35; }
+.choice.nope { animation: nope .4s; }
+@keyframes nope { 25% { transform: translateX(-6px) rotate(-3deg); } 75% { transform: translateX(6px) rotate(3deg); } }
+
+.overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px;
+  background: radial-gradient(100% 70% at 50% 40%, rgba(42,29,51,.55), rgba(42,29,51,.88)); text-align: center; }
+.card { width: 100%; max-width: 400px; padding: 26px 22px 24px; border-radius: 34px; background: linear-gradient(180deg, #FFFDF8, #F4EADB);
+  box-shadow: 0 0 0 3px rgba(201,164,92,.8), 0 30px 70px rgba(0,0,0,.5); animation: rise .5s cubic-bezier(.2,.9,.3,1.2); }
+@keyframes rise { from { transform: translateY(24px) scale(.95); opacity: 0; } }
+.kicker { font-size: 13px; letter-spacing: .24em; text-transform: uppercase; color: var(--gold-lo); }
+h1 { margin: 8px 0 4px; font: 700 44px/1 var(--round); color: var(--plum); text-wrap: balance; }
+h1 em { display: block; font: italic 800 50px/1.05 var(--serif); color: var(--gold-lo); }
+.card p { margin: 10px 0 20px; font-weight: 500; color: var(--soft); }
+.big { border: 0; border-radius: 999px; padding: 18px 56px; font: 700 28px/1 var(--round); letter-spacing: .04em; color: #4A3012;
+  background: linear-gradient(180deg, #FBE7B0, #E5C27A 45%, var(--gold)); box-shadow: 0 7px 0 var(--gold-lo), 0 16px 30px rgba(160,110,30,.4); }
+.big:active { transform: translateY(5px); box-shadow: 0 2px 0 var(--gold-lo); }
+.link { border: 0; background: none; color: var(--cream); font: 600 15px var(--round); text-decoration: underline; text-underline-offset: 3px; opacity: .85; }
+.stars { font-size: 56px; letter-spacing: 8px; color: #F2C230; text-shadow: 0 3px 0 #B8862A; }
+.stars span { opacity: .2; }
+.stars span.on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
 </head>
 <body>
-<canvas id="cv" aria-label="Ariel's kitchen: cook Passover dishes and serve the hungry family"></canvas>
-
-<div id="ui">
-  <!-- In-game heads-up display -->
-  <header id="hud" hidden>
-    <div class="hud-group">
-      <div class="pill round-pill"><span class="lbl">Round</span><b id="hRound">1</b></div>
-      <div class="pill"><span class="lbl">Score</span><b id="hScore">0</b></div>
-      <div class="pill"><span class="lbl">Served</span><b id="hServed">0/5</b></div>
-      <div class="pill strikes-pill"><span class="lbl">Meltdowns</span><span class="strikes" id="hStrikes"><i></i><i></i><i></i></span></div>
-    </div>
-    <div id="queue" aria-label="Orders waiting"></div>
-    <div class="hud-group">
-      <div class="pill combo-pill" id="hCombo" hidden></div>
-      <div class="pill star-pill" title="Rosenberg Stars"><span class="star">★</span><b id="hStars">0</b></div>
-      <button class="icon-btn" id="muteBtn" type="button" aria-label="Sound on">♪</button>
-      <button class="icon-btn" id="pauseBtn" type="button" aria-label="Pause">❚❚</button>
-    </div>
+<div class="app">
+  <header class="top">
+    <div class="plates" id="plates" aria-hidden="true"></div>
+    <div class="count" id="count">0 / 10</div>
+    <button class="mute" id="mute" type="button" aria-label="Sound on">♪</button>
   </header>
+  <div class="scene" id="scene"><canvas id="cv" aria-label="Ariel serving the family"></canvas></div>
+  <div class="choices" id="choices" aria-label="Pick the dish"></div>
 
-  <div id="maxAlert" hidden>
-    <div class="max-top">
-      <div class="siren"></div>
-      <div class="max-copy"><strong>MAX IS LOOSE!</strong><span id="maxText">Max is up to something…</span></div>
-      <button class="btn gold feed-btn" id="feedBtn" type="button">FEED MAX</button>
-    </div>
-    <div class="max-bar"><i id="maxBar"></i></div>
-  </div>
-
-  <div id="bottom" hidden>
-    <div id="carry">
-      <div class="carry-icon"><img id="carryImg" alt=""></div>
-      <div class="carry-info">
-        <span class="lbl">Ariel is carrying</span>
-        <b id="carryName">Nothing yet</b>
-        <div class="steps" id="carrySteps"></div>
-      </div>
-      <button class="toss" id="tossBtn" type="button" aria-label="Toss it">Toss</button>
-    </div>
-    <div id="hint"></div>
-  </div>
-
-  <div id="picker" hidden>
-    <div class="picker-title" id="pickerTitle">Fridge</div>
-    <div class="picker-items" id="pickerItems"></div>
-  </div>
-
-  <!-- Title -->
-  <section id="menu" class="screen">
-    <div class="title-plaque">
+  <section class="overlay" id="start">
+    <div class="card">
       <div class="kicker">A Rosenberg World Game</div>
-      <h1><span class="t-ariel">Ariel</span><span class="t-pass">Passover</span><span class="t-cook">Cookout</span></h1>
-      <p class="tagline">Cook it. Plate it. Serve it. Feed Max.</p>
+      <h1>Ariel <em>Passover</em> Cookout</h1>
+      <p>Everyone's hungry! Tap the food they ask for.</p>
+      <button class="big" id="play" type="button">PLAY</button>
     </div>
-    <div class="menu-buttons">
-      <button class="btn gold big" id="playBtn" type="button">PLAY</button>
-      <button class="btn cream" id="continueBtn" type="button" hidden>CONTINUE</button>
-      <button class="btn cream" id="howBtn" type="button">HOW TO PLAY</button>
-      <button class="btn plum" id="backBtn" type="button">BACK TO ROSENBERG WORLD</button>
-    </div>
-    <div class="menu-meta" id="menuMeta"></div>
+    <button class="link" id="back" type="button">Back to Rosenberg World</button>
   </section>
 
-  <!-- How to play -->
-  <section id="howto" class="screen" hidden>
-    <div class="card how-card">
-      <h2>How to Play</h2>
-      <div class="how-steps">
-        <div class="how-step"><div class="num">1</div><b>Tap to cook</b><p>Tap the Fridge or Pantry to grab ingredients. Ariel walks there by herself. Glowing stations show where to go next.</p></div>
-        <div class="how-step"><div class="num">2</div><b>Plate &amp; serve</b><p>Take finished food to the Plating island, then tap the family member who ordered it. The Serving Pass holds extra plates.</p></div>
-        <div class="how-step"><div class="num">3</div><b>Feed Max!</b><p>When Max gets loose, tap him. Pick the snack he wants, then chase him down before he wrecks the kitchen.</p></div>
-      </div>
-      <div class="recipes" id="recipes"></div>
-      <p class="how-note">Ariel carries one thing at a time. Don't let food burn, and don't let the family melt down: three meltdowns and the round is over.</p>
-      <button class="btn gold" id="howClose" type="button">GOT IT</button>
+  <section class="overlay" id="win" hidden>
+    <div class="card">
+      <div class="kicker">Dinner is served</div>
+      <h1>Passover <em>Saved!</em></h1>
+      <div class="stars" id="stars"><span>★</span><span>★</span><span>★</span></div>
+      <p id="winText">You fed the whole family.</p>
+      <button class="big" id="again" type="button">PLAY AGAIN</button>
     </div>
   </section>
-
-  <!-- Round intro -->
-  <section id="intro" class="screen dim" hidden>
-    <div class="card intro-card">
-      <div class="kicker" id="introKicker">Round 1</div>
-      <h2 id="introTitle">First Night</h2>
-      <p id="introText"></p>
-      <div class="intro-menu" id="introMenu"></div>
-      <div class="goal" id="introGoal"></div>
-      <button class="btn gold big" id="introGo" type="button">LET'S COOK!</button>
-    </div>
-  </section>
-
-  <!-- Pause -->
-  <section id="pause" class="screen dim" hidden>
-    <div class="card small-card">
-      <h2>Paused</h2>
-      <p class="muted">The soup will wait. Probably.</p>
-      <div class="stack">
-        <button class="btn gold" id="resumeBtn" type="button">RESUME</button>
-        <button class="btn cream" id="restartBtn" type="button">RESTART ROUND</button>
-        <button class="btn cream" id="pauseHowBtn" type="button">HOW TO PLAY</button>
-        <button class="btn plum" id="quitBtn" type="button">MAIN MENU</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Round won -->
-  <section id="win" class="screen side" hidden>
-    <div class="card end-card">
-      <div class="kicker" id="winKicker">Round 1 complete</div>
-      <h2 class="saved">PASSOVER SAVED!</h2>
-      <div class="big-stars" id="winStars"><span>★</span><span>★</span><span>★</span></div>
-      <ul class="stats" id="winStats"></ul>
-      <div class="awards" id="winAwards"></div>
-      <div class="total-line"><span>Round score</span><b id="winScore">0</b></div>
-      <p class="muted" id="winStarLine"></p>
-      <div class="row-btns">
-        <button class="btn gold" id="nextBtn" type="button">NEXT ROUND</button>
-        <button class="btn cream" id="winMenuBtn" type="button">MENU</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Round lost -->
-  <section id="lose" class="screen side" hidden>
-    <div class="card end-card">
-      <div class="kicker" id="loseKicker">Round 1</div>
-      <h2 class="meltdown">KITCHEN MELTDOWN!</h2>
-      <p class="reason" id="loseReason"></p>
-      <div class="max-moment"><img id="loseMaxImg" alt=""><p id="loseMax"></p></div>
-      <div class="total-line"><span>Score</span><b id="loseScore">0</b></div>
-      <div class="row-btns">
-        <button class="btn gold" id="retryBtn" type="button">TRY AGAIN</button>
-        <button class="btn cream" id="loseMenuBtn" type="button">MENU</button>
-      </div>
-    </div>
-  </section>
-
-  <div id="toast" hidden></div>
 </div>
-
-<div id="rotate" hidden><div>↻</div><p>Turn your device sideways for the whole kitchen</p><button type="button" id="rotateOk">Play anyway</button></div>
-
 <script src="art.js"></script>
 <script src="game.js"></script>
 </body>
