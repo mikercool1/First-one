@@ -1,24 +1,30 @@
-// Lox Run: Mike's Sunday lox route through Wilmot Woods, in a black Mazda CX-50.
+// Fish Friday: Mike's Friday lox route through Wilmot Woods, in a black Mazda CX-50.
+// Three levels; deliver every order and Mike gets home for Shabbos.
 // One canvas. Houses and trees are painted once into sprites (day + night
 // versions) and reused every frame; the car, sky and effects are drawn live.
 
 (() => {
   // ---------- menu ----------
   const LOX = [
-    { id: "plain", name: "Plain", color: "#E9876A", base: "#FF9E80", key: ["1", "a"] },
-    { id: "togarashi", name: "Togarashi", color: "#D2332A", base: "#FF8360", key: ["2", "s"] },
-    { id: "pastrami", name: "Pastrami", color: "#6B3A2C", base: "#D0634A", key: ["3", "d"] },
-    { id: "korean", name: "Korean", color: "#1F8F58", base: "#FF7744", key: ["4", "f"] },
+    { id: "plain", name: "Plain", color: "#E9876A", base: "#FF9E80" },
+    { id: "pastrami", name: "Pastrami", color: "#6B3A2C", base: "#D0634A" },
+    { id: "togarashi", name: "Togarashi", color: "#D2332A", base: "#FF8360" },
+    { id: "korean", name: "Korean", color: "#1F8F58", base: "#FF7744" },
   ];
   const LOXBY = Object.fromEntries(LOX.map((l) => [l.id, l]));
 
-  const FRIEND_LINES = {
-    adam: { good: ["Quietly. Thank you.", "Good. No youths?"], bad: ["Youths.", "This is not what I ordered."] },
-    billy: { good: ["Nice car. Nice packaging.", "Acceptable. Very."], bad: ["That's terrible.", "Who packed this?"] },
-    marshall: { good: ["Great. Now drive up to Irvington.", "This is what I'm saying."], bad: ["Where is this from?", "Hm."] },
-  };
+  // Each level: which lox are on the menu, how many houses to deliver, pace, and where the sun is.
+  const LEVELS = [
+    { types: ["plain", "pastrami"], goal: 8, speed: 150, sky: [0.02, 0.2] },
+    { types: ["plain", "pastrami", "togarashi"], goal: 12, speed: 172, sky: [0.2, 0.4] },
+    { types: ["plain", "pastrami", "togarashi", "korean"], goal: 15, speed: 192, sky: [0.4, 0.56] },
+  ];
+  const HOME_SKY = 0.66;
+  const GOOD = "Good Shabbos!", BAD = "Oy vey!";
   const MIKE_LINES = {
-    start: ["Okay. Route is mapped.", "CX-50, full tank, 40 orders. Let's go."],
+    start: ["Okay. Route is mapped.", "Full tank. Let's go.", "Candle lighting is at 7:12. Plenty of time."],
+    level: ["New item on the menu. I researched it.", "Okay, adding a lox. Adjusting the spreadsheet."],
+    home: ["That's everyone. Heading home.", "Last one. Home for Shabbos."],
     streak: ["Optimal route confirmed.", "I mapped this.", "See? Research.", "Twelve seconds per stop. Incredible."],
     wrong: ["Wait. That can't be right.", "Hold on, let me check.", "That's… not in the spreadsheet."],
     miss: ["I'll circle back.", "Recalculating."],
@@ -52,8 +58,8 @@
   }
 
   // ---------- storage ----------
-  let best = 0, muted = false;
-  try { best = +localStorage.getItem("loxRun.best") || 0; muted = localStorage.getItem("loxRun.muted") === "1"; } catch {}
+  let homes = 0, muted = false;
+  try { homes = +localStorage.getItem("fishFriday.home") || 0; muted = localStorage.getItem("loxRun.muted") === "1"; } catch {}
 
   // ---------- sound ----------
   let ac = null;
@@ -71,6 +77,7 @@
     bad: () => { tone(196, 0.24, "triangle", 0.06); tone(147, 0.32, "triangle", 0.05, 0.12); },
     miss: () => tone(440, 0.35, "sine", 0.05, 0, 0.5),
     over: () => [523, 440, 392, 262].forEach((f, i) => tone(f, 0.4, "sine", 0.06, i * 0.18)),
+    win: () => [392, 523, 659, 784, 1046].forEach((f, i) => tone(f, 0.5, "sine", 0.06, i * 0.15)),
   };
 
   // ---------- canvas + layout ----------
@@ -122,8 +129,8 @@
     { t: 1.0, top: "#8CC3EC", bot: "#F6E3CF", sun: 0.28, light: 0 },
   ];
   const DAY_LEN = 120;
-  function sky(tt) {
-    const p = (tt / DAY_LEN) % 1;
+  function sky(tt) { return skyAt((tt / DAY_LEN) % 1); }
+  function skyAt(p) {
     let i = 0; while (SKY[i + 1].t < p) i++;
     const a = SKY[i], b = SKY[i + 1], k = (p - a.t) / (b.t - a.t), e = k * k * (3 - 2 * k);
     return { top: mix(a.top, b.top, e), bot: mix(a.bot, b.bot, e), topA: mixA(a.top, b.top, e), botA: mixA(a.bot, b.bot, e), sun: a.sun + (b.sun - a.sun) * e, light: a.light + (b.light - a.light) * e };
@@ -468,11 +475,12 @@
 
   // ---------- game state ----------
   let G = null;
-  function newGame(demo) {
+  function newGame(demo, level = 0) {
     G = {
       demo, t: 0, cam: 0, speed: 150, houses: [], packs: [], parts: [], floats: [],
-      tips: 0, delivered: 0, combo: 0, bestCombo: 0, lives: 3, over: false, shake: 0,
+      level, done: 0, phase: "play", delivered: 0, combo: 0, bestCombo: 0, lives: 3, over: false, shake: 0, oys: 0,
       nextX: 330, mikeMood: "happy", mikeMoodT: 0, throwT: 0, counts: {}, friendsServed: 0,
+      skyP: LEVELS[level].sky[0], home: null,
     };
     while (G.nextX < W + 800) addHouse();
     updateHUD();
@@ -481,10 +489,11 @@
   function addHouse() {
     const gap = rand(90, 170);
     const Hd = genHouse(G.nextX);
-    const orderChance = G.demo ? 0.75 : clamp(0.62 + G.t / 320, 0.62, 0.88);
-    if (G.nextX > 480 && Math.random() < orderChance) {
+    const orderChance = G.demo ? 0.75 : 0.72;
+    if (G.nextX > 480 && G.phase === "play" && Math.random() < orderChance) {
       const friend = Math.random() < 0.15 ? pick(["adam", "billy", "marshall"]) : null;
-      Hd.order = { type: pick(LOX).id, state: "open", friend, face: { skin: pick(SKINS), hair: pick(HAIRS), style: Math.floor(rand(0, 4)) }, mood: "neutral", line: null, lineT: 0 };
+      const types = G.demo ? LOX.map((l) => l.id) : LEVELS[G.level].types;
+      Hd.order = { type: pick(types), state: "open", friend, face: { skin: pick(SKINS), hair: pick(HAIRS), style: Math.floor(rand(0, 4)) }, mood: "neutral", line: null, lineT: 0 };
     }
     Hd.backTree = Math.random() < 0.85 ? { i: Math.floor(rand(0, TREE_KINDS.length)), dx: Hd.sw + gap * rand(0.2, 0.6) } : null;
     Hd.streetTree = Math.random() < 0.55 ? { i: pick([0, 1, 2, 4, 5]), dx: rand(-20, Hd.sw * 0.25) } : null;
@@ -498,7 +507,7 @@
 
   // ---------- input ----------
   function toss(typeId) {
-    if (!G || G.over || G.demo) return;
+    if (!G || G.over || G.demo || G.phase !== "play") return;
     const lo = CAR_X + 20, hi = W * 0.95;
     const target = G.houses.filter((h) => h.order && h.order.state === "open").map((h) => ({ h, sx: doorWorldX(h) - G.cam })).filter((o) => o.sx > lo && o.sx < hi).sort((a, b) => a.sx - b.sx)[0];
     G.throwT = 0.3; sfx.toss();
@@ -520,21 +529,21 @@
     const o = h.order;
     if (o.type === p.type) {
       o.state = "done"; o.mood = "happy";
-      G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo); G.delivered++;
+      G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo); G.delivered++; G.done++;
       G.counts[p.type] = (G.counts[p.type] || 0) + 1;
-      const tip = Math.round((6 + Math.random() * 4) * (1 + Math.min(G.combo - 1, 8) * 0.25)) + (o.friend ? 5 : 0);
-      G.tips += tip;
-      floatText(`+$${tip}`, p.to.x, p.to.y - 70, "#FFD66B", 30);
-      if (G.combo >= 3) floatText(`${G.combo}× streak`, p.to.x, p.to.y - 104, "#FFFFFF", 18);
+      o.line = GOOD; o.lineT = 2.4;
+      floatText(`${G.done} / ${LEVELS[G.level].goal}`, p.to.x, p.to.y - 70, "#FFE3A0", 24);
+      if (G.combo >= 3) floatText(`${G.combo}× streak`, p.to.x, p.to.y - 100, "#FFFFFF", 16);
       burst(p.to.x, p.to.y - 10, LOXBY[p.type].color, 24, true);
       sparkle(p.to.x, p.to.y - 20, 14);
       sfx.good(G.combo);
-      if (o.friend) { G.friendsServed++; o.line = pick(FRIEND_LINES[o.friend].good); o.lineT = 2.4; }
+      if (o.friend) G.friendsServed++;
       if (G.combo % 5 === 0) { mikeSay(pick(MIKE_LINES.streak)); if (G.lives < 3) { G.lives++; floatText("+1 bagel", G.cam + CAR_X, ROAD - 150, "#FFFFFF", 20); } }
       setMike("happy", 1.2);
+      if (G.done >= LEVELS[G.level].goal) levelComplete();
     } else {
       o.state = "wrong"; o.mood = "annoyed";
-      o.line = o.friend ? pick(FRIEND_LINES[o.friend].bad) : `I ordered ${LOXBY[o.type].name}.`; o.lineT = 2.2;
+      o.line = BAD; o.lineT = 2.2; G.oys++;
       burst(p.to.x, p.to.y, "#8B8B8B", 10);
       loseLife("Wrong lox"); sfx.bad(); mikeSay(pick(MIKE_LINES.wrong)); setMike("sad", 1.4);
     }
@@ -542,7 +551,7 @@
   }
 
   function loseLife(msg) {
-    if (G.over) return;
+    if (G.over || G.phase !== "play") return;
     G.combo = 0; G.lives--; G.shake = reduced ? 0 : 0.3;
     floatText(msg, G.cam + CAR_X + 60, ROAD - 180, "#FF8A7A", 22);
     updateHUD();
@@ -574,7 +583,19 @@
   function update(dt) {
     G.t += dt;
     const fit = clamp(W / 820, 0.74, 1);
-    if (!G.over) G.speed = (G.demo ? 160 : clamp(165 + G.t * 2.1, 165, 360)) * fit;
+    if (G.demo) G.speed = 160 * fit;
+    else if (G.phase === "home" || G.phase === "arrived") {
+      // ease to a stop with Mike's front walk lined up
+      const d = doorWorldX(G.home) - (G.cam + CAR_X + 30);
+      G.speed = clamp(d * 1.1, 0, LEVELS[2].speed * fit);
+      if (d < 3 && G.phase === "home") { G.phase = "arrived"; arriveHome(); }
+    } else if (G.phase === "break") G.speed = 120 * fit;
+    else if (!G.over) G.speed = (LEVELS[G.level].speed + G.done * 2.5) * fit;
+    if (!G.demo) {
+      const L = LEVELS[G.level];
+      const target = G.phase === "home" || G.phase === "arrived" ? HOME_SKY : G.phase === "break" ? L.sky[1] : L.sky[0] + (L.sky[1] - L.sky[0]) * (G.done / L.goal);
+      G.skyP += (target - G.skyP) * Math.min(1, dt * 0.6);
+    }
     G.cam += G.speed * dt;
     while (G.nextX < G.cam + W + 500) addHouse();
     G.houses = G.houses.filter((h) => h.x + h.sw + 400 > G.cam);
@@ -585,10 +606,10 @@
     for (const h of G.houses) {
       const o = h.order; if (!o) continue;
       if (o.lineT > 0) o.lineT -= dt;
-      if (o.state === "open" && !G.over && doorWorldX(h) - G.cam < CAR_X - 40) {
+      if (o.state === "open" && !G.over && G.phase === "play" && doorWorldX(h) - G.cam < CAR_X - 40) {
         o.state = "missed"; o.mood = "sad";
         if (G.demo) continue;
-        o.line = o.friend ? pick(FRIEND_LINES[o.friend].bad) : "Hello? My lox?"; o.lineT = 2;
+        o.line = BAD; o.lineT = 2; G.oys++;
         sfx.miss(); mikeSay(pick(MIKE_LINES.miss)); setMike("sad", 1);
         loseLife("Missed");
       }
@@ -874,6 +895,38 @@
     }
   }
 
+  // Mike's house: Shabbos candles in the window and a "Home" marker
+  function drawHome(h) {
+    const sx = h.x - G.cam; if (sx > W + 50 || sx + h.sw < -50 || !h.win) return;
+    const topY = BASE - h.sh + 8;
+    const low = h.win.filter(([wx, wy]) => wy > h.sh * 0.5 && wx < h.doorX).sort((a, b) => b[0] - a[0])[0];
+    if (low) {
+      const [wx, wy, ww, wh] = low, x0 = sx + wx, y0 = topY + wy;
+      cx.fillStyle = "rgba(255,196,110,.55)"; cx.fillRect(x0, y0, ww, wh);
+      for (const [i, cxp] of [[0, x0 + ww * 0.32], [1, x0 + ww * 0.68]]) {
+        const by = y0 + wh - 4;
+        cx.fillStyle = "#C9A24E"; cx.fillRect(cxp - 3, by - 3, 6, 3);
+        cx.fillStyle = "#FBF6EA"; cx.fillRect(cxp - 1.8, by - 15, 3.6, 12);
+        const fl = 1 + Math.sin(G.t * 13 + i * 2) * 0.15;
+        cx.save(); cx.globalCompositeOperation = "lighter";
+        const g = cx.createRadialGradient(cxp, by - 19, 0.5, cxp, by - 19, 16 * fl);
+        g.addColorStop(0, "rgba(255,220,140,.95)"); g.addColorStop(1, "rgba(255,180,80,0)");
+        cx.fillStyle = g; cx.beginPath(); cx.arc(cxp, by - 19, 16 * fl, 0, 7); cx.fill();
+        cx.restore();
+        cx.fillStyle = "#FFE7A0"; cx.beginPath(); cx.ellipse(cxp, by - 19, 2 * fl, 4 * fl, 0, 0, 7); cx.fill();
+      }
+    }
+    const x = sx + h.doorX, y = BASE - h.wallH - h.roofH - 60 + (reduced ? 0 : Math.sin(G.t * 2.4) * 3);
+    cx.save(); cx.shadowColor = "rgba(233,199,123,.8)"; cx.shadowBlur = 20;
+    cx.fillStyle = "rgba(255,255,255,.96)"; rr(cx, x - 58, y - 22, 116, 44, 22); cx.fill();
+    cx.beginPath(); cx.moveTo(x - 7, y + 21); cx.lineTo(x, y + 31); cx.lineTo(x + 7, y + 21); cx.fill();
+    cx.restore();
+    cx.fillStyle = "#1B1D2B"; cx.font = "italic 600 20px Fraunces, Georgia, serif"; cx.textAlign = "center"; cx.fillText("Home", x + 10, y + 7);
+    cx.fillStyle = "#C9A24E"; cx.fillRect(x - 38, y + 4, 12, 3);
+    cx.fillStyle = "#FBF6EA"; cx.fillRect(x - 36, y - 8, 3, 12); cx.fillRect(x - 31, y - 8, 3, 12);
+    cx.fillStyle = "#F5B642"; cx.beginPath(); cx.ellipse(x - 34.5, y - 11, 1.6, 3, 0, 0, 7); cx.ellipse(x - 29.5, y - 11, 1.6, 3, 0, 0, 7); cx.fill();
+  }
+
   // Black Mazda CX-50, side view facing right. Origin: ground under the car's center.
   const BODY = (() => {
     const p = new Path2D();
@@ -1031,7 +1084,7 @@
   }
 
   function draw() {
-    const k = sky(G.t + 8);
+    const k = G.demo ? sky(G.t + 8) : skyAt(G.skyP);
     cx.setTransform(DPR * S, 0, 0, DPR * S, 0, 0);
     cx.imageSmoothingQuality = "high";
     if (G.shake > 0) cx.translate(rand(-5, 5) * G.shake * 2, rand(-3, 3) * G.shake * 2);
@@ -1057,6 +1110,7 @@
       if (tx < W + 20 && tx + T.w > -20) drawSprite(T, tx, ty, T.w, T.h, k.light);
     }
     for (const h of G.houses) { const sx = doorWorldX(h) - G.cam; if (sx > -120 && sx < W + 120) drawOrder(h); }
+    if (G.home) drawHome(G.home);
     drawCar(k);
     for (const p of G.packs) drawPack(p);
     drawFX();
@@ -1069,63 +1123,123 @@
   // ---------- HUD / screens ----------
   const BAGEL = '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="13" rx="11" ry="8.5" fill="#C98A4B"/><ellipse cx="12" cy="11.5" rx="10.5" ry="7.5" fill="#E2A864"/><ellipse cx="12" cy="11.5" rx="3.2" ry="2.1" fill="#8A5A2E"/><g fill="#FFF3D9"><circle cx="7" cy="9" r=".8"/><circle cx="16" cy="8" r=".8"/><circle cx="18" cy="12" r=".8"/><circle cx="6" cy="13" r=".8"/><circle cx="11" cy="7" r=".7"/><circle cx="13" cy="16" r=".8"/></g></svg>';
   function updateHUD() {
-    $("#tips").textContent = "$" + G.tips;
+    const L = LEVELS[G.level];
+    $("#goal").innerHTML = `<small>Level ${G.level + 1}</small> ${Math.min(G.done, L.goal)}<span>/${L.goal}</span>`;
+    $("#goalBar").style.width = (Math.min(G.done, L.goal) / L.goal) * 100 + "%";
     $("#lives").innerHTML = [0, 1, 2].map((i) => `<span class="${i < G.lives ? "" : "gone"}">${BAGEL}</span>`).join("");
     const c = $("#combo");
     c.textContent = G.combo >= 2 ? `${G.combo}× streak` : "";
     c.classList.toggle("hot", G.combo >= 5);
   }
 
+  function statsHTML(rows) { return rows.map(([a, b]) => `<li><span>${a}</span><b>${b}</b></li>`).join(""); }
+
+  function levelComplete() {
+    G.phase = "break";
+    for (const h of G.houses) if (h.order && h.order.state === "open") h.order = null;
+    if (G.level === LEVELS.length - 1) { goHome(); return; }
+    const next = LEVELS[G.level + 1], added = LOXBY[next.types[next.types.length - 1]];
+    setTimeout(() => {
+      $("#lvlKicker").textContent = `Level ${G.level + 1} complete`;
+      $("#lvlTitle").textContent = `Level ${G.level + 2}`;
+      $("#lvlNew").innerHTML = `<span class="plate">${plateImg(added.id)}</span><span><b>${added.name}</b> joins the menu</span>`;
+      $("#lvlGoal").textContent = `Deliver to ${next.goal} houses. Bagels refilled.`;
+      $("#levelUp").hidden = false; $("#bar").classList.add("off");
+    }, 900);
+  }
+  function nextLevel() {
+    $("#levelUp").hidden = true;
+    G.level++; G.done = 0; G.lives = 3; G.combo = 0; G.phase = "play";
+    buildBar(); $("#bar").classList.remove("off");
+    updateHUD(); mikeSay(pick(MIKE_LINES.level));
+  }
+  function goHome() {
+    G.phase = "home";
+    // Mike's house appears up the road
+    const x = Math.max(G.nextX, G.cam + W + 200);
+    let Hd = genHouse(x);
+    while (Hd.style !== "colonial") Hd = genHouse(x);
+    Object.assign(Hd, { home: true, wall: "#F4F2EC", shutter: "#1E2227", door: "#22324A", chimney: "r" });
+    Hd.backTree = { i: 0, dx: Hd.sw + 60 }; Hd.streetTree = null; Hd.lamp = true; Hd.driveSide = Hd.garage || "right";
+    G.houses.push(Hd); G.home = Hd; G.nextX = x + Hd.sw + 140;
+    $("#bar").classList.add("off");
+    mikeSay(pick(MIKE_LINES.home));
+  }
+  function arriveHome() {
+    homes++; try { localStorage.setItem("fishFriday.home", homes); } catch {}
+    sfx.win(); sparkle(doorWorldX(G.home), BASE - 60, 30);
+    setTimeout(() => {
+      $("#winStats").innerHTML = statsHTML([["Orders delivered", G.delivered], ["Longest streak", G.bestCombo], ["Oy veys", G.oys], ["Times home for Shabbos", homes]]);
+      $("#win").hidden = false;
+    }, 1400);
+  }
+
   function gameOver() {
     G.over = true; sfx.over();
-    const newBest = G.tips > best;
-    if (newBest) { best = G.tips; try { localStorage.setItem("loxRun.best", best); } catch {} }
-    const fav = Object.entries(G.counts).sort((a, b) => b[1] - a[1])[0];
-    $("#overTips").textContent = "$" + G.tips;
-    $("#overBest").textContent = newBest ? "New personal best" : `Best: $${best}`;
-    $("#overStats").innerHTML = [
-      ["Deliveries", G.delivered],
-      ["Longest streak", G.bestCombo],
-      ["Wilmot Woods favorite", fav ? LOXBY[fav[0]].name : "—"],
-      ["Friends served", G.friendsServed],
-    ].map(([a, b]) => `<li><span>${a}</span><b>${b}</b></li>`).join("");
-    $("#overQuote").textContent = "“" + pick(["I had a spreadsheet for this.", "Statistically, that was a great shift.", "Next time I'm optimizing the route.", "The CX-50 performed admirably."]) + "”";
+    $("#overLevel").textContent = `Level ${G.level + 1}`;
+    $("#overStats").innerHTML = statsHTML([["This level", `${G.done} of ${LEVELS[G.level].goal}`], ["Orders delivered", G.delivered], ["Longest streak", G.bestCombo]]);
+    $("#retryBtn").textContent = `TRY LEVEL ${G.level + 1} AGAIN`;
     setTimeout(() => { $("#over").hidden = false; $("#bar").classList.add("off"); }, 700);
   }
 
-  function start() {
+  function start(level = 0) {
     try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); } catch {}
-    $("#title").hidden = true; $("#over").hidden = true; $("#bar").classList.remove("off"); $("#hud").hidden = false;
-    newGame(false);
+    ["#title", "#over", "#win", "#levelUp"].forEach((id) => ($(id).hidden = true));
+    $("#hud").hidden = false;
+    newGame(false, level);
+    buildBar(); $("#bar").classList.remove("off");
     mikeSay(pick(MIKE_LINES.start));
   }
 
   // buttons + legend
-  LOX.forEach((l, i) => {
+  const PLATES = {};
+  LOX.forEach((l) => {
     const ic = document.createElement("canvas"); ic.width = 150; ic.height = 96;
     const c2 = ic.getContext("2d"); c2.scale(2, 2); drawLox(c2, l.id, 37, 25, 1);
-    const url = ic.toDataURL();
-    const b = document.createElement("button");
-    b.className = "lox-btn"; b.type = "button"; b.dataset.id = l.id; b.style.setProperty("--c", l.color);
-    b.innerHTML = `<span class="plate"><img alt="" src="${url}"></span><span class="nm">${l.name}</span><kbd>${i + 1}</kbd>`;
-    b.addEventListener("pointerdown", (e) => { e.preventDefault(); toss(l.id); });
-    b.addEventListener("click", (e) => { if (e.detail === 0) toss(l.id); });
-    $("#bar").append(b);
+    PLATES[l.id] = ic.toDataURL();
+  });
+  const plateImg = (id) => `<img alt="" src="${PLATES[id]}">`;
+  let barTypes = [];
+  function buildBar() {
+    const bar = $("#bar"); bar.textContent = "";
+    barTypes = LEVELS[G.level].types;
+    bar.style.setProperty("--n", barTypes.length);
+    barTypes.forEach((id, i) => {
+      const l = LOXBY[id];
+      const b = document.createElement("button");
+      b.className = "lox-btn"; b.type = "button"; b.dataset.id = id; b.style.setProperty("--c", l.color);
+      b.innerHTML = `<span class="plate">${plateImg(id)}</span><span class="nm">${l.name}</span><kbd>${i + 1}</kbd>`;
+      b.addEventListener("pointerdown", (e) => { e.preventDefault(); toss(id); });
+      b.addEventListener("click", (e) => { if (e.detail === 0) toss(id); });
+      bar.append(b);
+    });
+  }
+  LOX.forEach((l, i) => {
     const leg = document.createElement("li");
-    leg.innerHTML = `<span class="plate"><img alt="" src="${url}"></span><span style="--c:${l.color}">${l.name}</span>`;
+    leg.innerHTML = `<span class="plate">${plateImg(l.id)}</span><span style="--c:${l.color}">${l.name}</span><small>Level ${Math.max(1, i)}</small>`;
     $("#legend").append(leg);
   });
   addEventListener("keydown", (e) => {
-    const l = LOX.find((x) => x.key.includes(e.key.toLowerCase()));
-    if (l && !e.repeat) toss(l.id);
-    if ((e.key === "Enter" || e.key === " ") && (!$("#title").hidden || !$("#over").hidden)) { e.preventDefault(); start(); }
+    const n = parseInt(e.key, 10);
+    if (n >= 1 && n <= barTypes.length && !e.repeat && G && !G.demo && G.phase === "play") toss(barTypes[n - 1]);
+    if (e.key === "Enter" || e.key === " ") {
+      if (!$("#title").hidden || !$("#win").hidden) { e.preventDefault(); start(0); }
+      else if (!$("#over").hidden) { e.preventDefault(); start(G.level); }
+      else if (!$("#levelUp").hidden) { e.preventDefault(); nextLevel(); }
+    }
   });
-  $("#startBtn").onclick = start;
-  $("#againBtn").onclick = start;
+  $("#startBtn").onclick = () => start(0);
+  $("#retryBtn").onclick = () => start(G.level);
+  $("#restartBtn").onclick = () => start(0);
+  $("#winAgainBtn").onclick = () => start(0);
+  $("#lvlBtn").onclick = nextLevel;
   const syncMute = () => { $("#muteBtn").innerHTML = muted ? "&#128263;" : "&#128266;"; $("#muteBtn").setAttribute("aria-label", muted ? "Sound off" : "Sound on"); };
   $("#muteBtn").onclick = () => { muted = !muted; try { localStorage.setItem("loxRun.muted", muted ? "1" : "0"); } catch {} syncMute(); };
   syncMute();
-  $("#bestLine").textContent = best ? `Best route: $${best} in tips` : "";
+  $("#bestLine").textContent = homes ? `Made it home for Shabbos ${homes} time${homes === 1 ? "" : "s"}` : "";
+
+  // test hook (only with #autotest in the URL)
+  if (location.hash === "#autotest") window.__fish = () => ({ G, barTypes, CAR_X, W, door: doorWorldX, LEVELS });
 
   // ---------- main loop ----------
   resize();
