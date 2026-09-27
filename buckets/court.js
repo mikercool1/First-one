@@ -18,7 +18,7 @@ window.Court = (() => {
   const cam = { z: BASE_Z, tz: BASE_Z, x: BASE_X, y: BASE_Y, tx: BASE_X, ty: BASE_Y };
   const fx = { flashes: [], parts: [], rings: [], texts: [] };
   const net = { amp: 0 };
-  let clockVal = 5, scores = [0, 0];
+  let clockVal = 10, scores = [0, 0];
   const timers = [];
   function wait(ms) { return new Promise((res) => timers.push({ at: time + ms / 1000, res })); }
 
