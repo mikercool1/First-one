@@ -6,103 +6,113 @@
 <title>Lox Run</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,700&family=Manrope:wght@500;600;700;800&display=swap">
 <style>
 :root {
-  --ink: #1B1B38; --paper: #FFFFFF; --gold: #FFD447; --glass: rgba(20, 22, 48, .72);
-  --font: "Baloo 2", ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif;
+  --ink: #16182A; --cream: #F6F1E7; --gold: #E9C77B; --gold-2: #C9A24E;
+  --glass: rgba(18, 20, 36, .62); --glass-edge: rgba(255, 255, 255, .14);
+  --serif: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --sans: "Manrope", "Segoe UI", system-ui, sans-serif;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { height: 100%; margin: 0; }
-body { background: #131A3F; color: #fff; font: 600 16px/1.3 var(--font); overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
-.stage { position: fixed; inset: 0; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { background: #0E1433; color: var(--cream); font: 600 15px/1.35 var(--sans); overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.stage { position: fixed; inset: 0; }
 #cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
 /* HUD */
-.hud { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 16px; right: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; pointer-events: none; }
-.pill { background: var(--glass); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 999px; padding: 4px 14px; font-weight: 800; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
-#tips { font-size: 26px; color: var(--gold); font-variant-numeric: tabular-nums; min-width: 84px; text-align: center; }
-#combo { font-size: 18px; text-align: center; flex: 1; text-shadow: 0 2px 0 rgba(0,0,0,.4); transition: transform .2s; }
-#combo.hot { color: var(--gold); transform: scale(1.15); }
-#lives { font-size: 22px; letter-spacing: 2px; }
-#lives .gone { filter: grayscale(1); opacity: .3; }
-.icon-btn { pointer-events: auto; border: 0; background: var(--glass); color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; }
-.hud-right { display: flex; gap: 8px; align-items: center; }
+.hud { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 16px; right: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; pointer-events: none; }
+.chip { background: var(--glass); backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); border: 1px solid var(--glass-edge); border-radius: 999px; padding: 5px 14px; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+#tips { font: 600 24px/1.1 var(--serif); color: var(--gold); font-variant-numeric: tabular-nums; min-width: 86px; text-align: center; }
+#combo { flex: 1; text-align: center; font: 700 13px var(--sans); letter-spacing: .14em; text-transform: uppercase; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.5); transition: transform .2s, color .2s; }
+#combo.hot { color: var(--gold); transform: scale(1.12); }
+.right { display: flex; gap: 8px; align-items: center; }
+#lives { display: flex; gap: 3px; padding: 5px 10px; }
+#lives span { width: 24px; height: 24px; display: block; transition: opacity .3s, filter .3s; }
+#lives svg { width: 100%; height: 100%; display: block; }
+#lives .gone { filter: grayscale(1); opacity: .25; }
+.icon-btn { pointer-events: auto; border: 1px solid var(--glass-edge); background: var(--glass); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: #fff; width: 38px; height: 38px; border-radius: 50%; font-size: 16px; cursor: pointer; }
 
-#mikeSays { position: absolute; left: 16px; bottom: 250px; max-width: min(240px, 60vw); background: #fff; color: var(--ink); border-radius: 18px 18px 18px 4px; padding: 8px 14px; font-weight: 800; box-shadow: 0 6px 18px rgba(0,0,0,.25); pointer-events: none; }
-#mikeSays.pop { animation: pop .3s cubic-bezier(.2,.9,.3,1.4); }
-@keyframes pop { from { transform: scale(.6); opacity: 0; } }
+#mikeSays { position: absolute; left: 16px; bottom: 260px; max-width: min(240px, 62vw); background: rgba(255,255,255,.96); color: var(--ink); border-radius: 16px 16px 16px 4px; padding: 8px 13px; font: 700 14px/1.3 var(--sans); box-shadow: 0 10px 30px rgba(0,0,0,.25); pointer-events: none; }
+#mikeSays.pop { animation: pop .32s cubic-bezier(.2,.9,.3,1.3); }
+@keyframes pop { from { transform: translateY(6px) scale(.8); opacity: 0; } }
 
-/* Lox buttons */
-.bar { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 12px calc(env(safe-area-inset-bottom, 0px) + 12px); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; max-width: 760px; margin: 0 auto; transition: transform .35s ease, opacity .35s; }
-.bar.off { transform: translateY(40%); opacity: 0; pointer-events: none; }
-.lox-btn { position: relative; border: 0; border-radius: 20px; padding: 8px 4px 10px; background: var(--c); color: #fff; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; box-shadow: 0 6px 0 rgba(0,0,0,.35), inset 0 2px 0 rgba(255,255,255,.35); font: 800 clamp(13px, 3.6vw, 17px)/1 var(--font); transition: transform .06s; }
-.lox-btn img { width: clamp(46px, 13vw, 66px); height: auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,.3)); background: rgba(255,255,255,.9); border-radius: 12px; padding: 2px 4px; }
-.lox-btn span { text-shadow: 0 1px 0 rgba(0,0,0,.3); white-space: nowrap; }
-.lox-btn kbd { position: absolute; top: 5px; right: 8px; font: 800 10px var(--font); opacity: .6; }
-.lox-btn:active, .lox-btn.hit { transform: translateY(4px) scale(.97); box-shadow: 0 2px 0 rgba(0,0,0,.35), inset 0 2px 0 rgba(255,255,255,.35); }
-.lox-btn:focus-visible, button:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+/* Lox buttons: a frosted tray */
+.bar { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 10px); transform: translateX(-50%); width: min(720px, calc(100% - 20px)); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 8px; border-radius: 26px; background: var(--glass); backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%); border: 1px solid var(--glass-edge); box-shadow: 0 18px 50px rgba(0,0,0,.35); transition: transform .4s cubic-bezier(.2,.9,.3,1), opacity .3s; }
+.bar.off { transform: translate(-50%, 30%); opacity: 0; pointer-events: none; }
+.lox-btn { position: relative; border: 0; border-radius: 19px; padding: 8px 4px 9px; background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)); color: #fff; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: transform .08s, background .2s; overflow: hidden; }
+.lox-btn::after { content: ""; position: absolute; left: 22%; right: 22%; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--c); }
+.plate { width: clamp(48px, 13vw, 64px); aspect-ratio: 1; max-width: 100%; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #FFFFFF, #ECE6DA 70%, #D9D0C0); box-shadow: 0 4px 10px rgba(0,0,0,.3), inset 0 -2px 0 rgba(0,0,0,.08); display: grid; place-items: center; }
+.plate img { width: 84%; height: auto; }
+.nm { font: 700 clamp(11.5px, 3.2vw, 14px)/1 var(--sans); letter-spacing: .02em; white-space: nowrap; }
+.lox-btn kbd { position: absolute; top: 6px; right: 9px; font: 700 10px var(--sans); opacity: .45; }
+.lox-btn:active, .lox-btn.hit { transform: scale(.94); background: linear-gradient(180deg, color-mix(in srgb, var(--c) 45%, transparent), rgba(255,255,255,.04)); }
+.lox-btn:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 @media (hover: none) { .lox-btn kbd { display: none; } }
 
-/* Title + game over */
-.overlay { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: linear-gradient(180deg, rgba(10,12,34,.15), rgba(10,12,34,.55)); }
-.panel { width: min(440px, 100%); text-align: center; background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.15); border-radius: 28px; padding: 22px 20px 20px; box-shadow: 0 20px 60px rgba(0,0,0,.35); animation: rise .5s cubic-bezier(.2,.9,.3,1.2); }
-@keyframes rise { from { transform: translateY(24px) scale(.96); opacity: 0; } }
-.logo { margin: 0; font: 800 clamp(58px, 18vw, 92px)/.85 var(--font); letter-spacing: -.02em; background: linear-gradient(180deg, #FFE7A0 0%, #FF9A78 55%, #F0643C 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 4px 0 rgba(0,0,0,.35)); }
-.sub { margin: 6px 0 14px; font-size: 17px; opacity: .92; }
-.legend { list-style: none; padding: 0; margin: 0 0 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-.legend li { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 13px; font-weight: 800; }
-.legend img { width: 54px; background: #fff; border-radius: 10px; padding: 2px 4px; }
-.legend span { background: var(--c); border-radius: 99px; padding: 0 8px; }
-.how { margin: 0 0 16px; font-size: 15px; opacity: .9; }
-.how b { color: var(--gold); }
-.go { border: 0; cursor: pointer; font: 800 24px/1 var(--font); color: var(--ink); background: linear-gradient(180deg, #FFE27A, #FFB81C); padding: 14px 34px; border-radius: 999px; box-shadow: 0 6px 0 #C98A00, 0 10px 30px rgba(255,184,28,.4); transition: transform .08s; }
-.go:active { transform: translateY(4px); box-shadow: 0 2px 0 #C98A00; }
-.best { margin: 12px 0 0; font-size: 13px; opacity: .75; min-height: 1em; }
-.big-tips { font: 800 64px/1 var(--font); color: var(--gold); margin: 4px 0 0; font-variant-numeric: tabular-nums; }
-.stats { list-style: none; padding: 0; margin: 12px 0; text-align: left; background: rgba(255,255,255,.08); border-radius: 16px; padding: 6px 14px; }
-.stats li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed rgba(255,255,255,.15); }
-.stats li:last-child { border: 0; }
-.quote { font-style: italic; opacity: .9; margin: 0 0 14px; }
-h2 { margin: 0; font: 800 30px/1 var(--font); }
+/* Title + end screens */
+.overlay { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: radial-gradient(120% 80% at 50% 40%, rgba(8,10,24,.05), rgba(8,10,24,.55)); }
+.panel { width: min(430px, 100%); text-align: center; background: rgba(16,18,32,.58); backdrop-filter: blur(22px) saturate(150%); -webkit-backdrop-filter: blur(22px) saturate(150%); border: 1px solid var(--glass-edge); border-radius: 30px; padding: 26px 22px 22px; box-shadow: 0 30px 80px rgba(0,0,0,.4); animation: rise .6s cubic-bezier(.2,.9,.3,1.1); }
+@keyframes rise { from { transform: translateY(18px); opacity: 0; } }
+.kicker { margin: 0; font: 700 11px var(--sans); letter-spacing: .28em; text-transform: uppercase; color: var(--gold); }
+.logo { margin: 6px 0 2px; font: italic 700 clamp(56px, 16vw, 84px)/.95 var(--serif); letter-spacing: -.02em; color: var(--cream); }
+.logo em { font-style: italic; color: var(--gold); }
+.sub { margin: 0 0 18px; font: 500 15px var(--sans); color: rgba(246,241,231,.78); }
+.legend { list-style: none; padding: 0; margin: 0 0 18px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.legend li { display: flex; flex-direction: column; align-items: center; gap: 6px; font: 700 12px var(--sans); }
+.legend .plate { width: 58px; }
+.legend li > span:last-child { border-bottom: 2px solid var(--c); padding-bottom: 1px; }
+.how { margin: 0 0 20px; font: 500 14px/1.5 var(--sans); color: rgba(246,241,231,.85); }
+.how b { color: #fff; }
+.go { border: 0; cursor: pointer; font: 700 16px var(--sans); letter-spacing: .06em; color: var(--ink); background: linear-gradient(180deg, #F5DDA0, var(--gold) 55%, var(--gold-2)); padding: 15px 34px; border-radius: 999px; box-shadow: 0 10px 30px rgba(233,199,123,.35), inset 0 1px 0 rgba(255,255,255,.6); transition: transform .1s; }
+.go:active { transform: scale(.97); }
+.best { margin: 12px 0 0; font: 600 12px var(--sans); letter-spacing: .06em; color: rgba(246,241,231,.6); min-height: 1em; }
+h2 { margin: 6px 0 0; font: italic 600 32px/1 var(--serif); }
+.big-tips { font: 600 68px/1 var(--serif); color: var(--gold); margin: 6px 0 0; font-variant-numeric: tabular-nums; }
+.stats { list-style: none; margin: 14px 0; text-align: left; border-top: 1px solid var(--glass-edge); padding: 0; }
+.stats li { display: flex; justify-content: space-between; padding: 9px 2px; border-bottom: 1px solid var(--glass-edge); font-weight: 600; }
+.stats b { font: 600 17px var(--serif); color: #fff; }
+.quote { font: italic 500 16px var(--serif); color: rgba(246,241,231,.9); margin: 0 0 18px; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
 <div class="stage">
-  <canvas id="cv" aria-label="Mike riding a cargo bike past houses, delivering lox"></canvas>
+  <canvas id="cv" aria-label="Mike driving a black Mazda CX-50 through Wilmot Woods, tossing lox to neighbors"></canvas>
 
   <div class="hud" id="hud">
-    <div class="pill" id="tips">$0</div>
+    <div class="chip" id="tips">$0</div>
     <div id="combo" aria-live="polite"></div>
-    <div class="hud-right"><div class="pill" id="lives"></div><button class="icon-btn" id="muteBtn" type="button"></button></div>
+    <div class="right"><div class="chip" id="lives" aria-label="Bagels left"></div><button class="icon-btn" id="muteBtn" type="button"></button></div>
   </div>
 
   <div id="mikeSays" hidden></div>
 
-  <div class="bar off" id="bar" aria-label="Lox to toss"></div>
+  <div class="bar off" id="bar" aria-label="Choose the lox to toss"></div>
 
   <div class="overlay" id="title">
     <div class="panel">
-      <h1 class="logo">LOX<br>RUN</h1>
-      <p class="sub">Mike's Sunday morning delivery route</p>
+      <p class="kicker">Wilmot Woods &middot; Sunday</p>
+      <h1 class="logo">Lox <em>Run</em></h1>
+      <p class="sub">Mike, a black CX-50, and a trunk full of lox.</p>
       <ul class="legend" id="legend"></ul>
-      <p class="how">Neighbors pop up with orders. <b>Tap the matching lox</b> and Mike tosses it to their door. Wrong lox or a missed house costs a bagel.</p>
-      <button class="go" id="startBtn" type="button">Start shift</button>
+      <p class="how">Neighbors' orders appear over their houses. <b>Tap the matching lox</b> and Mike tosses it to the door. A wrong lox or a missed house costs a bagel.</p>
+      <button class="go" id="startBtn" type="button">START THE ROUTE</button>
       <p class="best" id="bestLine"></p>
     </div>
   </div>
 
   <div class="overlay" id="over" hidden>
     <div class="panel">
-      <h2>Shift over</h2>
+      <p class="kicker">Route complete</p>
+      <h2>Tips earned</h2>
       <p class="big-tips" id="overTips">$0</p>
       <p class="best" id="overBest"></p>
       <ul class="stats" id="overStats"></ul>
       <p class="quote" id="overQuote"></p>
-      <button class="go" id="againBtn" type="button">Run it back</button>
+      <button class="go" id="againBtn" type="button">RUN IT BACK</button>
     </div>
   </div>
 </div>
