@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Perfect Sunday</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;700;800;900&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<section class="screen" id="screen-title">
+  <div class="title-wrap">
+    <div class="sun" aria-hidden="true"></div>
+    <h1 class="logo"><span class="l1">PERFECT</span><span class="l2">SUNDAY</span></h1>
+    <p class="tagline">Four friends. Four neighborhoods. Ten Happiness Points.</p>
+    <div class="title-faces" id="titleFaces"></div>
+    <div class="title-btns">
+      <button class="btn primary big" id="playBtn" type="button">PLAY</button>
+      <button class="btn ghost big" id="howBtn" type="button">HOW TO PLAY</button>
+    </div>
+    <p class="record" id="record"></p>
+  </div>
+  <div class="hills" aria-hidden="true"></div>
+</section>
+
+<section class="screen" id="screen-chars" hidden>
+  <div class="page">
+    <div class="page-head">
+      <button class="btn ghost small" id="backToTitle" type="button">&larr; Back</button>
+      <h2>WHO ARE YOU TODAY?</h2>
+    </div>
+    <p class="page-sub">Pick a friend. The computer plays the other three.</p>
+    <div class="char-grid" id="charGrid"></div>
+  </div>
+</section>
+
+<section class="screen" id="screen-worlds" hidden>
+  <div class="page">
+    <div class="page-head">
+      <button class="btn ghost small" id="backToChars" type="button">&larr; Back</button>
+      <h2>WHERE ARE WE SPENDING SUNDAY?</h2>
+    </div>
+    <div class="world-grid" id="worldGrid"></div>
+    <button class="btn primary big surprise" id="surpriseBtn" type="button">&#127922; SURPRISE ME</button>
+  </div>
+</section>
+
+<section class="screen" id="screen-game" hidden>
+  <div class="game">
+    <div class="topbar">
+      <span class="brand">PERFECT SUNDAY</span>
+      <div class="tools">
+        <button class="icon-btn" id="fastBtn" type="button" title="Speed up computer turns">&#9193;</button>
+        <button class="icon-btn" id="muteBtn" type="button">&#128266;</button>
+        <button class="icon-btn" id="quitBtn" type="button" title="Quit game">&#10005;</button>
+      </div>
+    </div>
+    <div class="hud" id="hud"></div>
+    <div class="board-wrap"><div class="board" id="board"></div></div>
+    <div class="panel">
+      <div class="speech">
+        <div class="speaker" id="speaker"></div>
+        <div class="bubble" id="bubble"></div>
+      </div>
+      <ul class="log" id="log"></ul>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="screen-win" hidden>
+  <div class="win-bg" id="winBg" aria-hidden="true"></div>
+  <div class="win">
+    <div class="win-portrait" id="winPortrait"></div>
+    <h2 class="win-title" id="winTitle"></h2>
+    <p class="win-sub" id="winSub"></p>
+    <p class="win-footer" id="winFooter"></p>
+    <div class="win-scores" id="winScores"></div>
+    <p class="win-you" id="winYou"></p>
+    <h3 class="stats-head">Today's statistics</h3>
+    <ul class="win-stats" id="winStats"></ul>
+    <div class="win-btns">
+      <button class="btn primary big" id="againBtn" type="button">PLAY AGAIN</button>
+      <button class="btn ghost" id="rematchBtn" type="button">Same friend, same place</button>
+      <button class="btn ghost" id="homeBtn" type="button">Title screen</button>
+    </div>
+  </div>
+</section>
+
+<div class="card-layer" id="cardLayer" hidden>
+  <div class="card" id="card" role="dialog" aria-live="polite"></div>
+  <div class="fx-layer" id="fxLayer"></div>
+</div>
+
+<div class="modal" id="howto" hidden>
+  <div class="modal-box">
+    <h2>HOW TO PLAY</h2>
+    <ol class="how">
+      <li><b>Roll</b> the die and move.</li>
+      <li><b>Land</b> on a space and flip its card.</li>
+      <li><b>Gain or lose</b> Happiness.</li>
+      <li>First to <b>10 Happiness</b> has the perfect Sunday.</li>
+    </ol>
+    <ul class="legend" id="legend"></ul>
+    <p class="how-note">Every friend has a <b>passive</b> that's always on and a <b>&#9733; special</b> you can use once. When a card is about to hurt, the game asks if you want to use it.</p>
+    <button class="btn primary" id="howClose" type="button">Got it</button>
+  </div>
+</div>
+
+<div class="modal" id="quitConfirm" hidden>
+  <div class="modal-box small">
+    <h2>Quit this game?</h2>
+    <p>Your progress in this game won't be saved.</p>
+    <div class="row">
+      <button class="btn primary" id="quitYes" type="button">Quit</button>
+      <button class="btn ghost" id="quitNo" type="button">Keep playing</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="confetti" hidden></canvas>
+
+<script src="characters.js"></script>
+<script src="worlds.js"></script>
+<script src="events.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
