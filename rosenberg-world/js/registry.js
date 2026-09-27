@@ -9,6 +9,8 @@
     title: "",
     subtitle: "",
     destination: null,  // id of a destination in world.js (the building/portal the game lives in)
+    room: null,         // OR the destination of a room of games it sits inside (e.g. the Game Room shelf)
+    menu: false,        // true for a room of games (left out of ALL GAMES; its games are listed instead)
     unlocked: false,    // false = a locked future slot (padlock, COMING SOON)
     entry: null,        // URL of a finished game's index.html; opened full screen inside the hub
     mount: null,        // OR a function (container, api) => cleanup, for games written as a JS module

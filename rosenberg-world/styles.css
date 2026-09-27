@@ -209,7 +209,7 @@ body:not(.ready) #title { opacity: 0; }
   padding: calc(var(--safe-t) + 12px) 16px calc(var(--safe-b) + 12px);
   opacity: 0; transition: opacity .25s ease;
 }
-.overlay.on, #host:not([hidden]), #results:not([hidden]) { opacity: 1; }
+.overlay.on, #host:not([hidden]) { opacity: 1; }
 
 /* map */
 .map-frame { width: min(96vw, calc((100vh - 110px) * 1.62), 1400px); background: #FFFFFF; border-radius: 30px; padding: 10px; box-shadow: 0 14px 50px rgba(0,0,0,.4); transform: scale(.94); transition: transform .3s cubic-bezier(.3,1.4,.5,1); }
@@ -285,28 +285,6 @@ body:not(.ready) #title { opacity: 0; }
 .ph-kid { width: 150px; height: 150px; margin: 4px auto 0; display: block; }
 .ph-btns { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 6px; }
 @media (max-height: 520px) { .ph-kid { width: 90px; height: 90px; } .ph-card { padding: 18px; } }
-
-/* ---------- results ---------- */
-#results { z-index: 46; }
-#results { --c: #2F6BFF; }
-.res-box {
-  width: min(560px, 100%); background: #FFFFFF; border-radius: 36px; padding: 26px; text-align: center;
-  box-shadow: 0 10px 0 color-mix(in srgb, var(--c) 55%, #10183A), 0 30px 60px rgba(0,0,0,.35);
-  animation: cardIn .5s cubic-bezier(.3,1.4,.5,1) both;
-}
-.r-kicker { display: inline-block; font-size: 15px; letter-spacing: .14em; color: #FFFFFF; background: var(--c); padding: 6px 16px; border-radius: 999px; }
-.res-box h2 { margin: 10px 0 6px; font-size: clamp(24px, 4vw, 34px); color: var(--ink); }
-.r-row { margin-top: 12px; }
-.r-lbl { font-size: 13px; letter-spacing: .12em; color: var(--ink-2); }
-.r-score { font-size: 64px; line-height: 1.05; color: var(--ink); font-variant-numeric: tabular-nums; }
-.r-high { display: inline-block; margin-top: 4px; font-size: 16px; color: #8A4B00; background: var(--gold); padding: 5px 14px; border-radius: 999px; animation: glow 1s ease-in-out infinite; }
-.r-stars { min-height: 60px; display: flex; justify-content: center; gap: 6px; margin-top: 4px; }
-.r-star .star-ico { font-size: 54px; animation: starIn .45s cubic-bezier(.3,1.8,.5,1) both; filter: drop-shadow(0 4px 4px rgba(180,100,0,.3)); }
-@keyframes starIn { from { transform: scale(0) rotate(-90deg); } to { transform: none; } }
-.r-none { color: var(--ink-2); font-size: 16px; align-self: center; }
-.r-items { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; }
-.r-items span { background: #F4EDFF; color: var(--purple); padding: 6px 12px; border-radius: 999px; font-size: 14px; }
-.r-btns { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 20px; }
 
 /* ---------- transitions + fx ---------- */
 #wipe {

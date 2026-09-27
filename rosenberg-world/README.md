@@ -17,19 +17,25 @@ Open `index.html` in a browser. No install, no server. Landscape iPad is the mai
    when the game is opened on its own, so the same file still works standalone.
 3. In `js/games.js`, set `entry: "games/<game-name>/index.html"` on the game's entry.
 
-That's all. The building, sign, map pin, PLAY card, results screen (score, stars, Play Again,
-Back to Rosenberg World), high score and star payout already exist. When the player comes back,
+That's all. The building, sign, map pin, PLAY card, ALL GAMES card, high score and star payout
+already exist. When the player comes back,
 they walk out of that game's door and the stars they earned fly into the total.
 
 `games/_template/` is a small working example of the bridge.
 
 ### A brand-new game with no building yet
 
-There are 7 future slots (`futureGame01` to `futureGame07` in `js/games.js`). Each one already has
-a locked place in the world: the Hoops Gym, Field House, Mystery Cave,
-the Dock, Winter Mountain, Mystery Island and the construction lot. To open one, give it a `title`, `icon`, `color`, set `unlocked: true` and an `entry`.
-The construction lot shows "???" until then; after that its sign shows the game's title
-automatically (that's how the Mystery Plaza building became The Word Game).
+There are 8 future slots (`futureGame01` to `futureGame08` in `js/games.js`). Each one already has
+a locked place in the world: the Hoops Gym, Field House, Mystery Cave, the Dock, Winter Mountain,
+Mystery Island, the construction lot and the Mystery Plaza building. To open one, give it a `title`,
+`icon`, `color`, set `unlocked: true` and an `entry`. Locked places stay off the map and show no
+PLAY card; the construction lot and the plaza building show "???" until their game arrives, then
+their signs show its title automatically.
+
+### A game for the Game Room shelf
+
+Give it `room: "gameroom"` instead of a `destination`, and add a card for it in
+`games/game-room/index.html`. It gets its own card in ALL GAMES.
 
 ### Games written as a JS module
 
@@ -46,7 +52,9 @@ It shows up in the Collection Book.
 
 ## Linked games
 
-Every linked game is also one tap away from the ALL GAMES button in the HUD.
+Tap a building (or its pin on the map) and you walk in and the game starts. Every game is also
+one tap away from the ALL GAMES button in the HUD. When you leave a game you walk back out of its
+door and the stars you earned fly into your total.
 
 
 | Where in the world | Game | Folder |
@@ -60,8 +68,7 @@ Every linked game is also one tap away from the ALL GAMES button in the HUD.
 | Math Blaster Academy | Reuben's Math Blaster | `games/math-blaster` |
 | Soccer field (Sports Complex) | Backyard Soccer | `games/backyard-soccer` |
 | Beach volleyball court | Jonah's Volley | `games/jonahs-volley` |
-| Mystery Plaza building | The Word Game | `games/word-game` |
-| Rosenberg House front door | The Game Room (Sarah, the bookshelf: Rosenboggle and The Word Game) | `games/game-room`, `games/rosenboggle` |
+| Rosenberg House front door | The Game Room: Rosenboggle and The Word Game | `games/game-room`, `games/rosenboggle`, `games/word-game` |
 | Baha Bay water park (main gate) | Splash Down | `games/water-slide` |
 | Baha Bay Lazy River hut (and the floating tubes) | Lazy River Pirates | `games/lazy-river` |
 | Rosenberg Arcade (and its orange cabinet) | Max-Man | `games/max-man` |
@@ -72,8 +79,10 @@ The Game Room is a small hub of its own: games on its bookshelf are opened with 
 `data-rw-room` button in them (hidden by default) goes back to the room. Rosenboggle's dictionary
 is `games/rosenboggle/words.js` (common English words, rude words removed).
 
-These are copies of each game made for the hub. A later update to a game elsewhere in the repo
-needs copying in here again (keeping its `rw-bridge.js` lines).
+**These are the one copy of each game.** Every game here also works opened on its own
+(for example `rosenberg-world/games/max-man/index.html`), so update games here, not in a separate
+folder. The old standalone links at the top of the repo (`index.html` for The Word Game, `buckets/`,
+`lox-run/`) now just open the copy in here.
 
 ## Files
 
@@ -84,7 +93,7 @@ needs copying in here again (keeping its `rw-bridge.js` lines).
 - `js/engine.js`: camera, touch controls, walking and pathfinding, effects, render loop.
 - `js/art.js`: characters, creatures and props, all drawn in code.
 - `js/buildings.js`, `js/ground.js`: building art and the ground (paths, fields, water).
-- `js/ui.js`: title, character select, HUD, map, Collection Book, game host, results.
+- `js/ui.js`: title, character select, HUD, map, Collection Book, game host.
 - `js/registry.js`, `js/core.js`, `js/audio.js`: registry plumbing, saved progress, sounds.
 
 ## Progress and player memory
@@ -102,4 +111,4 @@ House upgrades unlock by each player's star total: Dog House 10, Pool 25, Treeho
 Giant Slide 60, Sport Court 80.
 
 Add `?dev` to the URL to get a "Test finish" button on placeholder game screens, which runs
-the full results and star flow.
+the full star flow.

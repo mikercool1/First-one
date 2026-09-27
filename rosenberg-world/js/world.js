@@ -13,13 +13,13 @@
   // =====================================================================
   const DESTINATIONS = world.DESTINATIONS = [
     { id: "house", name: "Rosenberg House", icon: "🏠", kind: "place", map: [2450, 1560], arrive: [2405, 1765], noPin: true },
-    { id: "gameroom", name: "The Game Room", icon: "🎲", kind: "future", portal: [2405, 1748], portalR: 55, arrive: [2405, 1765], map: [2450, 1560] },
+    { id: "gameroom", name: "The Game Room", icon: "🎲", kind: "future", portal: [2405, 1748], portalR: 55, arrive: [2405, 1765], map: [2270, 1500] },
     { id: "baseball", name: "Backyard Baseball", icon: "⚾", kind: "game", portal: [2640, 1205], portalR: 95, arrive: [2640, 1228], map: [2450, 860] },
     { id: "lunar", name: "Lunar Lander Rocket", icon: "🌙", kind: "game", portal: [3515, 860], portalR: 70, arrive: [3515, 880], map: [2960, 690] },
     { id: "fartman", name: "Fart Man Landing Zone", icon: "🚀", kind: "game", portal: [3720, 925], portalR: 120, arrive: [3720, 950], map: [3720, 720] },
     { id: "mathblaster", name: "Math Blaster Academy", icon: "✖️", kind: "game", portal: [1450, 935], portalR: 95, arrive: [1450, 965], map: [1450, 760] },
     { id: "kitchen", name: "Ariel's Kitchen", icon: "🍳", kind: "game", portal: [1570, 1755], portalR: 90, arrive: [1570, 1790], map: [1420, 1570] },
-    { id: "car", name: "The Family Car", icon: "🚗", kind: "game", portal: [2712, 1800], portalR: 60, arrive: [2712, 1815], map: [2615, 1740] },
+    { id: "car", name: "The Family Car", icon: "🚗", kind: "game", portal: [2712, 1800], portalR: 60, arrive: [2712, 1815], map: [2740, 1790] },
     { id: "soccer", name: "Soccer Field", icon: "⚽", kind: "game", portal: [1425, 2240], portalR: 80, arrive: [1425, 2258], map: [1150, 2210] },
     { id: "volleyball", name: "Beach Volleyball", icon: "🏐", kind: "game", portal: [4120, 2612], portalR: 90, arrive: [4120, 2630], map: [4120, 2530] },
     { id: "court", name: "Basketball Court", icon: "🏀", kind: "game", portal: [1630, 2175], portalR: 80, arrive: [1630, 2190], map: [1710, 2175] },
@@ -62,12 +62,22 @@
   const add = (o) => { o.id = o.id || "e" + uid++; return E.add(o); };
   const noop = () => {};
 
-  // A tap target that walks the player to a destination's door.
+  // One tap to play: walk to the door and go straight in. Locked places just say "coming soon".
+  function goPlay(E2, d) {
+    const P = E2.player;
+    if (P.lock) return;
+    if (world.destStatus(d) === "locked") { E2.say(P, U.pick(["Coming soon!", "Not open yet!", "I can't wait for this one!"]), 1.6); RW.sfx.play("lock"); return; }
+    const enter = () => { if (E2.mode === "play" && !RW.host.current) RW.bus.emit("portalEnter", d); };
+    if (E2.nearPortal === d || Math.hypot(P.x - d.portal[0], P.y - d.portal[1]) < 30) { enter(); return; }
+    E2.walkTo(d.portal[0], d.portal[1] + 8, enter);
+  }
+  world.goPlay = (d) => goPlay(E, d);
+  // A tap target that takes the player into a destination's game.
   function portalTap(destId) {
     const d = DEST[destId];
     return {
       reach: "remote",
-      act: (E2) => { if (E2.player.lock) return; E2.walkTo(d.portal[0], d.portal[1] + 8); RW.sfx.play("tap"); },
+      act: (E2) => { RW.sfx.play("tap"); goPlay(E2, d); },
     };
   }
 
@@ -89,7 +99,7 @@
       },
       update(e2, dt) { if (e2.shake > 0) e2.shake -= dt * 2; },
     });
-    if (o.tap !== false) {
+    if (o.tap === true) {
       e.tap = {
         reach: "remote",
         act(E2, e2) {
@@ -271,8 +281,7 @@
           if (e.cool > E2.t) return; e.cool = E2.t + 0.6; e.squash = 1; e.flash = 1;
           RW.sfx.play("honk"); E2.float(e.x, e.y - 100, "BEEP BEEP!", { size: 24, stroke: "#2F6BD6" });
           // the car goes to Fish Friday: walk to the driver's door
-          const d = DEST.car;
-          if (!E2.player.lock && E2.nearPortal !== d) E2.walkTo(d.portal[0], d.portal[1]);
+          goPlay(E2, DEST.car);
         },
       },
     });
@@ -766,8 +775,7 @@
         act(E2, e) {
           if (e.cool > E2.t) return; e.cool = E2.t + 3; RW.sfx.play("rumble"); E2.shake(4); E2.burst(e.x, e.y, 6, "smoke", 14, { sp: 120, up: 40 }); E2.say(e, "3... 2... 1... blast off to the moon!", 2);
           // the big rocket is Lunar Lander: walk to its hatch
-          const d = DEST.lunar;
-          if (!E2.player.lock && E2.nearPortal !== d) E2.walkTo(d.portal[0], d.portal[1]);
+          goPlay(E2, DEST.lunar);
         },
       },
     });
@@ -1446,7 +1454,7 @@
         A.line(c, 8, -34, 16, -44, 3, "#2B2F3A");
       },
       update(e, dt) { e.vroom = Math.max(0, e.vroom - dt); },
-      tap: { reach: "remote", act(E2, e) { e.vroom = 1.2; RW.sfx.play("rumble"); if (world.destStatus(DEST.raceway) === "locked") E2.say(e, "VROOM! (Raceway opening soon!)", 2); else { E2.say(e, "VROOM! Race time!", 1.4); const d = DEST.raceway; if (!E2.player.lock) E2.walkTo(d.portal[0], d.portal[1] + 8); } } },
+      tap: { reach: "remote", act(E2, e) { e.vroom = 1.2; RW.sfx.play("rumble"); if (world.destStatus(DEST.raceway) === "locked") E2.say(e, "VROOM! (Raceway opening soon!)", 2); else { E2.say(e, "VROOM! Race time!", 1.4); goPlay(E2, DEST.raceway); } } },
     });
     // starting lights
     add({
@@ -1936,10 +1944,10 @@
       return true;
     };
     // Adventure Woods: dense
-    for (let i = 0; i < 520; i++) tryTree(130 + rnd() * 780, 1180 + rnd() * 1400, ["deep", "pine", "round", "pine"], 88, 0.95 + rnd() * 0.35, rnd() < 0.3);
+    for (let i = 0; i < 520; i++) tryTree(130 + rnd() * 780, 1180 + rnd() * 1400, ["deep", "pine", "round", "pine"], 88, 0.95 + rnd() * 0.35, false);
     // the rest of the neighborhood: scattered
     minPath = 80;
-    for (let i = 0; i < 420; i++) tryTree(150 + rnd() * 3800, 420 + rnd() * 2620, ["round", "deep", "round", "deep", "blossom", "round", "gold"], 270, 0.9 + rnd() * 0.3, true);
+    for (let i = 0; i < 420; i++) tryTree(150 + rnd() * 3800, 420 + rnd() * 2620, ["round", "deep", "round", "deep", "blossom", "round", "gold"], 270, 0.9 + rnd() * 0.3, false);
     // northern tree line (hides where the ground meets the mountains)
     for (let x = 40; x < 4000; x += 70 + rnd() * 40) {
       if (x > 3050 && x < 3280) continue;

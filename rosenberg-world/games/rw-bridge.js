@@ -11,7 +11,7 @@
 //   RosenbergBridge.finish({ score: 1234, stars: 3 });
 //   RosenbergBridge.finish({ score: 5, stars: 1, collectibles: ["baseball"] });
 //
-// To go back to the world (shows the results of anything reported, then the player walks out):
+// To go back to the world (the player walks out and any stars reported fly into their total):
 //
 //   RosenbergBridge.exit();
 //
@@ -46,6 +46,8 @@
   };
   // Lets a game's CSS make room for the hub's close button: .rw-in-world .hud { ... }
   if (inWorld) document.documentElement.classList.add("rw-in-world");
+  // Say which game this is (by folder), so time and stars inside the Game Room go to the right game
+  send({ type: "rosenberg-world:hello", folder: location.pathname.split("/").slice(-2, -1)[0] });
   bridge.fromRoom = params.get("room") === "1";
   bridge.roomUrl = function () {
     var q = new URLSearchParams(location.search); q.delete("room"); q.set("back", "1");

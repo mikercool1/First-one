@@ -136,13 +136,26 @@
     entry: "games/game-room/index.html",
     color: "#8A3A26",
     icon: "🎲",
+    menu: true, // a room of games: its games get their own ALL GAMES cards instead
+  });
+
+  // Games on the Game Room shelf: no door of their own (room: where they live)
+  G.register({
+    id: "rosenboggle",
+    title: "Rosenboggle",
+    subtitle: "Shake the letters and find as many words as you can!",
+    room: "gameroom",
+    unlocked: true,
+    entry: "games/rosenboggle/index.html",
+    color: "#E8622A",
+    icon: "🔠",
   });
 
   G.register({
     id: "wordGame",
     title: "The Word Game",
     subtitle: "Chain words in a category. Beat the computer!",
-    destination: "plaza-building",
+    room: "gameroom",
     unlocked: true,
     entry: "games/word-game/index.html",
     color: "#2F5BEA",
@@ -215,6 +228,7 @@
     ["futureGame05", "gondola", "🏔️"],
     ["futureGame06", "island", "🏝️"],
     ["futureGame07", "plaza-lot", "🚧"],
+    ["futureGame08", "plaza-building", "❓"],
   ];
   future.forEach(([id, destination, icon]) => G.register({ id, title: "", destination, unlocked: false, icon }));
 })();

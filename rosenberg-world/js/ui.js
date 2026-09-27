@@ -1,5 +1,5 @@
 // Rosenberg World: the UI. Title, character select, HUD, map, collection book, portal cards,
-// the game host (where mini-games run) and the results screen. Also boots everything.
+// the game host (where mini-games run). Also boots everything.
 
 (() => {
   const RW = window.RW, A = RW.art, U = RW.util, E = RW.engine, world = RW.world;
@@ -164,8 +164,8 @@
   // Displayed star count lags behind the bank so stars can fly in and land.
   let shown = RW.save.stars, flying = 0, syncTimer = null;
   function syncStars(force) {
-    // hold the old number while a game or its results are up, so earned stars can fly in afterwards
-    const holding = RW.host && (RW.host.current || !$("#results").hidden);
+    // hold the old number while a game is up, so earned stars can fly in afterwards
+    const holding = RW.host && RW.host.current;
     if (force || (flying === 0 && !holding)) { shown = RW.save.stars; starCount.textContent = shown; }
   }
   RW.bus.on("stars", () => { clearTimeout(syncTimer); syncTimer = setTimeout(() => syncStars(), 3500); });
@@ -220,6 +220,7 @@
   const portalCard = $("#portal");
   let portalDest = null;
   RW.bus.on("portal", (d) => {
+    if (d && world.destStatus(d) === "locked") d = null; // locked places stay quiet
     portalDest = d;
     if (!d || E.mode !== "play") { portalCard.classList.remove("on"); setTimeout(() => { if (!portalDest) show(portalCard, false); }, 250); return; }
     const status = world.destStatus(d);
@@ -309,26 +310,25 @@
     // A round ended but the game stays open (it shows its own end screen). Stars are banked now.
     report(result) {
       if (!current) return;
-      const rec = RW.games.record(current.game.id, result || {});
+      const rec = RW.games.record((current.active || current.game).id, result || {});
       const s = current.session;
       s.rounds++; s.stars += rec.stars; s.score = Math.max(s.score, rec.score);
       s.newHigh = s.newHigh || rec.newHigh; s.newItems.push(...rec.newItems);
     },
+    // Hand straight back to the world with a result.
     finish(result) {
       if (!current) return;
-      const { game, dest } = current;
       RW.host.report(result);
-      const s = current.session;
-      closeGame();
-      showResults(game, dest, s);
+      RW.host.exit();
     },
+    // Back to the world: walk out of the door and the stars from this visit fly into the total.
     async exit() {
-      if (!current) return;
-      const { game, dest, session } = current;
+      if (!current || current.leaving) return;
+      current.leaving = true;
+      const { dest, session } = current;
       await irisTo(true, innerWidth / 2, innerHeight / 2);
       closeGame();
-      if (session.rounds) { showResults(game, dest, session); irisTo(false, innerWidth / 2, innerHeight / 2); }
-      else backToWorld(dest, 0);
+      backToWorld(dest, session.stars, session);
     },
   };
   function closeGame() {
@@ -359,6 +359,7 @@
   window.addEventListener("message", (ev) => {
     const d = ev.data;
     if (!d || typeof d !== "object" || !current || !current.frame || ev.source !== current.frame.contentWindow) return;
+    if (d.type === "rosenberg-world:hello") { current.active = RW.games.list.find((g) => g.entry && g.entry.split("/")[1] === d.folder) || null; return; }
     if (d.type === "rosenberg-world:report") RW.host.report({ score: d.score, stars: d.stars, collectibles: Array.isArray(d.collectibles) ? d.collectibles : [] });
     else if (d.type === "rosenberg-world:finish") RW.host.finish({ score: d.score, stars: d.stars, collectibles: Array.isArray(d.collectibles) ? d.collectibles : [] });
     else if (d.type === "rosenberg-world:exit") RW.host.exit();
@@ -410,40 +411,8 @@
     return n;
   }
 
-  // =====================================================================
-  // RESULTS
-  // =====================================================================
-  const results = $("#results");
-  function showResults(game, dest, rec) {
-    E.pause(false);
-    show(results, true);
-    results.style.setProperty("--c", game.color || "#2F6BFF");
-    const box = $("#resBox");
-    box.innerHTML = `
-      <div class="r-kicker">GAME COMPLETED</div>
-      <h2>${game.title}</h2>
-      <div class="r-row"><div class="r-lbl">SCORE</div><div class="r-score" id="rScore">0</div></div>
-      ${rec.newHigh ? '<div class="r-high">NEW HIGH SCORE!</div>' : ""}
-      <div class="r-row"><div class="r-lbl">ROSENBERG STARS EARNED</div><div class="r-stars" id="rStars"></div></div>
-      ${rec.newItems.length ? `<div class="r-items">${rec.newItems.map((id) => `<span>${RW.collection.byId[id].icon} ${RW.collection.byId[id].name}</span>`).join("")}</div>` : ""}
-      <div class="r-btns">
-        <button class="btn ghost" type="button" id="rAgain">PLAY AGAIN</button>
-        <button class="btn primary" type="button" id="rBack">BACK TO ROSENBERG WORLD</button>
-      </div>`;
-    RW.sfx.play("cheer");
-    // count up the score, then pop the stars in
-    const sEl = $("#rScore"), dur = 900, t0 = performance.now();
-    const step = (now) => { const u = Math.min(1, (now - t0) / dur); sEl.textContent = Math.round(rec.score * U.easeOut(u)); if (u < 1) requestAnimationFrame(step); };
-    requestAnimationFrame(step);
-    const starsEl = $("#rStars");
-    if (!rec.stars) starsEl.innerHTML = '<span class="r-none">0 this time. Try again!</span>';
-    for (let i = 0; i < rec.stars; i++) setTimeout(() => { const s = el("span", "r-star", STAR_SVG); starsEl.appendChild(s); RW.sfx.play("chime"); }, 900 + i * 260);
-    $("#rAgain").addEventListener("click", () => { show(results, false); RW.host.launch(game, dest); });
-    $("#rBack").addEventListener("click", () => { show(results, false); backToWorld(dest, rec.stars); });
-  }
-
   // Come back out of the destination's door, then the earned stars fly into the total.
-  function backToWorld(dest, stars) {
+  function backToWorld(dest, stars, session) {
     E.pause(false);
     const P = E.player;
     if (P && dest && dest.arrive) {
@@ -462,10 +431,12 @@
       setTimeout(() => {
         const [sx, sy] = E.worldToScreen(P.x, P.y - 90);
         flyStars(sx, sy, stars);
+        RW.sfx.play("cheer");
         E.act("celebrate", 1.4, { lock: false });
-        E.say(P, stars > 1 ? `${stars} stars!` : "A star!", 1.6);
+        E.say(P, session && session.newHigh ? "New high score!" : stars > 1 ? `${stars} stars!` : "A star!", 1.8);
       }, 700);
     } else syncStars();
+    if (session) session.newItems.forEach((id, i) => { const it = RW.collection.byId[id]; if (it) setTimeout(() => toast(`NEW! ${it.name} added to your Collection Book`, it.icon), 1400 + i * 400); });
     // re-open the door card
     E.nearPortal = null;
   }
@@ -502,6 +473,7 @@
     world.DESTINATIONS.forEach((d) => {
       if (d.noPin) return;
       const status = world.destStatus(d);
+      if (status === "locked" || status === "place") return; // only games you can play
       const [px, py] = pct(d.map[0], d.map[1]);
       const p = el("button", `pin ${status}`);
       p.type = "button";
@@ -546,6 +518,7 @@
     E.burst(P.x, P.y, 40, "sparkle", 14);
     await irisTo(false, innerWidth / 2, innerHeight / 2);
     RW.sfx.play("pop");
+    if (world.destStatus(d) !== "locked" && d.portal) setTimeout(() => enterPortal(d), 350);
   }
   $("#mapBtn").addEventListener("click", openMap);
   $("#mapClose").addEventListener("click", closeMap);
@@ -560,8 +533,8 @@
     RW.sfx.play("pop");
     const grid = $("#allGrid");
     grid.innerHTML = "";
-    RW.games.list.filter((g) => RW.games.status(g) !== "locked").forEach((g) => {
-      const d = world.DEST[g.destination];
+    RW.games.list.filter((g) => RW.games.status(g) !== "locked" && !g.menu).forEach((g) => {
+      const d = world.DEST[g.destination || g.room];
       const st = RW.games.stats(g.id);
       const b = el("button", "g-card");
       b.type = "button";
@@ -709,7 +682,7 @@
   setInterval(() => {
     if (document.hidden) return;
     const cur = RW.host.current;
-    if (cur && cur.game) RW.addTime(1, cur.game.id);
+    if (cur && cur.game) RW.addTime(1, (cur.active || cur.game).id);
     else if (E.mode === "play" && E.player) RW.addTime(1);
     else return;
     if (++tick % 15 === 0) RW.persist();
