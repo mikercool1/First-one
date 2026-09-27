@@ -30,7 +30,7 @@
   G.register({
     id: "backyardBaseball",
     title: "Backyard Baseball",
-    subtitle: "Swing for the fence behind the Rosenberg House",
+    subtitle: "Baseball or kickball: you pick when the game starts!",
     destination: "baseball",
     unlocked: true,
     entry: "games/backyard-baseball/index.html",

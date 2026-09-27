@@ -108,6 +108,9 @@ button:focus-visible{outline:4px solid var(--sun);outline-offset:4px}
 .logo{font:400 clamp(44px,8.6vw,104px)/.9 var(--display);color:#fff;letter-spacing:.01em;text-wrap:balance;
   -webkit-text-stroke:12px var(--navy);paint-order:stroke fill;text-shadow:0 9px 0 #0F1A45,0 20px 34px rgba(15,26,69,.3);transform:rotate(-2deg)}
 .logo em{font-style:normal;color:#FFD85A}
+.sport{display:flex;gap:clamp(10px,2vw,18px)}
+.sport button{border:0;cursor:pointer;font:400 clamp(20px,3vw,30px)/1 var(--display);letter-spacing:.02em;padding:12px 24px;border-radius:999px;background:rgba(255,255,255,.75);color:var(--navy);box-shadow:0 5px 0 rgba(36,50,79,.18)}
+.sport button.on{background:#FFD85A;box-shadow:0 5px 0 #C99A1F,0 0 0 4px #fff;transform:scale(1.06)}
 .pickline{font:400 clamp(20px,3vw,30px)/1 var(--display);color:var(--navy);background:rgba(255,255,255,.9);padding:9px 20px;border-radius:999px;box-shadow:0 5px 0 rgba(36,50,79,.15)}
 .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(10px,2vw,22px);width:100%}
 .kcard{position:relative;background:rgba(255,255,255,.96);border-radius:30px;padding:10px 10px 14px;display:flex;flex-direction:column;align-items:center;gap:4px;
@@ -161,7 +164,7 @@ button:focus-visible{outline:4px solid var(--sun);outline-offset:4px}
   <canvas id="c"></canvas>
 
   <div id="board" hidden>
-    <div class="bt">BACKYARD BASEBALL</div>
+    <div class="bt" id="boardTitle">BACKYARD BASEBALL</div>
     <div class="brow">
       <div><span>INNING</span><b id="sbInn">1</b></div>
       <div><span>RUNS</span><b id="sbRuns">0</b></div>
@@ -197,8 +200,12 @@ button:focus-visible{outline:4px solid var(--sun);outline-offset:4px}
 
   <div class="screen scroll" id="title">
     <div class="inner">
-      <div class="logo">BACKYARD <em>BASEBALL</em></div>
-      <div class="pickline">CHOOSE YOUR BATTER</div>
+      <div class="logo" id="logo">BACKYARD <em>BASEBALL</em></div>
+      <div class="sport" id="sport" role="group" aria-label="Pick a game">
+        <button type="button" data-s="baseball">⚾ BASEBALL</button>
+        <button type="button" data-s="kickball">🔴 KICKBALL</button>
+      </div>
+      <div class="pickline" id="pickline">CHOOSE YOUR BATTER</div>
       <div class="cards">
         <button class="kcard" data-k="reuben" style="--kc:#1F2F6B"><canvas></canvas><div class="nm">REUBEN</div><div class="tg">#99 · AGE 9</div></button>
         <button class="kcard" data-k="jonah" style="--kc:#2F93D8"><canvas></canvas><div class="nm">JONAH</div><div class="tg">#10 · AGE 6</div></button>
@@ -255,7 +262,9 @@ function wpick(o) { let s = 0; for (const k in o) s += o[k]; let r = Math.random
 
 // ---------- storage ----------
 const SAVE = 'backyard-baseball-v1';
-const saved = { muted: false, pick: 'reuben' };
+const saved = { muted: false, pick: 'reuben', sport: 'baseball' };
+// Kickball is the same game: the pitcher rolls a big red rubber ball and you kick it instead of swinging.
+const KICK = () => saved.sport === 'kickball';
 try { Object.assign(saved, JSON.parse(localStorage.getItem(SAVE)) || {}); } catch (e) {}
 function persist() { try { localStorage.setItem(SAVE, JSON.stringify(saved)); } catch (e) {} }
 
@@ -546,6 +555,13 @@ function drawKid(c, id, P, t) {
       lean = pose === 'swing' ? lerp(-0.05, 0.12, clamp(sw * 2, 0, 1)) : (id === 'ellie' ? Math.sin(tt * 2) * 0.06 - 0.04 : -0.04);
       hN = [k[1] * sc, S0y + k[2] * sc]; hF = [hN[0] + bvx * 7, hN[1] + bvy * 7];
       bat = { x: hN[0], y: hN[1], vx: bvx, vy: bvy, th: k[5] };
+      if (KICK()) {
+        // kickball: arms out for balance, and the kicking leg swings through
+        const kk = pose === 'swing' ? Math.sin(Math.PI * clamp(sw / 0.7, 0, 1)) : 0;
+        bat = null; fR = [13 + kk * 30, -kk * 20]; fL = [-12, 0]; crouch = 4 - kk * 2;
+        lean = -0.06 - kk * 0.14;
+        hN = [-16 * sc, S0y + 26 - kk * 8]; hF = [18 * sc, S0y + 24 - kk * 10];
+      }
       exp = P.exp || (id === 'ellie' ? 'grin' : 'determined'); look = [1, 0.1]; bendN = 8; bendF = 6;
       break;
     }
@@ -758,6 +774,14 @@ function drawNeighbor(c, v, P, t) {
 }
 
 function drawBall(c, x, y, r) {
+  if (KICK()) {
+    const R = r * 1.9;
+    C(c, x, y, R); fs(c, rgr(c, x, y, R, '#FF7A6E', '#C8281E'), 'rgba(110,20,15,.5)', Math.max(0.8, R * 0.06));
+    c.fillStyle = 'rgba(255,255,255,.35)'; E(c, x - R * 0.35, y - R * 0.4, R * 0.32, R * 0.18, -0.5); c.fill();
+    c.strokeStyle = 'rgba(120,20,15,.25)'; c.lineWidth = Math.max(0.6, R * 0.05);
+    for (let k = -1; k <= 1; k++) { c.beginPath(); c.arc(x, y, R * (0.45 + k * 0.1 + 0.25), 0.3 + k, 1.2 + k); c.stroke(); }
+    return;
+  }
   C(c, x, y, r); fs(c, rgr(c, x, y, r, '#FFFFFF', '#E3E1DA'), 'rgba(90,80,70,.4)', Math.max(0.6, r * 0.08));
   c.strokeStyle = '#E0473F'; c.lineWidth = Math.max(0.6, r * 0.12);
   c.beginPath(); c.arc(x - r * 1.25, y, r * 0.95, -0.6, 0.6); c.stroke();
@@ -1026,11 +1050,13 @@ function contact(q) {
   ball.big = 0.2; batter.comp = 0.12;
   dust(CONTACT.x, CONTACT.z, 10, 0.8, '#FFFFFF');
   const id = batter.id;
+  const kick = KICK();
   if (q === 'perfect') {
-    sfx.whack(); doShake(16); timeScale = 0.22; slowUntil = rt + 0.55;
-    if (id === 'ellie') call('ELLIE!!!!!!!', 'WHAAAAAACK!', 'ellie', 1.6); else call('WHAAAAAACK!', 'CRACK!', 'whack', 1.4);
-  } else if (q === 'excellent') { sfx.crack(); doShake(10); call('CRUSHED IT!', '', 'crush', 1.2); }
-  else { sfx.crack(); doShake(q === 'bad' ? 3 : 6); }
+    if (kick) { sfx.thud(); sfx.boing(); } else sfx.whack();
+    doShake(16); timeScale = 0.22; slowUntil = rt + 0.55;
+    if (id === 'ellie') call('ELLIE!!!!!!!', kick ? 'KA-BOOOM!' : 'WHAAAAAACK!', 'ellie', 1.6); else call(kick ? 'KA-BOOOM!' : 'WHAAAAAACK!', kick ? 'WHAM!' : 'CRACK!', 'whack', 1.4);
+  } else if (q === 'excellent') { if (kick) { sfx.thud(); sfx.boing(); } else sfx.crack(); doShake(10); call(kick ? 'BOOTED IT!' : 'CRUSHED IT!', '', 'crush', 1.2); }
+  else { if (kick) sfx.thud(); else sfx.crack(); doShake(q === 'bad' ? 3 : 6); }
   let special = forcedSpecial; forcedSpecial = null;
   if (!special && out !== 'foul' && out !== 'groundout' && Math.random() < 1 / 15) {
     const opts = { hr: ['moon', 'window'], flyout: ['moon'], triple: ['tree', 'bounce'], double: ['tree', 'bounce', 'grill'], single: ['grill', 'sprinkler', 'bounce', 'tree'] }[out];
@@ -1105,7 +1131,7 @@ function batterReaction(out, q) {
   } else if (id === 'ellie') {
     Object.assign(bat, { vx: -0.3, vy: 0.2, vz: 0, vr: 3 }); delay = 0;
   } else { Object.assign(bat, { vx: -1.5, vy: 2, vz: 0.6, vr: 8 }); delay = 0.1; }
-  flyBat = bat;
+  if (!KICK()) flyBat = bat; // no bat to toss in kickball
   if (out === 'hr') {
     if (id === 'ellie') { after(0.05, () => startBatterRun(1, true)); }
     else if (id === 'jonah') { batter.pose = 'armsUp'; }
@@ -1190,8 +1216,9 @@ function updBall(dt) {
     const u = (gt - b.t0) / b.T;
     if (u <= 1) {
       b.x = lerp(RELEASE.x, CONTACT.x, u); b.z = lerp(RELEASE.z, CONTACT.z, u); b.y = lerp(RELEASE.y, CONTACT.y, u) + Math.sin(Math.PI * u) * 0.55;
+      if (KICK()) b.y = u < 0.12 ? lerp(1.0, 0.36, u / 0.12) : 0.36 + Math.abs(Math.sin(u * Math.PI * 4)) * 0.2 * (1 - u); // rolled and bouncing along the grass
     } else {
-      const k = u - 1; b.x = CONTACT.x + (CONTACT.x - RELEASE.x) * k; b.z = CONTACT.z + (CONTACT.z - RELEASE.z) * k; b.y = CONTACT.y - k * 1.6;
+      const k = u - 1; b.x = CONTACT.x + (CONTACT.x - RELEASE.x) * k; b.z = CONTACT.z + (CONTACT.z - RELEASE.z) * k; b.y = KICK() ? 0.36 : CONTACT.y - k * 1.6;
     }
     if (auto && !batter.swung && gt >= b.t0 + b.T - LEAD) trySwing();
     if (u > 1.25 && phase === 'pitch') strikeCall(!batter.swung);
@@ -1724,6 +1751,16 @@ window.addEventListener('keydown', e => {
 });
 function togglePause() { paused = !paused; $('#pause').hidden = !paused; if (paused) audioInit(); }
 document.querySelectorAll('.kcard').forEach(b => b.addEventListener('click', () => { audioInit(); saved.pick = b.dataset.k; persist(); selCards(); sfx.pop(); }));
+function applySport() {
+  const kick = KICK();
+  $('#logo').innerHTML = `BACKYARD <em>${kick ? 'KICKBALL' : 'BASEBALL'}</em>`;
+  $('#pickline').textContent = kick ? 'CHOOSE YOUR KICKER' : 'CHOOSE YOUR BATTER';
+  $('#tapHint').textContent = kick ? 'TAP ANYWHERE TO KICK!' : 'TAP ANYWHERE TO SWING!';
+  document.title = kick ? 'Backyard Kickball' : 'Backyard Baseball';
+  $('#boardTitle').textContent = kick ? 'BACKYARD KICKBALL' : 'BACKYARD BASEBALL';
+  document.querySelectorAll('#sport button').forEach(b => { b.classList.toggle('on', b.dataset.s === saved.sport); b.setAttribute('aria-pressed', String(b.dataset.s === saved.sport)); });
+}
+document.querySelectorAll('#sport button').forEach(b => b.addEventListener('click', () => { saved.sport = b.dataset.s; persist(); applySport(); if (typeof sfx !== 'undefined' && sfx.step) sfx.step(); }));
 function selCards() { document.querySelectorAll('.kcard').forEach(b => b.classList.toggle('sel', b.dataset.k === saved.pick)); }
 $('#playBtn').addEventListener('click', () => startGame(saved.pick));
 $('#againBtn').addEventListener('click', () => startGame(saved.pick));
@@ -1750,7 +1787,7 @@ window.__bb = {
 };
 
 resize();
-setMuteIcons(); selCards();
+setMuteIcons(); selCards(); applySport();
 goTitle();
 requestAnimationFrame(frame);
 })();

@@ -94,7 +94,7 @@ door and the stars you earned fly into your total.
 
 | Where in the world | Game | Folder |
 | --- | --- | --- |
-| Backyard Baseball field | Backyard Baseball | `games/backyard-baseball` |
+| Backyard Baseball field | Backyard Baseball (or Kickball, picked on its title screen) | `games/backyard-baseball` |
 | The family car in the driveway | Fish Friday | `games/lox-run` |
 | Basketball court (Sports Complex) | Buckets | `games/buckets` |
 | Ariel's Kitchen | Ariel's Passover Cookout | `games/ariel-passover-cookout` |
