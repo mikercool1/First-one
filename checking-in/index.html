@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Checking In</title>
+<meta name="theme-color" content="#0E5E6F">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800;9..144,900&family=Outfit:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <main class="stage" id="stage">
+    <canvas id="scene" aria-label="The Baha Mar lobby seen from behind the front desk, with guests lining up"></canvas>
+
+    <header class="hud" aria-label="Scoreboard">
+      <div class="hud-cell">
+        <span class="lbl">Tips</span>
+        <span class="val" id="tips">$0</span>
+      </div>
+      <div class="hud-cell hud-shift">
+        <span class="lbl" id="shiftLbl">Shift 1</span>
+        <span class="val" id="clock">3:00 PM</span>
+        <div class="meter"><i id="shiftBar"></i></div>
+      </div>
+      <div class="hud-cell hud-lives">
+        <span class="lbl">Walkouts left</span>
+        <span class="lives" id="lives"><i></i><i></i><i></i></span>
+      </div>
+      <button type="button" class="mute" id="mute" aria-label="Mute sound">
+        <svg viewBox="0 0 24 24" class="on"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 24 24" class="off"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+
+    <div class="bubbles" id="bubbles"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <footer class="desk" id="desk">
+      <div class="monitor" id="monitor">
+        <div class="m-idle" id="mIdle">Next guest, please&hellip;</div>
+        <div class="m-res" id="mRes" hidden>
+          <div class="m-who">
+            <span class="m-lbl">Reservation <b class="m-vip" id="mVip" hidden>&#9733; VIP</b></span>
+            <span class="m-name" id="mName">Rolle party</span>
+          </div>
+          <div class="m-hotel" id="mHotel">Rosewood</div>
+          <div class="m-party"><b id="mParty">2</b><span id="mPartyLbl">guests</span></div>
+          <div class="m-bar"><i id="mBar"></i></div>
+        </div>
+      </div>
+      <div class="bins">
+        <button type="button" class="bin" data-band="rosewood" aria-label="Gray band">
+          <svg viewBox="0 0 60 44" class="bands gray"><ellipse cx="30" cy="30" rx="20" ry="7.5"/><ellipse cx="30" cy="22.5" rx="20" ry="7.5"/><ellipse cx="30" cy="15" rx="20" ry="7.5"/></svg>
+          <span class="bin-lbl"><span class="h">Rosewood</span><span class="c">Gray</span></span>
+          <kbd>1</kbd>
+        </button>
+        <button type="button" class="bin" data-band="hyatt" aria-label="Blue band">
+          <svg viewBox="0 0 60 44" class="bands blue"><ellipse cx="30" cy="30" rx="20" ry="7.5"/><ellipse cx="30" cy="22.5" rx="20" ry="7.5"/><ellipse cx="30" cy="15" rx="20" ry="7.5"/></svg>
+          <span class="bin-lbl"><span class="h">Grand Hyatt</span><span class="c">Blue</span></span>
+          <kbd>2</kbd>
+        </button>
+        <button type="button" class="bin" data-band="sls" aria-label="Pink band">
+          <svg viewBox="0 0 60 44" class="bands pink"><ellipse cx="30" cy="30" rx="20" ry="7.5"/><ellipse cx="30" cy="22.5" rx="20" ry="7.5"/><ellipse cx="30" cy="15" rx="20" ry="7.5"/></svg>
+          <span class="bin-lbl"><span class="h">SLS</span><span class="c">Pink</span></span>
+          <kbd>3</kbd>
+        </button>
+        <button type="button" class="bin bin-drink" id="drinkBtn" aria-label="Welcome drink">
+          <svg viewBox="0 0 60 44" class="glass">
+            <path d="M22 6 L38 6 L35.5 40 L24.5 40 Z" fill="rgba(255,255,255,.55)" stroke="#9FB7BD" stroke-width="1.4"/>
+            <path d="M23.2 16 L36.8 16 L35.5 38.6 L24.5 38.6 Z" fill="url(#gDrink)"/>
+            <path d="M33 2 L29 30" stroke="#FF5AAE" stroke-width="2.2" stroke-linecap="round"/>
+            <circle cx="38" cy="9" r="5.2" fill="#FFB347"/><circle cx="38" cy="9" r="3.4" fill="#FFD27A"/>
+            <defs><linearGradient id="gDrink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC15E"/><stop offset=".6" stop-color="#FF7A59"/><stop offset="1" stop-color="#E8436B"/></linearGradient></defs>
+          </svg>
+          <span class="bin-lbl"><span>Welcome drink</span></span>
+          <kbd>4</kbd>
+        </button>
+      </div>
+      <div class="actions">
+        <button type="button" class="undo" id="undo"><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5M4 12h10a6 6 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -3)"/></svg>Undo</button>
+        <button type="button" class="checkin" id="checkin">
+          <svg viewBox="0 0 32 24" aria-hidden="true"><path d="M5 19a11 11 0 0 1 22 0z" fill="currentColor"/><rect x="2" y="19" width="28" height="3" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="4" height="4" rx="2" fill="currentColor"/></svg>
+          Check in
+        </button>
+      </div>
+    </footer>
+
+    <!-- title -->
+    <section class="screen" id="title">
+      <div class="card">
+        <p class="kicker">Rosenberg World &middot; Baha Mar</p>
+        <h1>Checking <em>In</em></h1>
+        <p class="lede">Guests are lining up at the front desk. Get every party their room keys before they lose it and leave the hotel.</p>
+        <ul class="guide">
+          <li><span class="swatch gray"></span><b>Rosewood</b><span class="plus">+ welcome drink for every guest</span></li>
+          <li><span class="swatch blue"></span><b>Grand Hyatt</b></li>
+          <li><span class="swatch pink"></span><b>SLS</b></li>
+        </ul>
+        <p class="rule">One bracelet per guest &mdash; the bracelet is their room key. Three walkouts and your shift is over.</p>
+        <button type="button" class="go" id="startBtn">Start shift</button>
+        <p class="keys">Keys: <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> bands &middot; <kbd>4</kbd> drink &middot; <kbd>&#9003;</kbd> undo &middot; <kbd>Enter</kbd> check in</p>
+        <p class="best" id="bestLine"></p>
+      </div>
+    </section>
+
+    <!-- between shifts -->
+    <section class="screen" id="shiftEnd" hidden>
+      <div class="card">
+        <p class="kicker" id="seKicker">Shift 1 complete</p>
+        <h2 id="seTitle">Nice work.</h2>
+        <dl class="stats">
+          <div><dt>Parties</dt><dd id="seParties">0</dd></div>
+          <div><dt>Guests</dt><dd id="seGuests">0</dd></div>
+          <div><dt>Tips this shift</dt><dd id="seTips">$0</dd></div>
+          <div><dt>Walkouts</dt><dd id="seWalk">0</dd></div>
+        </dl>
+        <p class="note" id="seNote"></p>
+        <button type="button" class="go" id="nextBtn">Next shift</button>
+      </div>
+    </section>
+
+    <!-- game over -->
+    <section class="screen" id="over" hidden>
+      <div class="card">
+        <p class="kicker">Off the clock</p>
+        <h2 id="ovTitle">Three walkouts.</h2>
+        <p class="lede" id="ovLede">The manager sent you to the beach to think about it.</p>
+        <dl class="stats">
+          <div><dt>Shifts worked</dt><dd id="ovShift">1</dd></div>
+          <div><dt>Guests checked in</dt><dd id="ovGuests">0</dd></div>
+          <div><dt>Total tips</dt><dd id="ovTips">$0</dd></div>
+          <div><dt>Best</dt><dd id="ovBest">$0</dd></div>
+        </dl>
+        <button type="button" class="go" id="againBtn">Clock back in</button>
+      </div>
+    </section>
+  </main>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
