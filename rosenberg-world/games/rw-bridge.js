@@ -25,7 +25,8 @@
 
 (function () {
   var params = new URLSearchParams(location.search);
-  var inWorld = params.get("rw") === "1" && window.parent && window.parent !== window;
+  var named = /^rw:/.test(window.name || "");
+  var inWorld = (params.get("rw") === "1" || named) && window.parent && window.parent !== window;
   function send(msg) {
     if (!inWorld) return false;
     try { window.parent.postMessage(msg, "*"); return true; } catch (e) { return false; }
@@ -36,7 +37,7 @@
   }
   var bridge = window.RosenbergBridge = {
     inWorld: inWorld,
-    player: inWorld ? params.get("player") : null,
+    player: inWorld ? params.get("player") || (named ? window.name.slice(3) : null) : null,
     report: function (result) { return send(pack("rosenberg-world:report", result)); },
     finish: function (result) { return send(pack("rosenberg-world:finish", result)); },
     exit: function () { return send({ type: "rosenberg-world:exit" }); },

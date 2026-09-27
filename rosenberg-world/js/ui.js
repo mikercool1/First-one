@@ -311,6 +311,7 @@
         f.src = `${game.entry}${sep}rw=1&player=${encodeURIComponent(P ? P.id : "reuben")}`;
         f.allow = "autoplay; fullscreen";
         f.title = game.title;
+        f.name = "rw:" + (P ? P.id : "reuben"); // backup for hosts that drop the query string
         mount.appendChild(f);
         current.frame = f;
         try { f.addEventListener("load", () => { try { f.contentWindow.RosenbergWorld = window.RosenbergWorld; } catch (e) { /* cross-origin: postMessage still works */ } }); } catch (e) { /* ignore */ }
