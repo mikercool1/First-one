@@ -42,13 +42,14 @@ button:focus-visible { outline: 3px solid var(--gold-hi); outline-offset: 3px; }
 .scene { flex: 1; min-height: 0; display: grid; place-items: end center; }
 #cv { display: block; border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,.35), 0 0 0 3px rgba(201,164,92,.6); touch-action: manipulation; }
 
-.choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; min-height: 124px; }
-.choice { border: 0; border-radius: 26px; padding: 8px 4px 12px; display: flex; flex-direction: column; align-items: center; gap: 2px;
-  background: linear-gradient(180deg, #FFFFFF, #F1E7D8); color: var(--ink); font-size: 17px;
+.choices { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; min-height: 104px; }
+.choice { border: 0; border-radius: 22px; padding: 6px 2px 10px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: linear-gradient(180deg, #FFFFFF, #F1E7D8); color: var(--ink); font-size: 14px; white-space: nowrap;
   box-shadow: 0 6px 0 #CDB99A, 0 12px 24px rgba(0,0,0,.3); transition: transform .08s, opacity .2s; }
-.choice img { width: min(88px, 20vw); height: min(88px, 20vw); }
+.choice img { width: min(76px, 15vw); height: min(76px, 15vw); }
+.choice.got { background: linear-gradient(180deg, #EAF8F0, #C9EBD8); box-shadow: 0 6px 0 #7FC8A0, 0 12px 24px rgba(0,0,0,.3); }
 .choice:active { transform: translateY(4px); box-shadow: 0 2px 0 #CDB99A; }
-.choice:disabled { opacity: .35; }
+.choice:disabled { opacity: .45; }
 .choice.nope { animation: nope .4s; }
 @keyframes nope { 25% { transform: translateX(-6px) rotate(-3deg); } 75% { transform: translateX(6px) rotate(3deg); } }
 
@@ -86,7 +87,7 @@ h1 em { display: block; font: italic 800 50px/1.05 var(--serif); color: var(--go
     <div class="card">
       <div class="kicker">A Rosenberg World Game</div>
       <h1>Ariel <em>Passover</em> Cookout</h1>
-      <p>Tap the food each person asks for before they run out of patience. Their order hides after a moment, so remember it! And if Max sneaks in, tap him.</p>
+      <p>Everyone wants two dishes. You get 3 seconds to look, then remember and tap both! Max is loose, too: tap him when he jumps for the food.</p>
       <button class="big" id="play" type="button">PLAY</button>
     </div>
     <button class="link" id="back" type="button">Back to Rosenberg World</button>
