@@ -173,7 +173,7 @@ html,body,#app{background:#CFE4F6}
 #shootBtn.hit{transform:translateY(6px);box-shadow:0 2px 0 #102F6B}
 #tapHint{bottom:calc(env(safe-area-inset-bottom,0px) + 180px);left:50%}
 #stick{position:absolute;z-index:6;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
-  right:calc(env(safe-area-inset-right,0px) + 18px + clamp(104px,15vw,140px) + 16px);
+  left:calc(env(safe-area-inset-left,0px) + 22px); /* bottom-left, far from SHOOT, so each thumb has its own side */
   width:clamp(128px,18vw,168px);height:clamp(128px,18vw,168px);border-radius:50%;touch-action:none;
   background:radial-gradient(circle,rgba(255,255,255,.55) 0 38%,rgba(255,255,255,.35) 39% 100%);
   border:4px solid rgba(22,43,78,.55);box-shadow:0 8px 22px rgba(20,30,60,.25),inset 0 0 0 10px rgba(255,255,255,.25)}
@@ -222,7 +222,7 @@ html,body,#app{background:#CFE4F6}
   .pickcol .kcard .tg{display:none}
   .vs{font-size:28px;-webkit-text-stroke-width:6px}
   #shootBtn{width:92px;height:92px;font-size:22px}
-  #stick{width:118px;height:118px;right:calc(env(safe-area-inset-right,0px) + 18px + 92px + 14px)}
+  #stick{width:118px;height:118px;left:calc(env(safe-area-inset-left,0px) + 16px)}
 }
 </style>
 </head>
