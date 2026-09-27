@@ -207,15 +207,35 @@ const ART = (() => {
       // one forgotten pink curler, for comedy
       c.save(); c.translate(r * .55, -r * .95); c.rotate(.5); box(c, -r * .22, -r * .12, r * .44, r * .24, r * .12, "#F28DB2", "#D8588C", r * .04); c.restore();
     },
-    cariBack: (c, r) => { c.beginPath(); c.moveTo(-r * 1.12, r * .9); c.bezierCurveTo(-r * 1.35, -r * 1.3, r * 1.35, -r * 1.3, r * 1.12, r * .9); c.quadraticCurveTo(0, r * 1.1, -r * 1.12, r * .9); fill(c, lin(c, 0, -r, 0, r, "#B45A36", "#7E3520")); },
+    longBack: (sway, cols, len = 2.6) => (c, r) => {
+      c.beginPath(); c.moveTo(-r * 1.02, -r * .15);
+      c.bezierCurveTo(-r * 1.22, r * .8, -r * 1.08 + sway, r * (len - .7), -r * .82 + sway, r * len);
+      c.quadraticCurveTo(0, r * (len + .12), r * .82 + sway, r * len);
+      c.bezierCurveTo(r * 1.08 + sway, r * (len - .7), r * 1.22, r * .8, r * 1.02, -r * .15);
+      c.bezierCurveTo(r * 1.05, -r * 1.35, -r * 1.05, -r * 1.35, -r * 1.02, -r * .15);
+      fill(c, lin(c, 0, -r, 0, r * len, ...cols));
+      c.save(); c.globalAlpha = .3; curve(c, -r * .9, r * .4, -r * 1.02 + sway, r * 1.5, -r * .7 + sway, r * (len - .2), r * .07, "#8A7278");
+      curve(c, r * .9, r * .4, r * 1.02 + sway, r * 1.5, r * .7 + sway, r * (len - .2), r * .07, "#8A7278"); c.restore();
+    },
+    longFront: (cols, center) => (c, r) => {
+      c.beginPath(); c.moveTo(-r * 1.05, r * .45);
+      c.bezierCurveTo(-r * 1.14, -r * .95, -r * .4, -r * 1.3, center ? 0 : r * .2, -r * 1.14);
+      c.bezierCurveTo(r * .45, -r * 1.3, r * 1.14, -r * .95, r * 1.05, r * .45);
+      c.bezierCurveTo(r * .92, -r * .2, r * .55, -r * .7, center ? 0 : r * .15, -r * .82);
+      c.bezierCurveTo(-r * .5, -r * .72, -r * .92, -r * .2, -r * 1.05, r * .45);
+      fill(c, lin(c, -r, -r * 1.2, r, r * .4, ...cols));
+      c.save(); c.globalAlpha = .35; curve(c, -r * .6, -r * .95, -r * .2, -r * 1.12, -r * .05, -r * .95, r * .08, "#9A8A90"); c.restore();
+    },
+    // Cari (Grandma): short curly brown hair
+    cariBack: (c, r) => {
+      for (let i = 0; i < 11; i++) { const a = Math.PI * (.85 + i * .13); dot(c, Math.cos(a) * r * 1.02, Math.sin(a) * r * .95 + r * .05, r * .3, i % 2 ? "#6E4428" : "#5A361F"); }
+      for (const sd of [-1, 1]) { dot(c, sd * r * 1.02, r * .38, r * .26, "#5A361F"); dot(c, sd * r * .95, r * .62, r * .2, "#6E4428"); }
+    },
     cariFront: (c, r) => {
-      c.beginPath(); c.moveTo(-r * 1.1, r * .85); c.bezierCurveTo(-r * 1.2, -r * .9, -r * .2, -r * 1.35, r * .5, -r * 1.1);
-      c.bezierCurveTo(r * 1.1, -r * .9, r * 1.2, -r * .1, r * 1.1, r * .85); c.quadraticCurveTo(r * .95, r * .1, r * .75, -r * .35);
-      c.quadraticCurveTo(r * .1, -r * .5, -r * .5, -r * .55); c.quadraticCurveTo(-r * .85, -r * .1, -r * 1.1, r * .85);
-      fill(c, lin(c, -r, -r, r, r, "#D0714A", "#9A4526"));
-      // sunglasses pushed up on her head
-      for (const sx of [-1, 1]) ell(c, sx * r * .33, -r * .92, r * .26, r * .17, "#2B2230");
-      line(c, [-r * .1, -r * .95, r * .1, -r * .95], r * .06, "#C9A45C");
+      const cols = ["#8A5A36", "#6E4428", "#9C6A42"];
+      for (let i = 0; i < 9; i++) { const a = Math.PI * (1.08 + i * .105); dot(c, Math.cos(a) * r * .9, Math.sin(a) * r * .88 - r * .08, r * .28, cols[i % 3]); }
+      for (const [x, y] of [[-.45, -.62], [-.12, -.72], [.2, -.7], [.5, -.58]]) dot(c, x * r, y * r, r * .2, cols[(x * 10 | 0) & 1]);
+      for (const [x, y] of [[-.3, -1.02], [.25, -1.05], [0, -.95]]) { c.beginPath(); c.arc(x * r, y * r, r * .1, 0, Math.PI * 1.6); stroke(c, "#B07D52", r * .04); }
     },
     nana: (c, r) => {
       const col = "#EDEAF2", dk = "#C9C3D6";
@@ -223,12 +243,18 @@ const ART = (() => {
       dot(c, 0, -r * 1.12, r * .34, col); dot(c, 0, -r * 1.12, r * .2, dk);
       for (const sx of [-1, 1]) dot(c, sx * r * .98, r * .1, r * .22, col);
     },
+    // Simon (Grandpa): a full, thick head of silver hair and a neat beard
     simon: (c, r) => {
-      c.save(); c.globalAlpha = .95;
-      for (const sx of [-1, 1]) { c.beginPath(); c.ellipse(sx * r * .88, -r * .1, r * .26, r * .5, sx * .2, 0, TAU); fill(c, "#A7ADB5"); }
+      c.beginPath(); c.moveTo(-r * 1.1, r * .3);
+      c.bezierCurveTo(-r * 1.3, -r * 1.05, -r * .4, -r * 1.55, r * .3, -r * 1.34);
+      c.bezierCurveTo(r * 1.08, -r * 1.2, r * 1.3, -r * .4, r * 1.1, r * .32);
+      c.bezierCurveTo(r * .98, -r * .15, r * .62, -r * .48, r * .18, -r * .56);
+      c.bezierCurveTo(-r * .3, -r * .72, -r * .86, -r * .32, -r * 1.1, r * .3);
+      fill(c, lin(c, 0, -r * 1.4, 0, r * .3, "#E4E7EB", "#B5BBC3", "#9CA3AC"));
+      c.save(); c.globalAlpha = .55;
+      curve(c, -r * .7, -r * .95, -r * .2, -r * 1.25, r * .4, -r * 1.05, r * .07, "#FFFFFF");
+      curve(c, -r * .85, -r * .5, -r * .5, -r * .85, -r * .05, -r * .75, r * .06, "#8E949C");
       c.restore();
-      c.beginPath(); c.moveTo(-r * .3, -r * .95); c.quadraticCurveTo(0, -r * 1.25, r * .35, -r * .95); c.quadraticCurveTo(0, -r * 1.05, -r * .3, -r * .95); fill(c, "#B8BEC6");
-      // neat gray beard
       c.beginPath(); c.moveTo(-r * .8, r * .25); c.quadraticCurveTo(-r * .7, r * 1.15, 0, r * 1.18); c.quadraticCurveTo(r * .7, r * 1.15, r * .8, r * .25);
       c.quadraticCurveTo(r * .5, r * .75, 0, r * .72); c.quadraticCurveTo(-r * .5, r * .75, -r * .8, r * .25); fill(c, "#B9BEC5");
       c.beginPath(); c.moveTo(-r * .32, r * .44); c.quadraticCurveTo(0, r * .3, r * .32, r * .44); c.quadraticCurveTo(0, r * .52, -r * .32, r * .44); fill(c, "#A3A9B1");
@@ -274,16 +300,24 @@ const ART = (() => {
     }
   }
   function handDot(c, p, r, sk) { dot(c, p[0], p[1], r, radF(c, p[0] - r * .3, p[1] - r * .3, p[0], p[1], r * 1.2, sk.skinHi, sk.skin)); }
-  function seatedLegs(c, pants, shoe, spread = 13, lift = 0) {
+  function seatedLegs(c, pants, shoe, spread = 13, lift = 0, shin = pants) {
     // shins first, then the lap (thighs pointing at us) with round knees on top
     for (const sd of [-1, 1]) {
-      line(c, [sd * (spread + 1), -40, sd * (spread + 2), -8 - (sd > 0 ? lift : 0)], 17, pants);
+      line(c, [sd * (spread + 1), -40, sd * (spread + 2), -8 - (sd > 0 ? lift : 0)], 17, shin);
       ell(c, sd * (spread + 2) + sd * 3, -5 - (sd > 0 ? lift : 0), 14, 7, shoe);
     }
     box(c, -31, -66, 62, 26, 12, pants);
     box(c, -31, -66, 62, 12, 8, "rgba(255,255,255,.16)");
-    for (const sd of [-1, 1]) { dot(c, sd * (spread + 1), -42, 13, pants); dot(c, sd * (spread + 1) - 3, -46, 5, "rgba(255,255,255,.18)"); }
+    for (const sd of [-1, 1]) { dot(c, sd * (spread + 1), -42, 13, shin); dot(c, sd * (spread + 1) - 3, -46, 5, "rgba(255,255,255,.18)"); }
+    if (shin !== pants) box(c, -34, -64, 68, 18, 8, pants);
     line(c, [0, -64, 0, -44], 2, "rgba(0,0,0,.15)");
+  }
+  // a round, comfy tummy for the chubby grown-ups
+  function bellyTorso(c, top, topDk) {
+    c.beginPath(); c.moveTo(-30, -120); c.quadraticCurveTo(-30, -131, -20, -132); c.lineTo(20, -132); c.quadraticCurveTo(30, -131, 30, -120);
+    c.bezierCurveTo(46, -100, 48, -68, 34, -56); c.quadraticCurveTo(0, -46, -34, -56); c.bezierCurveTo(-48, -68, -46, -100, -30, -120); c.closePath();
+    fill(c, lin(c, -46, 0, 46, 0, top, topDk));
+    c.save(); c.globalAlpha = .14; ell(c, -12, -86, 20, 20, "#FFFFFF"); c.restore();
   }
   function torso(c, top, topDk, wS = 27, wW = 24, yS = -128, yW = -58) {
     c.beginPath(); c.moveTo(-wS, yS + 6); c.quadraticCurveTo(-wS, yS, -wS + 8, yS - 2); c.lineTo(wS - 8, yS - 2); c.quadraticCurveTo(wS, yS, wS, yS + 6);
@@ -376,47 +410,41 @@ const ART = (() => {
     c.restore();
   }
 
-  // ---------- SARAH (standing, faces the mirror to the left) ----------
+  // ---------- SARAH (standing, long black hair, quietly chic; faces left) ----------
   function sarah(c, x, y, s, o) {
-    const t = o.t, sk = SK.sarah, m = o.mood || 0, st = o.state;
+    const t = o.t, sk = SK.sarah, st = o.state;
     c.save(); c.translate(x, y); c.scale(s, s);
-    if (!o.reflection) shadow(c, 0, 2, 44, 10, .28);
-    c.scale(-1, 1); // faces left
-    let hop = 0; if (st === "outburst") hop = -Math.abs(Math.sin(t * 12)) * 10; if (st === "eating") hop = 0;
-    c.translate(0, hop);
-    const sway = Math.sin(t * 1.4) * 2;
-    c.save(); c.translate(0, -192); HAIR.sarahBack(sway * .5)(c, 34); c.restore();
-    // foot tapping when impatient
-    const tap = (m >= 2 && st === "waiting") ? Math.max(0, Math.sin(t * 12)) * 6 : 0;
-    ell(c, 10, -4 - tap, 12, 6, "#C8A04A"); ell(c, -10, -4, 12, 6, "#C8A04A");
-    // gown
-    c.beginPath(); c.moveTo(-18, -120); c.bezierCurveTo(-22, -80, -34 + sway, -30, -40 + sway, -6); c.quadraticCurveTo(0, 2, 40 + sway, -6); c.bezierCurveTo(34 + sway, -30, 22, -80, 18, -120); c.closePath();
-    fill(c, lin(c, -40, 0, 40, 0, "#1F6B55", "#0F4A3A", "#2A806A"));
-    c.save(); c.globalAlpha = .4; curve(c, 4, -115, 10 + sway, -60, 20 + sway, -8, 4, "#6FC2A6"); c.restore();
-    c.beginPath(); c.moveTo(-24, -150); c.quadraticCurveTo(-26, -132, -18, -118); c.lineTo(18, -118); c.quadraticCurveTo(26, -132, 24, -150); c.quadraticCurveTo(0, -146, -24, -150);
-    fill(c, lin(c, -24, 0, 24, 0, "#237A61", "#105040"));
-    box(c, -7, -170, 14, 22, 6, sk.skin);
-    c.beginPath(); c.moveTo(-24, -150); c.quadraticCurveTo(0, -142, 24, -150); c.lineTo(20, -156); c.quadraticCurveTo(0, -150, -20, -156); fill(c, sk.skin);
-    // arms by mood
-    let Lh = [-26, -96], Rh = [24, -176], Le = [-30, -124], Re = [40, -150]; // lipstick to lips
-    if (m === 1 && st === "waiting") { Lh = [-18, -214]; Rh = [22, -216]; Le = [-40, -186]; Re = [42, -186]; }
-    if (m === 2 && st === "waiting") { Lh = [12, -128]; Rh = [-12, -124]; Le = [-28, -122]; Re = [28, -124]; }
-    if (m >= 3 && st === "waiting") { Lh = [-30, -114]; Le = [-46, -134]; Rh = [44 + Math.sin(t * 10) * 6, -176]; Re = [40, -140]; }
-    if (o.event === "pose") { Lh = [-30, -116]; Le = [-46, -134]; Rh = [8, -228]; Re = [34, -196]; }
-    if (st === "outburst") { Lh = [-40, -214 + Math.sin(t * 14) * 8]; Rh = [40, -214 - Math.sin(t * 14) * 8]; Le = [-42, -176]; Re = [42, -176]; }
+    shadow(c, 0, 2, 40, 10, .26);
+    c.scale(-1, 1);
+    if (st === "outburst") c.translate(0, -Math.abs(Math.sin(t * 10)) * 5);
+    const sway = Math.sin(t * 1.4) * 1.5;
+    c.save(); c.translate(0, -194); HAIR.longBack(sway * .4, ["#302729", "#1B1618", "#0E0B0C"], 2.95)(c, 33); c.restore();
+    // wide-leg camel trousers and nude pointed flats
+    for (const sd of [-1, 1]) {
+      c.beginPath(); c.moveTo(sd * 1, -118); c.lineTo(sd * 20, -118); c.lineTo(sd * 26, -7); c.lineTo(sd * 3, -7); c.closePath();
+      fill(c, lin(c, sd * 2, 0, sd * 26, 0, "#CDA67D", "#B08760"));
+      ell(c, sd * 14 + 4, -4, 12, 4.5, "#D9B29A");
+    }
+    line(c, [-1, -108, -2, -10], 1.2, "rgba(90,60,30,.35)"); line(c, [12, -108, 14, -10], 1.2, "rgba(90,60,30,.3)");
+    // ivory silk blouse, tucked in, with a slim tan belt
+    c.beginPath(); c.moveTo(-24, -150); c.quadraticCurveTo(-27, -132, -20, -116); c.lineTo(20, -116); c.quadraticCurveTo(27, -132, 24, -150); c.quadraticCurveTo(0, -157, -24, -150);
+    fill(c, lin(c, -24, 0, 24, 0, "#FFFDF7", "#F3ECE0", "#E3D8C6"));
+    c.save(); c.globalAlpha = .5; curve(c, -9, -146, -13, -130, -9, -119, 2, "#FFFFFF"); c.restore();
+    box(c, -21, -121, 42, 5, 2.5, "#8A5A2E"); box(c, -3, -122, 6, 7, 1.5, "#E6C77F");
+    box(c, -7, -172, 14, 22, 6, sk.skin);
+    c.beginPath(); c.moveTo(-10, -154); c.lineTo(0, -137); c.lineTo(10, -154); c.closePath(); fill(c, sk.skin);
+    c.beginPath(); c.moveTo(-8, -155); c.quadraticCurveTo(0, -145, 8, -155); stroke(c, "#E3C274", 1.1); dot(c, 0, -146.5, 1.8, "#F1DA9E");
+    let Lh = [-25, -94], Le = [-29, -122], Rh = [27, -95], Re = [31, -122];
+    if (st === "wrong") { Rh = [6, -140]; Re = [30, -124]; }
     if (st === "eating") { Lh = [20, -116]; Le = [-6, -110]; Rh = [16, -170 + Math.sin(t * 6) * 10]; Re = [36, -140]; }
-    arm(c, [-22, -146], Le, Lh, 9.5, null, sk);
-    arm(c, [22, -146], Re, Rh, 9.5, null, sk);
-    // feather boa
-    c.save(); for (let i = 0; i < 12; i++) { const k = i / 11; const bx = -26 + k * 52, by = -150 + Math.sin(k * Math.PI) * 12; dot(c, bx, by, 8, i % 2 ? "#F7A8C8" : "#F28DB2"); } c.restore();
-    handDot(c, Lh, 6.5, sk); handDot(c, Rh, 6.5, sk);
-    if (st !== "eating" && !(m === 2 && st === "waiting")) { box(c, Rh[0] - 3, Rh[1] - 16, 6, 14, 2, "#C9A45C"); box(c, Rh[0] - 2.5, Rh[1] - 22, 5, 7, 2, "#C8243E"); }
-    let expr = ["calm", "meh", "annoyed", "angry"][m];
-    if (o.event === "pose") expr = "proud";
-    if (st === "outburst") expr = "outburst"; else if (st === "eating" || st === "happy") expr = "eat";
-    else if (st === "wrong") expr = "gasp"; else if (st === "idle" && !o.event) expr = "calm";
-    const glance = st === "waiting" && Math.sin(t * .7 + 1) > .7;
-    head(c, 0, -192, 34, { ...sk, expr, t, blink: o.blink, lashes: true, lip: "#C8243E", earrings: "#F1DA9E", look: glance ? [-1, 0] : [1.2, 0], anger: m >= 3 ? .5 : 0, hairFront: HAIR.sarahFront, tilt: o.event === "pose" ? -.15 : 0 });
+    if (st === "outburst") { Lh = [10, -126]; Rh = [-10, -122]; Le = [-28, -120]; Re = [28, -122]; }
+    arm(c, [-22, -146], Le, Lh, 9.5, "#F3ECE0", sk, .9);
+    arm(c, [22, -146], Re, Rh, 9.5, "#F3ECE0", sk, .9);
+    handDot(c, Lh, 6, sk); handDot(c, Rh, 6, sk);
+    let expr = "calm";
+    if (st === "outburst") expr = "annoyed"; else if (st === "eating") expr = "eat"; else if (st === "wrong") expr = "gasp";
+    head(c, 0, -194, 33, { ...sk, expr, t, blink: o.blink, lashes: true, lip: "#B5646B", earrings: "#E3C274", look: [1, 0], blush: .2,
+      hairFront: HAIR.longFront(["#3A2F32", "#1B1618", "#0E0B0C"], true), browCol: "#1B1618" });
     if (st === "eating") { c.save(); c.translate(20, -120); food(c, o.plate || "cake", 0, 0, 50, t); c.restore(); }
     c.restore();
   }
@@ -444,78 +472,70 @@ const ART = (() => {
     if (!pointing && st !== "eating" && !(m >= 3 && st === "waiting") && st !== "outburst" && o.event !== "cheer") box(c, Rh[0] - 5, Rh[1] - 16, 10, 22, 4, "#2A2A30");
     if (st === "eating") { c.save(); c.translate(0, -76); food(c, o.plate || "soup", 0, 0, 52, t); c.restore(); }
     let expr = ["calm", "meh", "annoyed", "angry"][m];
-    if (st === "outburst") expr = "outburst"; else if (st === "eating") expr = "eat"; else if (o.event === "cheer") expr = "happy"; else if (st === "wrong") expr = "gasp";
+    if (st === "outburst") expr = "annoyed"; else if (st === "eating") expr = "eat"; else if (o.event === "cheer") expr = "happy"; else if (st === "wrong") expr = "gasp";
     const lookTV = st !== "eating" && st !== "outburst" && st !== "wrong";
     head(c, 0, -162, 33, { ...sk, expr, t, blink: o.blink, look: lookTV ? [1.6, -.2] : [0, 0], stubble: true, anger: m >= 3 && st === "waiting" ? .6 : 0, hairFront: HAIR.ikey, tilt: lookTV ? .06 : 0 });
     c.restore();
   }
 
-  // ---------- MICHAEL (couch, on the phone) ----------
+  // ---------- MICHAEL (couch, on the phone; black polo, navy shorts) ----------
   function michael(c, x, y, s, o) {
     const t = o.t, sk = SK.michael, m = o.mood || 0, st = o.state;
     c.save(); c.translate(x, y); c.scale(s, s);
     if (st === "outburst") c.translate(0, -Math.abs(Math.sin(t * 11)) * 7);
-    seatedLegs(c, "#B79E7A", "#5A3D2A");
-    torso(c, "#6D98D6", "#4A74B4", 28, 25);
-    line(c, [0, -126, 0, -62], 1.5, "rgba(255,255,255,.6)");
-    for (let i = 0; i < 4; i++) dot(c, 3, -116 + i * 14, 1.8, "#FFFFFF");
-    c.beginPath(); c.moveTo(-10, -128); c.lineTo(0, -118); c.lineTo(10, -128); stroke(c, "#FFFFFF", 3);
+    seatedLegs(c, "#1F2A4A", "#F4F4F4", 16, 0, sk.skin);
+    bellyTorso(c, "#34343C", "#141418");
+    // polo collar and placket
+    c.beginPath(); c.moveTo(-15, -133); c.lineTo(-3, -119); c.lineTo(-1, -131); c.closePath(); fill(c, "#2A2A31");
+    c.beginPath(); c.moveTo(15, -133); c.lineTo(3, -119); c.lineTo(1, -131); c.closePath(); fill(c, "#2A2A31");
+    line(c, [0, -124, 0, -102], 2, "#46464F"); dot(c, 0, -116, 1.6, "#6A6A74"); dot(c, 0, -108, 1.6, "#6A6A74");
     const swap = o.event === "switch" ? (o.eventT < .7 ? 1 : 0) : 0;
-    // phone hand
-    let Ph = swap ? [30, -168] : [-30, -168], Pe = swap ? [42, -130] : [-42, -130];
-    let Oh = swap ? [-30, -66] : [28, -66], Oe = swap ? [-40, -92] : [38, -92];
-    if (st === "waiting" && m >= 1) { Oh = swap ? [-50, -104] : [50, -104]; Oe = swap ? [-44, -92] : [44, -92]; }
-    if ((st === "waiting" && m >= 3) || st === "outburst") { const f = Math.sin(t * 9) * 10; Oh = [48, -178 + f]; Oe = [48, -140]; }
-    if (st === "eating") { Oh = [14, -156 + Math.sin(t * 7) * 12]; Oe = [36, -118]; }
-    arm(c, [swap ? 26 : -26, -124], Pe, Ph, 11, "#6D98D6", sk, .9);
-    arm(c, [swap ? -26 : 26, -124], Oe, Oh, 11, "#6D98D6", sk, .9);
+    let Ph = swap ? [32, -168] : [-32, -168], Pe = swap ? [46, -130] : [-46, -130];
+    let Oh = swap ? [-32, -62] : [32, -62], Oe = swap ? [-44, -90] : [44, -90];
+    if (st === "waiting" && m >= 1) { Oh = swap ? [-52, -104] : [52, -104]; Oe = swap ? [-48, -92] : [48, -92]; }
+    if ((st === "waiting" && m >= 3) || st === "outburst") { const f = Math.sin(t * 9) * 10; Oh = [50, -178 + f]; Oe = [50, -140]; }
+    if (st === "eating") { Oh = [14, -156 + Math.sin(t * 7) * 12]; Oe = [38, -118]; }
+    arm(c, [swap ? 30 : -30, -124], Pe, Ph, 12, "#2A2A31", sk, .4);
+    arm(c, [swap ? -30 : 30, -124], Oe, Oh, 12, "#2A2A31", sk, .4);
     let expr = ["calm", "meh", "annoyed", "angry"][m];
     if (m >= 2 && st === "waiting" && Math.sin(t * 1.2) > .3) expr = "rolleyes";
-    if (st === "outburst") expr = "outburst"; else if (st === "eating") expr = "eat"; else if (st === "wrong") expr = "gasp";
+    if (st === "outburst") expr = "annoyed"; else if (st === "eating") expr = "eat"; else if (st === "wrong") expr = "gasp";
     const glance = st === "waiting" && Math.sin(t * .9) > .5;
-    head(c, 0, -162, 33, { ...sk, expr, t, blink: o.blink, look: glance ? [-1.6, -.6] : [.5, .6], anger: m >= 3 && st === "waiting" ? .55 : 0, hairFront: HAIR.michael });
+    head(c, 0, -164, 35, { ...sk, expr, t, blink: o.blink, look: glance ? [-1.6, -.6] : [-.6, .2], blush: .38, hairFront: HAIR.michael });
     box(c, Ph[0] - 7, Ph[1] - 20, 14, 26, 4, "#1D1F26"); box(c, Ph[0] - 5, Ph[1] - 17, 10, 19, 2, "#3B6FB8");
-    handDot(c, Ph, 7, sk); handDot(c, Oh, 7, sk);
-    if (st === "waiting" && m >= 1 && m < 3) { c.save(); c.globalAlpha = .9; line(c, [Oh[0] - 6, Oh[1] - 4, Oh[0] + 8, Oh[1] - 6], 4, sk.skinDk); c.restore(); }
+    handDot(c, Ph, 7.5, sk); handDot(c, Oh, 7.5, sk);
     if (st === "eating") { c.save(); c.translate(0, -76); food(c, o.plate || "frittata", 0, 0, 52, t); c.restore(); }
     c.restore();
   }
 
-  // ---------- SIMON (ham radio) ----------
+  // ---------- SIMON (Grandpa: chubby, full head of hair, ham radio) ----------
   function simon(c, x, y, s, o) {
     const t = o.t, sk = SK.simon, m = o.mood || 0, st = o.state;
     c.save(); c.translate(x, y); c.scale(s, s);
-    // swivel chair
-    box(c, -36, -150, 72, 96, 22, lin(c, 0, -150, 0, -50, "#3A3A44", "#24242C"));
+    box(c, -40, -152, 80, 98, 22, lin(c, 0, -152, 0, -50, "#3A3A44", "#24242C"));
     line(c, [0, -50, 0, -10], 6, "#777C86"); line(c, [-24, -6, 24, -6], 5, "#777C86"); dot(c, -24, -4, 4, "#333"); dot(c, 24, -4, 4, "#333");
     if (st === "outburst") c.translate(Math.sin(t * 30) * 3, 0);
-    seatedLegs(c, "#5E5A52", "#3E2C22");
-    torso(c, "#8C7A5E", "#6C5C44", 28, 26);
-    c.beginPath(); c.moveTo(-8, -128); c.lineTo(0, -100); c.lineTo(8, -128); c.closePath(); fill(c, "#9FB6D6");
-    for (let i = 0; i < 4; i++) dot(c, -3, -96 + i * 10, 2, "#D9C9A0");
+    seatedLegs(c, "#5E5A52", "#3E2C22", 15);
+    bellyTorso(c, "#8C7A5E", "#6C5C44");
+    c.beginPath(); c.moveTo(-9, -131); c.lineTo(0, -102); c.lineTo(9, -131); c.closePath(); fill(c, "#9FB6D6");
+    for (let i = 0; i < 4; i++) dot(c, -4, -98 + i * 11, 2.2, "#D9C9A0");
     const fiddle = (st === "waiting" && m >= 2) || st === "outburst" ? Math.sin(t * 26) * 5 : Math.sin(t * 2) * 2;
-    let Lh = [-62 + fiddle, -104], Le = [-46, -96];            // on the radio dial
-    let Rh = [14, -150], Re = [38, -120];                       // mic near mouth
-    if (st === "outburst") { Rh = [34, -204 + Math.sin(t * 12) * 8]; Re = [40, -164]; }
-    if (st === "eating") { Rh = [14, -158 + Math.sin(t * 7) * 12]; Re = [36, -120]; Lh = [-16, -84]; Le = [-36, -94]; }
-    arm(c, [-26, -124], Le, Lh, 11, "#8C7A5E", sk, .9);
-    arm(c, [26, -124], Re, Rh, 11, "#8C7A5E", sk, .9);
+    let Lh = [-60 + fiddle, -100], Le = [-50, -94];
+    let Rh = [16, -152], Re = [42, -120];
+    if (st === "outburst") { Rh = [36, -204 + Math.sin(t * 12) * 8]; Re = [44, -164]; }
+    if (st === "eating") { Rh = [14, -158 + Math.sin(t * 7) * 12]; Re = [40, -120]; Lh = [-16, -84]; Le = [-40, -94]; }
+    arm(c, [-30, -124], Le, Lh, 12, "#8C7A5E", sk, .9);
+    arm(c, [30, -124], Re, Rh, 12, "#8C7A5E", sk, .9);
     if (st !== "eating") { box(c, Rh[0] - 7, Rh[1] - 22, 14, 22, 6, "#2A2A30"); for (let i = 0; i < 3; i++) line(c, [Rh[0] - 5, Rh[1] - 18 + i * 5, Rh[0] + 5, Rh[1] - 18 + i * 5], 1, "#666"); }
-    handDot(c, Lh, 7, sk); handDot(c, Rh, 7, sk);
+    handDot(c, Lh, 7.5, sk); handDot(c, Rh, 7.5, sk);
     let expr = ["calm", "meh", "annoyed", "angry"][m];
-    if (st === "outburst") expr = "outburst"; else if (st === "eating") expr = "eat"; else if (st === "wrong") expr = "gasp";
+    if (st === "outburst") expr = "annoyed"; else if (st === "eating") expr = "eat"; else if (st === "wrong") expr = "gasp";
     if (o.event === "tangle") expr = "worried";
-    head(c, 0, -162, 32, { ...sk, expr, t, blink: o.blink, glasses: "#6B5A3A", look: [-.8, .3], anger: m >= 3 && st === "waiting" ? .5 : 0, hairFront: HAIR.simon, browCol: "#8E949C" });
-    // headphones
-    c.save(); c.translate(0, -162);
-    c.beginPath(); c.arc(0, -4, 38, Math.PI * 1.08, Math.PI * 1.92); stroke(c, "#2B2B33", 6);
-    box(c, -44, -18, 14, 30, 7, "#B8323A"); box(c, 30, -18, 14, 30, 7, "#B8323A");
+    head(c, 0, -164, 35, { ...sk, expr, t, blink: o.blink, glasses: "#6B5A3A", look: [-.8, .3], blush: .38, hairFront: HAIR.simon, browCol: "#8E949C" });
+    c.save(); c.translate(0, -164);
+    c.beginPath(); c.arc(0, -8, 44, Math.PI * 1.08, Math.PI * 1.92); stroke(c, "#2B2B33", 6);
+    box(c, -48, -20, 14, 30, 7, "#B8323A"); box(c, 34, -20, 14, 30, 7, "#B8323A");
     c.restore();
-    if (o.event === "tangle") {
-      c.save(); c.globalAlpha = .95;
-      for (let i = 0; i < 3; i++) { c.beginPath(); c.ellipse(0, -110 + i * 18, 38, 9, Math.sin(t * 3 + i) * .2, 0, TAU); stroke(c, "#222", 2.5); }
-      c.restore();
-    }
     if (st === "eating") { c.save(); c.translate(0, -76); food(c, o.plate || "soup", 0, 0, 52, t); c.restore(); }
     c.restore();
   }
@@ -551,7 +571,7 @@ const ART = (() => {
     }
     let expr = ["calm", "meh", "annoyed", "rolleyes"][m];
     if (o.event === "gasp") expr = "gasp";
-    if (st === "outburst") expr = "outburst"; else if (st === "eating") expr = "eat"; else if (st === "wrong") expr = "gasp";
+    if (st === "outburst") expr = "annoyed"; else if (st === "eating") expr = "eat"; else if (st === "wrong") expr = "gasp";
     head(c, 0, -162, 33, { ...sk, expr, t, blink: o.blink, lashes: true, lip: "#C8456A", earrings: "#F1DA9E", look: [0, .9], anger: m >= 3 && st === "waiting" ? .45 : 0, hairBack: HAIR.cariBack, hairFront: HAIR.cariFront });
     // table in front of her
     line(c, [0, -60, 0, -4], 10, "#B08A46");
@@ -585,12 +605,13 @@ const ART = (() => {
     box(c, -70, -44, 140, 40, 12, lin(c, 0, -44, 0, -4, "#C4807F", "#A9676A"));
     for (let i = 0; i < 7; i++) line(c, [-62 + i * 20.5, -10, -62 + i * 20.5, -4], 2, "#8E5557");
     line(c, [-58, -4, -60, 6], 5, "#6B4A34"); line(c, [58, -4, 60, 6], 5, "#6B4A34");
-    // Nana: skirt and slippers
-    for (const sd of [-1, 1]) { line(c, [sd * 13, -40, sd * 13, -8], 14, sk.skin); ell(c, sd * 14, -5, 15, 8, "#E7B8C8"); dot(c, sd * 14 + sd * 4, -10, 4, "#FFFFFF"); }
-    box(c, -34, -66, 68, 36, 12, lin(c, 0, -66, 0, -30, "#7A6E8C", "#5E5470"));
-    torso(c, "#B39DD6", "#9179BD", 27, 27, -126, -58);
-    c.beginPath(); c.moveTo(-10, -128); c.lineTo(0, -114); c.lineTo(10, -128); c.closePath(); fill(c, "#FFFFFF");
-    c.beginPath(); c.moveTo(-14, -126); c.quadraticCurveTo(0, -108, 14, -126); c.setLineDash([.1, 5.5]); stroke(c, "#FFFFFF", 4.5); c.setLineDash([]);
+    // Nana: about 60, slim, long brown hair, soft cream sweater and dark jeans
+    const NANA_HAIR = ["#9A6440", "#74462A", "#56321C"];
+    c.save(); c.translate(0, -160); HAIR.longBack(Math.sin(t * 1.3), NANA_HAIR, 2.3)(c, 32); c.restore();
+    seatedLegs(c, "#3A4660", "#8A5A3A", 11);
+    torso(c, "#F4EADB", "#DCCAB2", 23, 20, -126, -58);
+    c.beginPath(); c.moveTo(-10, -128); c.lineTo(0, -116); c.lineTo(10, -128); c.closePath(); fill(c, sk.skin);
+    c.beginPath(); c.moveTo(-9, -127); c.quadraticCurveTo(0, -112, 9, -127); stroke(c, "#E3C274", 1.3); dot(c, 0, -118, 2.2, "#F1DA9E");
     // knitting: needles cross, faster when she's cross
     const speed = st === "waiting" ? 5 + m * 7 : 4;
     const k = Math.sin(t * speed);
@@ -606,8 +627,8 @@ const ART = (() => {
       line(c, [Lh[0] - 6, Lh[1] + 8, Lh[0] + 34, Lh[1] - 28], 3, "#C9A45C");
       line(c, [Rh[0] + 6, Rh[1] + 8, Rh[0] - 34, Rh[1] - 28], 3, "#C9A45C");
     }
-    arm(c, [-24, -122], Le, Lh, 11, "#B39DD6", sk, .9);
-    arm(c, [24, -122], Re, Rh, 11, "#B39DD6", sk, .9);
+    arm(c, [-21, -122], Le, Lh, 9.5, "#EFE3D2", sk, .9);
+    arm(c, [21, -122], Re, Rh, 9.5, "#EFE3D2", sk, .9);
     handDot(c, Lh, 7, sk); handDot(c, Rh, 7, sk);
     // yarn ball (rolls away during the yarn event)
     const yx = o.event === "yarn" ? 56 + Math.sin(Math.min(1, o.eventT / 1.2) * Math.PI) * 80 : 56;
@@ -615,8 +636,8 @@ const ART = (() => {
     dot(c, yx, -14, 13, radF(c, yx - 4, -18, yx, -14, 14, "#9CC5EA", "#5A8FC4"));
     c.save(); c.globalAlpha = .5; curve(c, yx - 9, -18, yx, -8, yx + 9, -20, 1.5, "#FFFFFF"); c.restore();
     let expr = ["calm", "meh", "stern", "stern"][m];
-    if (st === "outburst") expr = "outburst"; else if (st === "eating") expr = "eat"; else if (st === "wrong") expr = "gasp"; else if (o.event === "yarn") expr = "gasp";
-    head(c, 0, -160, 33, { ...sk, expr, t, blink: o.blink, lashes: true, lip: "#B8667E", glasses: "#9C7634", glint: m >= 2 && st === "waiting" ? (.6 + .4 * Math.sin(t * 5)) : 0, look: m >= 2 && st === "waiting" ? [-1.2, -.3] : [0, 1], anger: m >= 3 && st === "waiting" ? .35 : 0, hairFront: HAIR.nana, browCol: "#A9A2B8" });
+    if (st === "outburst") expr = "annoyed"; else if (st === "eating") expr = "eat"; else if (st === "wrong") expr = "gasp"; else if (o.event === "yarn") expr = "gasp";
+    head(c, 0, -160, 33, { ...sk, expr, t, blink: o.blink, lashes: true, lip: "#B5646B", earrings: "#E3C274", look: [0, 1], blush: .25, hairFront: HAIR.longFront(NANA_HAIR), browCol: "#5A361F" });
     // chair arms in front
     for (const sd of [-1, 1]) {
       box(c, sd * 76 - 20, -112, 40, 100, 18, lin(c, 0, -112, 0, -12, "#D49A99", "#AD6C6E"));
