@@ -285,7 +285,16 @@
     color: "#E8453C",
     icon: "🐰",
   });
-  G.register({ id: "iceHockey", title: "Ice Hockey", subtitle: "", destination: "icerink", unlocked: false, entry: null, color: "#2F6BD6", icon: "🏒" });
+  G.register({
+    id: "iceHockey",
+    title: "Rosenberg Ice Hockey",
+    subtitle: "1-on-1 on the ice! Skate, steal the puck and shoot past the goalie.",
+    destination: "icerink",
+    unlocked: true,
+    entry: "games/rosenberg-hockey/index.html",
+    color: "#2F6BD6",
+    icon: "🏒",
+  });
   G.register({ id: "skiRun", title: "Ski Run", subtitle: "", destination: "skirun", unlocked: false, entry: null, color: "#2F6BD6", icon: "⛷️" });
 
   G.register({

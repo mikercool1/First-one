@@ -1425,6 +1425,8 @@
   // "COMING SOON" ribbon banner
   P.ribbon = (c, label, w = 150, col = "#FF5C8A") => {
     const h = 30;
+    c.font = `700 16px ${FONT}`;
+    w = Math.max(w, c.measureText(label).width + 28); // long game names get a wider ribbon
     c.fillStyle = shade(col, -0.35);
     c.beginPath(); c.moveTo(-w / 2 - 14, 6); c.lineTo(-w / 2 + 4, 6); c.lineTo(-w / 2 + 4, h + 4); c.lineTo(-w / 2 - 14, h + 4); c.lineTo(-w / 2 - 6, h / 2 + 5); c.closePath(); c.fill();
     c.beginPath(); c.moveTo(w / 2 + 14, 6); c.lineTo(w / 2 - 4, 6); c.lineTo(w / 2 - 4, h + 4); c.lineTo(w / 2 + 14, h + 4); c.lineTo(w / 2 + 6, h / 2 + 5); c.closePath(); c.fill();

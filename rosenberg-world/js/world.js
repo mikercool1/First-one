@@ -88,7 +88,7 @@
     hotchoc:  { name: "COCOA PARTY", icon: "☕", color: "#8A5A3C", go: "hotchoc", zone: [700, 2400, 900, 2640] },
     ski:      { name: "SKI RUN", icon: "⛷️", color: "#2F6BD6", go: "skirun", zone: [100, 2400, 470, 2800] },
     sled:     { name: "MAX'S BUNNY HILL", icon: "🐰", color: "#E8453C", go: "sledhill", zone: [460, 2800, 860, 3060] },
-    rink:     { name: "ICE RINK", icon: "🏒", color: "#2F6BD6", go: [250, 2830], zone: [110, 2800, 410, 3060] },
+    rink:     { name: "ICE HOCKEY", icon: "🏒", color: "#2F6BD6", go: "icerink", zone: [110, 2800, 410, 3060] },
     icemtn:   { name: "ICE MOUNTAIN", icon: "❄️", color: "#4A90D9", go: [720, 2430], zone: [100, 2340, 900, 3070] },
   };
   // Names shown over the world when you pinch out (the engine draws them).
