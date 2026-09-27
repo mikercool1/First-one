@@ -1057,7 +1057,7 @@ const REACH = { reuben: 0.45, jonah: 0.45, ellie: 0.62, max: 0.5 };
 const STEAL = { reuben: 0.45, jonah: 0.5, ellie: 0.45, max: 0.72 };
 const HT = { reuben: 1.62, jonah: 1.45, ellie: 1.28, max: 1.3 };
 // The CPU (and the goalie in its net) go easier on younger players.
-const CPU_EASE = { reuben: 0.86, jonah: 0.82, ellie: 0.6, max: 0.6 };
+const CPU_EASE = { reuben: 0.7, jonah: 0.66, ellie: 0.5, max: 0.5 };
 const TREES = [{ x: -24, z: 22, sc: 1.25, seed: 1 }, { x: 22, z: 23, sc: 1.15, seed: 2 }, { x: -11, z: 40, sc: 1.4, seed: 3 }, { x: 14, z: 44, sc: 1.5, seed: 4 }, { x: 30, z: 36, sc: 1.3, seed: 5 }, { x: -30, z: 37, sc: 1.3, seed: 6 }];
 const SNOWMAN = { x: -14.5, z: 12.5 };
 const BENCH = [{ x: -3.4, z: 16.2 }, { x: 3.4, z: 16.3 }];
@@ -1283,7 +1283,7 @@ function aiThink(k, opp, dt) {
     if (ahead > 0 && ahead < 2.6 && Math.abs(opp.z - k.z) < 1.2) tz = k.z + (k.z >= opp.z ? 1 : -1) * 2;
     const range = k.human ? 5.5 : 5 + 2 * e;
     const pressure = Math.hypot(opp.x - k.x, opp.z - k.z) < 0.9;
-    if ((dg < range && Math.random() < (k.human ? 0.5 : 0.25 + 0.3 * e)) || dg < 3 || (pressure && dg < 7 && Math.random() < 0.3)) doShoot(k);
+    if ((dg < range && Math.random() < (k.human ? 0.5 : 0.2 + 0.25 * e)) || dg < 3 || (pressure && dg < 7 && Math.random() < 0.3)) doShoot(k);
   } else if (puck.carrier === opp) {
     tx = lerp(puck.x + opp.vx * 0.2, ownX, 0.12); tz = puck.z + opp.vz * 0.2;
     const b = blade(k);
@@ -1301,7 +1301,7 @@ function aiThink(k, opp, dt) {
   }
 }
 function moveKid(k, dt) {
-  const sp = SPD[k.id] * (k.human ? 1 : 0.72 + 0.24 * ease()) * (puck.carrier === k ? 0.92 : 1);
+  const sp = SPD[k.id] * (k.human ? 1.08 : 0.62 + 0.24 * ease()) * (puck.carrier === k ? 0.92 : 1);
   if (k.dream > 0) { k.dream -= dt; k.wx = k.wz = 0; }
   const input = k.wx || k.wz;
   const a = Math.min(1, dt * (input ? 3.2 : 1.1));
@@ -1352,7 +1352,7 @@ function releaseShot(k, pow) {
   if (puck.carrier !== k || phase !== 'play') return;
   puck.carrier = null; k.pickCd = 0.35; puck.last = k; puck.trail = [];
   const gx = k.side * GL, dist = Math.hypot(gx - puck.x, MZ - puck.z);
-  const spread = 0.2 + dist * 0.06 + (k.human ? 0 : 0.3);
+  const spread = k.human ? 0.05 + dist * 0.035 : 0.3 + dist * 0.07;
   const tz = rnd(NET.z0 + 0.2, NET.z1 - 0.2) + rnd(-spread, spread);
   const dx = gx + k.side * 0.4 - puck.x, dz = tz - puck.z, dl = Math.hypot(dx, dz) || 1;
   const p = SHOT_P[k.id] * rnd(0.9, 1.05) * pow * (k.human ? 1 : 0.8 + 0.2 * ease());
@@ -1365,10 +1365,10 @@ function releaseShot(k, pow) {
 function doPoke(k) {
   if (phase !== 'play' || k.actCd > 0) return;
   k.actCd = 0.4; k.shootT = 0.14;
-  const b = blade(k), d = Math.hypot(b.x - puck.x, b.z - puck.z), reach = REACH[k.id] + 0.4;
+  const b = blade(k), d = Math.hypot(b.x - puck.x, b.z - puck.z), reach = REACH[k.id] + (k.human ? 0.6 : 0.4);
   if (puck.state !== 'live' || d > reach) { sfx.swish(); return; }
   if (puck.carrier && puck.carrier !== k) {
-    const chance = (k.human ? 0.6 : 0.35 + 0.25 * ease()) + (k.id === 'max' ? 0.15 : 0);
+    const chance = (k.human ? 0.85 : 0.2 + 0.2 * ease()) + (k.id === 'max' ? 0.15 : 0);
     if (Math.random() < chance) takePuck(k, k.id === 'max' ? 'PUCK BANDIT!' : 'STOLEN!'); else { sfx.tap(); call2('MISSED!', 'out', 0.7); }
   } else if (!puck.carrier) {
     puck.carrier = k; releaseShot(k, 0.85);
@@ -1391,7 +1391,7 @@ function puckTouch(dt) {
       opp.stealT += dt;
       if (opp.stealT > 0.3) {
         opp.stealT = 0;
-        const chance = STEAL[opp.id] * (opp.human ? 1 : 0.6 + 0.4 * ease()) * 0.8;
+        const chance = STEAL[opp.id] * (opp.human ? 1.35 : 0.35 + 0.3 * ease()) * 0.8;
         if (Math.random() < chance) takePuck(opp, opp.id === 'max' ? 'PUCK BANDIT!' : 'STOLEN!');
       }
     } else opp.stealT = 0;
@@ -1402,7 +1402,7 @@ function puckTouch(dt) {
   for (const k of kids) {
     if (k.pickCd > 0 || puck.y > 0.5) continue;
     const b = blade(k), d = Math.hypot(b.x - puck.x, b.z - puck.z);
-    if (d < REACH[k.id]) {
+    if (d < REACH[k.id] + (k.human ? 0.18 : 0)) {
       if (spd < 11 || Math.random() < 0.35) { takePuck(k); return; }
       puck.vx *= -0.3; puck.vz = puck.vz * 0.3 + rnd(-3, 3); k.pickCd = 0.2; sfx.tap(); return;
     }
@@ -1436,7 +1436,7 @@ function updPuck(dt) {
     const xg = g.x;
     if (!((px - xg) * g.s < 0 && (p.x - xg) * g.s >= 0) || p.y > 1.0) continue;
     if (Math.abs(p.z - g.z) > 0.42) continue;
-    const leak = g.s === P1.side ? 0.18 + (1 - ease()) * 0.9 : 0.18;
+    const leak = g.s === P1.side ? 0.4 + (1 - ease()) * 0.6 : 0.1;
     if (!p.carrier && Math.random() < leak) { wtext('FIVE-HOLE!', g.x, 1.5, g.z, '#FFE45C', 0.45); continue; }
     if (p.carrier) { const c = p.carrier; p.carrier = null; c.pickCd = 0.6; p.vx = -g.s * rnd(2, 4); p.vz = rnd(-3, 3); }
     else { p.x = xg - g.s * 0.03; p.vx = -p.vx * rnd(0.25, 0.45); p.vz += rnd(-3, 3); p.vy = 0; }
@@ -1463,7 +1463,7 @@ function updGoalies(dt) {
     g.save = Math.max(0, g.save - dt);
     const threat = puck.state === 'live' && (puck.x * g.s > 0 || puck.vx * g.s > 3);
     const tz = threat ? clamp(puck.z + puck.vz * 0.08, NET.z0 + 0.3, NET.z1 - 0.3) : MZ;
-    const sp = g.s === P1.side ? 2.6 * ease() : 2.6;
+    const sp = g.s === P1.side ? 2.2 * ease() : 3;
     g.z += clamp(tz - g.z, -sp * dt, sp * dt);
   }
 }
