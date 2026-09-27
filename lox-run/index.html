@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lox Run</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap">
+<style>
+:root {
+  --ink: #1B1B38; --paper: #FFFFFF; --gold: #FFD447; --glass: rgba(20, 22, 48, .72);
+  --font: "Baloo 2", ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: #131A3F; color: #fff; font: 600 16px/1.3 var(--font); overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.stage { position: fixed; inset: 0; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+#cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* HUD */
+.hud { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 16px; right: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; pointer-events: none; }
+.pill { background: var(--glass); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 999px; padding: 4px 14px; font-weight: 800; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+#tips { font-size: 26px; color: var(--gold); font-variant-numeric: tabular-nums; min-width: 84px; text-align: center; }
+#combo { font-size: 18px; text-align: center; flex: 1; text-shadow: 0 2px 0 rgba(0,0,0,.4); transition: transform .2s; }
+#combo.hot { color: var(--gold); transform: scale(1.15); }
+#lives { font-size: 22px; letter-spacing: 2px; }
+#lives .gone { filter: grayscale(1); opacity: .3; }
+.icon-btn { pointer-events: auto; border: 0; background: var(--glass); color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; }
+.hud-right { display: flex; gap: 8px; align-items: center; }
+
+#mikeSays { position: absolute; left: 16px; bottom: 250px; max-width: min(240px, 60vw); background: #fff; color: var(--ink); border-radius: 18px 18px 18px 4px; padding: 8px 14px; font-weight: 800; box-shadow: 0 6px 18px rgba(0,0,0,.25); pointer-events: none; }
+#mikeSays.pop { animation: pop .3s cubic-bezier(.2,.9,.3,1.4); }
+@keyframes pop { from { transform: scale(.6); opacity: 0; } }
+
+/* Lox buttons */
+.bar { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 12px calc(env(safe-area-inset-bottom, 0px) + 12px); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; max-width: 760px; margin: 0 auto; transition: transform .35s ease, opacity .35s; }
+.bar.off { transform: translateY(40%); opacity: 0; pointer-events: none; }
+.lox-btn { position: relative; border: 0; border-radius: 20px; padding: 8px 4px 10px; background: var(--c); color: #fff; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; box-shadow: 0 6px 0 rgba(0,0,0,.35), inset 0 2px 0 rgba(255,255,255,.35); font: 800 clamp(13px, 3.6vw, 17px)/1 var(--font); transition: transform .06s; }
+.lox-btn img { width: clamp(46px, 13vw, 66px); height: auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,.3)); background: rgba(255,255,255,.9); border-radius: 12px; padding: 2px 4px; }
+.lox-btn span { text-shadow: 0 1px 0 rgba(0,0,0,.3); white-space: nowrap; }
+.lox-btn kbd { position: absolute; top: 5px; right: 8px; font: 800 10px var(--font); opacity: .6; }
+.lox-btn:active, .lox-btn.hit { transform: translateY(4px) scale(.97); box-shadow: 0 2px 0 rgba(0,0,0,.35), inset 0 2px 0 rgba(255,255,255,.35); }
+.lox-btn:focus-visible, button:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+@media (hover: none) { .lox-btn kbd { display: none; } }
+
+/* Title + game over */
+.overlay { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: linear-gradient(180deg, rgba(10,12,34,.15), rgba(10,12,34,.55)); }
+.panel { width: min(440px, 100%); text-align: center; background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.15); border-radius: 28px; padding: 22px 20px 20px; box-shadow: 0 20px 60px rgba(0,0,0,.35); animation: rise .5s cubic-bezier(.2,.9,.3,1.2); }
+@keyframes rise { from { transform: translateY(24px) scale(.96); opacity: 0; } }
+.logo { margin: 0; font: 800 clamp(58px, 18vw, 92px)/.85 var(--font); letter-spacing: -.02em; background: linear-gradient(180deg, #FFE7A0 0%, #FF9A78 55%, #F0643C 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 4px 0 rgba(0,0,0,.35)); }
+.sub { margin: 6px 0 14px; font-size: 17px; opacity: .92; }
+.legend { list-style: none; padding: 0; margin: 0 0 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.legend li { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 13px; font-weight: 800; }
+.legend img { width: 54px; background: #fff; border-radius: 10px; padding: 2px 4px; }
+.legend span { background: var(--c); border-radius: 99px; padding: 0 8px; }
+.how { margin: 0 0 16px; font-size: 15px; opacity: .9; }
+.how b { color: var(--gold); }
+.go { border: 0; cursor: pointer; font: 800 24px/1 var(--font); color: var(--ink); background: linear-gradient(180deg, #FFE27A, #FFB81C); padding: 14px 34px; border-radius: 999px; box-shadow: 0 6px 0 #C98A00, 0 10px 30px rgba(255,184,28,.4); transition: transform .08s; }
+.go:active { transform: translateY(4px); box-shadow: 0 2px 0 #C98A00; }
+.best { margin: 12px 0 0; font-size: 13px; opacity: .75; min-height: 1em; }
+.big-tips { font: 800 64px/1 var(--font); color: var(--gold); margin: 4px 0 0; font-variant-numeric: tabular-nums; }
+.stats { list-style: none; padding: 0; margin: 12px 0; text-align: left; background: rgba(255,255,255,.08); border-radius: 16px; padding: 6px 14px; }
+.stats li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed rgba(255,255,255,.15); }
+.stats li:last-child { border: 0; }
+.quote { font-style: italic; opacity: .9; margin: 0 0 14px; }
+h2 { margin: 0; font: 800 30px/1 var(--font); }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="stage">
+  <canvas id="cv" aria-label="Mike riding a cargo bike past houses, delivering lox"></canvas>
+
+  <div class="hud" id="hud">
+    <div class="pill" id="tips">$0</div>
+    <div id="combo" aria-live="polite"></div>
+    <div class="hud-right"><div class="pill" id="lives"></div><button class="icon-btn" id="muteBtn" type="button"></button></div>
+  </div>
+
+  <div id="mikeSays" hidden></div>
+
+  <div class="bar off" id="bar" aria-label="Lox to toss"></div>
+
+  <div class="overlay" id="title">
+    <div class="panel">
+      <h1 class="logo">LOX<br>RUN</h1>
+      <p class="sub">Mike's Sunday morning delivery route</p>
+      <ul class="legend" id="legend"></ul>
+      <p class="how">Neighbors pop up with orders. <b>Tap the matching lox</b> and Mike tosses it to their door. Wrong lox or a missed house costs a bagel.</p>
+      <button class="go" id="startBtn" type="button">Start shift</button>
+      <p class="best" id="bestLine"></p>
+    </div>
+  </div>
+
+  <div class="overlay" id="over" hidden>
+    <div class="panel">
+      <h2>Shift over</h2>
+      <p class="big-tips" id="overTips">$0</p>
+      <p class="best" id="overBest"></p>
+      <ul class="stats" id="overStats"></ul>
+      <p class="quote" id="overQuote"></p>
+      <button class="go" id="againBtn" type="button">Run it back</button>
+    </div>
+  </div>
+</div>
+
+<script src="friends.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
