@@ -97,7 +97,7 @@ BAHA MAR"), or just tap the island; the plane on the island flies you home. The 
 | Bunny Hill (Ice Mountain, the sled hill someone keeps whooshing down) | Max's Bunny Hill | `games/maxs-bunny-hill` |
 | Baha Mar Hotel (the east end of the island) | Checking In | `games/checking-in` |
 | Grampa Simon's garden (between the Kitchen and the Raceway) | Grandpa's Garden | `games/grandpas-garden` |
-| Witch Mountain (the glowing arch at the foot of the mountain) | Witch Mountain | `games/witch-mountain` |
+| Witch Mountain (a spooky purple mountain in the woods; tap it or its glowing cave door) | Witch Mountain | `games/witch-mountain` |
 | The Frog Pond (by the road, south of the arcade) | Rosenberg Crossing (Frogger) | `games/frogger` |
 
 The Game Room is a small hub of its own: games on its bookshelf are opened with `&room=1`, and any

@@ -23,7 +23,7 @@
     { id: "soccer", name: "Soccer Field", icon: "⚽", kind: "game", portal: [1425, 2240], portalR: 80, arrive: [1425, 2258], map: [1150, 2210] },
     { id: "volleyball", name: "Beach Volleyball", icon: "🏐", kind: "game", portal: [4120, 2612], portalR: 90, arrive: [4120, 2630], map: [4120, 2530] },
     // places ready for games that are on their way (see "Coming soon" in README.md)
-    { id: "witchmtn", name: "Witch Mountain", icon: "🧙", kind: "game", portal: [3170, 668], portalR: 80, arrive: [3170, 690], map: [3170, 560] },
+    { id: "witchmtn", name: "Witch Mountain", icon: "🧙", kind: "game", portal: [680, 1450], portalR: 80, arrive: [680, 1472], map: [680, 1280] },
     { id: "frogpond", name: "Frog Pond", icon: "🐸", kind: "game", portal: [2080, 2842], portalR: 80, arrive: [2080, 2830], map: [2080, 2900] },
     // Ice Mountain: winter games on their way
     { id: "hotchoc", name: "Cocoa Party", icon: "☕", kind: "game", portal: [820, 2612], portalR: 70, arrive: [820, 2630], map: [820, 2480] },
@@ -73,7 +73,7 @@
     playground: { name: "PLAYGROUND", icon: "🛝", color: "#F2A93B", zone: [2000, 1960, 2270, 2330] },
     arcade:   { name: "ARCADE", icon: "🕹️", color: "#8A3FE4", go: "arcade", zone: [2150, 2380, 2800, 2820] },
     icecream: { name: "FROZENBERGS", icon: "🍦", color: "#E8558A", go: "icecream", zone: [5610, 1200, 5950, 1470] }, // on Baha Mar
-    witch:    { name: "WITCH MOUNTAIN", icon: "🧙", color: "#5E2CA5", go: "witchmtn", zone: [2980, 420, 3380, 770] },
+    witch:    { name: "WITCH MOUNTAIN", icon: "🧙", color: "#5E2CA5", go: "witchmtn", zone: [470, 1180, 880, 1520] }, // in the woods
     hotel:    { name: "CHECKING IN", icon: "🏨", color: "#E86A8A", go: "hotel", zone: [6040, 1560, 6560, 2140] },
     splash:   { name: "SPLASH DOWN", icon: "🛟", color: "#1E8FC4", go: "waterworld" },
     lazyriver:{ name: "LAZY RIVER PIRATES", icon: "🏴‍☠️", color: "#0B8FB0", go: "lazyriver" },
@@ -1378,12 +1378,13 @@
   }
   function buildSignposts() {
     signpost(2590, 1992, [["home", "U"], ["shop", "R"], ["arcade", "D"]]);        // boulevard, below the house
-    signpost(1236, 1992, [["kitchen", "U"], ["icemtn", "L"], ["sports", "D"]]);   // boulevard, west of the sports gate
+    signpost(1236, 1992, [["kitchen", "U"], ["witch", "L"], ["sports", "D"]]);
+    signpost(770, 1995, [["witch", "U"], ["icemtn", "D"]]);                     // boulevard, where the woods trails start   // boulevard, west of the sports gate
     signpost(560, 2470, [["hotchoc", "R"], ["sled", "D"], ["rink", "L"]]);                      // Ice Mountain, as the trail comes in
     signpost(3392, 1992, [["plaza", "U"], ["shop", "R"], ["bahamar", "R"]]);      // boulevard at the plaza
     signpost(4150, 1995, [["beach", "U"], ["bahamar", "D"]]);                    // on the sand, where the trail heads south
     signpost(1880, 900, [["academy", "L"], ["raceway", "L"], ["baseball", "R"]]); // north lane, west of the ballpark
-    signpost(3080, 1190, [["witch", "U"], ["space", "R"], ["home", "D"]]);        // north lane, east of the ballpark
+    signpost(3080, 1190, [["baseball", "L"], ["space", "R"], ["home", "D"]]);        // north lane, east of the ballpark
     signpost(5000, 1420, [["lazyriver", "R"], ["hotel", "R"], ["splash", "D"]]); // on Baha Mar, by the plane
     signpost(2600, 2735, [["home", "U"], ["frogs", "L"], ["bahamar", "R"]]);      // south street by the arcade
   }
@@ -1454,7 +1455,7 @@
         E2.say(E2.player, U.pick(["Shoo, crows!", "Nice scarecrow, Grampa!", "The crows aren't scared!"]), 1.6);
       },
     }, gy + 1);
-    sign(gx - 190, gy + 40, ["GRAMPA SIMON'S", "GARDEN 🍅"], { size: 16, board: "#FFF8E6", edge: "#3E9A46", ink: "#2E7A36", ent: { tap: portalTap("garden") } });
+    sign(gx + 200, gy + 40, ["GRAMPA SIMON'S", "GARDEN 🍅"], { size: 16, board: "#FFF8E6", edge: "#3E9A46", ink: "#2E7A36", ent: { tap: portalTap("garden") } });
   }
 
   // ---------------------------------------------------------------------
@@ -1465,35 +1466,50 @@
     const g = RW.games.forDestination(destId);
     P_.ribbon(c, g && RW.games.status(g) !== "locked" ? g.title.toUpperCase() : "COMING SOON", 170, col);
   }
+  // Witch Mountain: a spooky purple mountain in the middle of the woods, with a glowing cave door
+  function drawWitchPeak(c) {
+    // back ridge, main peak and a crooked summit shaped a bit like a witch's hat
+    c.fillStyle = A.lin(c, -240, -300, 240, 0, ["#5B5270", "#463E5A", "#342D44"]);
+    c.beginPath(); c.moveTo(-250, 0); c.lineTo(-170, -150); c.lineTo(-120, -120); c.lineTo(-40, -300); c.quadraticCurveTo(10, -380, 60, -350); c.lineTo(30, -330); c.lineTo(110, -170); c.lineTo(160, -200); c.lineTo(250, 0); c.closePath(); c.fill();
+    // light side and rocky ledges
+    c.fillStyle = "rgba(255,255,255,.1)"; c.beginPath(); c.moveTo(-40, -300); c.quadraticCurveTo(10, -380, 60, -350); c.lineTo(30, -330); c.lineTo(-10, -250); c.lineTo(-80, -150); c.lineTo(-120, -120); c.closePath(); c.fill();
+    c.strokeStyle = "rgba(20,14,34,.35)"; c.lineWidth = 4; c.lineCap = "round";
+    [[-150, -90, -90, -100], [60, -120, 130, -110], [-60, -200, -10, -210], [20, -60, 90, -66], [-200, -40, -140, -48]].forEach(([a, b, c2, d]) => { c.beginPath(); c.moveTo(a, b); c.lineTo(c2, d); c.stroke(); });
+    // purple glow on the summit
+    c.fillStyle = "rgba(170,120,255,.35)"; c.beginPath(); c.ellipse(40, -350, 34, 12, -0.3, 0, TAU); c.fill();
+    // the cave door at the foot of the mountain
+    c.fillStyle = "#2A2238"; c.beginPath(); c.moveTo(-70, 0); c.bezierCurveTo(-74, -110, -38, -160, 0, -160); c.bezierCurveTo(38, -160, 74, -110, 70, 0); c.closePath(); c.fill();
+    // twisted dead trees on the slopes
+    [[-190, -10, 1], [185, -10, -1]].forEach(([x, y, d]) => {
+      c.strokeStyle = "#2E2019"; c.lineWidth = 7; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + d * 10, y - 100, x - d * 16, y - 160); c.stroke();
+      c.lineWidth = 4; c.beginPath(); c.moveTo(x + d * 4, y - 90); c.lineTo(x + d * 36, y - 124); c.moveTo(x - d * 10, y - 136); c.lineTo(x - d * 40, y - 170); c.stroke();
+    });
+  }
   function buildWitchMountain() {
-    const x = 3170, y = 640;
-    add({
-      kind: "building", x, y, box: [-170, -300, 170, 14], sprite: false, shadow: [0, 0], solid: [{ r: [-150, -90, -50, 4] }, { r: [50, -90, 150, 4] }, { r: [-50, -90, 50, -40] }],
-      draw(c, E2) {
+    const x = 680, y = 1440, S = 0.78; // sits east of the stream, west of Grampa's garden
+    staticProp(x, y, [-205, -315, 205, 10], (c) => { c.scale(S, S); drawWitchPeak(c); }, {
+      kind: "building", occludes: true, shadow: [0, 0],
+      solid: [{ r: [-180, -94, -50, -4] }, { r: [50, -94, 180, -4] }, { r: [-50, -94, 50, -24] }],
+      live(c, E2) {
         const t = E2.t;
-        // a rocky arch at the foot of the mountain, glowing purple inside
-        c.fillStyle = A.lin(c, -160, -240, 160, 0, ["#6E6780", "#4E485E", "#3A3548"]);
-        c.beginPath(); c.moveTo(-160, 0); c.bezierCurveTo(-170, -150, -90, -250, 0, -248); c.bezierCurveTo(90, -250, 170, -150, 160, 0); c.closePath(); c.fill();
-        c.fillStyle = "rgba(255,255,255,.12)"; c.beginPath(); c.ellipse(-70, -170, 40, 14, -0.5, 0, TAU); c.fill();
-        const glow = 0.6 + Math.sin(t * 2) * 0.2;
-        c.fillStyle = `rgba(123,63,228,${glow})`; c.beginPath(); c.moveTo(-58, 0); c.bezierCurveTo(-62, -100, -30, -150, 0, -150); c.bezierCurveTo(30, -150, 62, -100, 58, 0); c.closePath(); c.fill();
-        c.fillStyle = "#1E1430"; c.beginPath(); c.moveTo(-44, 0); c.bezierCurveTo(-46, -86, -22, -126, 0, -126); c.bezierCurveTo(22, -126, 46, -86, 44, 0); c.closePath(); c.fill();
-        // a pair of glowing eyes in the dark...
-        if ((t % 5) < 4.6) { c.fillStyle = "#FFE45C"; c.beginPath(); c.arc(-9, -70, 3.2, 0, TAU); c.arc(9, -70, 3.2, 0, TAU); c.fill(); }
-        // twisted dead trees either side
-        [-1, 1].forEach((d) => { c.strokeStyle = "#3A2A22"; c.lineWidth = 7; c.lineCap = "round"; c.beginPath(); c.moveTo(d * 138, -10); c.quadraticCurveTo(d * 150, -120, d * 120, -190); c.stroke(); c.lineWidth = 4; c.beginPath(); c.moveTo(d * 144, -110); c.lineTo(d * 176, -150); c.moveTo(d * 128, -160); c.lineTo(d * 96, -200); c.stroke(); });
-        // the witch's broom leaning on the rock
-        c.save(); c.translate(-108, -4); c.rotate(-0.35); A.line(c, 0, 0, 0, -120, 5, "#8A5A2E"); c.fillStyle = "#D9A441"; c.beginPath(); c.moveTo(-14, 0); c.lineTo(14, 0); c.lineTo(6, -30); c.lineTo(-6, -30); c.closePath(); c.fill(); c.restore();
+        c.scale(S, S);
+        // glowing doorway, with a pair of eyes blinking in the dark
+        const glow = 0.55 + Math.sin(t * 2) * 0.2;
+        c.fillStyle = `rgba(123,63,228,${glow})`; c.beginPath(); c.moveTo(-56, 0); c.bezierCurveTo(-60, -96, -30, -138, 0, -138); c.bezierCurveTo(30, -138, 60, -96, 56, 0); c.closePath(); c.fill();
+        c.fillStyle = "#1E1430"; c.beginPath(); c.moveTo(-42, 0); c.bezierCurveTo(-44, -80, -22, -116, 0, -116); c.bezierCurveTo(22, -116, 44, -80, 42, 0); c.closePath(); c.fill();
+        if ((t % 5) < 4.6) { c.fillStyle = "#FFE45C"; c.beginPath(); c.arc(-9, -64, 3.2, 0, TAU); c.arc(9, -64, 3.2, 0, TAU); c.fill(); }
+        // the witch's broom leaning by the door
+        c.save(); c.translate(-100, -2); c.rotate(-0.35); A.line(c, 0, 0, 0, -120, 5, "#8A5A2E"); c.fillStyle = "#D9A441"; c.beginPath(); c.moveTo(-14, 0); c.lineTo(14, 0); c.lineTo(6, -30); c.lineTo(-6, -30); c.closePath(); c.fill(); c.restore();
         // bubbling cauldron
-        c.save(); c.translate(104, -6);
+        c.save(); c.translate(104, -4);
         c.fillStyle = "#2B2F3A"; c.beginPath(); c.ellipse(0, -18, 30, 22, 0, 0, TAU); c.fill();
         c.fillStyle = "#7CFF6B"; c.beginPath(); c.ellipse(0, -34, 26, 7, 0, 0, TAU); c.fill();
         for (let i = 0; i < 3; i++) { const u = (t * 0.8 + i / 3) % 1; c.globalAlpha = 1 - u; c.fillStyle = "#9BFF8E"; c.beginPath(); c.arc(-10 + i * 10, -40 - u * 40, 5 + u * 4, 0, TAU); c.fill(); }
         c.globalAlpha = 1; c.fillStyle = "#FF7A1F"; c.beginPath(); c.ellipse(0, 2, 22, 6, 0, 0, TAU); c.fill();
         c.restore();
         // bats circling the peak
-        for (let i = 0; i < 3; i++) { const a = t * 1.3 + i * 2.1; const bx = Math.cos(a) * 110, by = -250 + Math.sin(a * 1.4) * 26; c.fillStyle = "#2B2238"; c.beginPath(); c.moveTo(bx, by); c.quadraticCurveTo(bx - 10, by - 10 - Math.sin(t * 14 + i) * 5, bx - 18, by); c.quadraticCurveTo(bx - 9, by - 3, bx, by + 2); c.quadraticCurveTo(bx + 9, by - 3, bx + 18, by); c.quadraticCurveTo(bx + 10, by - 10 - Math.sin(t * 14 + i) * 5, bx, by); c.fill(); }
-        c.save(); c.translate(0, -262); comingRibbon(c, "witchmtn", 0, "#7B3FE4"); c.restore();
+        for (let i = 0; i < 3; i++) { const a = t * 1.3 + i * 2.1; const bx = 20 + Math.cos(a) * 120, by = -330 + Math.sin(a * 1.4) * 30; c.fillStyle = "#2B2238"; c.beginPath(); c.moveTo(bx, by); c.quadraticCurveTo(bx - 10, by - 10 - Math.sin(t * 14 + i) * 5, bx - 18, by); c.quadraticCurveTo(bx - 9, by - 3, bx, by + 2); c.quadraticCurveTo(bx + 9, by - 3, bx + 18, by); c.quadraticCurveTo(bx + 10, by - 10 - Math.sin(t * 14 + i) * 5, bx, by); c.fill(); }
+        c.save(); c.translate(0, -175); comingRibbon(c, "witchmtn", 0, "#7B3FE4"); c.restore();
       },
       tap: portalTap("witchmtn"),
     });
@@ -2666,7 +2682,7 @@
     [2150, 2380, 2780, 2820], // arcade and its front lawn
     [3200, 1350, 4050, 2280], // plaza + Star Shop
     [870, 1170, 1270, 1480],  // Grampa Simon's garden
-    [2960, 400, 3400, 780],   // Witch Mountain
+    [460, 1100, 880, 1520],   // Witch Mountain (in the woods)
     [1900, 2790, 2270, 3070], // Frog Pond
     [100, 2330, 900, 3080],   // Ice Mountain (it gets its own snowy pines)
     [3350, 540, 4100, 1060],  // fart man zone
@@ -2702,7 +2718,6 @@
     for (let i = 0; i < 420; i++) tryTree(150 + rnd() * 3800, 420 + rnd() * 2620, ["round", "deep", "round", "deep", "blossom", "round", "gold"], 420, 0.9 + rnd() * 0.3, false);
     // northern tree line (hides where the ground meets the mountains)
     for (let x = 40; x < 4000; x += 70 + rnd() * 40) {
-      if (x > 3050 && x < 3280) continue;
       tree(x, 372 + rnd() * 20, rnd() < 0.7 ? "pine" : "deep", 0.9 + rnd() * 0.3, { solid: false, tap: false });
     }
     // western forest edge (beyond the playable area)
