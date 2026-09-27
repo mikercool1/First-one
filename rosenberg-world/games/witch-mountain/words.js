@@ -50,3 +50,29 @@ window.WM.WORDS = [
   { w: "telescope", e: "🔭", tier: 3 }, { w: "pancakes", e: "🥞", tier: 3 }, { w: "lollipop", e: "🍭", tier: 3 },
   { w: "skateboard", e: "🛹", tier: 3 }, { w: "hamburger", e: "🍔", tier: 3 }, { w: "sandwich", e: "🥪", tier: 3 },
 ];
+
+// Kindergarten and 1st-grade words, used when Jonah is playing (he's 6).
+// tier 1 = three-letter words, tier 2 = easy four-letter words, tier 3 = first-grade blends.
+window.WM.EASY_WORDS = [
+  { w: "cat", e: "🐱", tier: 1 }, { w: "dog", e: "🐶", tier: 1 }, { w: "pig", e: "🐷", tier: 1 },
+  { w: "sun", e: "☀️", tier: 1 }, { w: "hat", e: "👒", tier: 1 }, { w: "bus", e: "🚌", tier: 1 },
+  { w: "bed", e: "🛏️", tier: 1 }, { w: "cup", e: "🥤", tier: 1 }, { w: "fox", e: "🦊", tier: 1 },
+  { w: "hen", e: "🐔", tier: 1 }, { w: "bat", e: "🦇", tier: 1 }, { w: "bug", e: "🐛", tier: 1 },
+  { w: "egg", e: "🥚", tier: 1 }, { w: "ant", e: "🐜", tier: 1 }, { w: "box", e: "📦", tier: 1 },
+  { w: "map", e: "🗺️", tier: 1 }, { w: "pen", e: "🖊️", tier: 1 }, { w: "web", e: "🕸️", tier: 1 },
+  { w: "van", e: "🚐", tier: 1 }, { w: "log", e: "🪵", tier: 1 }, { w: "fan", e: "🪭", tier: 1 },
+  { w: "cow", e: "🐮", tier: 1 }, { w: "bee", e: "🐝", tier: 1 }, { w: "car", e: "🚗", tier: 1 },
+
+  { w: "fish", e: "🐟", tier: 2 }, { w: "ball", e: "⚽", tier: 2 }, { w: "milk", e: "🥛", tier: 2 },
+  { w: "cake", e: "🎂", tier: 2 }, { w: "kite", e: "🪁", tier: 2 }, { w: "boat", e: "⛵", tier: 2 },
+  { w: "moon", e: "🌙", tier: 2 }, { w: "duck", e: "🦆", tier: 2 }, { w: "bear", e: "🐻", tier: 2 },
+  { w: "lion", e: "🦁", tier: 2 }, { w: "book", e: "📖", tier: 2 }, { w: "door", e: "🚪", tier: 2 },
+  { w: "sock", e: "🧦", tier: 2 }, { w: "king", e: "🤴", tier: 2 }, { w: "ring", e: "💍", tier: 2 },
+  { w: "nest", e: "🪺", tier: 2 }, { w: "hand", e: "✋", tier: 2 }, { w: "corn", e: "🌽", tier: 2 },
+
+  { w: "frog", e: "🐸", tier: 3 }, { w: "star", e: "⭐", tier: 3 }, { w: "tree", e: "🌳", tier: 3 },
+  { w: "crab", e: "🦀", tier: 3 }, { w: "drum", e: "🥁", tier: 3 }, { w: "ship", e: "🚢", tier: 3 },
+  { w: "snow", e: "❄️", tier: 3 }, { w: "sled", e: "🛷", tier: 3 }, { w: "clock", e: "⏰", tier: 3 },
+  { w: "train", e: "🚂", tier: 3 }, { w: "truck", e: "🚚", tier: 3 }, { w: "shell", e: "🐚", tier: 3 },
+  { w: "chick", e: "🐤", tier: 3 }, { w: "plane", e: "✈️", tier: 3 }, { w: "brush", e: "🪥", tier: 3 },
+];

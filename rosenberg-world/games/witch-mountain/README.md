@@ -30,3 +30,6 @@ Copy the folder to `rosenberg-world/games/witch-mountain/` and add
 `<script src="../rw-bridge.js"></script>` to `index.html`. The game already reports its score and
 stars to `RosenbergBridge` at the top, starts as whoever is playing, and has the hidden
 "BACK TO ROSENBERG WORLD" button on the end screen.
+
+When Jonah is playing, the witches use `WM.EASY_WORDS` in `words.js` instead: kindergarten and 1st-grade words
+(three-letter words at the bottom, easy four-letter words in the middle, first-grade blends near the top).

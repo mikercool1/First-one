@@ -89,9 +89,11 @@
     const due = G.retry.findIndex((r) => r.due <= G.asked);
     if (due >= 0) return G.retry.splice(due, 1)[0].word;
     const tier = G.ci < 3 ? 1 : G.ci < 6 ? 2 : 3;
-    let pool = WM.WORDS.filter((w) => w.tier === tier && !G.used.has(w.w));
-    if (!pool.length) pool = WM.WORDS.filter((w) => !G.used.has(w.w));
-    if (!pool.length) { G.used.clear(); pool = WM.WORDS.slice(); }
+    // Jonah (6) gets kindergarten and 1st-grade words; everyone else the 3rd-grade list
+    const list = G.player === "jonah" && WM.EASY_WORDS ? WM.EASY_WORDS : WM.WORDS;
+    let pool = list.filter((w) => w.tier === tier && !G.used.has(w.w));
+    if (!pool.length) pool = list.filter((w) => !G.used.has(w.w));
+    if (!pool.length) { G.used.clear(); pool = list.slice(); }
     const w = pool[Math.floor(Math.random() * pool.length)];
     G.used.add(w.w);
     return w;
