@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script src="../rw-bridge.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Game Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
+<style>
+:root{--ink:#2A2320;--wall:#F3EEE6;--oak:#E4D2B3;--mahog:#6B2A1C;--accent:#E8743C;--card:#FFFFFF}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:#D9C4A1;font-family:Fredoka,"Baloo 2",ui-rounded,system-ui,sans-serif;color:var(--ink);-webkit-user-select:none;user-select:none}
+.fit{position:fixed;inset:0;overflow:hidden;background:linear-gradient(180deg,#EFE9DF 0 58%,#E3D0AF 58%)}
+.stage{position:absolute;left:0;top:0;width:1600px;height:1000px;transform-origin:0 0}
+canvas#room{position:absolute;inset:0;width:1600px;height:1000px}
+.plaque{position:absolute;left:560px;top:28px;width:480px;text-align:center;background:#3B2A22;color:#F7E9D2;border-radius:16px;padding:10px 0 12px;font:700 40px/1 Fredoka,sans-serif;letter-spacing:.08em;box-shadow:0 6px 0 #22170F,0 14px 24px rgba(0,0,0,.25)}
+.plaque small{display:block;font:600 16px/1.2 Fredoka,sans-serif;letter-spacing:.18em;color:#E8C99A;margin-top:4px}
+.topbtn{position:absolute;right:28px;top:30px;font:700 22px Fredoka,sans-serif;background:#fff;color:var(--ink);border:3px solid #3B2A22;border-radius:16px;padding:12px 20px;cursor:pointer;box-shadow:0 5px 0 #3B2A22}
+.topbtn:active{transform:translateY(3px);box-shadow:0 2px 0 #3B2A22}
+.box{position:absolute;border:0;padding:0;cursor:pointer;border-radius:8px;display:flex;align-items:center;justify-content:center;text-align:center;font:700 20px/1.05 Fredoka,sans-serif;color:#fff;
+  box-shadow:inset 0 -6px 0 rgba(0,0,0,.18),inset 0 3px 0 rgba(255,255,255,.25),0 6px 10px rgba(0,0,0,.25);transition:transform .18s ease,filter .18s}
+.box:hover,.box:focus-visible{transform:translateY(-6px) rotate(-1deg);filter:brightness(1.07)}
+.box:focus-visible{outline:4px solid #FFD23F;outline-offset:3px}
+.box.pull{transform:translate(-40px,-30px) scale(1.25) rotate(-6deg)!important;transition:transform .45s cubic-bezier(.2,1.6,.4,1);z-index:5}
+.box.play::after{content:"PLAY";position:absolute;right:-10px;top:-12px;background:#2EB872;color:#fff;font:700 15px Fredoka,sans-serif;padding:4px 9px;border-radius:999px;box-shadow:0 3px 0 #1D8752;transform:rotate(8deg)}
+.box.soon{filter:saturate(.75)}
+.box .lbl{display:block;padding:0 10px}
+.box .sub{display:block;font-size:13px;opacity:.85;margin-top:4px;letter-spacing:.06em}
+.dice{display:inline-flex;gap:3px;margin-bottom:6px}
+.dice i{font:900 15px/1 "Arial Black",Impact,sans-serif;font-style:normal;color:#2A2320;width:22px;height:22px;display:grid;place-items:center;background:#F6EEDB;border-radius:5px;box-shadow:0 2px 0 #BCA67A}
+.tile{display:inline-grid;place-items:center;width:30px;height:30px;background:#FFD23F;color:#16204A;border-radius:6px;font:900 20px "Arial Black",sans-serif;box-shadow:0 3px 0 #D9A800;transform:rotate(-6deg);margin-bottom:6px}
+.bubble{position:absolute;left:470px;top:140px;width:420px;background:#fff;border:4px solid #3B2A22;border-radius:26px;padding:20px 22px 18px;box-shadow:0 10px 0 rgba(59,42,34,.9),0 20px 30px rgba(0,0,0,.2)}
+.bubble::after{content:"";position:absolute;left:170px;bottom:-30px;width:34px;height:34px;background:#fff;border-right:4px solid #3B2A22;border-bottom:4px solid #3B2A22;transform:skewY(30deg) rotate(20deg)}
+.bubble p{margin:0 0 14px;font:600 27px/1.25 Fredoka,sans-serif}
+.bubble .who{font:700 16px Fredoka,sans-serif;letter-spacing:.14em;color:#B5646B;margin-bottom:6px}
+.choices{display:flex;gap:10px;flex-wrap:wrap}
+.choice{font:700 21px Fredoka,sans-serif;border:0;border-radius:14px;padding:12px 16px;cursor:pointer;color:#fff;box-shadow:0 5px 0 rgba(0,0,0,.28)}
+.choice:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.28)}
+.choice:focus-visible{outline:4px solid #FFD23F;outline-offset:2px}
+.c-boggle{background:#E8622A} .c-word{background:#2F5BEA}
+.sarah-hit{position:absolute;left:560px;top:360px;width:220px;height:260px;border:0;background:transparent;cursor:pointer;border-radius:40px}
+.sarah-hit:focus-visible{outline:4px solid #FFD23F}
+.wipe{position:fixed;inset:0;background:#3B2A22;opacity:0;pointer-events:none;transition:opacity .35s}
+.wipe.on{opacity:1}
+@media (prefers-reduced-motion:reduce){.box,.box.pull{transition:none}}
+</style>
+</head>
+<body>
+<div class="fit" id="fit">
+  <div class="stage" id="stage">
+    <canvas id="room" width="1600" height="1000" aria-label="The Game Room: a dining room with white oak floors, a modern mahogany table and a bookshelf full of games. Sarah is at the table."></canvas>
+    <div class="plaque">THE GAME ROOM<small>ROSENBERG HOUSE · NO. 51</small></div>
+    <button class="topbtn" type="button" data-rw-back hidden>Back to Rosenberg World</button>
+
+    <!-- the bookshelf of games (positions match the shelf drawn on the canvas) -->
+    <button class="box play" type="button" data-game="rosenboggle" style="left:1150px;top:226px;width:170px;height:118px;background:linear-gradient(160deg,#F2743A,#C8481A)">
+      <span><span class="dice"><i>B</i><i>O</i><i>G</i></span><span class="lbl">ROSENBOGGLE</span></span>
+    </button>
+    <button class="box play" type="button" data-game="word-game" style="left:1336px;top:226px;width:170px;height:118px;background:linear-gradient(160deg,#4A74F2,#2446B8)">
+      <span><span class="tile">E</span><span class="lbl">THE WORD GAME</span></span>
+    </button>
+    <button class="box soon" type="button" data-soon="Chess" style="left:1150px;top:424px;width:110px;height:112px;background:linear-gradient(160deg,#3B3B44,#1E1E24)"><span class="lbl">♞<span class="sub">CHESS</span></span></button>
+    <button class="box soon" type="button" data-soon="Checkers" style="left:1272px;top:424px;width:110px;height:112px;background:linear-gradient(160deg,#D8423A,#9C241E)"><span class="lbl">⛀<span class="sub">CHECKERS</span></span></button>
+    <button class="box soon" type="button" data-soon="the mystery game" style="left:1394px;top:424px;width:112px;height:112px;background:linear-gradient(160deg,#8A5CE6,#5A33B0)"><span class="lbl">?<span class="sub">SOON</span></span></button>
+    <button class="box soon" type="button" data-soon="the 500-piece puzzle" style="left:1150px;top:610px;width:180px;height:70px;background:linear-gradient(160deg,#2EB872,#1B7F4E)"><span class="lbl">PUZZLE<span class="sub">500 PIECES</span></span></button>
+    <button class="box soon" type="button" data-soon="cards" style="left:1344px;top:626px;width:160px;height:54px;background:linear-gradient(160deg,#F2B632,#C98314)"><span class="lbl">CARDS</span></button>
+
+    <button class="sarah-hit" type="button" id="sarahHit" aria-label="Talk to Sarah"></button>
+    <div class="bubble" id="bubble" role="dialog" aria-label="Sarah">
+      <div class="who">SARAH</div>
+      <p id="say">Hi! What game do you want to play?</p>
+      <div class="choices">
+        <button class="choice c-boggle" type="button" data-game="rosenboggle">Rosenboggle</button>
+        <button class="choice c-word" type="button" data-game="word-game">The Word Game</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="wipe" id="wipe"></div>
+
+<script src="../../js/core.js"></script>
+<script src="../../js/art.js"></script>
+<script>
+(() => {
+  const A = window.RW && RW.art;
+  const $ = (id) => document.getElementById(id);
+  const params = new URLSearchParams(location.search);
+  const pid = (window.RosenbergBridge && RosenbergBridge.player) || params.get("player") || "";
+  const NAME = pid ? pid[0].toUpperCase() + pid.slice(1) : "";
+  const hi = NAME ? `, ${NAME}` : "";
+  const back = params.get("back") === "1";
+
+  // ---------- fit the 1600x1000 room to the screen ----------
+  const stage = $("stage");
+  function fit() { const k = Math.min(innerWidth / 1600, innerHeight / 1000); stage.style.transform = `translate(${(innerWidth - 1600 * k) / 2}px, ${(innerHeight - 1000 * k) / 2}px) scale(${k})`; }
+  addEventListener("resize", fit); fit();
+
+  // ---------- Sarah talks ----------
+  const say = (t) => { $("say").textContent = t; };
+  say(back ? `Welcome back${hi}! Want to play another one?` : `Hi${hi}! Welcome to the Game Room. What game do you want to play?`);
+  const LINES = [`Pick a game off the shelf${hi}!`, "Rosenboggle is my favorite. Find the long words!", "The Word Game: every word starts with the last letter. Tricky!", "Love you! Now pick a game.", "Who's ready to beat me?"];
+  let talkT = 0;
+  $("sarahHit").addEventListener("click", () => { say(LINES[Math.floor(Math.random() * LINES.length)]); talkT = 1.2; });
+
+  // ---------- pick a game ----------
+  function go(game, boxEl) {
+    const q = new URLSearchParams(location.search); q.delete("back"); q.set("room", "1");
+    say(game === "rosenboggle" ? "Rosenboggle! Let me shake the dice…" : "The Word Game! Great pick.");
+    talkT = 1;
+    if (boxEl) boxEl.classList.add("pull");
+    setTimeout(() => $("wipe").classList.add("on"), 380);
+    setTimeout(() => { location.href = `../${game}/index.html?${q}`; }, 760);
+  }
+  document.querySelectorAll("[data-game]").forEach((b) => b.addEventListener("click", () => {
+    const shelfBox = b.classList.contains("box") ? b : document.querySelector(`.box[data-game="${b.dataset.game}"]`);
+    go(b.dataset.game, shelfBox);
+  }));
+  document.querySelectorAll("[data-soon]").forEach((b) => b.addEventListener("click", () => {
+    say(`Ooh, ${b.dataset.soon}! That one's coming soon. Try Rosenboggle or The Word Game.`); talkT = 1;
+    b.animate([{ transform: "translateX(0)" }, { transform: "translateX(-6px)" }, { transform: "translateX(6px)" }, { transform: "translateX(0)" }], { duration: 300 });
+  }));
+
+  // ---------- draw the room ----------
+  const cv = $("room"), c = cv.getContext("2d");
+  const bg = document.createElement("canvas"); bg.width = 1600; bg.height = 1000;
+  const FLOOR_Y = 600;
+  const rr = (g, x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+  const lin = (g, x0, y0, x1, y1, stops) => { const gr = g.createLinearGradient(x0, y0, x1, y1); stops.forEach((s, i) => gr.addColorStop(Array.isArray(s) ? s[0] : i / (stops.length - 1), Array.isArray(s) ? s[1] : s)); return gr; };
+
+  function paintBackground(g) {
+    // wall
+    g.fillStyle = lin(g, 0, 0, 0, FLOOR_Y, ["#F7F3EC", "#EEE7DB"]); g.fillRect(0, 0, 1600, FLOOR_Y);
+    // crown molding and baseboard
+    g.fillStyle = "#FFFFFF"; g.fillRect(0, 0, 1600, 16); g.fillStyle = "rgba(0,0,0,.06)"; g.fillRect(0, 16, 1600, 4);
+    // window with the backyard outside
+    const wx = 70, wy = 120, ww = 360, wh = 360;
+    g.fillStyle = "#FFFFFF"; rr(g, wx - 16, wy - 16, ww + 32, wh + 32, 8); g.fill();
+    g.fillStyle = lin(g, 0, wy, 0, wy + wh, ["#9FDBFF", "#D8F1FF"]); g.fillRect(wx, wy, ww, wh);
+    g.fillStyle = "#86C96A"; g.fillRect(wx, wy + wh * 0.68, ww, wh * 0.32);
+    [[wx + 60, wy + 250, 70, "#4E9F4A"], [wx + 190, wy + 230, 95, "#3E8C45"], [wx + 310, wy + 255, 60, "#5AAE52"]].forEach(([x, y, r, col]) => { g.fillStyle = col; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); });
+    g.fillStyle = "#FFFFFF"; g.beginPath(); g.arc(wx + 250, wy + 70, 26, 0, 7); g.arc(wx + 282, wy + 62, 32, 0, 7); g.arc(wx + 312, wy + 74, 22, 0, 7); g.fill();
+    g.fillStyle = "#FFFFFF"; g.fillRect(wx + ww / 2 - 6, wy, 12, wh); g.fillRect(wx, wy + wh / 2 - 6, ww, 12);
+    g.fillStyle = "#E9E2D6"; g.fillRect(wx - 26, wy + wh + 14, ww + 52, 16);
+    // a little plant on the sill
+    g.fillStyle = "#C9643E"; rr(g, wx + 20, wy + wh - 24, 46, 38, 6); g.fill();
+    g.fillStyle = "#3E8C45"; [[-14, -30], [0, -44], [14, -32], [-4, -20], [10, -22]].forEach(([dx, dy]) => { g.beginPath(); g.ellipse(wx + 43 + dx, wy + wh - 24 + dy, 9, 16, dx / 30, 0, 7); g.fill(); });
+
+    // pendant lamp cord
+    g.strokeStyle = "#2B2521"; g.lineWidth = 3; g.beginPath(); g.moveTo(660, 16); g.lineTo(660, 250); g.stroke();
+
+    // white oak floor with a little perspective
+    g.fillStyle = "#E7D6B8"; g.fillRect(0, FLOOR_Y, 1600, 400);
+    const vpX = 800, vpY = -900;
+    const rnd = RW.util.seeded(51);
+    for (let x = -1400; x < 3000; x += 70) {
+      const bx0 = x, bx1 = x + 70;
+      // each board: slightly different tone
+      const tone = ["#EBDCC0", "#E4D1B1", "#E9D8BA", "#DFCBA8", "#EDE0C6"][Math.floor(rnd() * 5)];
+      const atY = (bx, y) => vpX + (bx - vpX) * (y - vpY) / (1000 - vpY);
+      g.fillStyle = tone; g.beginPath();
+      g.moveTo(atY(bx0, FLOOR_Y), FLOOR_Y); g.lineTo(atY(bx1, FLOOR_Y), FLOOR_Y); g.lineTo(bx1, 1000); g.lineTo(bx0, 1000); g.closePath(); g.fill();
+      g.strokeStyle = "rgba(150,115,70,.28)"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(atY(bx0, FLOOR_Y), FLOOR_Y); g.lineTo(bx0, 1000); g.stroke();
+      // grain streaks
+      g.strokeStyle = "rgba(170,130,80,.12)"; g.lineWidth = 1;
+      for (let k = 0; k < 3; k++) { const f = 0.2 + rnd() * 0.6; g.beginPath(); g.moveTo(atY(bx0 + 70 * f, FLOOR_Y), FLOOR_Y); g.lineTo(bx0 + 70 * f + (rnd() - 0.5) * 8, 1000); g.stroke(); }
+      // staggered end joints
+      const jy = FLOOR_Y + 40 + rnd() * 330;
+      g.strokeStyle = "rgba(150,115,70,.3)"; g.beginPath(); g.moveTo(atY(bx0, jy), jy); g.lineTo(atY(bx1, jy), jy); g.stroke();
+    }
+    g.fillStyle = "#FFFFFF"; g.fillRect(0, FLOOR_Y - 18, 1600, 18); g.fillStyle = "rgba(0,0,0,.08)"; g.fillRect(0, FLOOR_Y, 1600, 6);
+    // soft light pool under the table
+    const pool = g.createRadialGradient(660, 800, 30, 660, 800, 520); pool.addColorStop(0, "rgba(255,240,200,.35)"); pool.addColorStop(1, "rgba(255,240,200,0)");
+    g.fillStyle = pool; g.fillRect(0, FLOOR_Y, 1600, 400);
+    // bookshelf (modern walnut with open cubbies)
+    const sx = 1120, sy = 150, sw = 410, sh = 560;
+    g.fillStyle = "rgba(0,0,0,.12)"; rr(g, sx + 10, sy + 14, sw, sh, 10); g.fill();
+    g.fillStyle = lin(g, sx, 0, sx + sw, 0, ["#7A4A2E", "#8E5836", "#6E4128"]); rr(g, sx, sy, sw, sh, 10); g.fill();
+    g.fillStyle = "#3E2618";
+    [[sy + 22, 178], [sy + 214, 178], [sy + 406, 128]].forEach(([y, h]) => { rr(g, sx + 18, y, sw - 36, h, 6); g.fill(); });
+    g.fillStyle = "rgba(255,220,170,.10)"; [[sy + 22], [sy + 214], [sy + 406]].forEach(([y]) => g.fillRect(sx + 18, y, sw - 36, 10));
+    g.fillStyle = "#6E4128"; g.fillRect(sx + 30, sy + sh, 16, 30); g.fillRect(sx + sw - 46, sy + sh, 16, 30);
+
+  }
+
+  function chair(g, x, y, s, flip) {
+    g.save(); g.translate(x, y); g.scale(flip ? -s : s, s);
+    g.fillStyle = "rgba(0,0,0,.12)"; g.beginPath(); g.ellipse(0, 4, 70, 12, 0, 0, 7); g.fill();
+    g.strokeStyle = "#2B2521"; g.lineWidth = 7; g.lineCap = "round";
+    [[-44, 0, -40, -110], [40, 0, 36, -110], [-30, -4, -26, -104], [28, -4, 24, -104]].forEach(([a, b, c2, d]) => { g.beginPath(); g.moveTo(a, b); g.lineTo(c2, d); g.stroke(); });
+    g.fillStyle = "#D8C3A0"; rr(g, -56, -128, 112, 24, 10); g.fill();
+    g.fillStyle = "#C9B08A"; rr(g, -52, -250, 104, 110, 18); g.fill();
+    g.strokeStyle = "#2B2521"; g.lineWidth = 7; g.beginPath(); g.moveTo(-40, -110); g.lineTo(-44, -248); g.moveTo(36, -110); g.lineTo(40, -248); g.stroke();
+    g.restore();
+  }
+  function table(g) {
+    // modern mahogany table, seen from the front
+    const x0 = 250, x1 = 1070, top = 612, front = 690;
+    g.fillStyle = "rgba(0,0,0,.16)"; g.beginPath(); g.ellipse((x0 + x1) / 2, 918, 440, 30, 0, 0, 7); g.fill();
+    // tapered legs
+    g.fillStyle = "#4A170F";
+    [[x0 + 40, 1], [x1 - 40, -1], [x0 + 150, 1], [x1 - 150, -1]].forEach(([lx, k], i) => {
+      const y1 = i < 2 ? 915 : 860, w = i < 2 ? 26 : 20;
+      g.beginPath(); g.moveTo(lx - w / 2, front + 20); g.lineTo(lx + w / 2, front + 20); g.lineTo(lx + w / 2 - 6 * k * 0 - 3, y1); g.lineTo(lx - w / 2 + 3, y1); g.closePath(); g.fill();
+    });
+    // top surface
+    g.fillStyle = lin(g, 0, top, 0, front, ["#8A3A26", "#6E2A1B"]);
+    g.beginPath(); g.moveTo(x0 + 40, top); g.lineTo(x1 - 40, top); g.lineTo(x1, front); g.lineTo(x0, front); g.closePath(); g.fill();
+    // mahogany grain
+    g.save(); g.clip();
+    g.strokeStyle = "rgba(40,8,4,.22)"; g.lineWidth = 2;
+    for (let i = 0; i < 12; i++) { const y = top + 6 + i * 7; g.beginPath(); g.moveTo(x0, y); g.bezierCurveTo(x0 + 250, y - 4, x0 + 520, y + 5, x1, y - 2); g.stroke(); }
+    g.fillStyle = "rgba(255,200,170,.12)"; g.beginPath(); g.moveTo(x0 + 120, top + 4); g.lineTo(x0 + 360, top + 4); g.lineTo(x0 + 290, front - 4); g.lineTo(x0 + 60, front - 4); g.closePath(); g.fill();
+    g.restore();
+    // thin front edge
+    g.fillStyle = lin(g, 0, front, 0, front + 22, ["#5A1E13", "#3E120A"]); rr(g, x0, front, x1 - x0, 22, 4); g.fill();
+    g.fillStyle = "rgba(255,210,180,.25)"; g.fillRect(x0 + 6, front, x1 - x0 - 12, 3);
+    // things on the table: a Rosenboggle tray, a snack bowl, a word game card
+    const bx = 470, by = 640;
+    g.fillStyle = "#1C2C6E"; rr(g, bx - 70, by - 26, 140, 46, 10); g.fill();
+    g.fillStyle = "#F2E8D0";
+    for (let r = 0; r < 2; r++) for (let k = 0; k < 5; k++) { rr(g, bx - 60 + k * 25, by - 20 + r * 20, 20, 16, 4); g.fill(); }
+    g.fillStyle = "#1B1612"; g.font = "900 11px Arial Black, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+    "ROSENBOGGL".split("").forEach((ch, i) => g.fillText(ch, bx - 50 + (i % 5) * 25, by - 12 + Math.floor(i / 5) * 20));
+    g.fillStyle = "#FFFFFF"; g.beginPath(); g.ellipse(860, 650, 58, 16, 0, 0, 7); g.fill();
+    g.fillStyle = "#E7E1D6"; g.beginPath(); g.ellipse(860, 660, 50, 22, 0, 0, Math.PI); g.fill();
+    g.fillStyle = "#F2C230"; [[-24, 0], [-8, -6], [8, -2], [24, -5], [0, 4], [-16, 4], [16, 5]].forEach(([dx, dy]) => { g.beginPath(); g.arc(860 + dx, 646 + dy, 7, 0, 7); g.fill(); });
+    g.save(); g.translate(690, 655); g.rotate(-0.12); g.fillStyle = "#FFFFFF"; rr(g, -40, -18, 80, 36, 5); g.fill();
+    g.fillStyle = "#FFD23F"; rr(g, -32, -12, 22, 22, 4); g.fill(); g.fillStyle = "#16204A"; g.font = "900 15px Arial Black, sans-serif"; g.fillText("E", -21, 0);
+    g.fillStyle = "#2F5BEA"; g.fillRect(-2, -6, 34, 4); g.fillRect(-2, 2, 26, 4); g.restore();
+  }
+  function lamp(g, t) {
+    const x = 660, y = 250;
+    const glow = g.createRadialGradient(x, y + 40, 10, x, y + 60, 360); glow.addColorStop(0, "rgba(255,226,160,.35)"); glow.addColorStop(1, "rgba(255,226,160,0)");
+    g.fillStyle = glow; g.fillRect(x - 380, y - 200, 760, 700);
+    g.fillStyle = "#2B2521"; g.beginPath(); g.moveTo(x - 90, y + 52); g.quadraticCurveTo(x - 80, y - 4, x, y - 6); g.quadraticCurveTo(x + 80, y - 4, x + 90, y + 52); g.closePath(); g.fill();
+    g.fillStyle = "#FFE7A8"; g.beginPath(); g.ellipse(x, y + 52, 90, 12, 0, 0, 7); g.fill();
+    g.fillStyle = "#C9A15A"; g.fillRect(x - 10, y - 14, 20, 10);
+  }
+
+  function drawSarah(g, t) {
+    if (!A || !A.CHARS || !A.CHARS.sarah) return;
+    g.save(); g.translate(660, 770); g.scale(3.5, 3.5);
+    const waving = t < 2.4 || talkT > 0;
+    A.drawChar(g, A.CHARS.sarah, { t, move: 0, side: 0, dir: 1, blink: (t % 4) > 3.85, pose: waving ? "wave" : null, pt: t, talk: talkT > 0 });
+    g.restore();
+  }
+
+  paintBackground(bg.getContext("2d"));
+  let last = 0, T = 0;
+  function frame(ts) {
+    const dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts; T += dt; talkT = Math.max(0, talkT - dt);
+    c.drawImage(bg, 0, 0);
+    chair(c, 330, 880, 1, false);
+    chair(c, 990, 880, 1, true);
+    lamp(c, T);
+    drawSarah(c, T);
+    table(c);
+    // chairs in front of the table (backs toward us)
+    c.save(); c.globalAlpha = 1;
+    [[520, 985], [800, 985]].forEach(([x, y]) => {
+      c.fillStyle = "rgba(0,0,0,.14)"; c.beginPath(); c.ellipse(x, y - 4, 70, 10, 0, 0, 7); c.fill();
+      c.fillStyle = "#C9B08A"; rr(c, x - 60, y - 210, 120, 120, 20); c.fill();
+      c.fillStyle = "rgba(255,255,255,.18)"; rr(c, x - 52, y - 202, 104, 16, 8); c.fill();
+      c.strokeStyle = "#2B2521"; c.lineWidth = 8; c.lineCap = "round";
+      c.beginPath(); c.moveTo(x - 46, y - 92); c.lineTo(x - 50, y); c.moveTo(x + 46, y - 92); c.lineTo(x + 50, y); c.stroke();
+    });
+    c.restore();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

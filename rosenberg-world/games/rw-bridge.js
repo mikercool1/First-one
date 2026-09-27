@@ -18,6 +18,9 @@
 // Any element with a data-rw-back attribute (normally a hidden "BACK TO ROSENBERG WORLD"
 // button on the game's end screens) is shown and wired to exit() when running inside the world.
 //
+// Games on the Game Room bookshelf are opened with &room=1. Any element with a data-rw-room
+// attribute (a hidden "BACK TO THE GAME ROOM" button) is then shown and goes back to the room.
+//
 // RosenbergBridge.inWorld tells you if the game is running inside Rosenberg World,
 // and RosenbergBridge.player is "reuben", "jonah" or "ellie" (or null when standalone).
 // When the game is opened on its own, everything here does nothing, so the same file
@@ -43,7 +46,20 @@
   };
   // Lets a game's CSS make room for the hub's close button: .rw-in-world .hud { ... }
   if (inWorld) document.documentElement.classList.add("rw-in-world");
+  bridge.fromRoom = params.get("room") === "1";
+  bridge.roomUrl = function () {
+    var q = new URLSearchParams(location.search); q.delete("room"); q.set("back", "1");
+    return "../game-room/index.html?" + q.toString();
+  };
   function wire() {
+    if (bridge.fromRoom) {
+      var rooms = document.querySelectorAll("[data-rw-room]");
+      for (var j = 0; j < rooms.length; j++) {
+        rooms[j].hidden = false;
+        rooms[j].addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); location.href = bridge.roomUrl(); });
+        rooms[j].addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+      }
+    }
     if (!inWorld) return;
     var els = document.querySelectorAll("[data-rw-back]");
     for (var i = 0; i < els.length; i++) {

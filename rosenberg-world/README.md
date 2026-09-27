@@ -60,11 +60,16 @@ Every linked game is also one tap away from the ALL GAMES button in the HUD.
 | Soccer field (Sports Complex) | Backyard Soccer | `games/backyard-soccer` |
 | Beach volleyball court | Jonah's Volley | `games/jonahs-volley` |
 | Mystery Plaza building | The Word Game | `games/word-game` |
+| Rosenberg House front door | The Game Room (Sarah, the bookshelf: Rosenboggle and The Word Game) | `games/game-room`, `games/rosenboggle` |
 | Baha Bay water park (main gate) | Splash Down | `games/water-slide` |
 | Baha Bay Lazy River hut (and the floating tubes) | Lazy River Pirates | `games/lazy-river` |
 | Rosenberg Arcade (and its orange cabinet) | Max-Man | `games/max-man` |
 | Tennis court (Sports Complex) | Jonah's Tennis | `games/jonahs-tennis` |
 | Rosenberg Raceway (and the go-kart) | Racecar Rally | `games/racecar` |
+
+The Game Room is a small hub of its own: games on its bookshelf are opened with `&room=1`, and any
+`data-rw-room` button in them (hidden by default) goes back to the room. Rosenboggle's dictionary
+is `games/rosenboggle/words.js` (common English words, rude words removed).
 
 These are copies of each game made for the hub. A later update to a game elsewhere in the repo
 needs copying in here again (keeping its `rw-bridge.js` lines).

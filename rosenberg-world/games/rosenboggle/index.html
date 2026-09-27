@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script src="../rw-bridge.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rosenboggle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;700;800&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --table:#5A2A1C; --table-dark:#2A120B; --table-hi:#7A3A26;
+  --tray:#1C2C6E; --tray-hi:#30469E; --tray-deep:#0C1538;
+  --ivory:#F2E8D0; --ivory-hi:#FCF7EA; --ivory-edge:#D8C59C;
+  --ink:#1B1612; --cream:#F6EDD8; --muted:#D9BFA0;
+  --gold:#FFC23D; --gold-lo:#C98314; --orange:#F0642A;
+  --good:#4CC98E; --bad:#FF6A5C; --card:rgba(20,10,6,.55); --line:rgba(255,230,200,.18);
+  --dice:"Archivo Black","Arial Black",Impact,sans-serif;
+  --head:"Bricolage Grotesque",ui-rounded,system-ui,sans-serif;
+  --ui:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{
+  color:var(--cream);font:16px/1.45 var(--ui);overflow:hidden;
+  background-color:var(--table-dark);
+  background-image:
+    radial-gradient(ellipse 70% 50% at 50% 20%, rgba(255,196,120,.22), transparent 70%),
+    radial-gradient(ellipse 120% 90% at 50% 40%, transparent 45%, rgba(0,0,0,.55) 100%),
+    repeating-linear-gradient(92deg, rgba(0,0,0,.08) 0 2px, transparent 2px 11px, rgba(255,220,180,.04) 11px 12px, transparent 12px 27px),
+    linear-gradient(180deg, var(--table-hi), var(--table) 45%, var(--table-dark));
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+}
+.app{height:100%;display:flex;flex-direction:column;padding:max(12px,env(safe-area-inset-top)) 16px max(12px,env(safe-area-inset-bottom))}
+.rw-in-world .app{padding-left:72px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.logo{display:flex;gap:3px;align-items:center}
+.logo span{display:grid;place-items:center;width:clamp(22px,4.2vw,34px);aspect-ratio:1;border-radius:22%;font:clamp(13px,2.4vw,19px)/1 var(--dice);color:var(--ink);
+  background:radial-gradient(circle at 50% 40%,var(--ivory-hi),var(--ivory) 60%,var(--ivory-edge));box-shadow:inset 0 -2px 3px rgba(140,105,50,.35),0 3px 0 #BCA67A,0 6px 8px rgba(0,0,0,.45)}
+.logo span:nth-child(-n+6){background:radial-gradient(circle at 50% 40%,#FFF3C4,#FFD45A 60%,#F0A92A);box-shadow:inset 0 -2px 3px rgba(160,90,0,.35),0 3px 0 #D08A1C,0 6px 8px rgba(0,0,0,.45)}
+.logo span:nth-child(odd){transform:rotate(-4deg)} .logo span:nth-child(3n){transform:rotate(5deg) translateY(-2px)}
+.chips{display:flex;gap:8px}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px 12px;text-align:center;min-width:74px}
+.chip b{display:block;font:800 22px/1.1 var(--head);font-variant-numeric:tabular-nums}
+.chip span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.chip.low b{color:var(--bad);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.55}}
+
+main{flex:1;min-height:0;display:grid;grid-template-columns:auto minmax(220px,340px);gap:24px;align-items:center;justify-content:center;padding-top:10px}
+@media (max-aspect-ratio:1/1){main{grid-template-columns:1fr;grid-template-rows:auto 1fr;align-items:start;justify-items:center;gap:12px}}
+.play{display:flex;flex-direction:column;align-items:center;gap:12px}
+.ribbon{display:flex;align-items:center;justify-content:center;gap:5px;min-height:46px;flex-wrap:wrap}
+.ribbon .mini{display:grid;place-items:center;min-width:34px;height:34px;padding:0 4px;border-radius:22%;font:18px/1 var(--dice);color:var(--ink);
+  background:radial-gradient(circle at 50% 40%,#FFF3C4,#FFD45A 60%,#F0A92A);box-shadow:0 3px 0 var(--gold-lo),0 6px 10px rgba(0,0,0,.4)}
+.ribbon .hint{color:var(--muted);font-size:15px}
+.ribbon .res{font:800 20px/1 var(--head);margin-left:6px}
+.ribbon .res.good{color:var(--good)} .ribbon .res.bad{color:var(--bad)}
+
+.tray{--s:min(17vw,12.5vh,96px);position:relative;display:grid;grid-template-columns:repeat(4,var(--s));gap:calc(var(--s)*.12);padding:calc(var(--s)*.24);border-radius:calc(var(--s)*.3);
+  background:linear-gradient(160deg,var(--tray-hi),var(--tray) 50%,var(--tray-deep));
+  box-shadow:inset 0 3px 0 rgba(255,255,255,.18),inset 0 -6px 12px rgba(0,0,0,.45),0 18px 0 #0A1030,0 30px 40px rgba(0,0,0,.55);touch-action:none}
+@media (max-aspect-ratio:1/1){.tray{--s:min(19vw,11vh,96px)}}
+.die{width:var(--s);height:var(--s);border-radius:22%;display:grid;place-items:center;position:relative;cursor:pointer;
+  font:calc(var(--s)*.5)/1 var(--dice);color:var(--ink);
+  background:radial-gradient(circle at 50% 38%,var(--ivory-hi),var(--ivory) 58%,var(--ivory-edge));
+  box-shadow:inset 0 2px 1px #fff,inset 0 -4px 6px rgba(140,105,50,.35),0 calc(var(--s)*.07) 0 #BCA67A,0 calc(var(--s)*.08) 0 #8E7A52,0 calc(var(--s)*.16) calc(var(--s)*.18) rgba(0,0,0,.5);
+  transition:transform .12s, background .12s}
+.die i{font-style:normal;display:block}
+.die i.qu{font-size:.72em;letter-spacing:-.04em}
+.die.on{background:radial-gradient(circle at 50% 38%,#FFF3C4,#FFD45A 60%,#F0A92A);transform:translateY(calc(var(--s)*-.04)) scale(1.04);
+  box-shadow:inset 0 2px 1px #fff,0 calc(var(--s)*.07) 0 #D08A1C,0 calc(var(--s)*.08) 0 #9C6410,0 0 0 3px rgba(255,194,61,.5),0 calc(var(--s)*.2) calc(var(--s)*.3) rgba(255,170,40,.45)}
+.die.last{outline:3px solid #fff;outline-offset:2px}
+.tray.good .die.on{background:radial-gradient(circle at 50% 38%,#DFFFEA,#7FE0A8 60%,#3FB27F)}
+.tray.bad .die.on{background:radial-gradient(circle at 50% 38%,#FFE3DE,#FF9C8E 60%,#E0463A)}
+.tray.shake .die{animation:roll .5s ease}
+@keyframes roll{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(-6px,-10px) rotate(-25deg)}50%{transform:translate(6px,4px) rotate(20deg)}75%{transform:translate(-3px,-4px) rotate(-8deg)}}
+svg.trail{position:absolute;inset:0;pointer-events:none;overflow:visible}
+svg.trail polyline{fill:none;stroke:rgba(255,120,40,.75);stroke-width:10;stroke-linecap:round;stroke-linejoin:round}
+.controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.btn{font:800 17px var(--ui);border:0;border-radius:14px;padding:12px 18px;cursor:pointer;white-space:nowrap}
+.btn.primary{background:var(--orange);color:#fff;box-shadow:0 4px 0 #B63F12}
+.btn.primary:active{transform:translateY(2px);box-shadow:0 2px 0 #B63F12}
+.btn.ghost{background:rgba(255,240,220,.08);color:var(--cream);border:1.5px solid var(--line)}
+.btn:focus-visible,.die:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+.side{align-self:stretch;min-height:0;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;width:100%;max-width:340px}
+@media (max-aspect-ratio:1/1){.side{max-height:100%;max-width:560px}}
+.side h2{margin:0 0 8px;font:800 18px/1.2 var(--head);display:flex;justify-content:space-between;align-items:baseline}
+.side h2 small{font:500 13px var(--ui);color:var(--muted)}
+.words{flex:1;overflow-y:auto;display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px}
+.words span{background:rgba(255,240,220,.1);border-radius:8px;padding:3px 9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:14px}
+.words span b{color:var(--gold);font-size:12px;margin-left:5px}
+.words span.new{animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.12)}}
+.empty{color:var(--muted);font-size:14px}
+
+.screen{position:fixed;inset:0;display:grid;place-items:center;padding:16px;background:rgba(20,8,4,.6);backdrop-filter:blur(3px);z-index:5;overflow-y:auto}
+.card{background:linear-gradient(180deg,#3A1C12,#24100A);border:1px solid var(--line);border-radius:22px;padding:22px;max-width:520px;width:100%;box-shadow:0 30px 60px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:12px;text-align:center}
+.card h1{margin:0;font:800 clamp(30px,6vw,42px)/1 var(--head);letter-spacing:-.02em}
+.card p{margin:0;color:var(--muted)}
+.card .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.seg{display:inline-flex;background:rgba(0,0,0,.3);border-radius:12px;padding:4px;gap:4px}
+.seg button{font:700 15px var(--ui);color:var(--cream);background:transparent;border:0;border-radius:9px;padding:8px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--cream);color:var(--ink)}
+.big{font:800 56px/1 var(--head);color:var(--gold)}
+.stars{font-size:30px;letter-spacing:4px;min-height:36px}
+.missed{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;max-height:140px;overflow-y:auto}
+.missed span{font-size:13px;text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:7px;background:rgba(255,240,220,.07);color:var(--muted)}
+.how{text-align:left;font-size:14px;color:var(--muted);margin:0;padding-left:18px}
+.how li{margin:2px 0}
+@media (prefers-reduced-motion:reduce){.tray.shake .die,.words span.new,.chip.low b{animation:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo" aria-label="Rosenboggle"><span>R</span><span>O</span><span>S</span><span>E</span><span>N</span><span>B</span><span>O</span><span>G</span><span>G</span><span>L</span><span>E</span></div>
+    <div class="chips">
+      <div class="chip" id="timeChip"><b id="time">3:00</b><span>Time</span></div>
+      <div class="chip"><b id="score">0</b><span>Points</span></div>
+    </div>
+  </header>
+  <main>
+    <div class="play">
+      <div class="ribbon" id="ribbon" aria-live="polite"><span class="hint">Drag across the letters to make a word</span></div>
+      <div class="tray" id="tray" role="grid" aria-label="Letter dice"><svg class="trail" id="trail"><polyline id="trailLine" points=""/></svg></div>
+      <div class="controls">
+        <button class="btn primary" type="button" id="enterBtn">Enter word</button>
+        <button class="btn ghost" type="button" id="clearBtn">Clear</button>
+        <button class="btn ghost" type="button" id="doneBtn">I'm done</button>
+      </div>
+    </div>
+    <section class="side" aria-label="Words found">
+      <h2>Your words <small id="count">0 words</small></h2>
+      <div class="words" id="words"><p class="empty">Words you find go here.</p></div>
+    </section>
+  </main>
+</div>
+
+<section class="screen" id="startScreen">
+  <div class="card">
+    <h1>Rosenboggle</h1>
+    <p>Shake the dice, then find as many words as you can before time runs out.</p>
+    <ul class="how">
+      <li>Drag from letter to letter. Each next letter has to <b>touch</b> the last one, even diagonally.</li>
+      <li>Words need <b>3 or more letters</b>. You can't use the same die twice in one word.</li>
+      <li>Or tap letters one at a time, then tap <b>Enter word</b>. On a keyboard you can just type.</li>
+      <li>Points: 3–4 letters 1, 5 letters 2, 6 letters 3, 7 letters 5, 8+ letters 11.</li>
+    </ul>
+    <div class="row"><div class="seg" role="group" aria-label="Timer" id="timeSeg">
+      <button type="button" data-t="120">2 minutes</button><button type="button" data-t="180">3 minutes</button><button type="button" data-t="0">No timer</button>
+    </div></div>
+    <p id="bestLine"></p>
+    <div class="row">
+      <button class="btn primary" type="button" id="startBtn">Shake the dice!</button>
+      <button class="btn ghost" type="button" data-rw-room hidden>Back to the Game Room</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="endScreen" hidden>
+  <div class="card">
+    <p id="endKicker">Time's up!</p>
+    <div class="big" id="endScore">0</div>
+    <p id="endSub"></p>
+    <div class="stars" id="endStars"></div>
+    <p id="endBest"></p>
+    <p><b>Some words you missed</b></p>
+    <div class="missed" id="missed"></div>
+    <div class="row">
+      <button class="btn primary" type="button" id="againBtn">Play again</button>
+      <button class="btn ghost" type="button" data-rw-room hidden>Back to the Game Room</button>
+      <button class="btn ghost" type="button" data-rw-back hidden>Back to Rosenberg World</button>
+    </div>
+  </div>
+</section>
+
+<script src="words.js"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const DICE = ["AAEEGN","ABBJOO","ACHOPS","AFFKPS","AOOTTW","CIMOTU","DEILRX","DELRVY","DISTTY","EEGHNW","EEINSU","EHRTVW","EIOSST","ELRTTY","HIMNUQ","HLNNRZ"];
+  const POINTS = (n) => n <= 4 ? 1 : n === 5 ? 2 : n === 6 ? 3 : n === 7 ? 5 : 11;
+  const player = (window.RosenbergBridge && RosenbergBridge.player) || null;
+  const NAME = player ? player[0].toUpperCase() + player.slice(1) : "You";
+
+  // dictionary + prefixes for the solver
+  const WORDS = new Set(window.ROSENBOGGLE_WORDS.split(" "));
+  const PREFIX = new Set();
+  for (const w of WORDS) for (let i = 1; i < w.length; i++) PREFIX.add(w.slice(0, i));
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("rosenboggle." + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem("rosenboggle." + k, JSON.stringify(v)); } catch {} },
+  };
+
+  let S = { board: [], path: [], found: new Map(), score: 0, left: 0, total: 180, running: false, timer: null, all: [] };
+  const face = (i) => S.board[i] === "Q" ? "qu" : S.board[i].toLowerCase();
+  const wordOf = (path) => path.map(face).join("");
+  const adj = (a, b) => a !== b && Math.abs((a >> 2) - (b >> 2)) <= 1 && Math.abs((a & 3) - (b & 3)) <= 1;
+
+  function solve(board) {
+    const out = new Set();
+    const f = (i) => board[i] === "Q" ? "qu" : board[i].toLowerCase();
+    const walk = (i, used, w) => {
+      w += f(i);
+      if (!PREFIX.has(w) && !WORDS.has(w)) return;
+      if (w.length >= 3 && WORDS.has(w)) out.add(w);
+      used |= 1 << i;
+      for (let j = 0; j < 16; j++) if (!(used & (1 << j)) && adj(i, j)) walk(j, used, w);
+    };
+    for (let i = 0; i < 16; i++) walk(i, 0, "");
+    return [...out];
+  }
+  function roll() {
+    let best = null;
+    for (let tries = 0; tries < 30; tries++) {
+      const dice = DICE.slice().sort(() => Math.random() - 0.5);
+      const b = dice.map((d) => d[Math.floor(Math.random() * 6)]);
+      const all = solve(b);
+      if (!best || all.length > best.all.length) best = { b, all };
+      if (all.length >= 60) break;
+    }
+    return best;
+  }
+
+  // ---------- board ----------
+  const tray = $("tray"), trail = $("trail"), line = $("trailLine");
+  const dieEls = [];
+  function buildTray() {
+    for (let i = 0; i < 16; i++) {
+      const d = document.createElement("div");
+      d.className = "die"; d.dataset.i = i; d.setAttribute("role", "gridcell");
+      d.append(document.createElement("i"));
+      tray.append(d); dieEls.push(d);
+    }
+  }
+  function drawBoard() {
+    S.board.forEach((ch, i) => {
+      const d = dieEls[i], t = d.firstChild;
+      t.textContent = ch === "Q" ? "Qu" : ch;
+      t.className = ch === "Q" ? "qu" : "";
+      d.setAttribute("aria-label", ch === "Q" ? "Qu" : ch);
+    });
+  }
+  function center(i) {
+    const r = dieEls[i].getBoundingClientRect(), tr = tray.getBoundingClientRect();
+    return [r.left - tr.left + r.width / 2, r.top - tr.top + r.height / 2];
+  }
+  function drawPath(flash) {
+    dieEls.forEach((d, i) => { d.classList.toggle("on", S.path.includes(i)); d.classList.toggle("last", S.path[S.path.length - 1] === i && !flash); });
+    line.setAttribute("points", S.path.map((i) => center(i).join(",")).join(" "));
+    const rb = $("ribbon"); rb.textContent = "";
+    if (!S.path.length) { const h = document.createElement("span"); h.className = "hint"; h.textContent = S.running ? "Drag across the letters to make a word" : ""; rb.append(h); return; }
+    S.path.forEach((i) => { const m = document.createElement("span"); m.className = "mini"; m.textContent = S.board[i] === "Q" ? "Qu" : S.board[i]; rb.append(m); });
+  }
+  function flashResult(kind, text) {
+    tray.classList.remove("good", "bad"); tray.classList.add(kind);
+    drawPath(true);
+    const r = document.createElement("span"); r.className = "res " + kind; r.textContent = text; $("ribbon").append(r);
+    clearTimeout(flashResult.t);
+    flashResult.t = setTimeout(() => { tray.classList.remove("good", "bad"); S.path = []; drawPath(); }, 750);
+  }
+  function submit() {
+    if (!S.running || !S.path.length) return;
+    const w = wordOf(S.path);
+    if (w.length < 3) return flashResult("bad", "Too short");
+    if (S.found.has(w)) return flashResult("bad", "Already got it");
+    if (!WORDS.has(w)) return flashResult("bad", "Not a word");
+    const p = POINTS(w.length);
+    S.found.set(w, p); S.score += p;
+    $("score").textContent = S.score;
+    addWordChip(w, p);
+    Snd.good(w.length);
+    flashResult("good", `+${p}`);
+  }
+  function addWordChip(w, p) {
+    const box = $("words");
+    const empty = box.querySelector(".empty"); if (empty) empty.remove();
+    const s = document.createElement("span"); s.className = "new"; s.textContent = w;
+    const b = document.createElement("b"); b.textContent = "+" + p; s.append(b);
+    box.prepend(s);
+    $("count").textContent = S.found.size + (S.found.size === 1 ? " word" : " words");
+  }
+
+  // ---------- input: drag, tap, keyboard ----------
+  let dragging = false, moved = false;
+  function dieAt(x, y) {
+    for (let i = 0; i < 16; i++) {
+      const r = dieEls[i].getBoundingClientRect();
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      if (Math.abs(x - cx) < r.width * 0.36 && Math.abs(y - cy) < r.height * 0.36) return i; // small hit zone so diagonals work
+    }
+    return -1;
+  }
+  function extend(i) {
+    if (i < 0) return;
+    const p = S.path, last = p[p.length - 1];
+    if (p.length >= 2 && p[p.length - 2] === i) { p.pop(); drawPath(); return; } // slide back to undo
+    if (p.includes(i)) return;
+    if (p.length && !adj(last, i)) return;
+    p.push(i); Snd.tick(p.length); drawPath();
+  }
+  tray.addEventListener("pointerdown", (e) => {
+    if (!S.running) return;
+    const i = dieAt(e.clientX, e.clientY); if (i < 0) return;
+    tray.setPointerCapture(e.pointerId);
+    clearTimeout(flashResult.t); tray.classList.remove("good", "bad");
+    dragging = true; moved = false;
+    const p = S.path, last = p[p.length - 1];
+    if (!p.length) { p.push(i); Snd.tick(1); drawPath(); }
+    else if (i === last) { tapSubmit = true; }
+    else if (!p.includes(i) && adj(last, i)) { p.push(i); Snd.tick(p.length); drawPath(); }
+    else { S.path = [i]; Snd.tick(1); drawPath(); }
+    startLen = S.path.length;
+  });
+  let tapSubmit = false, startLen = 0;
+  tray.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const i = dieAt(e.clientX, e.clientY);
+    if (i >= 0 && i !== S.path[S.path.length - 1]) { moved = true; tapSubmit = false; extend(i); }
+  });
+  const up = () => {
+    if (!dragging) return; dragging = false;
+    if (moved && S.path.length > startLen - 1 && S.path.length >= 2) submit();
+    else if (tapSubmit) submit();
+    tapSubmit = false;
+  };
+  tray.addEventListener("pointerup", up); tray.addEventListener("pointercancel", up);
+  $("enterBtn").onclick = submit;
+  $("clearBtn").onclick = () => { S.path = []; drawPath(); };
+
+  // typing: find a path on the board for the typed letters
+  let typed = "";
+  function pathFor(word) {
+    const res = [];
+    const go = (pos, i, used) => {
+      const f = face(i);
+      if (!word.startsWith(f, pos)) return false;
+      res.push(i);
+      if (pos + f.length === word.length) return true;
+      for (let j = 0; j < 16; j++) if (!used.has(j) && adj(i, j) && go(pos + f.length, j, new Set([...used, j]))) return true;
+      res.pop(); return false;
+    };
+    for (let i = 0; i < 16; i++) if (go(0, i, new Set([i]))) return res;
+    return null;
+  }
+  document.addEventListener("keydown", (e) => {
+    if (!S.running || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === "Enter") { e.preventDefault(); submit(); typed = ""; return; }
+    if (e.key === "Escape") { typed = ""; S.path = []; drawPath(); return; }
+    if (e.key === "Backspace") { typed = typed.slice(0, -1); }
+    else if (/^[a-z]$/i.test(e.key)) typed += e.key.toLowerCase();
+    else return;
+    const p = typed ? pathFor(typed) || pathFor(typed + "u") : [];
+    if (p) { S.path = p; drawPath(); }
+    else { typed = typed.slice(0, -1); flashResult("bad", "Not on the board"); setTimeout(() => { const q = typed ? pathFor(typed) : []; S.path = q || []; drawPath(); }, 760); }
+  });
+
+  // ---------- rounds ----------
+  let tSel = store.get("time", 180);
+  function syncSeg() { $("timeSeg").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.t === tSel))); }
+  $("timeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; tSel = +b.dataset.t; store.set("time", tSel); syncSeg(); });
+  const clock = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  function showBest() {
+    const b = store.get("best", {})[player || "you"];
+    $("bestLine").textContent = b ? `${NAME === "You" ? "Your" : NAME + "'s"} best: ${b} points` : "";
+  }
+  function start() {
+    const r = roll();
+    Object.assign(S, { board: r.b, all: r.all, path: [], found: new Map(), score: 0, total: tSel, left: tSel, running: true });
+    drawBoard(); drawPath();
+    tray.classList.remove("shake"); void tray.offsetWidth; tray.classList.add("shake");
+    Snd.shake();
+    $("score").textContent = "0"; $("words").innerHTML = '<p class="empty">Words you find go here.</p>'; $("count").textContent = "0 words";
+    $("time").textContent = tSel ? clock(tSel) : "∞"; $("timeChip").classList.remove("low");
+    $("startScreen").hidden = true; $("endScreen").hidden = true;
+    clearInterval(S.timer);
+    if (tSel) S.timer = setInterval(() => {
+      S.left--; $("time").textContent = clock(Math.max(0, S.left));
+      $("timeChip").classList.toggle("low", S.left <= 15);
+      if (S.left <= 10 && S.left > 0) Snd.tick(1);
+      if (S.left <= 0) end("Time's up!");
+    }, 1000);
+    typed = "";
+  }
+  function end(kicker) {
+    if (!S.running) return;
+    S.running = false; clearInterval(S.timer); S.path = []; drawPath();
+    Snd.end();
+    const n = S.found.size;
+    const stars = S.score >= 30 ? 3 : S.score >= 15 ? 2 : S.score >= 5 ? 1 : 0;
+    $("endKicker").textContent = kicker;
+    $("endScore").textContent = S.score;
+    $("endSub").textContent = `${n} word${n === 1 ? "" : "s"} found out of ${S.all.length} on this board.`;
+    $("endStars").textContent = stars ? "★".repeat(stars) : "";
+    const bests = store.get("best", {}), key = player || "you", prev = bests[key] || 0;
+    if (S.score > prev) { bests[key] = S.score; store.set("best", bests); }
+    $("endBest").textContent = S.score > prev && prev ? "New best score!" : `Best: ${Math.max(prev, S.score)} points`;
+    const missed = S.all.filter((w) => !S.found.has(w)).sort((a, b) => b.length - a.length || a.localeCompare(b)).slice(0, 30);
+    $("missed").innerHTML = "";
+    missed.forEach((w) => { const s = document.createElement("span"); s.textContent = w; $("missed").append(s); });
+    $("endScreen").hidden = false;
+    if (window.RosenbergBridge) RosenbergBridge.report({ score: S.score, stars });
+  }
+  $("startBtn").onclick = start;
+  $("againBtn").onclick = start;
+  $("doneBtn").onclick = () => end("All done!");
+
+  // ---------- sound ----------
+  const Snd = (() => {
+    let ac = null;
+    const ctx = () => { if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch { ac = null; } } if (ac && ac.state === "suspended") ac.resume(); return ac; };
+    const tone = (f, d, v = 0.08, type = "triangle", when = 0) => {
+      const a = ctx(); if (!a) return;
+      const t = a.currentTime + when, o = a.createOscillator(), g = a.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + d);
+      o.connect(g).connect(a.destination); o.start(t); o.stop(t + d + 0.02);
+    };
+    const rattle = () => { const a = ctx(); if (!a) return; for (let i = 0; i < 14; i++) tone(180 + Math.random() * 500, 0.04, 0.05, "square", i * 0.03 + Math.random() * 0.02); };
+    return {
+      tick: (n) => tone(420 + n * 40, 0.06, 0.05),
+      good: (len) => [0, 1, 2].slice(0, len >= 5 ? 3 : 2).forEach((k) => tone([660, 880, 1100][k], 0.14, 0.08, "triangle", k * 0.07)),
+      shake: rattle,
+      end: () => [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.2, 0.07, "triangle", k * 0.1)),
+    };
+  })();
+
+  buildTray();
+  const first = roll(); S.board = first.b; S.all = first.all; drawBoard(); drawPath();
+  syncSeg(); showBest();
+  addEventListener("resize", () => drawPath());
+  window.__boggle = { S, solve, WORDS, start, end };
+})();
+</script>
+</body>
+</html>

@@ -117,6 +117,17 @@
   });
 
   G.register({
+    id: "gameRoom",
+    title: "The Game Room",
+    subtitle: "Sarah's got games: Rosenboggle and The Word Game",
+    destination: "gameroom",
+    unlocked: true,
+    entry: "games/game-room/index.html",
+    color: "#8A3A26",
+    icon: "🎲",
+  });
+
+  G.register({
     id: "wordGame",
     title: "The Word Game",
     subtitle: "Chain words in a category. Beat the computer!",

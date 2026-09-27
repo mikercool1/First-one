@@ -499,6 +499,7 @@
     pins.innerHTML = "";
     const pct = (x, y) => [((x - MAP.x0) / (MAP.x1 - MAP.x0)) * 100, ((y - MAP.y0) / (MAP.y1 - MAP.y0)) * 100];
     world.DESTINATIONS.forEach((d) => {
+      if (d.noPin) return;
       const status = world.destStatus(d);
       const [px, py] = pct(d.map[0], d.map[1]);
       const p = el("button", `pin ${status}`);
