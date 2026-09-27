@@ -40,6 +40,7 @@
     { id: "beach", name: "Rosenberg Beach", icon: "🏖️", kind: "place", map: [4150, 1860], arrive: [4100, 2260] },
     // sea planes between the dock and Baha Mar (travel, not games)
     { id: "seaplane", name: "Fly to Baha Mar", icon: "✈️", kind: "travel", to: "bahamar", portal: [4630, 2352], portalR: 70, arrive: [4610, 2352], map: [4650, 2352] },
+    { id: "hotel", name: "Baha Mar Hotel", icon: "🏨", kind: "game", portal: [5730, 1822], portalR: 80, arrive: [5730, 1842], map: [5730, 1640] },
     { id: "seaplane-home", name: "Fly Home", icon: "✈️", kind: "travel", to: "mainland", portal: [4990, 1392], portalR: 60, arrive: [4995, 1410], map: [4980, 1300] },
   ];
   const DEST = world.DEST = {};
@@ -68,6 +69,10 @@
     arcade:   { name: "ARCADE", icon: "🕹️", color: "#8A3FE4", go: "arcade", zone: [2150, 2380, 2800, 2820] },
     icecream: { name: "ICE CREAM", icon: "🍦", color: "#E8558A", go: "icecream", zone: [3000, 2320, 3500, 2820] },
     witch:    { name: "WITCH MOUNTAIN", icon: "🧙", color: "#5E2CA5", go: "witchmtn", zone: [2980, 420, 3380, 770] },
+    hotel:    { name: "BAHA MAR HOTEL", icon: "🏨", color: "#E86A8A", go: "hotel", zone: [5580, 1560, 5900, 1900] },
+    splash:   { name: "SPLASH DOWN", icon: "🛟", color: "#1E8FC4", go: "waterworld" },
+    lazyriver:{ name: "LAZY RIVER", icon: "🏴‍☠️", color: "#0B8FB0", go: "lazyriver" },
+    flyhome:  { name: "FLY HOME", icon: "✈️", color: "#18A0B8", go: "seaplane-home" },
     frogs:    { name: "FROG POND", icon: "🐸", color: "#2E9A4E", go: "frogpond", zone: [1900, 2790, 2260, 3060] },
     garden:   { name: "GRAMPA'S GARDEN", icon: "🍅", color: "#D8342A", go: "garden", zone: [880, 1180, 1260, 1480] },
     shop:     { name: "STAR SHOP", icon: "⭐", color: "#7B3FE4", go: "shop", zone: [3510, 2010, 3860, 2280] },
@@ -77,7 +82,7 @@
     woods:    { name: "WOODS", icon: "🌲", color: "#3E7A3A", go: [640, 1900], zone: [110, 1160, 880, 3060] },
   };
   world.zoneAt = (x, y) => {
-    if (E && E.onIsland(x, y)) return PLACES.bahamar;
+    if (E && E.onIsland(x, y)) { const z = PLACES.hotel.zone; return x > z[0] && x < z[2] && y > z[1] && y < z[3] ? PLACES.hotel : PLACES.bahamar; }
     for (const k in PLACES) { const z = PLACES[k].zone; if (z && x > z[0] && x < z[2] && y > z[1] && y < z[3]) return PLACES[k]; }
     return null;
   };
@@ -1335,6 +1340,7 @@
     signpost(4150, 1995, [["beach", "U"], ["bahamar", "D"], ["icecream", "D"]]);                   // on the sand, where the trail heads south
     signpost(1880, 900, [["academy", "L"], ["raceway", "L"], ["baseball", "R"], ["home", "D"]]);  // north lane, west of the ballpark
     signpost(3080, 1190, [["witch", "U"], ["baseball", "L"], ["space", "R"], ["home", "D"]]);      // north lane, east of the ballpark
+    signpost(5150, 1470, [["splash", "D"], ["lazyriver", "R"], ["hotel", "R"], ["flyhome", "L"]]);  // on Baha Mar, by the plane
     signpost(2600, 2735, [["home", "U"], ["frogs", "L"], ["sports", "L"], ["icecream", "R"]]);     // south street by the arcade
   }
 
@@ -1824,11 +1830,60 @@
     }, { layer: "ground" });
     sign(4850, 1400, ["FLY HOME ✈"], { size: 17, board: "#FFFFFF", edge: "#18A0B8", ink: "#1B6FB4", ent: { tap: { reach: "remote", act() { world.flyTo("mainland"); } } } });
     sign(4820, 1560, ["WELCOME TO", "BAHA MAR"], { size: 20, board: "#FFF4D6", edge: "#FF7A45", ink: "#C24E1C" });
+    buildHotel();
     // palms and beach umbrellas round the island
-    [[4560, 1650], [4660, 1500], [4780, 1420], [5250, 1380], [5460, 1450], [5620, 1580], [5680, 1760], [4520, 1880], [5640, 1960]].forEach(([x, y], i) => tree(x, y, "palm", 0.9 + (i % 3) * 0.08));
-    [[5300, 1480, "#FF5C8A", "#FFFFFF"], [5560, 1560, "#FFD23F", "#2F9BFF"], [4700, 1720, "#2EB872", "#FFFFFF"]].forEach(([x, y, a, b]) => {
+    [[4560, 1650], [4660, 1500], [4780, 1420], [5250, 1380], [5460, 1450], [4520, 1880], [5870, 1660], [5880, 1930], [5600, 2020]].forEach(([x, y], i) => tree(x, y, "palm", 0.9 + (i % 3) * 0.08));
+    [[5330, 1520, "#FF5C8A", "#FFFFFF"], [4700, 1720, "#2EB872", "#FFFFFF"]].forEach(([x, y, a, b]) => {
       staticProp(x, y, [-62, -104, 62, 8], (c) => P_.umbrella(c, a, b), { shadow: [52, 14, 0, 6, 0.16], solid: [{ c: [0, -2, 5] }] });
     });
+  }
+
+  // The Baha Mar Hotel: a big pastel resort at the east end of the island, waiting for its game.
+  function drawHotel(c) {
+    const tower = (x, w, h, wall, trim) => {
+      c.fillStyle = wall; A.rr(c, x - w / 2, -h, w, h, 8); c.fill();
+      c.fillStyle = "rgba(0,0,0,.06)"; c.fillRect(x + w / 2 - 14, -h + 8, 14, h - 8);
+      // balconies and windows
+      for (let y = -h + 30; y < -70; y += 26) {
+        for (let k = x - w / 2 + 14; k < x + w / 2 - 20; k += 22) { c.fillStyle = "#9FDBFF"; A.rr(c, k, y, 14, 14, 3); c.fill(); }
+        c.fillStyle = trim; c.fillRect(x - w / 2 + 8, y + 15, w - 16, 3);
+      }
+      // curved roof like a wave
+      c.fillStyle = trim; c.beginPath(); c.moveTo(x - w / 2 - 6, -h + 4); c.quadraticCurveTo(x, -h - 34, x + w / 2 + 6, -h + 4); c.closePath(); c.fill();
+    };
+    tower(-86, 96, 250, "#FFE3D3", "#FF8A6A");   // coral tower
+    tower(86, 96, 280, "#DDF6F4", "#2EC4B6");    // aqua tower
+    tower(0, 120, 320, "#FFF7E6", "#F2B632");    // tall gold tower in the middle
+    // sign on top
+    c.fillStyle = "#E86A8A"; A.rr(c, -78, -366, 156, 34, 12); c.fill();
+    A.text(c, "BAHA MAR", 0, -348, 20, "#FFFFFF", { weight: 700 });
+    A.text(c, "★ ★ ★ ★ ★", 0, -318, 12, "#F2B632", { weight: 700 });
+    // lobby with an entrance canopy
+    c.fillStyle = "#FFFFFF"; A.rr(c, -150, -86, 300, 86, 10); c.fill();
+    c.fillStyle = "#BFE8FF"; for (let k = -134; k < 134; k += 38) { if (Math.abs(k + 15) < 40) continue; A.rr(c, k, -70, 28, 44, 4); c.fill(); }
+    c.fillStyle = "#2B4A6E"; A.rr(c, -26, -62, 52, 62, 6); c.fill();
+    c.fillStyle = "#BFE8FF"; A.rr(c, -21, -56, 20, 52, 3); c.fill(); A.rr(c, 1, -56, 20, 52, 3); c.fill();
+    c.fillStyle = "#E86A8A"; c.beginPath(); c.moveTo(-62, -80); c.lineTo(62, -80); c.lineTo(52, -100); c.lineTo(-52, -100); c.closePath(); c.fill();
+    c.fillStyle = "#FFFFFF"; A.text(c, "HOTEL", 0, -89, 13, "#FFFFFF", { weight: 700 });
+    c.fillStyle = "#C9A15A"; c.fillRect(-60, -80, 4, 80); c.fillRect(56, -80, 4, 80);
+    // red carpet
+    c.fillStyle = "#D8342A"; c.beginPath(); c.moveTo(-18, 0); c.lineTo(18, 0); c.lineTo(26, 16); c.lineTo(-26, 16); c.closePath(); c.fill();
+    // flags
+    [-140, 140].forEach((fx, i) => { A.line(c, fx, -86, fx, -150, 3, "#8E96A6"); c.fillStyle = i ? "#2EC4B6" : "#FF8A6A"; c.beginPath(); c.moveTo(fx, -150); c.lineTo(fx + 28, -142); c.lineTo(fx, -134); c.closePath(); c.fill(); });
+  }
+  function buildHotel() {
+    const x = 5730, y = 1790;
+    staticProp(x, y, [-170, -380, 170, 20], (c) => drawHotel(c), {
+      kind: "building", occludes: true, shadow: [150, 18], solid: [{ r: [-150, -40, -30, 4] }, { r: [30, -40, 150, 4] }, { r: [-30, -40, 30, -18] }],
+      live(c) { c.save(); c.translate(0, -400); comingRibbon(c, "hotel", 0, "#E86A8A"); c.restore(); },
+      tap: portalTap("hotel"),
+    });
+    // a little pool and loungers out front
+    staticProp(x - 10, y + 110, [-80, -20, 80, 30], (c) => {
+      c.fillStyle = "#E4D8C2"; A.rr(c, -78, -14, 156, 40, 12); c.fill();
+      c.fillStyle = "#3CC3E8"; A.rr(c, -66, -6, 132, 24, 10); c.fill();
+      c.fillStyle = "rgba(255,255,255,.35)"; A.rr(c, -56, -2, 50, 5, 3); c.fill();
+    }, { layer: "ground" });
   }
 
   // Fly between the mainland dock and Baha Mar.

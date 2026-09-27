@@ -31,7 +31,11 @@ they walk out of that game's door and the stars they earned fly into the total.
    The Frozenbergs ice cream stand (`buildIceCream`) is a small, complete example.
 3. Optionally add it to a signpost in `buildSignposts()`.
 
-### Coming soon: Witch Mountain and Frogger
+### Coming soon: Witch Mountain, Frogger and the Baha Mar Hotel
+
+The **Baha Mar Hotel** (a big pastel resort with a pool out front) stands at the east end of Baha Mar
+island, at the end of the boardwalk; its game is `bahaMarHotel` in `js/games.js`.
+
 
 Their places are built and waiting: **Witch Mountain** (a glowing rocky arch with a cauldron at the
 foot of the mountain, north of the Fart Man zone) and the **Frog Pond** (lily pads and hopping frogs

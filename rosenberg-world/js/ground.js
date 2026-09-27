@@ -18,7 +18,7 @@
     track: { x: 640, y: 760, rx: 320, ry: 175 },
     plaza: { x: 3500, y: 1760, r: 250 },
     // Baha Mar: the water park island, reached by sea plane from the dock
-    island: { x: 5100, y: 1800, rx: 640, ry: 460 },
+    island: { x: 5180, y: 1800, rx: 720, ry: 460 }, // the east end is wider to fit the hotel
     park: { dx: 1550, dy: -1040 },        // the water park's old spot, moved onto the island
     waterFenceY: 1720,
     paths: [
@@ -330,7 +330,7 @@
     c.fillStyle = grassPattern || "#8CD06A"; A.ell(c, I.x + 10, I.y - 20, I.rx - 150, I.ry - 120); c.fill();
     // boardwalk from the sea plane landing to the park gates
     c.lineCap = "round";
-    const walk = [[4990, 1380], [5010, 1500], [5100, 1610], [5412, 1612]];
+    const walk = [[4990, 1380], [5010, 1500], [5100, 1610], [5412, 1612], [5570, 1690], [5640, 1810], [5730, 1830]];
     smoothPath(c, walk); c.strokeStyle = PATH_COLORS.board[0]; c.lineWidth = 82; c.stroke();
     smoothPath(c, walk); c.strokeStyle = PATH_COLORS.board[1]; c.lineWidth = 70; c.stroke();
     smoothPath(c, walk); c.strokeStyle = PATH_COLORS.board[2]; c.lineWidth = 35; c.setLineDash([4, 14]); c.stroke(); c.setLineDash([]);

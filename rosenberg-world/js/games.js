@@ -254,6 +254,17 @@
   });
 
   G.register({
+    id: "bahaMarHotel",
+    title: "Baha Mar Hotel",
+    subtitle: "",
+    destination: "hotel",
+    unlocked: false,
+    entry: null,
+    color: "#E86A8A",
+    icon: "🏨",
+  });
+
+  G.register({
     id: "frogger",
     title: "Frogger",
     subtitle: "",
