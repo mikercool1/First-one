@@ -25,23 +25,17 @@
     { id: "icecream", name: "Frozenbergs Ice Cream", icon: "🍦", kind: "game", portal: [3250, 2664], portalR: 85, arrive: [3250, 2684], map: [3250, 2470] },
     { id: "court", name: "Basketball Court", icon: "🏀", kind: "game", portal: [1630, 2175], portalR: 80, arrive: [1630, 2190], map: [1710, 2175] },
     { id: "plaza", name: "Mystery Plaza", icon: "⛲", kind: "place", map: [3500, 1760], arrive: [3500, 1880] },
-    { id: "plaza-building", name: "Mystery Building", icon: "❓", kind: "future", portal: [3500, 1535], portalR: 85, arrive: [3500, 1560], map: [3500, 1420] },
-    { id: "plaza-lot", name: "Under Construction", icon: "🚧", kind: "future", portal: [3850, 2235], portalR: 95, arrive: [3850, 2250], map: [3850, 2080] },
     { id: "sports", name: "Sports Complex", icon: "🏟️", kind: "place", map: [1500, 2090], arrive: [1500, 2200] },
-    { id: "sports-hoops", name: "Hoops Gym", icon: "🏀", kind: "future", portal: [1710, 2560], portalR: 85, arrive: [1710, 2575], map: [1710, 2440] },
-    { id: "sports-stadium", name: "Field House", icon: "🏈", kind: "future", portal: [1150, 2595], portalR: 85, arrive: [1150, 2615], map: [1150, 2480] },
     { id: "sports-tennis", name: "Tennis Court", icon: "🎾", kind: "future", portal: [1905, 2715], portalR: 90, arrive: [1905, 2730], map: [1710, 2700] },
     { id: "arcade", name: "Rosenberg Arcade", icon: "🕹️", kind: "future", portal: [2450, 2600], portalR: 90, arrive: [2450, 2640], map: [2450, 2470] },
     { id: "raceway", name: "Rosenberg Raceway", icon: "🏎️", kind: "future", portal: [640, 1000], portalR: 100, arrive: [640, 1030], map: [640, 760] },
     { id: "woods", name: "Adventure Woods", icon: "🌲", kind: "place", map: [560, 1780], arrive: [640, 1900] },
-    { id: "woods-cave", name: "Mystery Cave", icon: "🔦", kind: "future", portal: [270, 1585], portalR: 85, arrive: [300, 1600], map: [270, 1480] },
     { id: "waterworld", name: "Baha Bay", icon: "🌊", kind: "future", portal: [5100, 1680], portalR: 100, arrive: [5100, 1660], map: [4850, 1820] },
     { id: "lazyriver", name: "Baha Bay Lazy River", icon: "🛟", kind: "future", portal: [5412, 1676], portalR: 70, arrive: [5412, 1660], map: [5430, 2030] },
     { id: "beach", name: "Rosenberg Beach", icon: "🏖️", kind: "place", map: [4150, 1860], arrive: [4100, 2260] },
     // sea planes between the dock and Baha Mar (travel, not games)
     { id: "seaplane", name: "Fly to Baha Mar", icon: "✈️", kind: "travel", to: "bahamar", portal: [4630, 2352], portalR: 70, arrive: [4610, 2352], map: [4650, 2352] },
     { id: "seaplane-home", name: "Fly Home", icon: "✈️", kind: "travel", to: "mainland", portal: [4990, 1392], portalR: 60, arrive: [4995, 1410], map: [4980, 1300] },
-    { id: "gondola", name: "Winter Mountain", icon: "🏔️", kind: "future", portal: [3160, 515], portalR: 85, arrive: [3160, 540], map: [3300, 150] },
   ];
   const DEST = world.DEST = {};
   DESTINATIONS.forEach((d) => (DEST[d.id] = d));
@@ -242,7 +236,6 @@
     buildBeach();
     buildRaceway();
     buildWoods();
-    buildGondola();
     buildUpgrades();
     buildStreetLife();
     buildStarsAndItems();
@@ -317,10 +310,22 @@
       tap: {
         reach: "remote",
         act(E2, e) {
-          if (e.cool > E2.t) return; e.cool = E2.t + 0.6; e.squash = 1; e.flash = 1;
-          RW.sfx.play("honk"); E2.float(e.x, e.y - 100, "BEEP BEEP!", { size: 24, stroke: "#2F6BD6" });
-          // the car goes to Fish Friday: walk to the driver's door
-          goPlay(E2, DEST.car);
+          // Easter egg: honk five times fast and the alarm goes off... and someone was hiding in the trunk
+          e.honks = (e.lastHonk != null && E2.t - e.lastHonk < 1.2 ? e.honks || 0 : 0) + 1; e.lastHonk = E2.t;
+          e.squash = 1; e.flash = 1;
+          RW.sfx.play("honk"); E2.float(e.x, e.y - 100 - (e.honks - 1) * 16, e.honks > 2 ? "BEEP!" : "BEEP BEEP!", { size: 24, stroke: "#2F6BD6" });
+          if (e.honks >= 5) {
+            e.honks = 0; E2.player.path = null;
+            for (let i = 0; i < 6; i++) E2.later(i * 0.35, () => { RW.sfx.play("honk"); e.flash = 1; E2.float(e.x + (i % 2 ? 50 : -50), e.y - 130, i % 2 ? "WOO!" : "WEE!", { size: 26, stroke: "#E8453C" }); });
+            E2.shake(5);
+            if (E2.player.id !== "max") E2.later(2.2, () => { world.maxFromBush(e.x + 110, e.y + 10); E2.later(0.9, () => E2.say(E2.player, "Max was in the TRUNK?!", 1.8)); });
+            else E2.later(2.2, () => E2.say(E2.player, "Hehehe! I set off the alarm!", 1.8));
+            E2.secret("carAlarm", "You set off the car alarm!");
+            return;
+          }
+          // the car goes to Fish Friday: walk to the driver's door (once the honking stops)
+          const n = e.honks;
+          E2.later(0.7, () => { if (e.honks === n && E2.t - e.lastHonk >= 0.65) goPlay(E2, DEST.car); });
         },
       },
     });
@@ -883,7 +888,7 @@
       A.line(c, 0, 0, 0, -90, 5, "#9AA1B4");
       A.softStar(c, 0, -110, 26); c.fillStyle = A.rad(c, -8, -118, 2, 0, -110, 28, ["#FFF7C2", "#FFD23F", "#F29E0C"]); c.fill();
     }, { solid: [{ c: [0, -2, 6] }], live(c, E2) { c.globalAlpha = 0.4 + Math.sin(E2.t * 3 + i) * 0.4; c.fillStyle = "#FFFFFF"; A.starPath(c, 12, -122, 7, 4, 0.3); c.fill(); c.globalAlpha = 1; } }));
-    marquee(3500, 1035, ["FART MAN", "LUNAR LANDER"], "#7B3FE4", "fartman", { size: 26 });
+    marquee(3500, 1035, ["FART MAN", "LANDING ZONE"], "#7B3FE4", "fartman", { size: 26 });
     // Fart Man hovering over the pad now and then (tap him!)
     world.hover = add({
       kind: "fartman", x: 3720, y: 830, box: [-80, -330, 80, 10], hit: [-80, -330, 80, -170], visible: 0, t0: 0, bubbleH: 330, hidden: false,
@@ -935,7 +940,11 @@
           e.splash = 1.3;
           RW.sfx.play("splash");
           E2.burst(e.x, e.y - 10, 40, "splash", 22, { up: 380, sp: 140 });
-          E2.later(0.5, () => E2.say(P, P.id === "ellie" ? "Wet! Hehehe!" : U.pick(["Splish splash!", "Make a wish!", "So refreshing!"]), 1.6));
+          e.wishes = (e.wishes || 0) + 1;
+          if (e.wishes % 7 === 0) { // Easter egg: the seventh splash is a wish
+            E2.later(0.6, () => { E2.float(e.x, e.y - 190, "✨ WISH GRANTED ✨", { size: 26, stroke: "#6C4AC9" }); E2.say(P, "I wished for unlimited farts!", 2.2); });
+            E2.later(1.6, () => { RW.sfx.play("fart"); E2.burst(e.x, e.y - 10, 60, "fart", 14, { sp: 90, up: 60 }); E2.secret("fartWish", "The fountain granted your wish. Unfortunately."); });
+          } else E2.later(0.5, () => E2.say(P, P.id === "ellie" ? "Wet! Hehehe!" : U.pick(["Splish splash!", "Make a wish!", "So refreshing!"]), 1.6));
         },
       },
     });
@@ -947,68 +956,48 @@
     flowerBed(Pz.x - 90, Pz.y - 215, 80, 26, 21); flowerBed(Pz.x + 90, Pz.y - 215, 80, 26, 22);
     trashCan(Pz.x + 130, Pz.y + 210);
 
-    // the mysterious locked building (future game slot 11)
-    const bx = Pz.x, by = 1500;
+    // Easter egg: a statue of Max at the top of the plaza, spoon raised in triumph
+    let statueTaps = 0;
     add({
-      kind: "building", x: bx, y: by, box: [-170, -300, 170, 24], sprite: true, occludes: true,
-      solid: [{ r: [-150, -120, 150, -4] }],
-      draw: (c) => B.futureBuilding(c, { w: 300, h: 160, wall: "#EDE3FA", roof: "#6C4AC9", rise: 100 }),
-      live(c) { mysterySign(c, "plaza-building", -250); },
-      tap: portalTap("plaza-building"),
-      hit: [-160, -290, 160, 10],
-    });
-
-    // construction lot (future game slot 12)
-    const lx0 = 3690, lx1 = 4010, ly0 = 1985, ly1 = 2185;
-    E.addSolid({ r: [lx0, ly0, lx1, ly1] });
-    staticProp((lx0 + lx1) / 2, ly0, [-170, -90, 170, 10], (c) => constructionFence(c, lx1 - lx0), { kind: "fence" });
-    // crane with a mystery crate
-    add({
-      kind: "crane", x: 3800, y: 2080, box: [-40, -330, 220, 10], sortY: 2080,
-      draw(c, E2) {
-        c.fillStyle = "#F2C230";
-        [-14, 14].forEach((x) => { c.fillRect(x - 4, -280, 8, 280); });
-        c.strokeStyle = "#D9A800"; c.lineWidth = 2;
-        for (let y = 0; y > -280; y -= 24) { c.beginPath(); c.moveTo(-14, y); c.lineTo(14, y - 24); c.stroke(); }
-        c.fillStyle = "#F2C230"; c.fillRect(-30, -296, 240, 14);
-        c.fillStyle = "#3A4252"; c.fillRect(-40, -310, 30, 30);
-        const sw = Math.sin(E2.t * 1.1) * 6;
-        A.line(c, 170, -284, 170 + sw, -180, 2, "#2B2F3A");
-        c.save(); c.translate(170 + sw, -180); c.rotate(sw * 0.01);
-        c.fillStyle = A.lin(c, 0, 0, 0, 50, ["#C48F58", "#9A6A44"]); A.rr(c, -26, 0, 52, 48, 4); c.fill();
-        A.text(c, "?", 0, 25, 34, "#FFFFFF", { weight: 700 });
+      kind: "statue", x: Pz.x, y: 1500, box: [-80, -300, 80, 14], sprite: false, shadow: [70, 14], solid: [{ r: [-64, -24, 64, 4] }], bubbleH: 300, wink: 0,
+      draw(c, E2, e) {
+        // pedestal
+        c.fillStyle = A.lin(c, 0, -90, 0, 0, ["#E6E1D6", "#BDB5A6"]); A.rr(c, -64, -90, 128, 90, 8); c.fill();
+        c.fillStyle = "#D8D1C2"; A.rr(c, -74, -100, 148, 16, 6); c.fill();
+        c.fillStyle = "#C9A15A"; A.rr(c, -46, -66, 92, 34, 4); c.fill();
+        A.text(c, "MAX", 0, -56, 15, "#5A3E12", { weight: 700 });
+        A.text(c, "HERO OF SNACKS", 0, -41, 8.5, "#5A3E12", { weight: 700 });
+        // Max, in stone
+        c.save(); c.translate(0, -100); c.scale(1.35, 1.35);
+        c.filter = "grayscale(1) brightness(1.08) contrast(.9)";
+        A.drawChar(c, A.CHARS.max, { t: E2.t, move: 0, side: 0, dir: 1, pose: "spoon", pt: 0, blink: e.wink > 0 });
+        c.filter = "none";
         c.restore();
+        if (e.wink > 0) { c.fillStyle = "rgba(255,210,63,.9)"; A.starPath(c, 34, -250, 9, 4, 0.35); c.fill(); }
+      },
+      update(e, dt) { if (e.wink > 0) e.wink -= dt; },
+      tap: {
+        reach: "remote",
+        act(E2, e) {
+          statueTaps++;
+          RW.sfx.play("tap");
+          if (statueTaps % 5 === 0) {
+            e.wink = 1.2; RW.sfx.play("giggle");
+            E2.say(e, "Psst... there's a cookie in my pocket.", 2.4);
+            E2.secret("statueWink", "The Max statue winked at you!");
+          } else E2.say(e, U.pick(["The plaque says: MAX. He ate the last cookie. We forgive him.", "Erected in honor of Max, for bravery in snack theft.", "Please do not lick the statue."]), 2.6);
+        },
       },
     });
-    [[3730, 2160], [3950, 2150], [3870, 2040]].forEach(([x, y]) => staticProp(x, y, [-16, -36, 16, 4], (c) => P_.cone(c)));
-    staticProp((lx0 + lx1) / 2, ly1, [-170, -150, 170, 10], (c) => {
-      constructionFence(c, lx1 - lx0);
-      c.save(); c.translate(0, -12);
-      P_.sign(c, ["UNDER CONSTRUCTION"], { size: 18, postH: 0, board: "#FFE45C", edge: "#2B2F3A", ink: "#2B2F3A" });
-      c.restore();
-    }, {
-      kind: "fence", tap: portalTap("plaza-lot"),
-      live(c) { mysterySign(c, "plaza-lot", -120, "NEW GAME COMING"); },
-    });
+    flowerBed(Pz.x - 150, 1520, 90, 30, 31); flowerBed(Pz.x + 150, 1520, 90, 30, 32);
+
+    // picnic lawn beside the plaza, where the construction lot used to be
+    [[3760, 2090], [3930, 2120]].forEach(([x, y]) => bench(x, y));
+    tree(3700, 2000, "blossom", 1); tree(3990, 2010, "round", 1.05);
+    flowerBed(3850, 2170, 110, 30, 33);
   }
 
-  // Sign that shows "???" until a game is placed in this slot, then the game's title.
-  function mysterySign(c, destId, y, fallback) {
-    const g = RW.games.forDestination(destId);
-    const open = g && g.unlocked && g.title;
-    B.plate(c, open ? g.title.toUpperCase() : fallback || "???", 0, y, open ? 16 : 20, open ? "#2EB872" : "#6C4AC9", "#FFFFFF", { r: 10 });
-  }
-  world.mysterySign = mysterySign;
 
-  function constructionFence(c, w) {
-    for (let x = -w / 2; x < w / 2; x += 80) {
-      c.fillStyle = "#FF7A1F"; A.rr(c, x + 2, -56, 76, 12, 4); c.fill();
-      c.fillStyle = "#FFFFFF"; for (let k = 0; k < 4; k++) { c.beginPath(); c.moveTo(x + 8 + k * 18, -56); c.lineTo(x + 18 + k * 18, -56); c.lineTo(x + 12 + k * 18, -44); c.lineTo(x + 2 + k * 18, -44); c.closePath(); c.fill(); }
-      c.strokeStyle = "rgba(90,100,120,.6)"; c.lineWidth = 1;
-      for (let k = 0; k < 8; k++) { c.beginPath(); c.moveTo(x + 4 + k * 10, -44); c.lineTo(x + 4 + k * 10, 0); c.stroke(); }
-      c.fillStyle = "#6A7388"; c.fillRect(x, -60, 4, 60);
-    }
-  }
 
   function drawFountain(c, t, splash) {
     c.fillStyle = A.lin(c, 0, -40, 0, 0, ["#E9E2D6", "#BFB6A6"]);
@@ -1089,21 +1078,9 @@
       for (let y = -30; y < 0; y += 6) { c.beginPath(); c.moveTo(-130, y); c.lineTo(130, y); c.stroke(); }
       c.fillStyle = "#FFFFFF"; c.fillRect(-132, -34, 264, 5);
     }, { solid: [{ r: [-132, -6, 132, 2] }], tap: portalTap("sports-tennis") });
-    // future game buildings
-    add({
-      kind: "building", x: 1710, y: 2530, box: [-150, -250, 150, 24], sprite: true, occludes: true,
-      solid: [{ r: [-130, -100, 130, -4] }],
-      draw: (c) => B.futureBuilding(c, { w: 260, h: 130, wall: "#FFE8D6", roof: "#E8743C", label: "HOOPS GYM", flat: true }),
-      live(c) { P_.ribbon(c, "COMING SOON", 140, "#FF5C8A"); c.translate(0, 0); },
-      tap: portalTap("sports-hoops"),
-    });
-    add({
-      kind: "building", x: 1150, y: 2560, box: [-180, -250, 180, 24], sprite: true, occludes: true,
-      solid: [{ r: [-160, -100, 160, -4] }],
-      draw: (c) => B.futureBuilding(c, { w: 320, h: 140, wall: "#C8553D", roof: "#2F4E86", brick: true, label: "FIELD HOUSE", flat: true }),
-      live(c) { c.save(); c.translate(0, -2); P_.ribbon(c, "COMING SOON", 140, "#FF5C8A"); c.restore(); },
-      tap: portalTap("sports-stadium"),
-    });
+    // shade trees and benches where the locked gym and field house stood
+    tree(1650, 2520, "round", 1.1); tree(1790, 2560, "deep", 1); bench(1720, 2610);
+    tree(1060, 2540, "round", 1.05); tree(1240, 2560, "blossom", 1); bench(1150, 2610);
     add({
       kind: "building", x: 1710, y: 2995, box: [-140, -230, 140, 24], sprite: true, occludes: true,
       solid: [{ r: [-110, -80, 110, -4] }],
@@ -1382,6 +1359,26 @@
       draw: (c, E2) => drawIceCreamStand(c, E2.t),
       tap: portalTap("icecream"),
     });
+    // Easter egg: tap the giant cone on the roof and a scoop drops on your head
+    hotspot(3250, 2602, [-44, -330, 44, -200], {
+      reach: "remote",
+      act(E2) {
+        const P = E2.player;
+        if (P.lock) return;
+        RW.sfx.play("whoosh");
+        const col = U.pick(["#FFB3C7", "#8B5A3C", "#FFF3D6"]);
+        E2.flyers.push({
+          t: 0, x0: 3250, y0: 2430, update(dt) { this.t += dt; return this.t < 0.7; },
+          draw(c) { const u = this.t / 0.7, x = U.lerp(this.x0, P.x, u), y = U.lerp(this.y0, P.y - 110, u) - Math.sin(u * Math.PI) * 120; c.fillStyle = col; c.beginPath(); c.arc(x, y, 18, 0, TAU); c.fill(); },
+        });
+        E2.later(0.7, () => {
+          RW.sfx.play("splash"); E2.burst(P.x, P.y - 110, 10, "splash", 14, { up: 160, sp: 120 });
+          E2.float(P.x, P.y - 170, "SPLAT!", { size: 30, stroke: "#E8558A" });
+          E2.act("fall", 1.1); E2.say(P, U.pick(["BRAIN FREEZE!", "It's in my hair!", "Worth it."]), 1.8);
+          E2.secret("scoopSplat", "A scoop fell off the giant cone. Onto your head.");
+        });
+      },
+    }, 2603);
     // a little table with a parasol out front
     staticProp(3440, 2560, [-62, -104, 62, 8], (c) => P_.umbrella(c, "#FF5C8A", "#FFFFFF"), { shadow: [52, 14, 0, 6, 0.16], solid: [{ c: [0, -2, 5] }] });
     sign(3030, 2610, ["ICE CREAM", "🍦 OPEN!"], { size: 15, board: "#FFF4E8", edge: "#E8558A", ink: "#B8356A", ent: { tap: portalTap("icecream") } });
@@ -1820,7 +1817,17 @@
         for (let i = 0; i < 3; i++) { c.globalAlpha = 0.5 + Math.sin(E2.t * 2 + i * 2) * 0.5; c.fillStyle = "#FFE45C"; A.starPath(c, -20 + i * 20, -60 + (i % 2) * 14, 4, 4, 0.3); c.fill(); }
         c.globalAlpha = 1;
       },
-      tap: portalTap("woods-cave"),
+      // Easter egg: shout into the cave
+      tap: {
+        reach: "remote",
+        act(E2, e) {
+          if (e.cool > E2.t) return; e.cool = E2.t + 3;
+          const P = E2.player, hi = U.pick(["HELLO!", "Anybody home?", "I LIKE PIZZA!", "Is it snack time?"]);
+          E2.say(P, hi, 1.2);
+          [0.9, 1.6, 2.3].forEach((d, i) => E2.later(d, () => E2.float(e.x + (i - 1) * 40, e.y - 120 - i * 26, hi.toLowerCase().replace(/!/g, "...") , { size: 22 - i * 4, stroke: "#6B645B" })));
+          E2.later(2.9, () => { RW.sfx.play("chirp"); for (let i = 0; i < 4; i++) E2.later(i * 0.12, () => E2.spawnBird(e.x + U.rand(-30, 30), e.y - 70)); E2.say(P, "BATS!", 1.2); E2.secret("caveEcho", "The cave echoed back... and bats flew out!"); });
+        },
+      },
     });
     // woods treehouse
     add({
@@ -1849,17 +1856,6 @@
       if (i % 2) { c.fillStyle = A.lin(c, 0, -18, 0, 0, ["#9A6B45", "#6E4A30"]); A.rr(c, -26, -18, 52, 18, 9); c.fill(); c.fillStyle = "#E3B37A"; A.ell(c, 26, -9, 6, 9); c.fill(); }
       else { [[-8, 1], [8, 0.8]].forEach(([mx, s]) => { c.fillStyle = "#F4EDE2"; c.fillRect(mx - 3 * s, -14 * s, 6 * s, 14 * s); c.fillStyle = "#E8453C"; c.beginPath(); c.ellipse(mx, -14 * s, 12 * s, 9 * s, 0, Math.PI, 0); c.fill(); c.fillStyle = "#FFFFFF"; c.beginPath(); c.arc(mx - 4 * s, -18 * s, 2 * s, 0, TAU); c.arc(mx + 4 * s, -16 * s, 1.5 * s, 0, TAU); c.fill(); }); }
     }));
-  }
-
-  // ---------------------------------------------------------------------
-  // WINTER MOUNTAIN GONDOLA
-  // ---------------------------------------------------------------------
-  function buildGondola() {
-    add({
-      kind: "building", x: 3160, y: 470, box: [-140, -230, 140, 20], sprite: true, occludes: true,
-      solid: [{ r: [-110, -70, 110, -4] }], draw: (c) => B.gondola(c), tap: portalTap("gondola"),
-      live(c) { P_.lockBadge(c, 0, -52, 1); },
-    });
   }
 
   // ---------------------------------------------------------------------
@@ -2178,7 +2174,7 @@
     [1900, 2020, 2260, 2320], // playground
     [2150, 2380, 2780, 2820], // arcade and its front lawn
     [3200, 1350, 4050, 2260], // plaza + lot
-    [3040, 2320, 3460, 2640], // Frozenbergs ice cream stand
+    [3040, 2320, 3460, 2860], // Frozenbergs ice cream stand and the street out front
     [3350, 540, 4100, 1060],  // fart man zone
     [120, 540, 1030, 1230],   // raceway + garage
     [1200, 620, 1800, 1060],  // academy
@@ -2186,7 +2182,6 @@
     [2980, 1340, 3180, 1760], // upgrade plots (east)
     [1980, 1170, 2180, 1720], // upgrade plots (west)
     [3950, 0, 5200, 3400],    // beach and ocean
-    [2980, 360, 3340, 600],   // gondola
     [600, 2140, 800, 2280],   // woods treehouse
     [140, 1440, 440, 1640],   // cave
   ];

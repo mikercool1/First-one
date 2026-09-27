@@ -18,7 +18,7 @@
     { id: "moonrock", name: "Moon Rock", icon: "🌑", hint: "The moon is ticklish…" },
     { id: "chefhat", name: "Chef Hat", icon: "👨‍🍳", hint: "Wave at the kitchen window." },
   ].forEach((it) => RW.collection.add(it));
-  const SECRETS = ["moonFart", "dogSteal", "ellieHigh", "jonahDog", "calledShot", "maxRun", "maxBush", "raccoon"];
+  const SECRETS = ["moonFart", "dogSteal", "ellieHigh", "jonahDog", "calledShot", "maxRun", "maxBush", "raccoon", "statueWink", "caveEcho", "snooze", "tremfya", "fartWish", "carAlarm", "scoopSplat"];
 
   // =====================================================================
   // TITLE
@@ -32,13 +32,34 @@
       [...word].forEach((ch, i) => { const s = el("span", "ch", ch); s.style.animationDelay = (0.25 + w * 0.5 + i * 0.05) + "s"; host.appendChild(s); });
     });
   }
-  function onTitleTap() {
-    if (!titleReady || title.hidden) return;
+  // Returning players skip the character screen: the title says "PLAY AS MAX", with a small
+  // "Switch player" link underneath.
+  function returningPlayer() {
+    const id = RW.store.last;
+    const pr = RW.profile(id);
+    return id && A.CHARS[id] && RW.PLAYERS.includes(id) && pr && (RW.totalTime(pr) > 0 || pr.stars > 0) ? id : null;
+  }
+  function setupTitleButton() {
+    const id = returningPlayer(), btn = $("#tapEnter");
+    if (!id) return;
+    btn.classList.add("quick");
+    btn.style.setProperty("--c", A.CHARS[id].color);
+    btn.textContent = `▶ PLAY AS ${A.CHARS[id].name.toUpperCase()}`;
+    $("#switchPlayer").hidden = false;
+  }
+  function leaveTitle(then) {
     RW.sfx.unlock();
     RW.sfx.play("pop");
     title.classList.add("leaving");
-    setTimeout(() => { show(title, false); title.classList.remove("leaving"); openSelect(); }, 350);
+    setTimeout(() => { show(title, false); title.classList.remove("leaving"); then(); }, 350);
   }
+  function onTitleTap() {
+    if (!titleReady || title.hidden) return;
+    const id = returningPlayer();
+    leaveTitle(id ? () => startPlay(id) : openSelect);
+  }
+  $("#switchPlayer").addEventListener("click", (ev) => { ev.stopPropagation(); if (!titleReady || title.hidden) return; leaveTitle(openSelect); });
+  $("#switchPlayer").addEventListener("pointerdown", (ev) => ev.stopPropagation());
   RW.bus.on("titleTap", onTitleTap);
   title.addEventListener("click", onTitleTap);
 
@@ -729,6 +750,7 @@
     const v = E.view, z = E.zoomFor("title"), sw = innerWidth / z, sh = innerHeight / z;
     RW.layout.warmGround(2450 - sw / 2 - 200, 1720 - sh / 2 - 100, 2450 + sw / 2 + 200, 1720 + sh / 2 + 100, A.spriteScale);
     document.body.classList.add("ready");
+    setupTitleButton();
     setTimeout(() => { titleReady = true; title.classList.add("can-enter"); }, 1500);
     // keep warming chunks near the house quietly
     setTimeout(() => RW.layout.warmGround(1700, 1000, 3300, 2300, A.spriteScale), 2500);

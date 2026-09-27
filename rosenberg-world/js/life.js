@@ -211,6 +211,10 @@
     if (n.charId === "max") { maxRunAway(n); return; }
     if (n.charId === "doctor") {
       n.line = (n.line || 0) + 1;
+      n.taps = (n.taps || 0) + 1;
+      // Easter egg: keep tapping and he finally gives up... almost
+      if (n.taps === 10) { E2.say(n, "Okay, okay. I'll stop talking about Tremfya.", 2.6); n.pausedT = 3; E2.secret("tremfya", "You wore the Doctor out!"); return; }
+      if (n.taps === 11) { E2.say(n, "...Tremfya.", 2); n.pausedT = 2.2; n.taps = 0; RW.sfx.play("giggle"); return; }
       E2.say(n, LINES.doctor[n.line % 2], 2.4);
       n.pausedT = 2.6; // stop walking for a moment to deliver the pitch
       RW.sfx.play("chirp");
@@ -311,7 +315,7 @@
   }
 
   // =====================================================================
-  // DISTANT SCENERY: sky, Winter Mountain, the gondola cable
+  // DISTANT SCENERY: sky and the snowy mountains
   // =====================================================================
   const skyClouds = [];
   for (let i = 0; i < 7; i++) skyClouds.push({ x: U.rand(-400, 5400), y: U.rand(-380, -40), s: U.rand(0.7, 1.4), v: U.rand(6, 14) });
@@ -344,15 +348,6 @@
     drawWinterMountain(c, 3350, 360);
     drawRange(c, -900, 6400, 360, 150, "#7FB08A", null, 11);
     c.restore();
-    // gondola cable from the station up the mountain (drawn with the mountain's parallax at the far end)
-    const x0 = 3160, y0 = 290, x1 = 3350 + px, y1 = -160;
-    c.strokeStyle = "#3A4252"; c.lineWidth = 3;
-    c.beginPath(); c.moveTo(x0 - 14, y0); c.quadraticCurveTo((x0 + x1) / 2 - 14, (y0 + y1) / 2 + 40, x1 - 14, y1); c.stroke();
-    c.beginPath(); c.moveTo(x0 + 14, y0); c.quadraticCurveTo((x0 + x1) / 2 + 14, (y0 + y1) / 2 + 40, x1 + 14, y1); c.stroke();
-    const u = 0.55, gx = U.lerp(x0, x1, u) - 14, gy = U.lerp(y0, y1, u) + 18;
-    c.fillStyle = "#3A4252"; c.fillRect(gx - 1, gy, 2, 20);
-    c.fillStyle = "#E8453C"; A.rr(c, gx - 18, gy + 18, 36, 30, 6); c.fill();
-    c.fillStyle = "#BEE7FF"; A.rr(c, gx - 13, gy + 23, 26, 12, 3); c.fill();
   };
   function drawRange(c, x0, x1, base, height, col, snow, seed) {
     const rnd = U.seeded(seed);
@@ -379,7 +374,6 @@
     c.strokeStyle = "rgba(255,255,255,.7)"; c.lineWidth = 6;
     c.beginPath(); c.moveTo(x - 20, base - 330); c.quadraticCurveTo(x - 140, base - 200, x - 60, base - 60); c.stroke();
     c.beginPath(); c.moveTo(x + 60, base - 320); c.quadraticCurveTo(x + 190, base - 180, x + 120, base - 50); c.stroke();
-    A.text(c, "WINTER MOUNTAIN", x, base - 240, 34, "rgba(255,255,255,.85)", { weight: 700, stroke: "rgba(60,90,140,.35)", strokeW: 6 });
   }
 
   // things painted over the ground every frame

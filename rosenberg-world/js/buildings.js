@@ -355,21 +355,6 @@
     text(c, "PIT 1", 0, -142, 24, "#FFFFFF", { weight: 700 });
   };
 
-  // Winter Mountain gondola station
-  B.gondola = (c) => {
-    wall(c, -110, 110, 110, "#8A5A3A", { foundation: "#5A3A26" });
-    c.strokeStyle = "rgba(0,0,0,.14)"; c.lineWidth = 2;
-    for (let y = -100; y < -10; y += 14) { c.beginPath(); c.moveTo(-110, y); c.lineTo(110, y); c.stroke(); }
-    gable(c, -124, 124, -110, -196, "#9A6A48", "#2F5FA8");
-    // snow on the roof
-    c.fillStyle = "#FFFFFF";
-    c.beginPath(); c.moveTo(-100, -120); c.lineTo(0, -186); c.lineTo(100, -120); c.lineTo(80, -118); c.lineTo(0, -172); c.lineTo(-80, -118); c.closePath(); c.fill();
-    // bull wheel opening
-    c.fillStyle = "#2B2F3A"; rr(c, -60, -92, 120, 92, 10); c.fill();
-    c.strokeStyle = "#C7CCD8"; c.lineWidth = 5; c.beginPath(); c.arc(0, -52, 28, 0, TAU); c.stroke();
-    c.lineWidth = 2; for (let i = 0; i < 6; i++) { const a = (i / 6) * TAU; c.beginPath(); c.moveTo(0, -52); c.lineTo(Math.cos(a) * 28, -52 + Math.sin(a) * 28); c.stroke(); }
-  };
-
   // Cave for Adventure Woods
   B.cave = (c) => {
     c.beginPath();

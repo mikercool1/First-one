@@ -228,16 +228,6 @@
     icon: "🏎️",
   });
 
-  // ---------------- future game slots ----------------
-  // Each is already placed in the world with a locked building, gate or cabinet.
-
-  const future = [
-    ["futureGame01", "sports-hoops", "🏀"],
-    ["futureGame02", "sports-stadium", "🏈"],
-    ["futureGame03", "woods-cave", "🔦"],
-    ["futureGame05", "gondola", "🏔️"],
-    ["futureGame07", "plaza-lot", "🚧"],
-    ["futureGame08", "plaza-building", "❓"],
-  ];
-  future.forEach(([id, destination, icon]) => G.register({ id, title: "", destination, unlocked: false, icon }));
+  // Future games: register the game here with a destination, then give that destination a
+  // door in js/world.js (see "A brand-new game" in README.md).
 })();

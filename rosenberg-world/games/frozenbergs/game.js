@@ -37,7 +37,7 @@
   const CONE_COL = { waffle: "#E09A4D", sugar: "#F3CE92", cup: "#FF7FA8" };
 
   // ---------- people ----------
-  const SCOOPERS = { reuben: "Reuben", jonah: "Jonah", ellie: "Ellie" };
+  const SCOOPERS = { reuben: "Reuben", jonah: "Jonah", ellie: "Ellie", max: "Max" };
   const KID_S = 2.3;
   // hold: where the customer holds the cone, relative to their feet. head: top of their head.
   const PEOPLE = {
@@ -313,8 +313,15 @@
     if (G.phase === "idle" || G.phase === "closed") return { pose: "wave", face: 1 };
     return { pose: "idle", face: 1, look: [1, 0] };
   }
+  // Max scoops too: he's drawn with the family art, stirring with his spoon
+  function maxAct(p) { return p.pose === "jump" || p.pose === "cheer" ? "happy" : p.pose === "wave" ? "reach" : p.exp ? "peek" : "stir"; }
   function drawScooper(c) {
     if (!G.scooper) return;
+    if (G.scooper === "max") {
+      const p = scooperPose();
+      ART.max(c, 262, Y(622) + 36, 2.3, { t: T, act: maxAct(p), dir: 1, blink: T % 4.1 < .12, look: [1, 0], prop: "spoon", expr: p.exp === "annoyed" ? "meh" : undefined });
+      return;
+    }
     const K = KIDS_ART.KIDS[G.scooper];
     KIDS_ART.draw(c, G.scooper, 262, Y(622) + K.L * KID_S * .45, KID_S, scooperPose(), T);
   }
@@ -678,7 +685,8 @@
       if (!w) return;
       if (cvs.width !== Math.round(w * d)) { cvs.width = Math.round(w * d); cvs.height = Math.round(h * d); }
       const c = cvs.getContext("2d"); c.setTransform(d, 0, 0, d, 0, 0); c.clearRect(0, 0, w, h);
-      KIDS_ART.draw(c, id, w / 2, h - 10, h / 128, G.scooper === id ? { pose: "jump", face: 1 } : { pose: "wave", face: 1 }, T);
+      if (id === "max") ART.max(c, w / 2, h - 10, h / 150, { t: T, act: G.scooper === id ? "happy" : "stir", dir: 1, blink: T % 4.1 < .12, prop: "spoon" });
+      else KIDS_ART.draw(c, id, w / 2, h - 10, h / 128, G.scooper === id ? { pose: "jump", face: 1 } : { pose: "wave", face: 1 }, T);
     });
   }
   $("#pickers").innerHTML = Object.entries(SCOOPERS).map(([k, n]) => `<button class="pick" data-scooper="${k}" aria-pressed="${G.scooper === k}"><canvas data-id="${k}"></canvas><b>${n}</b></button>`).join("");

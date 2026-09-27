@@ -25,12 +25,13 @@ they walk out of that game's door and the stars they earned fly into the total.
 
 ### A brand-new game with no building yet
 
-There are 6 future slots (in `js/games.js`). Each one already has a locked place in the world:
-the Hoops Gym, Field House, Mystery Cave, Winter Mountain, the construction lot and the Mystery
-Plaza building. To open one, give it a `title`,
-`icon`, `color`, set `unlocked: true` and an `entry`. Locked places stay off the map and show no
-PLAY card; the construction lot and the plaza building show "???" until their game arrives, then
-their signs show its title automatically.
+1. Register it in `js/games.js` with a new `destination` id.
+2. In `js/world.js`, add that id to `DESTINATIONS` (where its door is, where you come back out, its
+   map pin), and give it something to tap: a building, sign or prop with `tap: portalTap("<id>")`.
+   The Frozenbergs ice cream stand (`buildIceCream`) is a small, complete example.
+3. Optionally add it to a signpost in `buildSignposts()`.
+
+There are no locked "coming soon" places any more: every door in the world opens a game.
 
 ### A game for the Game Room shelf
 

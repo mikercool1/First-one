@@ -272,22 +272,6 @@
       } else { const s2 = Math.min(sp, d / Math.max(dt, 1e-3)); vx = (dx / d) * s2; vy = (dy / d) * s2; }
     }
 
-    // Ellie: tiny detours. Sometimes she stops for flowers, sometimes she runs the wrong way for a moment.
-    if (P.id === "ellie" && (vx || vy) && !P.lock) {
-      P.quirkT -= dt;
-      if (P.wrongT > 0) { P.wrongT -= dt; vx = -vx * 0.9; vy = -vy * 0.9; }
-      else if (P.quirkT < 0) {
-        P.quirkT = U.rand(7, 13);
-        if (U.chance(0.5)) {
-          E.act("look", 1.6, { lock: true, keepPath: true });
-          E.burst(P.x + P.dir * 18, P.y - 4, 6, "heart", 3);
-          E.say(P, U.pick(["Ooh, flower!", "Pretty!", "A butterfly!", "Look!"]), 1.5);
-          E.sfx("giggle");
-          vx = vy = 0;
-        } else { P.wrongT = 0.45; E.say(P, U.pick(["Wheee!", "Oops!", "This way!"]), 1); }
-      }
-    }
-
     const moving = vx || vy;
     if (moving) {
       const before = [P.x, P.y];
@@ -308,6 +292,8 @@
       P.side = U.lerp(P.side, sideT, 0.25);
       P.back = vy < -Math.abs(vx) * 1.2;
       P.idleT = 0;
+      if (P.asleep) { P.asleep = false; E.say(P, U.pick(["Huh? I'm awake!", "I wasn't sleeping!", "Five more minutes..."]), 1.4); }
+      P.stillT = 0;
       P.stepT = (P.stepT || 0) - dt;
       if (P.id === "max") { if (P.stepT < 0) { P.stepT = 0.12; E.burst(P.x - P.dir * 14, P.y, 0, "dust", 1); } }
       else if (P.stepT < 0) { P.stepT = 0.32; if (U.chance(0.35)) E.burst(P.x, P.y, 0, "dust", 1); }
@@ -315,7 +301,14 @@
       P.move = U.lerp(P.move, 0, 0.3);
       if (!P.pose) { P.side = U.lerp(P.side, 0, 0.1); P.back = false; }
       P.idleT += dt;
-      if (P.idleT > 7 && !P.pose && E.mode === "play") { P.idleT = 0; idleFidget(P); }
+      P.stillT = (P.stillT || 0) + dt;
+      // Easter egg: leave them standing long enough and they doze off
+      if (P.stillT > 25 && !P.asleep && !P.lock && E.mode === "play") {
+        P.asleep = true; P.zT = 0;
+        E.say(P, "Zzz...", 2); E.secret("snooze", `${P.spec.name} fell asleep standing up!`);
+      }
+      if (P.asleep) { P.zT -= dt; if (P.zT < 0) { P.zT = 1.1; E.float(P.x + 26, P.y - 120, "z", { size: 22, stroke: "#6C4AC9" }); } }
+      else if (P.idleT > 7 && !P.pose && E.mode === "play") { P.idleT = 0; idleFidget(P); }
     }
 
     // pick up hidden stars and items

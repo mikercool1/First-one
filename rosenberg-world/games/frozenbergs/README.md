@@ -2,7 +2,7 @@
 
 An ice cream stand game, made for a phone held upright. Open `index.html`; there's no build step.
 
-- Pick who's scooping: Reuben, Jonah or Ellie.
+- Pick who's scooping: Reuben, Jonah, Ellie or Max.
 - A customer walks up and their order hangs at the top of the screen.
 - Tap **Make the cone!** The builder fills the screen: pick the cone, scoops, sauce and toppings, one step at a time.
   The order card ticks off each part as you match it. Tap **Done** when your cone is ready.

@@ -32,8 +32,6 @@
       // north lane: math blaster → baseball → fart man
       { w: 76, pts: [[640, 1030], [1000, 1010], [1450, 960], [1800, 1010], [2090, 1100], [2200, 1230]], kind: "stone" },
       { w: 76, pts: [[2930, 1330], [3000, 1100], [3300, 1000], [3720, 950], [4050, 1000]], kind: "stone" },
-      // up to the gondola
-      { w: 64, pts: [[3300, 1000], [3230, 800], [3160, 620], [3160, 500]], kind: "stone" },
       // kitchen to math blaster
       { w: 64, pts: [[1420, 1900], [1250, 1600], [1300, 1250], [1450, 960]], kind: "stone" },
       // plaza links
@@ -197,10 +195,6 @@
     c.strokeStyle = "rgba(160,130,90,.25)"; c.lineWidth = 2;
     for (let r = 60; r < Pz.r; r += 45) { c.beginPath(); c.arc(Pz.x, Pz.y, r, 0, TAU); c.stroke(); }
     for (let i = 0; i < 16; i++) { const a = (i / 16) * TAU; c.beginPath(); c.moveTo(Pz.x + Math.cos(a) * 60, Pz.y + Math.sin(a) * 60); c.lineTo(Pz.x + Math.cos(a) * Pz.r, Pz.y + Math.sin(a) * Pz.r); c.stroke(); }
-    // construction lot dirt
-    c.fillStyle = "#C79C69"; A.rr(c, 3690, 1985, 320, 200, 16); c.fill();
-    c.fillStyle = "rgba(90,60,30,.18)";
-    [[3760, 2050, 30], [3900, 2120, 22], [3950, 2030, 16]].forEach(([x, y, r]) => { A.ell(c, x, y, r, r * 0.5); c.fill(); });
 
     // playground mulch
     c.fillStyle = "#E3B37A"; A.rr(c, 1930, 2040, 300, 250, 30); c.fill();
