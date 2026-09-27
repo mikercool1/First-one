@@ -138,20 +138,40 @@
     icon: "🛟",
   });
 
+  G.register({
+    id: "maxMan",
+    title: "Max-Man",
+    subtitle: "Gobble every Cheerio. Dodge Bath Time and Bedtime!",
+    destination: "arcade",
+    unlocked: true,
+    entry: "games/max-man/index.html",
+    color: "#F2A93B",
+    icon: "🍪",
+  });
+
+  G.register({
+    id: "jonahsTennis",
+    title: "Jonah's Tennis",
+    subtitle: "Backyard tennis: Jonah vs. Ellie or Reuben",
+    destination: "sports-tennis",
+    unlocked: true,
+    entry: "games/jonahs-tennis/index.html",
+    color: "#2EB872",
+    icon: "🎾",
+  });
+
   // ---------------- future game slots ----------------
   // Each is already placed in the world with a locked building, gate or cabinet.
 
   const future = [
     ["futureGame01", "sports-hoops", "🏀"],
     ["futureGame02", "sports-stadium", "🏈"],
-    ["futureGame03", "sports-tennis", "🎾"],
-    ["futureGame04", "arcade", "🕹️"],
-    ["futureGame05", "raceway", "🏎️"],
-    ["futureGame06", "woods-cave", "🔦"],
-    ["futureGame07", "beach-dock", "⛵"],
-    ["futureGame08", "gondola", "🏔️"],
-    ["futureGame09", "island", "🏝️"],
-    ["futureGame10", "plaza-lot", "🚧"],
+    ["futureGame03", "raceway", "🏎️"],
+    ["futureGame04", "woods-cave", "🔦"],
+    ["futureGame05", "beach-dock", "⛵"],
+    ["futureGame06", "gondola", "🏔️"],
+    ["futureGame07", "island", "🏝️"],
+    ["futureGame08", "plaza-lot", "🚧"],
   ];
   future.forEach(([id, destination, icon]) => G.register({ id, title: "", destination, unlocked: false, icon }));
 })();

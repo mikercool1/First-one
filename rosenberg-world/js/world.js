@@ -27,7 +27,7 @@
     { id: "sports", name: "Sports Complex", icon: "🏟️", kind: "place", map: [1500, 2090], arrive: [1500, 2200] },
     { id: "sports-hoops", name: "Hoops Gym", icon: "🏀", kind: "future", portal: [1710, 2560], portalR: 85, arrive: [1710, 2575], map: [1710, 2440] },
     { id: "sports-stadium", name: "Field House", icon: "🏈", kind: "future", portal: [1150, 2595], portalR: 85, arrive: [1150, 2615], map: [1150, 2480] },
-    { id: "sports-tennis", name: "Tennis Club", icon: "🎾", kind: "future", portal: [1710, 3025], portalR: 80, arrive: [1710, 3030], map: [1710, 2930] },
+    { id: "sports-tennis", name: "Tennis Court", icon: "🎾", kind: "future", portal: [1905, 2715], portalR: 90, arrive: [1905, 2730], map: [1710, 2700] },
     { id: "arcade", name: "Rosenberg Arcade", icon: "🕹️", kind: "future", portal: [2450, 2600], portalR: 90, arrive: [2450, 2640], map: [2450, 2470] },
     { id: "raceway", name: "Rosenberg Raceway", icon: "🏎️", kind: "future", portal: [640, 1000], portalR: 100, arrive: [640, 1030], map: [640, 760] },
     { id: "woods", name: "Adventure Woods", icon: "🌲", kind: "place", map: [560, 1780], arrive: [640, 1900] },
@@ -1020,7 +1020,7 @@
       for (let x = -130; x < 130; x += 6) { c.beginPath(); c.moveTo(x, -30); c.lineTo(x, 0); c.stroke(); }
       for (let y = -30; y < 0; y += 6) { c.beginPath(); c.moveTo(-130, y); c.lineTo(130, y); c.stroke(); }
       c.fillStyle = "#FFFFFF"; c.fillRect(-132, -34, 264, 5);
-    }, { solid: [{ r: [-132, -6, 132, 2] }] });
+    }, { solid: [{ r: [-132, -6, 132, 2] }], tap: portalTap("sports-tennis") });
     // future game buildings
     add({
       kind: "building", x: 1710, y: 2530, box: [-150, -250, 150, 24], sprite: true, occludes: true,
@@ -1040,7 +1040,7 @@
       kind: "building", x: 1710, y: 2995, box: [-140, -230, 140, 24], sprite: true, occludes: true,
       solid: [{ r: [-110, -80, 110, -4] }],
       draw: (c) => B.futureBuilding(c, { w: 220, h: 110, wall: "#F4FFF4", roof: "#2EB872", label: "TENNIS CLUB", rise: 70 }),
-      live(c) { P_.ribbon(c, "COMING SOON", 140, "#FF5C8A"); },
+      live(c) { if (world.destStatus(DEST["sports-tennis"]) === "locked") P_.ribbon(c, "COMING SOON", 140, "#FF5C8A"); else { c.save(); c.translate(0, -2); P_.ribbon(c, "JONAH'S TENNIS", 170, "#2EB872"); c.restore(); } },
       tap: portalTap("sports-tennis"),
     });
   }
@@ -1169,21 +1169,22 @@
         c.globalAlpha = 0.5 + Math.sin(E2.t * 9) * 0.2;
         c.fillStyle = "#5CFFD2"; A.rr(c, -52, -144, 104, 8, 4); c.fill();
         c.globalAlpha = 1;
-        P_.ribbon(c, "COMING SOON", 150, "#FF5CC8");
+        if (world.destStatus(DEST.arcade) === "locked") P_.ribbon(c, "COMING SOON", 150, "#FF5CC8");
+        else P_.ribbon(c, "NOW PLAYING: MAX-MAN", 210, "#F2A93B");
       },
       tap: portalTap("arcade"),
     });
     // cabinets out front: covered, ??? and coming soon
-    const cabs = [[2270, 2612, "sheet"], [2330, 2612, "???"], [2570, 2612, "soon"], [2630, 2612, "sheet"], [2690, 2612, "???"]];
+    const cabs = [[2270, 2612, "sheet"], [2330, 2612, "???"], [2570, 2612, "maxman"], [2630, 2612, "sheet"], [2690, 2612, "???"]];
     cabs.forEach(([x, y, kind], i) => add({
       kind: "cabinet", x, y, box: [-26, -104, 26, 6], shadow: [24, 7], solid: [{ r: [-22, -10, 22, 2] }], blink: 0, bubbleH: 116,
       draw(c, E2, e) { drawCabinet(c, E2.t + i, kind, e.blink); },
       update(e, dt) { e.blink = Math.max(0, e.blink - dt); },
-      tap: { reach: "remote", act(E2, e) { e.blink = 1.5; RW.sfx.play("sparkle"); E2.say(e, kind === "sheet" ? "Shhh... it's a surprise!" : U.pick(["COMING SOON!", "INSERT FUTURE GAME", "Almost ready!"]), 1.8); } },
+      tap: kind === "maxman" ? portalTap("arcade") : { reach: "remote", act(E2, e) { e.blink = 1.5; RW.sfx.play("sparkle"); E2.say(e, kind === "sheet" ? "Shhh... it's a surprise!" : U.pick(["COMING SOON!", "INSERT FUTURE GAME", "Almost ready!"]), 1.8); } },
     }));
   }
   function drawCabinet(c, t, kind, blink) {
-    const col = kind === "sheet" ? "#F4F4F8" : kind === "soon" ? "#FF5C8A" : "#2F6BD6";
+    const col = kind === "sheet" ? "#F4F4F8" : kind === "maxman" ? "#F2A93B" : kind === "soon" ? "#FF5C8A" : "#2F6BD6";
     if (kind === "sheet") {
       c.fillStyle = A.lin(c, -24, 0, 24, 0, ["#FFFFFF", "#E4E4EC", "#CFCFDA"]);
       c.beginPath(); c.moveTo(-24, 0); c.quadraticCurveTo(-28, -60, -18, -98); c.quadraticCurveTo(0, -108, 18, -98); c.quadraticCurveTo(28, -60, 24, 0);
@@ -1197,7 +1198,14 @@
     A.rr(c, -22, -100, 44, 100, 6); c.fill();
     c.fillStyle = "#130D2E"; A.rr(c, -16, -84, 32, 30, 4); c.fill();
     const on = blink > 0 ? Math.floor(t * 10) % 2 : 1;
-    if (kind === "???") A.text(c, "???", 0, -69, 14, on ? "#5CFFD2" : "#1E6B5A", { weight: 700 });
+    if (kind === "maxman") {
+      // a little Max chasing Cheerios across the screen
+      const u = (t * 0.6) % 1, mx = -12 + u * 24;
+      c.fillStyle = "#FFE3A0"; for (let k = 0; k < 4; k++) { const dx = -10 + k * 7; if (dx > mx) { c.beginPath(); c.arc(dx, -66, 1.6, 0, TAU); c.fill(); } }
+      c.fillStyle = "#F9C74F"; c.beginPath(); const mo = Math.abs(Math.sin(t * 12)) * 0.7; c.moveTo(mx, -66); c.arc(mx, -66, 5.5, mo, TAU - mo); c.closePath(); c.fill();
+      c.fillStyle = "#A8713D"; c.beginPath(); c.arc(mx - 1, -71, 3, Math.PI, 0); c.fill();
+      A.text(c, "MAX-MAN", 0, -78, 7, "#FFD23F", { weight: 700 });
+    } else if (kind === "???") A.text(c, "???", 0, -69, 14, on ? "#5CFFD2" : "#1E6B5A", { weight: 700 });
     else { A.text(c, "COMING", 0, -75, 8, on ? "#FFD23F" : "#6B5A1E", { weight: 700 }); A.text(c, "SOON", 0, -63, 10, on ? "#FFD23F" : "#6B5A1E", { weight: 700 }); }
     c.fillStyle = "#2B2F3A"; A.rr(c, -18, -48, 36, 12, 3); c.fill();
     c.fillStyle = "#FF5C5C"; c.beginPath(); c.arc(-8, -42, 3, 0, TAU); c.fill();
