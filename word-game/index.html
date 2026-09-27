@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Word Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#EEF2FA; --surface:#FFFFFF; --ink:#16204A; --muted:#5A6690; --line:#D5DCEE;
+  --accent:#2F5BEA; --accent-ink:#FFFFFF; --tile:#FFD23F; --tile-ink:#16204A; --tile-edge:#D9A800;
+  --good:#1C8F63; --bad:#CC3B33; --cpu-bubble:#E3E9F8; --you-bubble:#2F5BEA; --you-ink:#FFFFFF;
+  --display:"Bricolage Grotesque",ui-rounded,system-ui,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --tilefont:"Archivo Black","Arial Black",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1328; --surface:#171E3A; --ink:#E7EBFA; --muted:#98A3C9; --line:#2A3460;
+    --accent:#7C9BFF; --accent-ink:#0E1328; --cpu-bubble:#222B4F; --you-bubble:#3D63F0; --you-ink:#FFFFFF;
+    --good:#4CC99A; --bad:#FF7A70; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1328; --surface:#171E3A; --ink:#E7EBFA; --muted:#98A3C9; --line:#2A3460;
+  --accent:#7C9BFF; --accent-ink:#0E1328; --cpu-bubble:#222B4F; --you-bubble:#3D63F0; --you-ink:#FFFFFF;
+  --good:#4CC99A; --bad:#FF7A70; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--body);padding-inline:16px}
+.app{max-width:560px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:14px;padding-block:18px 20px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font:800 clamp(28px,8vw,40px)/1 var(--display);letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 .t{display:inline-grid;place-items:center;width:1.05em;height:1.05em;margin-left:.08em;background:var(--tile);color:var(--tile-ink);
+  font:400 .72em/1 var(--tilefont);border-radius:.16em;box-shadow:0 .08em 0 var(--tile-edge);transform:rotate(4deg);vertical-align:.08em}
+.score{display:flex;gap:6px;font-variant-numeric:tabular-nums}
+.score div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px 10px;text-align:center;min-width:64px}
+.score b{display:block;font:800 20px/1.1 var(--display)}
+.score span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.cats{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:600 14px var(--body);border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.custom{display:flex;gap:8px}
+.custom input{flex:1;min-width:0}
+.board{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px;min-height:260px}
+.board-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-bottom:1px dashed var(--line);padding-bottom:8px}
+.board-head h2{font:800 20px/1.2 var(--display);margin:0}
+.board-head small{color:var(--muted);font-variant-numeric:tabular-nums}
+.chain{display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:46vh;padding-right:2px}
+.row{display:flex;flex-direction:column;max-width:85%}
+.row.cpu{align-self:flex-start}
+.row.you{align-self:flex-end;align-items:flex-end}
+.who{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 4px 2px}
+.bubble{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 14px;border-radius:14px;font-weight:600;font-size:17px}
+.cpu .bubble{background:var(--cpu-bubble);border-bottom-left-radius:4px}
+.you .bubble{background:var(--you-bubble);color:var(--you-ink);border-bottom-right-radius:4px}
+.mini{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:6px;background:var(--tile);color:var(--tile-ink);font:400 15px/1 var(--tilefont);box-shadow:0 2px 0 var(--tile-edge)}
+.note{align-self:center;font-size:14px;color:var(--muted);text-align:center;max-width:36ch}
+.turn{display:flex;align-items:center;gap:14px}
+.bigtile{flex:none;display:grid;place-items:center;width:64px;height:64px;border-radius:12px;background:var(--tile);color:var(--tile-ink);
+  font:400 36px/1 var(--tilefont);box-shadow:0 4px 0 var(--tile-edge);transform:rotate(-3deg);transition:transform .25s}
+.bigtile.pop{animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(.7) rotate(-12deg)}100%{transform:scale(1) rotate(-3deg)}}
+.turn p{margin:0}
+.turn .lead{font:800 18px/1.2 var(--display)}
+.turn .sub{color:var(--muted);font-size:14px}
+form.play{display:flex;gap:8px}
+input[type=text]{font:500 17px var(--body);color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:11px 13px;width:100%;min-width:0}
+input[type=text]:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{font:700 16px var(--body);border:0;border-radius:12px;padding:11px 16px;cursor:pointer;white-space:nowrap}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.5;cursor:default}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.msg{min-height:1.4em;font-size:15px;margin:0}
+.msg.bad{color:var(--bad)} .msg.good{color:var(--good)}
+.result{border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;border:2px solid var(--line)}
+.result.win{border-color:var(--good)} .result.lose{border-color:var(--bad)}
+.result h3{margin:0;font:800 22px/1.2 var(--display)}
+.result p{margin:0;color:var(--muted)}
+.rules{font-size:13px;color:var(--muted);margin:0}
+@media (prefers-reduced-motion:reduce){.bigtile.pop{animation:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>The Word Gam<span class="t">E</span></h1>
+    <div class="score" aria-label="Score">
+      <div><b id="sYou">0</b><span>You</span></div>
+      <div><b id="sCpu">0</b><span>Computer</span></div>
+    </div>
+  </header>
+
+  <div class="cats" id="cats" role="group" aria-label="Category"></div>
+  <form class="custom" id="customForm" hidden>
+    <input type="text" id="customInput" placeholder="Any category, e.g. Disney movies" autocomplete="off" aria-label="Custom category">
+    <button class="btn ghost" type="submit">Play it</button>
+  </form>
+
+  <section class="board" aria-live="polite">
+    <div class="board-head"><h2 id="catTitle">Fruit</h2><small id="count">0 words</small></div>
+    <div class="chain" id="chain"></div>
+  </section>
+
+  <div id="playArea">
+    <div class="turn">
+      <div class="bigtile" id="bigTile">?</div>
+      <div><p class="lead" id="lead">Your turn</p><p class="sub" id="sub"></p></div>
+    </div>
+    <p class="msg" id="msg"></p>
+    <form class="play" id="playForm">
+      <input type="text" id="answer" autocomplete="off" autocapitalize="words" spellcheck="false" aria-label="Your answer">
+      <button class="btn primary" type="submit" id="goBtn">Play</button>
+    </form>
+    <div class="actions" style="margin-top:8px">
+      <button class="btn ghost" type="button" id="countIt" hidden>Count it anyway</button>
+      <button class="btn ghost" type="button" id="stuck">I'm stuck</button>
+    </div>
+  </div>
+
+  <div class="result" id="result" hidden>
+    <h3 id="resTitle"></h3>
+    <p id="resText"></p>
+    <div class="actions">
+      <button class="btn primary" type="button" id="nextBtn">Next category</button>
+      <button class="btn ghost" type="button" id="againBtn">Play this one again</button>
+    </div>
+  </div>
+
+  <p class="rules">Each answer has to start with the last letter of the one before it. No repeats. For people, the first name has to start with the letter, and the last letter of the last name is the next letter. You can type just a last name, like "Jordan" for Michael Jordan.</p>
+</div>
+
+<script>
+const CATS = {
+  "Fruit": ["Apple","Apricot","Avocado","Acai","Ackee","Banana","Bilberry","Blackberry","Blackcurrant","Blueberry","Boysenberry","Breadfruit","Cantaloupe","Carambola","Cherimoya","Cherry","Clementine","Cloudberry","Coconut","Cranberry","Currant","Damson","Date","Dragon fruit","Durian","Elderberry","Feijoa","Fig","Finger lime","Gooseberry","Grape","Grapefruit","Guava","Honeydew","Honeyberry","Huckleberry","Jackfruit","Jabuticaba","Jujube","Kiwi","Kiwano","Kumquat","Lemon","Lime","Lingonberry","Loganberry","Longan","Loquat","Lychee","Mandarin","Mango","Mangosteen","Marionberry","Medlar","Melon","Mulberry","Nance","Nectarine","Noni","Olive","Orange","Oroblanco","Papaya","Passion fruit","Peach","Pear","Persimmon","Physalis","Pineapple","Plantain","Plum","Pomegranate","Pomelo","Prickly pear","Quince","Rambutan","Raspberry","Redcurrant","Salak","Satsuma","Soursop","Starfruit","Strawberry","Tamarind","Tangelo","Tangerine","Ugli fruit","Watermelon","White currant","Xigua","Yangmei","Yuzu"],
+  "Baseball players": ["Aaron Judge","Adrian Beltre","Albert Pujols","Alex Rodriguez","Andrew McCutchen","Babe Ruth","Barry Bonds","Bo Jackson","Bob Gibson","Bryce Harper","Buster Posey","Cal Ripken Jr","Carlton Fisk","Chipper Jones","Clayton Kershaw","Cody Bellinger","Corey Seager","Craig Biggio","Cy Young","Dave Winfield","David Ortiz","Dennis Eckersley","Derek Jeter","Don Mattingly","Duke Snider","Dwight Gooden","Eddie Murray","Edgar Martinez","Elly De La Cruz","Enos Slaughter","Eric Davis","Ernie Banks","Evan Longoria","Fergie Jenkins","Fernando Tatis Jr","Fernando Valenzuela","Francisco Lindor","Frank Thomas","Freddie Freeman","Gary Carter","Gary Sheffield","George Brett","Gerrit Cole","Greg Maddux","Hank Aaron","Harmon Killebrew","Hideki Matsui","Honus Wagner","Hoyt Wilhelm","Ian Kinsler","Ichiro Suzuki","Ivan Rodriguez","Jackie Robinson","Jacob deGrom","Jim Palmer","Jim Thome","Joe DiMaggio","Joey Votto","Johnny Bench","Jose Altuve","Juan Soto","Justin Verlander","Ken Griffey Jr","Kenny Lofton","Kirby Puckett","Kirk Gibson","Kris Bryant","Kyle Schwarber","Larry Walker","Lou Brock","Lou Gehrig","Luis Aparicio","Manny Machado","Mariano Rivera","Mark McGwire","Max Scherzer","Mickey Mantle","Miguel Cabrera","Mike Trout","Mookie Betts","Nap Lajoie","Nelson Cruz","Nick Markakis","Nolan Ryan","Nomar Garciaparra","Omar Vizquel","Orel Hershiser","Ozzie Guillen","Ozzie Smith","Paul Goldschmidt","Paul Molitor","Pedro Martinez","Pete Alonso","Pete Rose","Rafael Devers","Ralph Kiner","Randy Johnson","Reggie Jackson","Rickey Henderson","Roberto Clemente","Rod Carew","Roger Clemens","Ronald Acuna Jr","Ryne Sandberg","Sammy Sosa","Sandy Koufax","Satchel Paige","Shohei Ohtani","Stan Musial","Steve Carlton","Ted Williams","Thurman Munson","Tim Lincecum","Tom Seaver","Tony Gwynn","Trea Turner","Ty Cobb","Ubaldo Jimenez","Ugueth Urbina","Vladimir Guerrero","Vladimir Guerrero Jr","Wade Boggs","Walter Johnson","Warren Spahn","Whitey Ford","Will Clark","Willie Mays","Xander Bogaerts","Yadier Molina","Yoenis Cespedes","Yogi Berra","Yordan Alvarez","Yu Darvish","Zack Greinke","Zack Wheeler"],
+  "Basketball players": ["Allen Iverson","Alonzo Mourning","Anthony Davis","Anthony Edwards","Ben Wallace","Bill Russell","Bill Walton","Blake Griffin","Bob Cousy","Bradley Beal","Carmelo Anthony","Charles Barkley","Chris Bosh","Chris Paul","Chris Webber","Clyde Drexler","Damian Lillard","David Robinson","DeMar DeRozan","Dennis Rodman","Derrick Rose","Devin Booker","Dirk Nowitzki","Dominique Wilkins","Donovan Mitchell","Draymond Green","Dwyane Wade","Elgin Baylor","Elton Brand","Elvin Hayes","Evan Mobley","Gary Payton","George Gervin","Giannis Antetokounmpo","Gilbert Arenas","Grant Hill","Hakeem Olajuwon","Horace Grant","Isaiah Thomas","Isiah Thomas","Ja Morant","Jalen Brunson","James Harden","Jason Kidd","Jaylen Brown","Jayson Tatum","Jerry West","Jimmy Butler","Joel Embiid","John Stockton","Julius Erving","Kareem Abdul-Jabbar","Karl Malone","Kawhi Leonard","Kemba Walker","Kevin Durant","Kevin Garnett","Kevin Love","Klay Thompson","Kobe Bryant","Kristaps Porzingis","Kyrie Irving","LaMelo Ball","Larry Bird","LeBron James","Lonzo Ball","Lou Williams","Luka Doncic","Magic Johnson","Manu Ginobili","Metta World Peace","Michael Jordan","Moses Malone","Nate Archibald","Nate Robinson","Nick Van Exel","Nikola Jokic","Oscar Robertson","Otto Porter Jr","Patrick Ewing","Pau Gasol","Paul George","Paul Pierce","Penny Hardaway","Pete Maravich","Quentin Richardson","Rasheed Wallace","Ray Allen","Reggie Miller","Robert Parish","Rudy Gobert","Russell Westbrook","Sam Cassell","Scottie Pippen","Shai Gilgeous-Alexander","Shaquille O'Neal","Spud Webb","Stephen Curry","Steve Nash","Tim Duncan","Tony Parker","Tracy McGrady","Trae Young","Tyrese Haliburton","Tyson Chandler","Udonis Haslem","Victor Wembanyama","Vince Carter","Vlade Divac","Walt Frazier","Wes Unseld","Wilt Chamberlain","Xavier McDaniel","Yao Ming","Zach LaVine","Zion Williamson"],
+  "Animals": ["Aardvark","Albatross","Alligator","Alpaca","Anteater","Antelope","Armadillo","Baboon","Badger","Barracuda","Bat","Bear","Beaver","Bison","Bobcat","Buffalo","Butterfly","Camel","Capybara","Caribou","Cat","Cheetah","Chicken","Chimpanzee","Chinchilla","Cobra","Cougar","Cow","Coyote","Crab","Crocodile","Crow","Deer","Dingo","Dog","Dolphin","Donkey","Dove","Duck","Eagle","Eel","Elephant","Elk","Emu","Falcon","Ferret","Flamingo","Fox","Frog","Gazelle","Gecko","Gerbil","Giraffe","Goat","Goose","Gorilla","Hamster","Hare","Hawk","Hedgehog","Heron","Hippopotamus","Horse","Hyena","Ibex","Ibis","Iguana","Impala","Jackal","Jaguar","Jellyfish","Kangaroo","Kingfisher","Koala","Komodo dragon","Kudu","Lemur","Leopard","Lion","Lizard","Llama","Lobster","Lynx","Macaw","Manatee","Meerkat","Mole","Mongoose","Monkey","Moose","Mouse","Narwhal","Newt","Nightingale","Ocelot","Octopus","Opossum","Orangutan","Ostrich","Otter","Owl","Ox","Panda","Panther","Parrot","Peacock","Pelican","Penguin","Pig","Platypus","Porcupine","Puffin","Python","Quail","Quokka","Rabbit","Raccoon","Rat","Raven","Reindeer","Rhinoceros","Salamander","Salmon","Seal","Shark","Sheep","Skunk","Sloth","Snake","Squirrel","Swan","Tapir","Tiger","Toad","Tortoise","Toucan","Turkey","Turtle","Urchin","Vulture","Wallaby","Walrus","Warthog","Weasel","Whale","Wolf","Wolverine","Wombat","Woodpecker","Yak","Zebra"]
+};
+const CAT_NAMES = Object.keys(CATS);
+const PEOPLE = new Set(["Baseball players","Basketball players"]);
+
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z ]+/g," ").replace(/\s+/g," ").trim();
+const stripSuffix = n => n.replace(/ (jr|sr|ii|iii|iv)$/,"");
+const firstLetter = s => (norm(s).match(/[a-z]/)||[""])[0];
+const lastLetter = s => { const n = stripSuffix(norm(s)); return n ? n[n.length-1] : ""; };
+const $ = id => document.getElementById(id);
+
+let sample = null;
+let S = { cat:"Fruit", custom:false, chain:[], used:new Set(), letter:"", over:null, busy:false, score:{you:0,cpu:0}, pending:null };
+
+function listFor(cat){ return CATS[cat] || []; }
+
+function renderCats(){
+  const box = $("cats"); box.textContent = "";
+  for (const c of CAT_NAMES){
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = c;
+    b.setAttribute("aria-pressed", String(!S.custom && S.cat === c));
+    b.onclick = () => startRound(c, false);
+    box.append(b);
+  }
+  if (S.custom){
+    const b = document.createElement("button");
+    b.type="button"; b.className="chip"; b.textContent=S.cat; b.setAttribute("aria-pressed","true");
+    box.append(b);
+  }
+}
+
+function render(){
+  renderCats();
+  $("catTitle").textContent = S.cat;
+  $("count").textContent = S.chain.length + (S.chain.length === 1 ? " word" : " words");
+  const chain = $("chain"); chain.textContent = "";
+  for (const e of S.chain){
+    const row = document.createElement("div"); row.className = "row " + e.who;
+    const who = document.createElement("div"); who.className = "who"; who.textContent = e.who === "you" ? "You" : "Computer";
+    const bub = document.createElement("div"); bub.className = "bubble";
+    const w = document.createElement("span"); w.textContent = e.word;
+    const t = document.createElement("span"); t.className = "mini"; t.textContent = lastLetter(e.word).toUpperCase();
+    bub.append(w, t); row.append(who, bub); chain.append(row);
+  }
+  if (S.busy){
+    const n = document.createElement("div"); n.className = "note"; n.textContent = S.busyText || "Computer is thinking…"; chain.append(n);
+  }
+  chain.scrollTop = chain.scrollHeight;
+
+  const L = S.letter.toUpperCase();
+  const tile = $("bigTile");
+  if (tile.textContent !== L){ tile.textContent = L || "?"; tile.classList.remove("pop"); void tile.offsetWidth; tile.classList.add("pop"); }
+  const prev = S.chain[S.chain.length-1];
+  $("lead").textContent = S.busy ? "Wait for it…" : `Your turn: starts with ${L}`;
+  $("sub").textContent = prev ? `${prev.word} ends in ${L}` : "";
+  $("answer").placeholder = PEOPLE.has(S.cat) ? `A player whose first name starts with ${L}` : `Something starting with ${L}`;
+  $("answer").disabled = $("goBtn").disabled = $("stuck").disabled = S.busy || !!S.over;
+  $("playArea").hidden = !!S.over;
+  $("result").hidden = !S.over;
+  $("countIt").hidden = !S.pending;
+  $("sYou").textContent = S.score.you; $("sCpu").textContent = S.score.cpu;
+  if (S.over){
+    const win = S.over === "you";
+    $("result").className = "result " + (win ? "win" : "lose");
+    $("resTitle").textContent = win ? "You win this round!" : "Computer wins this round";
+    $("resText").textContent = win
+      ? `The computer couldn't think of anything starting with ${L}. Chain length: ${S.chain.length}.`
+      : `You ran out on ${L}. ${S.hint ? "One you could have used: " + S.hint + ". " : ""}Chain length: ${S.chain.length}.`;
+  }
+}
+
+function say(text, kind){ const m = $("msg"); m.textContent = text || ""; m.className = "msg" + (kind ? " " + kind : ""); }
+
+function add(who, word){
+  S.chain.push({who, word});
+  S.used.add(stripSuffix(norm(word)));
+  S.letter = lastLetter(word);
+}
+
+function cpuCandidates(letter){
+  return listFor(S.cat).filter(w => firstLetter(w) === letter && !S.used.has(stripSuffix(norm(w))));
+}
+
+async function askClaudeForWord(letter){
+  if (!sample) return null;
+  const used = S.chain.map(e => e.word);
+  try {
+    const r = await sample.json(`We're playing a word chain game. Category: "${S.cat}". Name one real, well-known example from this category whose name starts with the letter "${letter.toUpperCase()}" (for people, the first name starts with it). It must not be any of these: ${JSON.stringify(used)}. Reply with only JSON like {"word":"Example"}, or {"word":null} if you can't think of one.`, {modelTier:"quick", cache:false});
+    const w = r && typeof r.word === "string" ? r.word.trim() : "";
+    if (w && firstLetter(w) === letter && !S.used.has(stripSuffix(norm(w)))) return w;
+  } catch(e) { if (e && e.code === "not_granted") { sample = null; setupCustom(); } }
+  return null;
+}
+
+async function cpuTurn(){
+  S.busy = true; S.busyText = "Computer is thinking…"; render();
+  await new Promise(r => setTimeout(r, 650));
+  let word = null;
+  const c = cpuCandidates(S.letter);
+  if (c.length) word = c[Math.floor(Math.random()*c.length)];
+  else if (S.custom) word = await askClaudeForWord(S.letter);
+  S.busy = false;
+  if (!word){ S.over = "you"; S.score.you++; say(""); render(); return; }
+  add("cpu", word);
+  render();
+  $("answer").focus({preventScroll:true});
+}
+
+function matchInList(input){
+  const n = stripSuffix(norm(input));
+  const list = listFor(S.cat);
+  const exact = list.find(w => stripSuffix(norm(w)) === n);
+  if (exact) return exact;
+  if (PEOPLE.has(S.cat)){
+    const bySurname = list.filter(w => { const p = stripSuffix(norm(w)).split(" "); return p.slice(1).join(" ") === n || p[p.length-1] === n; })
+                          .filter(w => firstLetter(w) === S.letter && !S.used.has(stripSuffix(norm(w))));
+    if (bySurname.length === 1) return bySurname[0];
+  }
+  return null;
+}
+
+async function judgeWithClaude(word){
+  if (!sample) return null;
+  try {
+    const r = await sample.json(`Word chain game referee. Category: "${S.cat}". The player said "${word}". Is that a real, recognizable member of this category (small spelling mistakes are fine)? Reply with only JSON like {"valid":true,"name":"Correctly spelled full name","reason":"a few words"}.`, {modelTier:"quick"});
+    return r && typeof r.valid === "boolean" ? r : null;
+  } catch(e) { if (e && e.code === "not_granted") { sample = null; setupCustom(); } return null; }
+}
+
+async function submit(raw){
+  const input = raw.trim();
+  if (!input || S.busy || S.over) return;
+  S.pending = null;
+  if (firstLetter(input) !== S.letter){
+    // Maybe they typed a last name
+    const m = matchInList(input);
+    if (!m){ say(`That needs to start with ${S.letter.toUpperCase()}.`, "bad"); render(); return; }
+  }
+  let word = matchInList(input);
+  if (word && S.used.has(stripSuffix(norm(word)))){ say(`${word} was already used.`, "bad"); render(); return; }
+  if (!word){
+    if (S.used.has(stripSuffix(norm(input)))){ say(`${input} was already used.`, "bad"); render(); return; }
+    if (sample){
+      S.busy = true; S.busyText = `Checking "${input}"…`; render();
+      const v = await judgeWithClaude(input);
+      S.busy = false;
+      if (v && v.valid){
+        word = (v.name && firstLetter(v.name) === S.letter) ? v.name : input;
+        if (S.used.has(stripSuffix(norm(word)))){ say(`${word} was already used.`, "bad"); render(); return; }
+      } else if (v){
+        say(`Not accepted: ${v.reason || "that doesn't fit " + S.cat}. Try another.`, "bad"); S.pending = input; render(); return;
+      }
+    }
+    if (!word){
+      say(`"${input}" isn't on my list for ${S.cat}. Try another, or count it if you're sure.`, "bad");
+      S.pending = input; render(); return;
+    }
+  }
+  accept(word);
+}
+
+function accept(word){
+  S.pending = null;
+  say(`${word} ✓`, "good");
+  add("you", word);
+  $("answer").value = "";
+  cpuTurn();
+}
+
+function startRound(cat, custom){
+  S.cat = cat; S.custom = custom; S.chain = []; S.used = new Set(); S.over = null; S.pending = null; S.hint = null;
+  say("");
+  if (custom){
+    S.busy = true; S.busyText = `Computer is picking a ${cat} word…`; S.letter = ""; render();
+    const letters = "abcdefghijklmnoprstw";
+    askClaudeForWord(letters[Math.floor(Math.random()*letters.length)]).then(w => {
+      S.busy = false;
+      if (!w){ say("Couldn't start that category. Pick another one.", "bad"); S.custom = false; startRound(CAT_NAMES[0], false); return; }
+      add("cpu", w); render();
+    });
+    return;
+  }
+  // Open with a word whose last letter has plenty of follow-ups, so the round doesn't end on move one.
+  const list = listFor(cat);
+  const good = list.filter(w => list.filter(x => firstLetter(x) === lastLetter(w)).length >= 3);
+  add("cpu", good[Math.floor(Math.random()*good.length)]);
+  render();
+}
+
+$("playForm").addEventListener("submit", e => { e.preventDefault(); submit($("answer").value); });
+$("countIt").onclick = () => { if (S.pending && firstLetter(S.pending) === S.letter) accept(S.pending.replace(/\b\w/g, c => c.toUpperCase())); };
+$("stuck").onclick = () => {
+  if (S.busy || S.over) return;
+  const c = cpuCandidates(S.letter);
+  S.hint = c.length ? c[Math.floor(Math.random()*c.length)] : null;
+  S.over = "cpu"; S.score.cpu++; say(""); render();
+};
+$("nextBtn").onclick = () => {
+  const i = S.custom ? -1 : CAT_NAMES.indexOf(S.cat);
+  startRound(CAT_NAMES[(i+1) % CAT_NAMES.length], false);
+};
+$("againBtn").onclick = () => startRound(S.cat, S.custom);
+$("customForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = $("customInput").value.trim();
+  if (v && sample){ $("customInput").value = ""; startRound(v.charAt(0).toUpperCase() + v.slice(1), true); }
+});
+
+function setupCustom(){ $("customForm").hidden = !sample; }
+
+startRound(CAT_NAMES[0], false);
+$("answer").focus({preventScroll:true});
+
+// When this runs inside Claude, Claude can referee unknown answers and play any category you type.
+(async () => {
+  try { sample = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch { sample = null; }
+  setupCustom();
+})();
+</script>
+</body>
+</html>
