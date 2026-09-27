@@ -323,6 +323,12 @@
     async launch(game, dest) {
       if (current) return;
       const P = E.player;
+      // some games belong to one kid (Ellie's Ballet House is Ellie's)
+      if (game && game.only && P && P.id !== game.only) {
+        const who = A.CHARS[game.only].name;
+        RW.sfx.play("lock"); E.say(P, `This is ${who}'s! Only ${who} can play here.`, 2.2);
+        return;
+      }
       const [sx, sy] = P ? E.worldToScreen(P.x, P.y - 60) : [innerWidth / 2, innerHeight / 2];
       RW.sfx.play("whoosh");
       show(portalCard, false); portalCard.classList.remove("on");
@@ -692,6 +698,7 @@
       if (d.noPin) return;
       const status = world.destStatus(d);
       if (status === "locked" || status === "place" || status === "travel") return; // only games you can play (and the shop)
+      const og = RW.games.forDestination(d.id); if (og && og.only && E.player && og.only !== E.player.id) return; // someone else's game
       const [px, py] = pct(d.map[0], d.map[1]);
       const p = el("button", `pin ${status}`);
       p.type = "button";
@@ -770,7 +777,8 @@
     RW.sfx.play("pop");
     const grid = $("#allGrid");
     grid.innerHTML = "";
-    RW.games.list.filter((g) => RW.games.status(g) !== "locked" && !g.menu).forEach((g) => {
+    const me = E.player && E.player.id;
+    RW.games.list.filter((g) => RW.games.status(g) !== "locked" && !g.menu && (!g.only || g.only === me)).forEach((g) => {
       const d = world.DEST[g.destination || g.room];
       const st = RW.games.stats(g.id);
       const b = el("button", "g-card");

@@ -30,6 +30,7 @@
     { id: "hotchoc", name: "Cocoa Party", icon: "☕", kind: "game", portal: [820, 2612], portalR: 70, arrive: [820, 2630], map: [820, 2480] },
     { id: "skirun", name: "Ski Run", icon: "⛷️", kind: "game", portal: [300, 2742], portalR: 80, arrive: [300, 2760], map: [280, 2560] },
     { id: "minigolf", name: "Mini Golf", icon: "⛳", kind: "game", portal: [3200, 2512], portalR: 80, arrive: [3200, 2532], map: [3200, 2380] },
+    { id: "ballet", name: "Ellie's Ballet House", icon: "🩰", kind: "game", portal: [580, 2268], portalR: 70, arrive: [580, 2290], map: [580, 2080] },
     { id: "icerink", name: "Ice Rink", icon: "🏒", kind: "game", portal: [250, 2842], portalR: 80, arrive: [250, 2830], map: [250, 2930] },
     { id: "sledhill", name: "Max's Bunny Hill", icon: "🐰", kind: "game", portal: [660, 2992], portalR: 80, arrive: [660, 3010], map: [660, 2880] },
     { id: "garden", name: "Grampa Simon's Garden", icon: "🍅", kind: "game", portal: [1070, 1442], portalR: 80, arrive: [1070, 1464], map: [1040, 1240] },
@@ -88,6 +89,7 @@
     jetski:   { name: "JET SKI", icon: "🚤", color: "#E8453C", go: [4215, 1150] },
     beach:    { name: "BEACH", icon: "🏖️", color: "#1E8FC4", go: [4100, 2100], zone: [3960, 900, 4320, 3060] },
     bahamar:  { name: "BAHA MAR", icon: "🏝️", color: "#18A0B8", go: "seaplane" },
+    ballet:   { name: "ELLIE'S BALLET HOUSE", icon: "🩰", color: "#E8559B", go: "ballet", zone: [470, 2080, 690, 2300] },
     woods:    { name: "WOODS", icon: "🌲", color: "#3E7A3A", go: [640, 1900], zone: [110, 1160, 880, 2340] },
     hotchoc:  { name: "COCOA PARTY", icon: "☕", color: "#8A5A3C", go: "hotchoc", zone: [700, 2400, 900, 2640] },
     ski:      { name: "SKI RUN", icon: "⛷️", color: "#2F6BD6", go: "skirun", zone: [100, 2400, 470, 2800] },
@@ -157,6 +159,11 @@
   function goPlay(E2, d) {
     const P = E2.player;
     if (P.lock) return;
+    const g = RW.games.forDestination(d.id);
+    if (g && g.only && P.id !== g.only) {
+      const who = A.CHARS[g.only].name;
+      E2.say(P, U.pick([`This is ${who}'s ballet house! Only ${who} can dance here.`, `Shh, it's ${who}'s princess tower!`]), 2.4); RW.sfx.play("lock"); return;
+    }
     if (world.destStatus(d) === "locked") { E2.say(P, U.pick(["Coming soon!", "Not open yet!", "I can't wait for this one!"]), 1.6); RW.sfx.play("lock"); return; }
     const enter = () => { if (E2.mode === "play" && !RW.host.current) RW.bus.emit("portalEnter", d); };
     if (E2.nearPortal === d || Math.hypot(P.x - d.portal[0], P.y - d.portal[1]) < 30) { enter(); return; }
@@ -1387,7 +1394,7 @@
   function buildSignposts() {
     signpost(2590, 1992, [["home", "U"], ["shop", "R"], ["arcade", "D"]]);        // boulevard, below the house
     signpost(1236, 1992, [["kitchen", "U"], ["witch", "L"], ["sports", "D"]]);
-    signpost(770, 1995, [["witch", "U"], ["icemtn", "D"]]);                     // boulevard, where the woods trails start   // boulevard, west of the sports gate
+    signpost(770, 1995, [["witch", "U"], ["ballet", "D"], ["icemtn", "D"]]);                     // boulevard, where the woods trails start   // boulevard, west of the sports gate
     signpost(560, 2470, [["hotchoc", "R"], ["sled", "D"], ["rink", "L"]]);                      // Ice Mountain, as the trail comes in
     signpost(3392, 1992, [["plaza", "U"], ["shop", "R"], ["bahamar", "R"]]);      // boulevard at the plaza
     signpost(4150, 1995, [["beach", "U"], ["jetski", "U"], ["bahamar", "D"]]);                    // on the sand, where the trail heads south
@@ -2485,26 +2492,47 @@
         },
       },
     });
-    // woods treehouse
+    // Ellie's Ballet House: a pink princess tower in the woods (only Ellie can go in)
     add({
-      kind: "treehouse", x: 700, y: 2240, box: [-110, -300, 110, 16], sprite: true, solid: [{ c: [0, -4, 20] }], shadow: [70, 18], bubbleH: 280,
+      kind: "building", x: 580, y: 2250, box: [-100, -360, 100, 16], sprite: true, occludes: true, shadow: [80, 16], bubbleH: 330,
+      solid: [{ r: [-70, -46, -30, 2] }, { r: [30, -46, 70, 2] }, { r: [-30, -46, 30, -24] }],
       draw(c) {
-        c.fillStyle = A.lin(c, -16, 0, 16, 0, ["#9A6B45", "#6E4A30"]); A.rr(c, -16, -160, 32, 160, 8); c.fill();
-        // ladder
-        c.strokeStyle = "#B8834E"; c.lineWidth = 4;
-        c.beginPath(); c.moveTo(24, 0); c.lineTo(24, -130); c.moveTo(40, 0); c.lineTo(40, -130); c.stroke();
-        for (let y = -10; y > -130; y -= 16) { c.beginPath(); c.moveTo(24, y); c.lineTo(40, y); c.stroke(); }
-        // canopy
-        [[-60, -230, 50], [60, -230, 50], [0, -260, 60], [-30, -200, 44], [40, -196, 44]].forEach(([x, y, r]) => { c.fillStyle = A.rad(c, x - r * 0.4, y - r * 0.4, 2, x, y, r, ["#8FD978", "#4DAF5B", "#2F8A48"]); c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); });
-        // the little house
-        c.fillStyle = "#8A5A3A"; c.fillRect(-70, -150, 140, 10);
-        c.fillStyle = A.lin(c, 0, -210, 0, -150, ["#E3B37A", "#C48F58"]); A.rr(c, -54, -210, 108, 62, 4); c.fill();
-        c.fillStyle = "#E8453C"; c.beginPath(); c.moveTo(-66, -206); c.lineTo(0, -250); c.lineTo(66, -206); c.closePath(); c.fill();
-        c.fillStyle = "#2B2F3A"; A.rr(c, -14, -196, 28, 46, 6); c.fill();
-        c.fillStyle = "#FFE9A0"; A.rr(c, 22, -196, 22, 18, 3); c.fill();
-        B.plate(c, "KEEP OUT (JK)", 0, -136, 10, "#FFFFFF", "#8A5A3A", { r: 4 });
+        // the tower, with stone rings
+        c.fillStyle = A.lin(c, -70, 0, 70, 0, ["#FFE3EF", "#FFC2DB", "#F29CC0"]);
+        c.beginPath(); c.moveTo(-70, 0); c.lineTo(-62, -250); c.lineTo(62, -250); c.lineTo(70, 0); c.closePath(); c.fill();
+        c.strokeStyle = "rgba(200,90,140,.25)"; c.lineWidth = 2;
+        for (let y = -20; y > -250; y -= 26) { c.beginPath(); c.moveTo(-70 + (-y / 250) * 8, y); c.lineTo(70 - (-y / 250) * 8, y); c.stroke(); }
+        // balcony with a railing
+        c.fillStyle = "#FFFFFF"; A.rr(c, -80, -178, 160, 10, 4); c.fill();
+        c.strokeStyle = "#FFFFFF"; c.lineWidth = 3; for (let x = -74; x <= 74; x += 12) { c.beginPath(); c.moveTo(x, -178); c.lineTo(x, -196); c.stroke(); }
+        c.beginPath(); c.moveTo(-78, -196); c.lineTo(78, -196); c.stroke();
+        // arched windows, one with a little ballerina silhouette
+        [[-30, -140], [30, -140], [0, -226]].forEach(([x, y], i) => {
+          c.fillStyle = "#FFF3B0"; c.beginPath(); c.moveTo(x - 13, y + 18); c.lineTo(x - 13, y); c.arc(x, y, 13, Math.PI, 0); c.lineTo(x + 13, y + 18); c.closePath(); c.fill();
+          c.strokeStyle = "#FFFFFF"; c.lineWidth = 3; c.stroke();
+          if (i === 1) { c.fillStyle = "rgba(200,60,120,.55)"; c.beginPath(); c.arc(x, y - 2, 3.5, 0, TAU); c.fill(); c.beginPath(); c.moveTo(x - 8, y + 9); c.lineTo(x, y + 2); c.lineTo(x + 8, y + 9); c.closePath(); c.fill(); c.fillRect(x - 1, y + 9, 2, 7); }
+        });
+        // the pointy princess roof, with a flag
+        c.fillStyle = A.lin(c, -80, -330, 80, -250, ["#C46BE0", "#9A3FC4"]);
+        c.beginPath(); c.moveTo(-82, -246); c.lineTo(0, -350); c.lineTo(82, -246); c.closePath(); c.fill();
+        c.fillStyle = "#FFD23F"; c.fillRect(-82, -252, 164, 8);
+        for (let x = -70; x <= 70; x += 20) { c.beginPath(); c.arc(x, -244, 5, 0, Math.PI); c.fill(); }
+        A.line(c, 0, -350, 0, -380, 3, "#8E96A6");
+        c.fillStyle = "#FF6FAE"; c.beginPath(); c.moveTo(1, -380); c.quadraticCurveTo(18, -376, 30, -370); c.lineTo(1, -362); c.closePath(); c.fill();
+        // front door
+        c.fillStyle = "#FFFFFF"; c.beginPath(); c.moveTo(-26, 0); c.lineTo(-26, -40); c.arc(0, -40, 26, Math.PI, 0); c.lineTo(26, 0); c.closePath(); c.fill();
+        c.fillStyle = "#E8559B"; c.beginPath(); c.moveTo(-20, 0); c.lineTo(-20, -40); c.arc(0, -40, 20, Math.PI, 0); c.lineTo(20, 0); c.closePath(); c.fill();
+        c.fillStyle = "#FFD23F"; c.beginPath(); c.arc(10, -26, 3, 0, TAU); c.fill();
+        // roses by the door
+        [[-50, -6], [48, -6]].forEach(([x, y]) => { c.fillStyle = "#3E9A46"; c.beginPath(); c.arc(x, y - 10, 16, 0, TAU); c.fill(); ["#E8453C", "#FF6FAE", "#FFFFFF"].forEach((col, k) => { c.fillStyle = col; c.beginPath(); c.arc(x - 8 + k * 8, y - 16 + (k % 2) * 8, 4.5, 0, TAU); c.fill(); }); });
       },
-      tap: { reach: "remote", act(E2, e) { if (e.cool > E2.t) return; e.cool = E2.t + 2; RW.sfx.play("rustle"); E2.say(e, "Secret club meetings… coming soon!", 2); } },
+      live(c, E2) {
+        // sparkles drifting up around the tower
+        for (let i = 0; i < 4; i++) { const u = (E2.t * 0.25 + i / 4) % 1; c.globalAlpha = 1 - u; c.fillStyle = "#FFD23F"; A.starPath(c, -60 + i * 40, -60 - u * 260, 4, 4, 0.4); c.fill(); }
+        c.globalAlpha = 1;
+        c.save(); c.translate(0, -262); P_.ribbon(c, "ELLIE'S BALLET HOUSE", 170, "#E8559B"); c.restore();
+      },
+      tap: portalTap("ballet"),
     });
     // trail signs at the map edges (paths continue beyond)
     // mushrooms & logs
@@ -2846,7 +2874,7 @@
     [2980, 1340, 3180, 1760], // upgrade plots (east)
     [1980, 1170, 2180, 1720], // upgrade plots (west)
     [3950, 0, 5200, 3400],    // beach and ocean
-    [600, 2140, 800, 2280],   // woods treehouse
+    [440, 2040, 720, 2420],   // Ellie's princess tower (and the lawn in front of its door)
     [140, 1440, 440, 1640],   // cave
   ];
   function clearSpot(x, y) {

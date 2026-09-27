@@ -40,6 +40,11 @@ they walk out of that game's door and the stars they earned fly into the total.
 
 `games/_template/` is a small working example of the bridge.
 
+### One kid's game
+
+Add `only: "ellie"` (or any kid) to a game in `js/games.js` and only that kid can play it: everyone
+else gets a friendly "This is Ellie's!" and it's left off their map and ALL GAMES list.
+
 ### A brand-new game with no building yet
 
 1. Register it in `js/games.js` with a new `destination` id.
@@ -114,6 +119,7 @@ BAHA MAR"), or just tap the island; the plane on the island flies you home. The 
 | Bunny Hill (Ice Mountain, the sled hill someone keeps whooshing down) | Max's Bunny Hill | `games/maxs-bunny-hill` |
 | Ice Rink (bottom-left of Ice Mountain, kids skating laps) | Rosenberg Ice Hockey | `games/rosenberg-hockey` |
 | Windmill mini golf course (between the Star Shop and the arcade) | Rosenberg Mini Golf | `games/mini-golf` |
+| Ellie's Ballet House (the pink princess tower in the woods; **Ellie only**) | Tiptoe, Gallop or March | `games/ellie-ballet` |
 | Baha Mar Hotel (the east end of the island) | Checking In | `games/checking-in` |
 | Grampa Simon's garden (between the Kitchen and the Raceway) | Grandpa's Garden | `games/grandpas-garden` |
 | Witch Mountain (a spooky purple mountain in the woods; tap it or its glowing cave door) | Witch Mountain | `games/witch-mountain` |

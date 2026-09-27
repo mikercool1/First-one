@@ -316,6 +316,17 @@
     color: "#2EB872",
     icon: "⛳",
   });
+  G.register({
+    id: "elliesBallet",
+    title: "Tiptoe, Gallop or March",
+    subtitle: "Ellie's Ballet House: listen to the music and dance!",
+    destination: "ballet",
+    unlocked: true,
+    entry: "games/ellie-ballet/index.html",
+    color: "#FF6FAE",
+    icon: "🩰",
+    only: "ellie", // only Ellie can play
+  });
   G.register({ id: "skiRun", title: "Ski Run", subtitle: "", destination: "skirun", unlocked: false, entry: null, color: "#2F6BD6", icon: "⛷️" });
 
   G.register({

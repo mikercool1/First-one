@@ -270,6 +270,12 @@
     fist: (pt, t) => ({ armA: [2.9 - Math.abs(Math.sin(t * 10)) * 0.8, 0.3], mouth: "open" }),
     shrug: () => ({ armA: [1.3, 1.3], mouth: "o" }),
     fall: () => ({ slide: true, legA: [1.7, 1.2], armA: [2.2, 2.6], lean: -1.3, mouth: "o" }),
+    // ballet (Ellie's Ballet House)
+    tiptoe: (pt, t) => { const s = Math.sin(t * 9); return { armA: [2.95, 2.95], legA: [0.12 * s, -0.12 * s], hop: 3 + Math.abs(s) * 2.5, mouth: "smile" }; },
+    gallop: (pt, t) => { const s = Math.sin(t * 10); return { armA: [1.35, 1.2], legA: [0.25 + 0.55 * s, -0.35 + 0.35 * s], legBend: 0.35, hop: Math.abs(s) * 9, lean: -0.08, mouth: "open" }; },
+    march: (pt, t) => { const s = Math.sin(t * 6.5); return { armA: [0.25 - s * 0.9, 0.25 + s * 0.9], legA: [Math.max(0, s) * 1.2, Math.max(0, -s) * 1.2], legBend: 0.55, hop: Math.abs(s) * 2, mouth: "o" }; },
+    curtsy: (pt) => ({ armA: [0.75, 0.75], legA: [0.3, -0.35], legBend: 0.4, crouch: 3, lean: 0.12, mouth: "smile" }),
+    ballerina: (pt, t) => ({ armA: [2.4 + Math.sin(t * 2) * 0.15, 0.9], legA: [0.18, -0.18], mouth: "smile" }),
   };
 
   // st: { t, move 0..1, side 0..1 (walking sideways vs toward camera), dir 1|-1, back, pose, pt, prop, hold }
@@ -696,19 +702,26 @@
     c.save();
     c.beginPath();
     if (s.outfit === "dress") {
-      const adult = !!s.dressLen;
-      const hw = bw * (adult ? 0.42 : 0.36), flare = bw * (adult ? 0.72 : 0.62);
-      const hem = bot + 4 + (s.dressLen || 0) * s.L;
+      const adult = !!s.dressLen, tutu = !!s.tutu;
+      // a tutu: a fitted leotard that pops out into a short, wide skirt at the hips
+      const hw = bw * (adult ? 0.42 : tutu ? 0.33 : 0.36), flare = bw * (adult ? 0.72 : tutu ? 1.08 : 0.62);
+      const hem = tutu ? hipY + 2 : bot + 4 + (s.dressLen || 0) * s.L;
+      const knee = tutu ? hipY - 3 : top + T * (adult ? 0.7 : 0.4);
       c.moveTo(-hw, top + 3);
       c.quadraticCurveTo(0, top - 3, hw, top + 3);
-      c.quadraticCurveTo(hw + 3, top + T * (adult ? 0.7 : 0.4), flare, hem);
-      c.quadraticCurveTo(0, hem + 6, -flare, hem);
-      c.quadraticCurveTo(-hw - 3, top + T * (adult ? 0.7 : 0.4), -hw, top + 3);
+      c.quadraticCurveTo(hw + (tutu ? 0 : 3), knee, flare, hem);
+      c.quadraticCurveTo(0, hem + (tutu ? 4 : 6), -flare, hem);
+      c.quadraticCurveTo(-hw - (tutu ? 0 : 3), knee, -hw, top + 3);
       c.closePath();
       c.fillStyle = lin(c, -flare, top, flare, hem, [shade(s.shirt, 0.25), s.shirt, shade(s.shirt, -0.22)]);
       c.fill();
       c.clip();
-      if (!adult) {
+      if (tutu) {
+        // layers of tulle
+        c.fillStyle = "rgba(255,255,255,.35)";
+        for (let i = -5; i <= 5; i++) { c.beginPath(); c.arc(i * flare * 0.19, hem - 1, 3.6, 0, TAU); c.fill(); }
+        c.fillStyle = "rgba(255,255,255,.2)"; c.beginPath(); c.ellipse(0, hem - 5, flare * 0.8, 2.5, 0, 0, TAU); c.fill();
+      } else if (!adult) {
         // soft ruffle hem
         c.fillStyle = "rgba(255,255,255,.28)";
         for (let i = -3; i <= 3; i++) { c.beginPath(); c.arc(i * flare * 0.3, bot + 4, 3.2, 0, TAU); c.fill(); }
