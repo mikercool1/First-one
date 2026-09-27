@@ -170,7 +170,17 @@ html,body,#app{background:#CFE4F6}
   font:400 clamp(24px,3.6vw,34px)/1 var(--display);-webkit-text-stroke:3px #143A80;paint-order:stroke fill;
   box-shadow:0 8px 0 #102F6B,0 16px 30px rgba(28,77,168,.35),inset 0 3px 0 rgba(255,255,255,.35);touch-action:none}
 #shootBtn.hit{transform:translateY(6px);box-shadow:0 2px 0 #102F6B}
-#tapHint{bottom:calc(env(safe-area-inset-bottom,0px) + 30px);left:calc(50% - 40px)}
+#tapHint{bottom:calc(env(safe-area-inset-bottom,0px) + 180px);left:50%}
+#stick{position:absolute;z-index:6;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
+  right:calc(env(safe-area-inset-right,0px) + 18px + clamp(104px,15vw,140px) + 16px);
+  width:clamp(128px,18vw,168px);height:clamp(128px,18vw,168px);border-radius:50%;touch-action:none;
+  background:radial-gradient(circle,rgba(255,255,255,.55) 0 38%,rgba(255,255,255,.35) 39% 100%);
+  border:4px solid rgba(22,43,78,.55);box-shadow:0 8px 22px rgba(20,30,60,.25),inset 0 0 0 10px rgba(255,255,255,.25)}
+#stick::before,#stick::after{content:"";position:absolute;left:50%;top:50%;background:rgba(22,43,78,.25);border-radius:3px;transform:translate(-50%,-50%)}
+#stick::before{width:70%;height:6px}
+#stick::after{width:6px;height:70%}
+#stickKnob{position:absolute;left:50%;top:50%;width:46%;height:46%;margin:-23% 0 0 -23%;border-radius:50%;pointer-events:none;z-index:1;
+  background:radial-gradient(circle at 35% 30%,#8FC4FF,#2F6FDB 60%,#1C4DA8);border:3px solid #102F6B;box-shadow:0 5px 0 rgba(16,47,107,.6),0 10px 18px rgba(16,47,107,.3)}
 .logo{-webkit-text-stroke-color:#162B4E;text-shadow:0 9px 0 #0C1A33,0 20px 34px rgba(15,26,69,.3)}
 .logo em{color:#9ED8FF}
 .picks{display:flex;align-items:center;gap:clamp(8px,2vw,22px);width:100%}
@@ -198,7 +208,7 @@ html,body,#app{background:#CFE4F6}
   #board{min-width:0;left:12px;right:80px;transform:none;padding:6px 8px 8px}
   .brow{gap:6px}.brow>div{min-width:0}.brow span{font-size:9px;letter-spacing:.08em}
   .brow b.clk{min-width:60px;font-size:22px}.brow b.clk.gold{font-size:13px}
-  #tapHint{left:16px;right:140px;transform:none;white-space:normal;text-align:left;font-size:19px;animation:none}
+  #tapHint{left:16px;right:16px;transform:none;white-space:normal;text-align:center;font-size:19px;animation:none}
 }
 @media (max-width:700px) and (orientation:portrait){
   .picks{flex-direction:column}
@@ -211,6 +221,7 @@ html,body,#app{background:#CFE4F6}
   .pickcol .kcard .tg{display:none}
   .vs{font-size:28px;-webkit-text-stroke-width:6px}
   #shootBtn{width:92px;height:92px;font-size:22px}
+  #stick{width:118px;height:118px;right:calc(env(safe-area-inset-right,0px) + 18px + 92px + 14px)}
 }
 </style>
 </head>
@@ -231,7 +242,8 @@ html,body,#app{background:#CFE4F6}
     <button class="icon-btn" id="pauseBtn" aria-label="Pause">⏸</button>
   </div>
 
-  <div id="tapHint" hidden>DRAG TO SKATE · PRESS SHOOT!</div>
+  <div id="tapHint" hidden>JOYSTICK TO SKATE · PRESS SHOOT!</div>
+  <div id="stick" hidden role="application" aria-label="Joystick: drag to skate"><div id="stickKnob"></div></div>
   <button id="shootBtn" hidden aria-label="Shoot or poke check">SHOOT!</button>
 
   <div class="call" id="call"><div class="pre" id="callPre"></div><div class="w" id="callW"></div><div class="s" id="callS"></div></div>
@@ -1094,6 +1106,7 @@ let shake = 0;
 let react = {}, crowdUntil = 0;
 let auto = false, sloppy = false;
 const ptr = { id: null, sx: 0, sy: 0 };
+const joy = { id: null, x: 0, y: 0 };
 const keys = { left: false, right: false, up: false, down: false };
 const nameOf = k => KIDS[k.id].name;
 const benchKids = () => ORDER.filter(k => k !== P1.id && k !== CPU.id);
@@ -1153,7 +1166,7 @@ function startGame() {
   parts = []; confetti = []; floats = []; react = {}; crowdUntil = 0; clearSched(); hideCall();
   ptr.id = null; lastClockTxt = ''; goalLight.t = 0;
   for (const id of ['#title', '#end', '#pause']) $(id).hidden = true;
-  for (const id of ['#board', '#corner', '#shootBtn', '#tapHint']) $(id).hidden = false;
+  for (const id of ['#board', '#corner', '#shootBtn', '#stick', '#tapHint']) $(id).hidden = false;
   paused = false;
   setBoard();
   after(8, () => { $('#tapHint').hidden = true; });
@@ -1262,6 +1275,8 @@ function updHuman(dt) {
   k.wx = 0; k.wz = 0;
   if (phase !== 'play') return;
   if (ptr.id !== null) { const gp = unproject(ptr.sx, ptr.sy); k.tx = clamp(gp.x, -RX + 0.5, RX - 0.5); k.tz = clamp(gp.z, RZ0 + 0.4, RZ1 - 0.4); }
+  const jm = Math.hypot(joy.x, joy.y);
+  if (jm > 0.15) { const m = Math.min(1, (jm - 0.15) / 0.6); k.wx = joy.x / jm * m; k.wz = -joy.y / jm * m; k.tx = null; return; }
   const kx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), kz = (keys.up ? 1 : 0) - (keys.down ? 1 : 0);
   if (kx || kz) { const d = Math.hypot(kx, kz); k.wx = kx / d; k.wz = kz / d; k.tx = null; return; }
   if (k.tx !== null && steerTo(k, k.tx, k.tz) && ptr.id === null) k.tx = null;
@@ -1473,7 +1488,7 @@ function followCam() { shot(SHOT.play(phase === 'faceoff' ? 0 : puck.x * 0.8), f
 // ---------- end screen ----------
 function showEnd() {
   phase = 'end';
-  for (const id of ['#board', '#corner', '#tapHint', '#shootBtn']) $(id).hidden = true;
+  for (const id of ['#board', '#corner', '#tapHint', '#shootBtn', '#stick']) $(id).hidden = true;
   const win = GS.s1 > GS.s2;
   $('#endTitle').textContent = win ? 'YOU WIN!' : `${nameOf(CPU)} WINS!`;
   $('#stS1').textContent = GS.s1; $('#stN1').textContent = `${nameOf(P1)} GOALS (P1)`;
@@ -1486,7 +1501,7 @@ function showEnd() {
 }
 function goTitle() {
   phase = 'title'; clearSched(); hideCall(); react = {}; ptr.id = null;
-  for (const id of ['#end', '#pause', '#board', '#corner', '#tapHint', '#shootBtn']) $(id).hidden = true;
+  for (const id of ['#end', '#pause', '#board', '#corner', '#tapHint', '#shootBtn', '#stick']) $(id).hidden = true;
   paused = false;
   resetPuck(0, MZ);
   $('#title').hidden = false;
@@ -1847,7 +1862,25 @@ function frame(now) {
 
 // ---------- input ----------
 const cardEls = [...document.querySelectorAll('.kcard')];
-function isUI(e) { return e.target.closest && e.target.closest('button, .screen'); }
+function isUI(e) { return e.target.closest && e.target.closest('button, .screen, #stick'); }
+// joystick: x right, y down, both -1..1
+const stickEl = $('#stick'), knobEl = $('#stickKnob');
+function joyMove(e) {
+  const r = stickEl.getBoundingClientRect(), R = r.width / 2;
+  let x = (e.clientX - r.left - R) / R, y = (e.clientY - r.top - R) / R;
+  const m = Math.hypot(x, y); if (m > 1) { x /= m; y /= m; }
+  joy.x = x; joy.y = y;
+  knobEl.style.transform = `translate(${x * R * 0.62}px,${y * R * 0.62}px)`;
+}
+function joyEnd() { joy.id = null; joy.x = joy.y = 0; knobEl.style.transform = ''; }
+stickEl.addEventListener('pointerdown', e => {
+  e.preventDefault(); audioInit();
+  if (paused || joy.id !== null) return;
+  joy.id = e.pointerId; try { stickEl.setPointerCapture(e.pointerId); } catch (err) {}
+  joyMove(e); $('#tapHint').hidden = true;
+});
+stickEl.addEventListener('pointermove', e => { if (e.pointerId === joy.id) joyMove(e); });
+for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) stickEl.addEventListener(ev, e => { if (e.pointerId === joy.id) joyEnd(); });
 window.addEventListener('pointerdown', e => {
   audioInit();
   if (paused || isUI(e) || phase === 'title' || phase === 'end') return;
@@ -1868,7 +1901,7 @@ function shootPress() {
   const kb = $('#shootBtn'); kb.classList.add('hit'); clearTimeout(shootPress.t); shootPress.t = setTimeout(() => kb.classList.remove('hit'), 120);
 }
 $('#shootBtn').addEventListener('pointerdown', e => { e.preventDefault(); if (!paused) shootPress(); });
-function togglePause() { paused = !paused; $('#pause').hidden = !paused; ptr.id = null; for (const k in keys) keys[k] = false; if (paused) audioInit(); }
+function togglePause() { paused = !paused; $('#pause').hidden = !paused; ptr.id = null; joyEnd(); for (const k in keys) keys[k] = false; if (paused) audioInit(); }
 cardEls.forEach(b => b.addEventListener('click', () => {
   if (b.disabled) return;
   audioInit();
