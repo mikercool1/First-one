@@ -223,7 +223,7 @@
   // places Max really should not be
   const MISCHIEF = [
     [3720, 820, "Blast off!"], [3500, 1770, "Splashy!"], [2450, 988, "I'm the pitcher!"], [3850, 2080, "I'm building stuff!"],
-    [2815, 1860, "Beep beep!"], [1420, 1760, "Is it cookie time?"], [2560, 1300, "Boing boing!"], [4190, 2600, "My castle!"], [640, 760, "Vroom!"],
+    [2615, 1832, "Beep beep!"], [1420, 1760, "Is it cookie time?"], [2560, 1300, "Boing boing!"], [4190, 2600, "My castle!"], [640, 760, "Vroom!"],
   ];
   function spawnMaxMischief() {
     const P = E.player;

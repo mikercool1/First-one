@@ -21,8 +21,6 @@
     paths: [
       // main boulevard, west trail out of the woods to the beach
       { w: 100, pts: [[-120, 1880], [110, 1895], [300, 1905], [620, 1900], [1000, 1900], [1420, 1900], [2450, 1900], [3200, 1900], [3900, 1880], [4080, 1860]], kind: "stone" },
-      // Rosenberg House front walk and driveway
-      { w: 58, pts: [[2450, 1712], [2450, 1900]], kind: "stone" },
       // kitchen front walk
       { w: 58, pts: [[1420, 1732], [1420, 1900]], kind: "stone" },
       // around the house to the backyard and baseball
@@ -182,14 +180,11 @@
     c.strokeStyle = "rgba(255,255,255,.8)"; c.lineWidth = 2;
     c.strokeRect(Hm.x - 44, Hm.y - 16, 26, 34); c.strokeRect(Hm.x + 18, Hm.y - 16, 26, 34);
 
-    // backyard patio & driveway
+    // the house hill + loop driveway, then the backyard patio on top of the hill
+    paintHouseHill(c);
     c.fillStyle = "#D9C7A7"; A.rr(c, 2320, 1262, 150, 56, 12); c.fill();
     c.strokeStyle = "rgba(120,90,60,.15)"; c.lineWidth = 1.5;
     for (let x = 2345; x < 2470; x += 25) { c.beginPath(); c.moveTo(x, 1265); c.lineTo(x, 1315); c.stroke(); }
-    c.fillStyle = A.lin(c, 2740, 0, 2890, 0, ["#8A90A0", "#A3A9B8", "#8A90A0"]);
-    A.rr(c, 2740, 1690, 150, 230, 10); c.fill();
-    c.strokeStyle = "rgba(255,255,255,.25)"; c.lineWidth = 2; c.setLineDash([12, 10]);
-    c.beginPath(); c.moveTo(2815, 1700); c.lineTo(2815, 1905); c.stroke(); c.setLineDash([]);
 
     // mystery plaza
     const Pz = L.plaza;
@@ -224,6 +219,45 @@
     c.restore();
     text(c, "F", px, py - 4, 44, "rgba(255,255,255,.8)");
     c.strokeStyle = "rgba(255,255,255,.7)"; c.lineWidth = 4; A.ell(c, px, py - 4, 60, 32); c.stroke();
+  }
+
+  // The Rosenberg House sits up on a grassy hill; a loop driveway circles a flower island out front.
+  const HH = { x: 2450, y: 1560, rx: 660, ry: 335 };
+  const LOOP = { x: 2450, y: 1795, rx: 250, ry: 70, w: 54 };
+  L.houseHill = HH; L.driveLoop = LOOP;
+  function paintHouseHill(c) {
+    // shadow where the slope meets the street, then the mound itself
+    c.fillStyle = "rgba(40,90,50,.22)"; A.ell(c, HH.x, HH.y + 30, HH.rx + 14, HH.ry + 8); c.fill();
+    c.fillStyle = A.rad(c, HH.x, HH.y - 120, 60, HH.x, HH.y, HH.rx, ["#B3E68C", "#9BD877", "#82C463"]);
+    A.ell(c, HH.x, HH.y, HH.rx, HH.ry); c.fill();
+    // soft contour lines on the front slope
+    c.strokeStyle = "rgba(60,120,50,.16)"; c.lineWidth = 3;
+    [0.9, 0.8, 0.7].forEach((k) => { c.beginPath(); c.ellipse(HH.x, HH.y, HH.rx * k, HH.ry * k, 0, Math.PI * 0.12, Math.PI * 0.88); c.stroke(); });
+    c.fillStyle = "rgba(255,255,255,.12)"; A.ell(c, HH.x - 120, HH.y - 140, HH.rx * 0.55, HH.ry * 0.35); c.fill();
+    // the slope darkens as it runs down toward the street and out to the sides
+    c.save(); A.ell(c, HH.x, HH.y, HH.rx, HH.ry); c.clip();
+    c.fillStyle = A.lin(c, 0, HH.y + 90, 0, HH.y + HH.ry, ["rgba(40,100,40,0)", "rgba(40,100,40,.28)"]);
+    c.fillRect(HH.x - HH.rx, HH.y + 90, HH.rx * 2, HH.ry);
+    c.fillStyle = A.rad(c, HH.x, HH.y, HH.rx * 0.6, HH.x, HH.y, HH.rx, ["rgba(40,100,40,0)", "rgba(40,100,40,.22)"]);
+    c.fillRect(HH.x - HH.rx, HH.y - HH.ry, HH.rx * 2, HH.ry * 2);
+    c.restore();
+    // sunlit ridge line along the top of the front slope
+    c.strokeStyle = "rgba(255,255,230,.35)"; c.lineWidth = 6; c.lineCap = "round";
+    c.beginPath(); c.ellipse(HH.x, HH.y - 20, HH.rx * 0.98, HH.ry * 0.96, 0, Math.PI * 1.02, Math.PI * 1.98); c.stroke();
+    // loop driveway: curb, asphalt, center line
+    const ring = (w, col) => { c.strokeStyle = col; c.lineWidth = w; A.ell(c, LOOP.x, LOOP.y, LOOP.rx, LOOP.ry); c.stroke(); };
+    // spur to the garage
+    c.fillStyle = "#C9C2B4"; A.rr(c, 2694, 1684, 212, 124, 16); c.fill();
+    c.fillStyle = A.lin(c, 0, 1690, 0, 1800, ["#9AA0AE", "#848A99"]); A.rr(c, 2700, 1690, 200, 112, 12); c.fill();
+    ring(LOOP.w + 10, "#C9C2B4");
+    ring(LOOP.w, "#8E94A3");
+    c.save(); c.globalAlpha = 0.5; ring(LOOP.w * 0.35, "#9AA0AE"); c.restore();
+    c.setLineDash([14, 12]); ring(2, "rgba(255,255,255,.45)"); c.setLineDash([]);
+    // island lawn in the middle
+    c.fillStyle = A.rad(c, LOOP.x, LOOP.y - 10, 10, LOOP.x, LOOP.y, LOOP.rx, ["#A8E083", "#8ED06C"]);
+    A.ell(c, LOOP.x, LOOP.y, LOOP.rx - LOOP.w / 2 - 5, LOOP.ry - LOOP.w / 2 - 5 + 6); c.fill();
+    // short walk from the loop up to the front steps
+    c.fillStyle = "#EDE3CC"; A.rr(c, 2380, 1706, 50, 22, 6); c.fill();
   }
 
   function field(c, x, y, w, h, kind) {

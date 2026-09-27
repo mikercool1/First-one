@@ -17,7 +17,7 @@
     { id: "fartman", name: "Fart Man Landing Zone", icon: "🚀", kind: "game", portal: [3720, 925], portalR: 120, arrive: [3720, 950], map: [3720, 720] },
     { id: "mathblaster", name: "Math Blaster Academy", icon: "✖️", kind: "game", portal: [1450, 935], portalR: 95, arrive: [1450, 965], map: [1450, 760] },
     { id: "kitchen", name: "Ariel's Kitchen", icon: "🍳", kind: "game", portal: [1570, 1755], portalR: 90, arrive: [1570, 1790], map: [1420, 1570] },
-    { id: "car", name: "The Family Car", icon: "🚗", kind: "game", portal: [2892, 1822], portalR: 62, arrive: [2892, 1840], map: [2815, 1760] },
+    { id: "car", name: "The Family Car", icon: "🚗", kind: "game", portal: [2712, 1800], portalR: 60, arrive: [2712, 1815], map: [2615, 1740] },
     { id: "soccer", name: "Soccer Field", icon: "⚽", kind: "game", portal: [1425, 2240], portalR: 80, arrive: [1425, 2258], map: [1150, 2210] },
     { id: "volleyball", name: "Beach Volleyball", icon: "🏐", kind: "game", portal: [4120, 2612], portalR: 90, arrive: [4120, 2630], map: [4120, 2530] },
     { id: "court", name: "Basketball Court", icon: "🏀", kind: "game", portal: [1630, 2175], portalR: 80, arrive: [1630, 2190], map: [1710, 2175] },
@@ -213,10 +213,20 @@
     house.hit = [-320, -260, 480, 10];
     // front garden
     [[2215, 1714, 0.9, "#FF6B8B"], [2335, 1716, 0.75, "#FFD23F"], [2560, 1716, 0.75, "#FFFFFF"], [2690, 1712, 0.9, "#FF6B8B"]].forEach(([x, y, s, f]) => bush(x, y, s, f));
-    flowerBed(2270, 1760, 110, 30, 7); flowerBed(2630, 1760, 110, 30, 8);
+    // low stone retaining walls where the house hill meets the street
+    [[1860, 2040], [2725, 2930]].forEach(([x0, x1]) => staticProp((x0 + x1) / 2, 1850, [-(x1 - x0) / 2 - 6, -34, (x1 - x0) / 2 + 6, 6], (c) => {
+      const w = x1 - x0;
+      c.fillStyle = A.lin(c, 0, -26, 0, 0, ["#D6CEC0", "#A99F8E"]); A.rr(c, -w / 2, -24, w, 24, 6); c.fill();
+      c.fillStyle = "rgba(255,255,255,.35)"; A.rr(c, -w / 2 + 3, -24, w - 6, 5, 3); c.fill();
+      c.strokeStyle = "rgba(90,80,65,.28)"; c.lineWidth = 1.5;
+      for (let x = -w / 2 + 18, r = 0; x < w / 2; x += 26, r++) { c.beginPath(); c.moveTo(x + (r % 2) * 9, -18); c.lineTo(x + (r % 2) * 9, -2); c.stroke(); }
+      c.beginPath(); c.moveTo(-w / 2, -11); c.lineTo(w / 2, -11); c.stroke();
+    }, { kind: "wall" }));
+    // flower island inside the loop driveway
+    flowerBed(2390, 1800, 110, 16, 7); flowerBed(2510, 1800, 110, 16, 8);
     // mailbox
     const mb = add({
-      kind: "prop", x: 2300, y: 1855, box: [-24, -86, 32, 6], shadow: [16, 6], flag: 0, solid: [{ c: [0, -2, 8] }],
+      kind: "prop", x: 2170, y: 1850, box: [-24, -86, 32, 6], shadow: [16, 6], flag: 0, solid: [{ c: [0, -2, 8] }],
       draw(c, E2, e) { P_.mailbox(c, e.flag); },
       update(e, dt) { if (e.flag > 0) e.flag = Math.max(0, e.flag - dt * 0.4); },
       tap: {
@@ -232,10 +242,10 @@
       bubbleH: 100,
     });
     // trash can (raccoon)
-    trashCan(2190, 1850);
+    trashCan(2110, 1845);
     // family car in the driveway (tap: honk)
     add({
-      kind: "car", x: 2815, y: 1795, box: [-74, -114, 74, 8], shadow: [66, 14], squash: 0, flash: 0,
+      kind: "car", x: 2615, y: 1772, box: [-74, -114, 74, 8], shadow: [66, 14], squash: 0, flash: 0,
       solid: [{ r: [-56, -20, 56, 4] }],
       draw(c, E2, e) {
         A.drawCarFront(c, "#3F7FD9", Math.max(0, e.squash) * Math.sin(E2.t * 30));
