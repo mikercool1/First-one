@@ -484,91 +484,61 @@
   }
 
   // =====================================================================
-  // STAR SHOP: hats on the shelf, rides on the floor, Ikey (Max's dad) at the counter
+  // STAR SHOP: a full page with a RIDES section and a HATS section. Every item is a big card with
+  // its own button (BUY / RIDE IT / WEAR IT / RIDING / WEARING).
   // =====================================================================
-  const shopEl = $("#shop"), shopPanel = $("#shopPanel");
-  let shopSel = null, shopRaf = 0, roomDrawn = false;
+  const shopEl = $("#shop");
+  let shopRaf = 0, shopBuilt = false;
   const shopIcon = (cv, it, t = 0) => {
     const c = cv.getContext("2d");
     c.clearRect(0, 0, cv.width, cv.height);
     c.save();
     if (it.type === "hat") {
-      c.translate(cv.width / 2, cv.height * 0.72);
-      // a little stand for the hat
-      c.fillStyle = "#E9DCC6"; c.beginPath(); c.ellipse(0, 18, 34, 9, 0, 0, Math.PI * 2); c.fill();
-      c.fillStyle = "#F6ECDC"; c.beginPath(); c.arc(0, 0, 20, 0, Math.PI * 2); c.fill();
-      A.drawHat(c, it.id, 22, t);
+      // on a little stand, like in a shop window
+      c.translate(cv.width / 2, cv.height * 0.66);
+      c.fillStyle = "rgba(0,0,0,.08)"; c.beginPath(); c.ellipse(0, 46, 50, 11, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = "#E9DCC6"; c.fillRect(-6, 10, 12, 36);
+      c.fillStyle = "#F6ECDC"; c.beginPath(); c.arc(0, 4, 34, 0, Math.PI * 2); c.fill();
+      A.drawHat(c, it.id, 42, t);
     } else {
-      c.translate(cv.width / 2, cv.height - 10);
-      c.scale(cv.width / 150, cv.width / 150);
-      A.drawRide(c, it.id, t * 3, "back"); A.drawRide(c, it.id, 0, "front");
+      c.translate(cv.width / 2, cv.height - 22);
+      c.fillStyle = "rgba(0,0,0,.1)"; c.beginPath(); c.ellipse(0, 4, 120, 12, 0, 0, Math.PI * 2); c.fill();
+      c.scale(cv.width / 160, cv.width / 160);
+      A.drawRide(c, it.id, t * 4, "back"); A.drawRide(c, it.id, 0, "front");
     }
     c.restore();
   };
-  function drawShopRoom() {
-    const cv = $("#shopRoom"), c = cv.getContext("2d"), W = 1600, H = 1000;
-    // back wall with stripes
-    c.fillStyle = "#FFF3DC"; c.fillRect(0, 0, W, 560);
-    c.fillStyle = "rgba(123,63,228,.07)"; for (let x = 0; x < W; x += 80) c.fillRect(x, 0, 40, 560);
-    // floor in perspective
-    c.fillStyle = "#D9B98E"; c.beginPath(); c.moveTo(0, 560); c.lineTo(W, 560); c.lineTo(W, H); c.lineTo(0, H); c.closePath(); c.fill();
-    c.strokeStyle = "rgba(120,80,40,.22)"; c.lineWidth = 2;
-    for (let i = -12; i <= 12; i++) { c.beginPath(); c.moveTo(800 + i * 70, 560); c.lineTo(800 + i * 170, H); c.stroke(); }
-    for (let y = 600; y < H; y += 60 + (y - 560) * 0.3) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
-    c.fillStyle = "rgba(0,0,0,.08)"; c.fillRect(0, 556, W, 10);
-    // the hat shelf
-    c.fillStyle = "#8E5836"; c.fillRect(70, 395, W - 140, 22); c.fillStyle = "#6E4128"; c.fillRect(70, 417, W - 140, 10);
-    [[140, 427], [W - 140, 427]].forEach(([x, y]) => { c.fillStyle = "#6E4128"; c.fillRect(x - 8, y, 16, 60); });
-    // a rug for the rides
-    c.fillStyle = "rgba(123,63,228,.16)"; c.beginPath(); c.ellipse(800, 800, 700, 110, 0, 0, Math.PI * 2); c.fill();
-    c.strokeStyle = "rgba(255,210,63,.6)"; c.lineWidth = 6; c.beginPath(); c.ellipse(800, 800, 670, 95, 0, 0, Math.PI * 2); c.stroke();
-    // Ikey (Max's dad) behind the little counter in the corner, with a bell
-    c.save(); c.translate(1440, 600); c.scale(2.3, 2.3);
-    A.drawChar(c, A.CHARS.ikey, { t: 1, move: 0, side: 0, dir: -1, pose: "wave", pt: 0 });
-    c.restore();
-    c.fillStyle = "#7B3FE4"; c.beginPath(); c.moveTo(1300, 560); c.lineTo(1600, 560); c.lineTo(1600, 660); c.lineTo(1300, 660); c.closePath(); c.fill();
-    c.fillStyle = "#9B6BF0"; c.fillRect(1290, 548, 320, 16);
-    c.fillStyle = "#FFD23F"; c.beginPath(); c.arc(1360, 538, 16, Math.PI, 0); c.fill(); c.fillRect(1340, 536, 40, 5);
-    // a "sale" poster
-    c.save(); c.translate(50, 90); c.rotate(-0.06);
-    c.fillStyle = "#FF5C8A"; A.rr(c, 0, 0, 170, 96, 12); c.fill();
-    A.text(c, "HATS", 85, 34, 28, "#FFFFFF", { weight: 700 }); A.text(c, "★ 1", 85, 70, 30, "#FFD23F", { weight: 700 });
-    c.restore();
-    c.save(); c.translate(1380, 90); c.rotate(0.05);
-    c.fillStyle = "#2EB872"; A.rr(c, 0, 0, 170, 96, 12); c.fill();
-    A.text(c, "RIDES", 85, 34, 28, "#FFFFFF", { weight: 700 }); A.text(c, "★ 5", 85, 70, 30, "#FFD23F", { weight: 700 });
-    c.restore();
-  }
   function buildShopItems() {
-    [["hat", $("#shopHats")], ["ride", $("#shopRides")]].forEach(([type, host]) => {
+    [["ride", $("#shopRides")], ["hat", $("#shopHats")]].forEach(([type, host]) => {
       host.innerHTML = "";
       RW.SHOP.filter((it) => it.type === type).forEach((it) => {
-        const b = el("button", "s-item"); b.type = "button"; b.dataset.id = it.id;
-        const cv = el("canvas"); cv.width = type === "hat" ? 160 : 300; cv.height = type === "hat" ? 160 : 220;
-        b.appendChild(cv); b.appendChild(el("span", "s-tag"));
-        b.addEventListener("click", (ev) => { ev.stopPropagation(); RW.sfx.play("tap"); shopSel = it.id; syncShop(); });
-        host.appendChild(b);
+        const card = el("div", "sp-card"); card.dataset.id = it.id;
+        const cv = el("canvas"); cv.width = type === "hat" ? 240 : 300; cv.height = type === "hat" ? 200 : 170;
+        card.appendChild(cv);
+        card.appendChild(el("div", "sp-name", it.name));
+        if (type === "ride") card.appendChild(el("div", "sp-info", `${Math.round(it.speed / 262 * 10) / 10}× faster than walking`));
+        const btn = el("button", "sp-btn"); btn.type = "button";
+        btn.addEventListener("click", (ev) => { ev.stopPropagation(); shopAction(it, card); });
+        card.appendChild(btn);
+        host.appendChild(card);
       });
     });
   }
   function syncShop() {
     const sh = RW.save.shop;
     $("#shopStars").textContent = RW.save.stars;
-    shopEl.querySelectorAll(".s-item").forEach((b) => {
-      const it = RW.shopItem(b.dataset.id), owned = !!sh.owned[it.id], using = sh.ride === it.id || sh.hat === it.id;
-      b.classList.toggle("owned", owned); b.classList.toggle("using", using); b.classList.toggle("sel", shopSel === it.id);
-      b.classList.toggle("poor", !owned && RW.save.stars < it.price);
-      b.querySelector(".s-tag").innerHTML = using ? (it.type === "ride" ? "RIDING" : "WEARING") : owned ? "YOURS" : `${STAR_SVG} ${it.price}`;
+    shopEl.querySelectorAll(".sp-card").forEach((card) => {
+      const it = RW.shopItem(card.dataset.id), owned = !!sh.owned[it.id], using = sh.ride === it.id || sh.hat === it.id;
+      const btn = card.querySelector(".sp-btn");
+      card.classList.toggle("using", using);
+      btn.className = "sp-btn";
+      if (!owned) {
+        const short = it.price - RW.save.stars;
+        if (short > 0) { btn.classList.add("poor"); btn.innerHTML = `Need ${short} more ${STAR_SVG}`; }
+        else { btn.classList.add("buy"); btn.innerHTML = `BUY ${STAR_SVG} ${it.price}`; }
+      } else if (using) { btn.classList.add("off"); btn.innerHTML = it.type === "ride" ? "✓ RIDING" : "✓ WEARING"; btn.title = it.type === "ride" ? "Tap to walk instead" : "Tap to take it off"; }
+      else btn.innerHTML = it.type === "ride" ? "RIDE IT" : "WEAR IT";
     });
-    const it = shopSel && RW.shopItem(shopSel);
-    if (!it) { shopPanel.innerHTML = `Tap something to look at it!`; return; }
-    const owned = !!sh.owned[it.id], using = sh.ride === it.id || sh.hat === it.id;
-    let btn;
-    if (!owned) btn = `<button class="btn primary" type="button" data-act="buy">BUY for ${STAR_SVG} ${it.price}</button>`;
-    else if (using) btn = `<button class="btn ghost" type="button" data-act="off">${it.type === "ride" ? "WALK INSTEAD" : "TAKE OFF"}</button>`;
-    else btn = `<button class="btn primary" type="button" data-act="use">${it.type === "ride" ? "RIDE IT" : "WEAR IT"}</button>`;
-    shopPanel.innerHTML = `<b>${it.name}</b>${it.type === "ride" ? " · super fast!" : ""} ${btn}`;
-    shopPanel.querySelector("[data-act]").addEventListener("click", (ev) => { ev.stopPropagation(); shopAction(it, ev.currentTarget.dataset.act); });
   }
   function useItem(it, on) {
     const sh = RW.save.shop, P = E.player;
@@ -577,45 +547,50 @@
     RW.persist();
     syncRideBtn();
   }
-  function shopAction(it, act) {
-    if (act === "buy") {
+  function shopAction(it, card) {
+    const sh = RW.save.shop, owned = !!sh.owned[it.id], using = sh.ride === it.id || sh.hat === it.id;
+    if (!owned) {
       if (!RW.spend(it.price)) {
         RW.sfx.play("lock");
-        shopPanel.classList.remove("shake"); void shopPanel.offsetWidth; shopPanel.classList.add("shake");
-        shopPanel.innerHTML = `You need ${STAR_SVG} ${it.price - RW.save.stars} more! Play games to earn stars.`;
+        card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake");
+        toast(`You need ${it.price - RW.save.stars} more stars. Play games to earn them!`, "⭐");
         return;
       }
-      RW.save.shop.owned[it.id] = Date.now();
+      sh.owned[it.id] = Date.now();
       RW.sfx.play("cheer");
       useItem(it, true); // put it on / hop on right away
       syncStars(true);
-      toast(it.type === "ride" ? `You got the ${it.name}! Tap RIDE to switch rides.` : `New hat: ${it.name}!`, it.type === "ride" ? "🛵" : "🎩");
-    } else if (act === "use") { RW.sfx.play("pop"); useItem(it, true); }
-    else { RW.sfx.play("pop"); useItem(it, false); }
+      toast(it.type === "ride" ? `You got the ${it.name}! Use the RIDE button to switch rides.` : `New hat: ${it.name}!`, it.type === "ride" ? "🛵" : "🎩");
+    } else { RW.sfx.play("pop"); useItem(it, !using); }
     syncShop();
   }
   function openShop() {
     if (E.player && E.player.lock) return;
-    if (!roomDrawn) { drawShopRoom(); buildShopItems(); roomDrawn = true; }
-    shopSel = null;
+    if (!shopBuilt) { buildShopItems(); shopBuilt = true; }
     syncShop();
     show(shopEl, true);
     requestAnimationFrame(() => shopEl.classList.add("on"));
     show(portalCard, false);
+    E.pause(true);
     RW.sfx.play("magic");
-    // gently animate the items (propeller spins, wheels roll)
+    $("#shopClose").focus({ preventScroll: true });
+    // gently animate everything (wheels roll, the propeller spins)
     const t0 = performance.now();
     const loop = (now) => {
       if (shopEl.hidden) return;
       const t = (now - t0) / 1000;
-      shopEl.querySelectorAll(".s-item").forEach((b) => shopIcon(b.querySelector("canvas"), RW.shopItem(b.dataset.id), b.classList.contains("sel") ? t : 0));
+      shopEl.querySelectorAll(".sp-card").forEach((card) => shopIcon(card.querySelector("canvas"), RW.shopItem(card.dataset.id), t));
       shopRaf = requestAnimationFrame(loop);
     };
     cancelAnimationFrame(shopRaf); shopRaf = requestAnimationFrame(loop);
   }
-  function closeShop() { shopEl.classList.remove("on"); cancelAnimationFrame(shopRaf); setTimeout(() => show(shopEl, false), 260); if (portalDest) show(portalCard, true); }
+  function closeShop() {
+    shopEl.classList.remove("on"); cancelAnimationFrame(shopRaf);
+    E.pause(false);
+    setTimeout(() => show(shopEl, false), 260);
+    if (portalDest) show(portalCard, true);
+  }
   $("#shopClose").addEventListener("click", closeShop);
-  shopEl.addEventListener("click", (ev) => { if (ev.target === shopEl) closeShop(); });
 
   // Ride button: pick what to ride (or walk). Shows up once you own a ride.
   const rideBtn = $("#rideBtn"), ridePick = $("#ridePick");
