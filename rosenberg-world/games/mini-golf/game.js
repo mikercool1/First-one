@@ -13,7 +13,7 @@
   const WATER_DROP = 0.14;
   const SURF = {
     green: { mu: 1.2, drag: 0.42 }, bridge: { mu: 1.05, drag: 0.4 },
-    sand: { mu: 5.5, drag: 2.4 }, water: { mu: 3, drag: 3 },
+    sand: { mu: 5.5, drag: 2.4 }, water: { mu: 3, drag: 3 }, ice: { mu: 0.3, drag: 0.1 },
   };
 
   // ---------- colour helpers ----------
@@ -56,6 +56,7 @@
   let tiles = [], parts = [], edges = [], walls = [], faces = [], waterParts = [], falls = [];
   let gridW = 0, gridH = 0, tee = [0, 0], cup = [0, 0];
   let mill = null, spinner = null, bumpers = [], objects = [];
+  let drawbridge = null, sliders = [], boosts = [], warps = [], clock = 0;
   let ball = null, lastRest = null, strokes = 0, scores = [];
   let state = "title", stateT = 0, time = 0, introT = 0;
   let drag = null, particles = [], critters = [], shake = 0, cardShown = false;
@@ -69,7 +70,7 @@
     "3": (i, j) => [[[i + 1, j], [i + 1, j + 1], [i, j + 1]], [[i, j], [i + 1, j], [i, j + 1]]],
     "4": (i, j) => [[[i, j], [i + 1, j + 1], [i, j + 1]], [[i, j], [i + 1, j], [i + 1, j + 1]]],
   };
-  const surfOffset = (s) => (s === "water" || s === "pond" ? -WATER_DROP : 0);
+  const surfOffset = (s) => (s === "water" || s === "pond" || s === "drawbridge" ? -WATER_DROP : 0);
 
   function buildHole(idx) {
     HI = idx; hole = HOLES[idx]; T = hole.theme;
@@ -79,7 +80,7 @@
     const addPart = (tile, poly, surf, play) => {
       const p = { poly, surf, play, tile, cx: poly.reduce((s, v) => s + v[0], 0) / poly.length, cy: poly.reduce((s, v) => s + v[1], 0) / poly.length };
       tile.parts.push(p); parts.push(p);
-      if (surf === "water" || surf === "pond" || surf === "bridge") waterParts.push(p);
+      if (surf === "water" || surf === "pond" || surf === "bridge" || surf === "drawbridge") waterParts.push(p);
       return p;
     };
     for (let j = 0; j < gridH; j++) {
@@ -89,13 +90,20 @@
         row.push(tile);
         if (ch === " ") continue;
         if (TRI[ch]) { const [a, b] = TRI[ch](i, j); addPart(tile, a, "green", true); addPart(tile, b, "grass", false); continue; }
-        const map = { ".": ["grass", false], "M": ["grass", false], "~": ["pond", false], ",": ["beach", false], s: ["sand", true], w: ["water", true], b: ["bridge", true] };
+        const map = { ".": ["grass", false], "M": ["grass", false], "~": ["pond", false], ",": ["beach", false], s: ["sand", true], w: ["water", true], b: ["bridge", true], i: ["ice", true], d: ["drawbridge", true] };
         const [surf, play] = map[ch] || ["green", true];
         addPart(tile, SQ(i, j), surf, play);
         if (ch === "T") tee = [i + 0.5, j + 0.5];
         if (ch === "H") cup = [i + 0.5, j + 0.5];
       }
       tiles.push(row);
+    }
+    // a diagonal tile's green half takes on the ice or sand beside it
+    for (const row of tiles) for (const t of row) if (TRI[t.ch]) {
+      for (const [di, dj] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+        const n = tiles[t.j + dj]?.[t.i + di], np = n && !TRI[n.ch] && n.parts[0];
+        if (np && np.play && (np.surf === "ice" || np.surf === "sand")) { t.parts[0].surf = np.surf; break; }
+      }
     }
     // shared edges → walls, water banks, island skirts
     const emap = new Map();
@@ -111,15 +119,21 @@
       const [A, B] = e.owners;
       if (!B) { if (A.play) addWall(e, A, null); else addSkirt(e, A); continue; }
       if (A.play !== B.play) { addWall(e, A.play ? A : B, A.play ? B : A); continue; }
-      const oa = surfOffset(A.surf), ob = surfOffset(B.surf);
       if (A.surf === "bridge" || B.surf === "bridge") {
         const other = A.surf === "bridge" ? B : A;
         if (other.surf === "water") addStep(e, A.surf === "bridge" ? A : B, other, true);
-      } else if (oa !== ob) addStep(e, oa > ob ? A : B, oa > ob ? B : A, false);
+        continue;
+      }
+      // a drop between neighbours: a water bank, or a cliff between grass at two heights
+      const da = surfZ(A, ...e.a) - surfZ(B, ...e.a), db = surfZ(A, ...e.b) - surfZ(B, ...e.b);
+      if (Math.abs(da) > 0.02 || Math.abs(db) > 0.02) addStep(e, da + db > 0 ? A : B, da + db > 0 ? B : A, false);
     }
     miterWalls();
     // moving parts and props
-    mill = hole.windmill ? { ...hole.windmill, angle: 0.4 } : null;
+    mill = hole.windmill ? { ...hole.windmill, kind: "mill", angle: 0.4 } : hole.gatehouse ? { ...hole.gatehouse, kind: "gate", angle: 0 } : null;
+    drawbridge = hole.drawbridge ? { ...hole.drawbridge, a: 0 } : null;
+    sliders = (hole.sliders || []).map((sl) => ({ ...sl, x: sl.cx + sl.amp * Math.sin(sl.phase || 0), vx: 0 }));
+    boosts = hole.boosts || []; warps = hole.warps || []; clock = 0;
     spinner = hole.spinner ? { ...hole.spinner, angle: 0 } : null;
     bumpers = (hole.bumpers || []).map((b) => ({ ...b, glow: 0 }));
     objects = hole.objects.map((o) => ({ ...o }));
@@ -129,7 +143,7 @@
     makeCritters();
   }
 
-  const heightAt = (p, x, y) => (p && p.play ? hole.hp(x, y) : hole.hd(x, y));
+  const heightAt = (p, x, y) => (p && p.play ? hole.hp(x, y) : hole.hd(x, y, p ? p.tile.i : Math.floor(x), p ? p.tile.j : Math.floor(y)));
   const surfZ = (p, x, y) => heightAt(p, x, y) + surfOffset(p.surf);
 
   function addWall(e, inner, outer) {
@@ -305,6 +319,7 @@
     if (s === "grass") { c = hexRgb(T.grass); return c.map((v) => v * (0.94 + hash(x * 3.1, y * 2.7) * 0.1)); }
     if (s === "sand") { c = hexRgb(T.sand); return c.map((v) => v * (0.97 + hash(x * 5, y * 5) * 0.05)); }
     if (s === "beach") return hexRgb(T.beach);
+    if (s === "ice") { c = hexRgb(T.ice || "#BFE4F6"); return c.map((v) => v * (0.97 + hash(x * 2.3, y * 1.7) * 0.06 + (Math.floor(x * 3 + y * 2) % 5 === 0 ? 0.05 : 0))); }
     return hexRgb(T.water);
   }
   function drawSurface(g, p) {
@@ -330,7 +345,7 @@
       fill3(g, pts, rgbStr(surfColor(p, p.cx, p.cy, 0), litF(nx, ny, nz)), true);
       return;
     }
-    const N = p.play ? 8 : 2, [x0, y0] = p.poly[0];
+    const N = p.play ? hole.detail || 8 : 2, [x0, y0] = p.poly[0];
     for (let b = 0; b < N; b++) {
       for (let a = 0; a < N; a++) {
         const xa = x0 + a / N, xb = x0 + (a + 1) / N, ya = y0 + b / N, yb = y0 + (b + 1) / N;
@@ -360,7 +375,7 @@
       const grd = g.createLinearGradient(top[0], top[1], btm[0], btm[1]);
       const span = (ta + tb) / 2 - bot, lipEnd = 0.09 / span;
       if (f.water) {
-        grd.addColorStop(0, rgbStr([225, 246, 255], side)); grd.addColorStop(0.25, rgbStr(hexRgb(T.water), side * 1.05));
+        grd.addColorStop(0, rgbStr(T.lava ? [255, 236, 150] : [225, 246, 255], side)); grd.addColorStop(0.25, rgbStr(hexRgb(T.water), side * 1.05));
         grd.addColorStop(1, rgbStr(hexRgb(T.water), side * 0.9, 0));
       } else {
         const e = T.earth.map(hexRgb);
@@ -473,6 +488,32 @@
     g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 1; g.beginPath(); g.moveTo(s1[0], s1[1]); g.lineTo(s2[0], s2[1]); g.stroke();
   }
 
+  // a flat face with its outward normal n: skipped when it faces away, gently lit when it doesn't
+  function face3(g, pts, n, rgb, f = 1) {
+    const c = [0, 0, 0]; for (const p of pts) { c[0] += p[0] / pts.length; c[1] += p[1] / pts.length; c[2] += p[2] / pts.length; }
+    if ((cam.cx - c[0]) * n[0] + (cam.cy - c[1]) * n[1] + (cam.cz - c[2]) * n[2] <= 0) return false;
+    const nl = Math.hypot(n[0], n[1], n[2]);
+    const k = clamp(0.9 + 0.35 * ((n[0] * lightV[0] + n[1] * lightV[1] + n[2] * lightV[2]) / nl - 0.3), 0.78, 1.15);
+    fill3(g, pts, rgbStr(rgb, k * f), true); return true;
+  }
+  function box3(g, x0, y0, x1, y1, z0, z1, side, top) {
+    face3(g, [[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]], [0, 1, 0], side);
+    face3(g, [[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1]], [0, -1, 0], side);
+    face3(g, [[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]], [1, 0, 0], side, 0.92);
+    face3(g, [[x0, y0, z0], [x0, y1, z0], [x0, y1, z1], [x0, y0, z1]], [-1, 0, 0], side, 0.92);
+    face3(g, [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], [0, 0, 1], top || side);
+  }
+  // an upright cylinder drawn in screen space (towers, stumps, posts)
+  function cyl(g, x, y, z0, z1, r, col, topCol) {
+    const b = P(x, y, z0), t = P(x, y, z1), sc = scaleAt(b[2]), rx = sc * r, ry = rx * 0.55;
+    const grd = g.createLinearGradient(b[0] - rx, 0, b[0] + rx, 0);
+    grd.addColorStop(0, shade(col, 1.12)); grd.addColorStop(0.55, shade(col, 0.95)); grd.addColorStop(1, shade(col, 0.72));
+    g.fillStyle = grd; g.beginPath(); g.moveTo(b[0] - rx, b[1]); g.lineTo(t[0] - rx, t[1]); g.lineTo(t[0] + rx, t[1]); g.lineTo(b[0] + rx, b[1]);
+    g.ellipse(b[0], b[1], rx, ry, 0, 0, Math.PI); g.fill();
+    g.fillStyle = topCol || shade(col, 1.2); g.beginPath(); g.ellipse(t[0], t[1], rx, ry, 0, 0, TAU); g.fill();
+    return { b, t, sc, rx, ry };
+  }
+
   // ---------- props ----------
   function blob(g, x, y, r, color) { g.fillStyle = color; g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill(); }
   function groundShadow(g, x, y, r, a = 0.22) {
@@ -518,6 +559,10 @@
         g.beginPath(); g.moveTo(b[0] - hw, y0); g.lineTo(b[0], y1); g.lineTo(b[0] + hw, y0); g.closePath(); g.fill();
         g.fillStyle = shade(base, 1.15 + k * 0.05);
         g.beginPath(); g.moveTo(b[0] - hw, y0); g.lineTo(b[0], y1); g.lineTo(b[0] - hw * 0.15, y0); g.closePath(); g.fill();
+        if (o.snow) {
+          const ym = lerp(y1, y0, 0.45);
+          g.fillStyle = "#FBFDFF"; g.beginPath(); g.moveTo(b[0], y1); g.lineTo(b[0] - hw * 0.45, ym); g.lineTo(b[0] - hw * 0.15, ym - (ym - y1) * 0.12); g.lineTo(b[0] + hw * 0.1, ym + (y0 - ym) * 0.05); g.lineTo(b[0] + hw * 0.45, ym); g.closePath(); g.fill();
+        }
       }
     },
     palm(g, o) {
@@ -556,10 +601,12 @@
       const z = hole.hd(o.x, o.y), s = o.s || 1;
       const c = P(o.x, o.y, z + 0.1 * s), r = scaleAt(c[2]) * 0.3 * s;
       g.fillStyle = "rgba(0,0,0,.15)"; g.beginPath(); g.ellipse(c[0] + r * 0.2, c[1] + r * 0.45, r * 1.1, r * 0.35, 0, 0, TAU); g.fill();
-      g.fillStyle = T.night ? "#6C6480" : "#9A9A94";
+      const rc = o.c || (T.night ? "#6C6480" : "#9A9A94");
+      g.fillStyle = rc;
       g.beginPath(); g.moveTo(c[0] - r, c[1] + r * 0.4); g.lineTo(c[0] - r * 0.7, c[1] - r * 0.4); g.lineTo(c[0] - r * 0.1, c[1] - r * 0.7); g.lineTo(c[0] + r * 0.7, c[1] - r * 0.35); g.lineTo(c[0] + r, c[1] + r * 0.4); g.closePath(); g.fill();
-      g.fillStyle = T.night ? "#8C84A0" : "#C4C4BC";
+      g.fillStyle = o.snowy ? "#FFFFFF" : shade(rc, 1.3);
       g.beginPath(); g.moveTo(c[0] - r * 0.7, c[1] - r * 0.4); g.lineTo(c[0] - r * 0.1, c[1] - r * 0.7); g.lineTo(c[0] + r * 0.1, c[1] - r * 0.1); g.lineTo(c[0] - r * 0.5, c[1]); g.closePath(); g.fill();
+      if (o.snowy) { g.beginPath(); g.moveTo(c[0] - r * 0.1, c[1] - r * 0.7); g.lineTo(c[0] + r * 0.7, c[1] - r * 0.35); g.lineTo(c[0] + r * 0.4, c[1] - r * 0.2); g.closePath(); g.fill(); }
     },
     reeds(g, o) {
       const z = hole.hd(o.x, o.y) - 0.05, b = P(o.x, o.y, z), sc = scaleAt(b[2]) * (o.s || 1);
@@ -601,6 +648,87 @@
       const rb = at(0.72), rt = at(0.9);
       g.fillStyle = stone; g.beginPath(); g.moveTo(rb[0] - sc * 0.26, rb[1]); g.lineTo(rb[0] + sc * 0.26, rb[1]); g.lineTo(rt[0], rt[1]); g.closePath(); g.fill();
       o.glowAt = [lb[0], (lb[1] + lt[1]) / 2, sc];
+    },
+    snowman(g, o) { drawSnowman(g, o.x, o.y, hole.hd(o.x, o.y), 0.3 * (o.s || 1)); },
+    pumpkin(g, o) { drawPumpkin(g, o.x, o.y, hole.hd(o.x, o.y), 0.22 * (o.s || 1)); },
+    cactus(g, o) {
+      const z = hole.hd(o.x, o.y), s = o.s || 1;
+      groundShadow(g, o.x, o.y, 0.3 * s, 0.2);
+      const b = P(o.x, o.y, z), sc = scaleAt(b[2]) * s, at = (dx, h) => [b[0] + dx * sc, P(o.x, o.y, z + h * s)[1]];
+      const limb = (pts, w) => {
+        g.lineCap = "round"; g.lineJoin = "round";
+        for (const [c, lw, off] of [["#3C7F45", w, 0], ["#5DAA5E", w * 0.45, -w * 0.18]]) {
+          g.strokeStyle = c; g.lineWidth = lw * sc; g.beginPath();
+          pts.forEach(([dx, h], i) => { const q = at(dx, h); i ? g.lineTo(q[0] + off * sc, q[1]) : g.moveTo(q[0] + off * sc, q[1]); }); g.stroke();
+        }
+      };
+      limb([[0, 0], [0, 1.25]], 0.2);
+      limb([[0, 0.55], [-0.3, 0.55], [-0.3, 0.95]], 0.12);
+      limb([[0, 0.7], [0.28, 0.7], [0.28, 1.05]], 0.12);
+      const top = at(0, 1.3); blob(g, top[0], top[1], sc * 0.045, "#FF7BA8");
+    },
+    tower(g, o) {
+      const z = hole.hd(o.x, o.y), H = o.h || 1.8, r = o.r || 0.45;
+      groundShadow(g, o.x, o.y, r * 1.3, 0.2);
+      const c = cyl(g, o.x, o.y, z, z + H, r, "#D6D0C4", "#BEB7AA");
+      g.strokeStyle = "rgba(120,110,95,.3)"; g.lineWidth = 1;
+      for (let h = 0.3; h < H; h += 0.3) { const y = P(o.x, o.y, z + h)[1]; g.beginPath(); g.ellipse(c.b[0], y, c.rx, c.ry, 0, 0.1, Math.PI - 0.1); g.stroke(); }
+      const win = P(o.x, o.y + r, z + H * 0.62); g.fillStyle = "#3A3140"; g.fillRect(win[0] - c.rx * 0.14, win[1] - c.sc * 0.18, c.rx * 0.28, c.sc * 0.22);
+      const apex = P(o.x, o.y, z + H + r * 2.2);
+      g.fillStyle = o.c || "#C8453A"; g.beginPath(); g.moveTo(c.t[0] - c.rx * 1.18, c.t[1]); g.lineTo(apex[0], apex[1]); g.lineTo(c.t[0] + c.rx * 1.18, c.t[1]); g.ellipse(c.t[0], c.t[1], c.rx * 1.18, c.ry * 1.18, 0, 0, Math.PI); g.fill();
+      g.fillStyle = "rgba(255,255,255,.18)"; g.beginPath(); g.moveTo(c.t[0] - c.rx * 1.18, c.t[1]); g.lineTo(apex[0], apex[1]); g.lineTo(c.t[0] - c.rx * 0.4, c.t[1] + c.ry); g.closePath(); g.fill();
+      g.strokeStyle = "#5A4A3A"; g.lineWidth = Math.max(1, c.sc * 0.025); g.beginPath(); g.moveTo(apex[0], apex[1]); g.lineTo(apex[0], apex[1] - c.sc * 0.45); g.stroke();
+      g.fillStyle = "#FFD24A"; g.beginPath(); g.moveTo(apex[0], apex[1] - c.sc * 0.45);
+      for (let k = 0; k <= 6; k++) { const u = k / 6; g.lineTo(apex[0] + u * c.sc * 0.32, apex[1] - c.sc * (0.45 - 0.08 * u) + Math.sin(time * 6 - u * 4 + o.x) * c.sc * 0.03 * u); }
+      g.lineTo(apex[0], apex[1] - c.sc * 0.29); g.closePath(); g.fill();
+    },
+    barn(g, o) {
+      const { x0, x1, y0, y1 } = o, z = hole.hd((x0 + x1) / 2, y1), H = 0.95, mx = (x0 + x1) / 2, R = H + 0.75;
+      const red = hexRgb("#B8352C"), roof = hexRgb("#5E4A48"), white = "#FFF8EE";
+      fill3(g, [[x0 + 0.15, y0 + 0.1, z], [x1 + 0.3, y0 + 0.1, z], [x1 + 0.3, y1 + 0.25, z], [x0 + 0.15, y1 + 0.25, z]], "rgba(0,0,0,.18)");
+      face3(g, [[x1, y0, z], [x1, y1, z], [x1, y1, z + H], [x1, y0, z + H]], [1, 0, 0], red, 0.85);
+      face3(g, [[x0, y0, z], [x0, y1, z], [x0, y1, z + H], [x0, y0, z + H]], [-1, 0, 0], red, 0.85);
+      face3(g, [[x0 - 0.1, y0 - 0.1, z + H - 0.05], [x0 - 0.1, y1 + 0.1, z + H - 0.05], [mx, y1 + 0.1, z + R], [mx, y0 - 0.1, z + R]], [-(R - H), 0, mx - x0], roof);
+      face3(g, [[x1 + 0.1, y0 - 0.1, z + H - 0.05], [x1 + 0.1, y1 + 0.1, z + H - 0.05], [mx, y1 + 0.1, z + R], [mx, y0 - 0.1, z + R]], [R - H, 0, x1 - mx], roof, 1.05);
+      const front = [[x0, y1, z], [x1, y1, z], [x1, y1, z + H], [mx, y1, z + R - 0.05], [x0, y1, z + H]];
+      face3(g, front, [0, 1, 0], red);
+      const door = [[mx - 0.42, y1 + 0.01, z], [mx + 0.42, y1 + 0.01, z], [mx + 0.42, y1 + 0.01, z + 0.72], [mx - 0.42, y1 + 0.01, z + 0.72]];
+      path3(g, door); g.fillStyle = "#8E2A24"; g.fill(); g.strokeStyle = white; g.lineWidth = 2; g.stroke();
+      const d = door.map((p) => P(...p)); g.beginPath(); g.moveTo(d[0][0], d[0][1]); g.lineTo(d[2][0], d[2][1]); g.moveTo(d[1][0], d[1][1]); g.lineTo(d[3][0], d[3][1]); g.stroke();
+      const lw = [[mx - 0.16, y1 + 0.01, z + 1.02], [mx + 0.16, y1 + 0.01, z + 1.02], [mx + 0.16, y1 + 0.01, z + 1.3], [mx - 0.16, y1 + 0.01, z + 1.3]];
+      path3(g, lw); g.fillStyle = "#3A2A20"; g.fill(); g.stroke();
+      path3(g, front); g.strokeStyle = white; g.lineWidth = 2; g.stroke();
+    },
+    haybale(g, o) {
+      const z = hole.hd(o.x, o.y), c = P(o.x, o.y, z + 0.2), sc = scaleAt(c[2]), rx = sc * 0.36, ry = sc * 0.2;
+      g.fillStyle = "rgba(0,0,0,.15)"; g.beginPath(); g.ellipse(c[0] + rx * 0.2, c[1] + ry * 1.1, rx * 1.1, ry * 0.6, 0, 0, TAU); g.fill();
+      g.fillStyle = "#D9A94A"; g.fillRect(c[0] - rx, c[1] - ry, rx * 2, ry * 2);
+      g.fillStyle = "#F0CC6A"; g.beginPath(); g.ellipse(c[0] + rx, c[1], ry * 0.6, ry, 0, 0, TAU); g.fill();
+      g.strokeStyle = "#B8862E"; g.lineWidth = 1; g.beginPath(); g.ellipse(c[0] + rx, c[1], ry * 0.35, ry * 0.6, 0, 0, TAU); g.stroke();
+      g.strokeStyle = "rgba(140,90,30,.45)"; for (const f of [-0.4, 0.3]) { g.beginPath(); g.moveTo(c[0] + rx * f, c[1] - ry); g.lineTo(c[0] + rx * f, c[1] + ry); g.stroke(); }
+    },
+    mushroom(g, o) {
+      const z = hole.hd(o.x, o.y), s = o.s || 1;
+      groundShadow(g, o.x, o.y, 0.45 * s, 0.22);
+      const b = P(o.x, o.y, z), t = P(o.x, o.y, z + 0.7 * s), sc = scaleAt(b[2]) * s;
+      g.fillStyle = "#F2E6D4"; g.beginPath(); g.moveTo(b[0] - sc * 0.12, b[1]); g.lineTo(t[0] - sc * 0.09, t[1]); g.lineTo(t[0] + sc * 0.09, t[1]); g.lineTo(b[0] + sc * 0.12, b[1]); g.closePath(); g.fill();
+      drawCap(g, t[0], t[1], sc * 0.5, sc * 0.34, "#D8334A", 0);
+    },
+    glowshroom(g, o) {
+      const z = hole.hd(o.x, o.y);
+      for (const [dx, dy, s] of [[0, 0, 1], [0.18, 0.1, 0.7], [-0.15, 0.12, 0.6]]) {
+        const b = P(o.x + dx, o.y + dy, z), t = P(o.x + dx, o.y + dy, z + 0.28 * s), sc = scaleAt(b[2]) * s;
+        g.strokeStyle = "#CFE8E0"; g.lineWidth = sc * 0.05; g.beginPath(); g.moveTo(b[0], b[1]); g.lineTo(t[0], t[1]); g.stroke();
+        g.fillStyle = "#6FF0E0"; g.beginPath(); g.ellipse(t[0], t[1], sc * 0.13, sc * 0.08, 0, Math.PI, TAU); g.fill();
+      }
+      const c = P(o.x, o.y, z + 0.25); o.glowAt = [c[0], c[1], scaleAt(c[2]), "110,255,230"];
+    },
+    deadtree(g, o) {
+      const z = hole.hd(o.x, o.y), s = o.s || 1, b = P(o.x, o.y, z), sc = scaleAt(b[2]) * s, at = (dx, h) => [b[0] + dx * sc, P(o.x, o.y, z + h * s)[1]];
+      g.strokeStyle = "#1E1A20"; g.lineCap = "round";
+      for (const [pts, w] of [[[[0, 0], [0.05, 0.8], [-0.05, 1.3]], 0.1], [[[0.03, 0.6], [0.35, 0.95], [0.45, 1.2]], 0.05], [[[0, 0.9], [-0.3, 1.1]], 0.04], [[[0.35, 0.95], [0.5, 0.9]], 0.03]]) {
+        g.lineWidth = w * sc; g.beginPath(); pts.forEach(([dx, h], i) => { const q = at(dx, h); i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); }); g.stroke();
+      }
     },
     torii(g, o) {
       const red = "#D2452F", dark = "#2A1A22";
@@ -691,6 +819,79 @@
     blob(g, ax1[0], ax1[1], scaleAt(ax1[2]) * 0.1, "#4A3222"); blob(g, ax1[0] - 1, ax1[1] - 1, scaleAt(ax1[2]) * 0.045, "#9A7A55");
     g.restore();
   }
+  function drawDecals(g) {
+    for (const b of boosts) {
+      const z = (x, y) => hole.hp(x, y) + 0.006;
+      const q = (x, y) => [x, y, z(x, y)];
+      fill3(g, [q(b.x, b.y), q(b.x + b.w, b.y), q(b.x + b.w, b.y + b.h), q(b.x, b.y + b.h)], "rgba(255,160,40,.42)");
+      const L = Math.abs(b.dx) ? b.w : b.h, cx = b.x + b.w / 2, cy = b.y + b.h / 2, px = -b.dy, py = b.dx, half = (Math.abs(b.dx) ? b.h : b.w) * 0.32;
+      for (let k = 0; k < 4; k++) {
+        const u = (((k / 4 + clock * 0.9) % 1) - 0.5) * (L - 0.5), ax = cx + b.dx * u, ay = cy + b.dy * u, a = Math.sin(((k / 4 + clock * 0.9) % 1) * Math.PI);
+        path3(g, [q(ax + b.dx * 0.18, ay + b.dy * 0.18), q(ax - b.dx * 0.1 + px * half, ay - b.dy * 0.1 + py * half), q(ax - b.dx * 0.26 + px * half, ay - b.dy * 0.26 + py * half), q(ax + b.dx * 0.02, ay + b.dy * 0.02), q(ax - b.dx * 0.26 - px * half, ay - b.dy * 0.26 - py * half), q(ax - b.dx * 0.1 - px * half, ay - b.dy * 0.1 - py * half)]);
+        g.fillStyle = `rgba(255,248,220,${0.85 * a})`; g.fill();
+      }
+    }
+    for (const w of warps) {
+      const za = hole.hp(w.ax, w.ay) + 0.005, zb = hole.hp(w.bx, w.by) + 0.005, rgb = hexRgb(w.c);
+      fill3(g, circle3(w.ax, w.ay, 0.42, () => za, 22), "#6B4A2E");
+      fill3(g, circle3(w.ax, w.ay, 0.34, () => za + 0.002, 22), "#8C6A48");
+      fill3(g, circle3(w.ax, w.ay, 0.28, () => za + 0.004, 22), "#120C08");
+      for (let k = 0; k < 5; k++) {
+        const a = clock * 3 + (k / 5) * TAU, r = 0.08 + 0.12 * ((k * 0.37 + clock * 0.6) % 1), p = P(w.ax + Math.cos(a) * r, w.ay + Math.sin(a) * r, za);
+        g.fillStyle = rgbStr(rgb, 1, 0.9); g.beginPath(); g.arc(p[0], p[1], Math.max(1.2, scaleAt(p[2]) * 0.03), 0, TAU); g.fill();
+      }
+      const pulse = 0.5 + 0.5 * Math.sin(clock * 4);
+      fill3(g, circle3(w.bx, w.by, 0.42, () => zb, 22), "#6B4A2E");
+      fill3(g, circle3(w.bx, w.by, 0.34, () => zb + 0.002, 22), rgbStr(rgb, 0.55 + pulse * 0.2));
+      fill3(g, circle3(w.bx, w.by, 0.22, () => zb + 0.004, 22), rgbStr(rgb, 1, 0.9));
+    }
+  }
+  function drawSlider(g, sl) {
+    const z = hole.hp(sl.x, sl.y), x0 = sl.x - sl.w / 2, x1 = sl.x + sl.w / 2, y0 = sl.y - sl.d / 2, y1 = sl.y + sl.d / 2;
+    fill3(g, [[x0 + 0.1, y0 + 0.08, z + 0.004], [x1 + 0.12, y0 + 0.08, z + 0.004], [x1 + 0.12, y1 + 0.12, z + 0.004], [x0 + 0.1, y1 + 0.12, z + 0.004]], "rgba(0,0,0,.2)");
+    box3(g, x0, y0, x1, y1, z + 0.08, z + 0.2, hexRgb("#8C5A34"), hexRgb("#A8703F"));
+    box3(g, x0 + 0.05, y0 + 0.04, x1 - 0.05, y1 - 0.04, z + 0.2, z + 0.52, hexRgb("#E0B04E"), hexRgb("#F2CE6E"));
+    g.strokeStyle = "rgba(150,100,30,.5)"; g.lineWidth = 1;
+    for (let k = 1; k < 6; k++) { const x = lerp(x0 + 0.05, x1 - 0.05, k / 6), a = P(x, y0 + 0.05, z + 0.52), b = P(x + 0.05, y1 - 0.05, z + 0.52); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
+    for (const wx of [x0 + 0.22, x1 - 0.22]) { const c = P(wx, y1 + 0.02, z + 0.12), R = scaleAt(c[2]) * 0.13; blob(g, c[0], c[1], R, "#3A2A20"); blob(g, c[0], c[1], R * 0.45, "#8C6A48"); }
+  }
+  function drawDrawbridge(g) {
+    const d = drawbridge, a = d.a, L = d.y1 - d.y0, z0 = hole.hp((d.x0 + d.x1) / 2, d.y0) + 0.03;
+    const ca = Math.cos(a), sa = Math.sin(a), xa = d.x0 + 0.03, xb = d.x1 - 0.03, t = 0.1;
+    const end = (s, off = 0) => [d.y0 + s * ca + sa * off, z0 + s * sa - ca * off];
+    const [ey, ez] = end(L), [by, bz] = end(L, t), [hy, hz] = end(0, t);
+    const top = [[xa, d.y0, z0], [xb, d.y0, z0], [xb, ey, ez], [xa, ey, ez]];
+    if (!face3(g, top, [0, -sa, ca], hexRgb("#B98452"))) face3(g, [[xa, hy, hz], [xb, hy, hz], [xb, by, bz], [xa, by, bz]], [0, sa, -ca], hexRgb("#7A5230"));
+    else {
+      g.strokeStyle = "rgba(90,55,25,.55)"; g.lineWidth = 1;
+      for (let k = 1; k < 8; k++) { const [yy, zz] = end((L * k) / 8), p1 = P(xa, yy, zz), p2 = P(xb, yy, zz); g.beginPath(); g.moveTo(p1[0], p1[1]); g.lineTo(p2[0], p2[1]); g.stroke(); }
+    }
+    face3(g, [[xa, ey, ez], [xb, ey, ez], [xb, by, bz], [xa, by, bz]], [0, ca, sa], hexRgb("#8C5E36"));
+    g.strokeStyle = "#2E2A2A"; g.lineWidth = 1.5;
+    for (const x of [xa + 0.05, xb - 0.05]) { const p1 = P(x, d.y0 - 0.02, z0 + 1.0), p2 = P(x, ey, ez); g.setLineDash([2, 2]); g.beginPath(); g.moveTo(p1[0], p1[1]); g.lineTo(p2[0], p2[1]); g.stroke(); g.setLineDash([]); }
+  }
+  // The castle gatehouse: a crenellated wall with an archway, drawn over its tunnel like the windmill.
+  function drawGatehouse(g) {
+    const m = mill, { x0, x1, y0, y1 } = m, Hg = 1.1, stone = hexRgb("#D4CEC2");
+    const behind = ball.x > x0 - 0.8 && ball.x < x1 + 0.8 && ball.y > y0 - 2 && ball.y < y1 - 0.02;
+    m.alpha = lerp(m.alpha ?? 1, behind || ball.hidden ? 0.45 : 1, 0.15);
+    g.save(); g.globalAlpha = m.alpha;
+    box3(g, x0, y0, x1, y1, 0, Hg, stone, hexRgb("#E2DDD3"));
+    g.strokeStyle = "rgba(130,120,105,.3)"; g.lineWidth = 1;
+    for (let h = 0.28; h < Hg; h += 0.28) { const a = P(x0, y1, h), b = P(x1, y1, h); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
+    for (let x = x0 + 0.1; x < x1 - 0.1; x += 0.52) box3(g, x, y1 - 0.25, x + 0.3, y1, Hg, Hg + 0.24, stone, hexRgb("#E2DDD3"));
+    const tx = (x0 + x1) / 2, arch = [[tx + 0.46, y1 + 0.005, 0]];
+    for (let k = 0; k <= 12; k++) { const a = Math.PI * (k / 12); arch.push([tx + Math.cos(a) * 0.46, y1 + 0.005, 0.5 + Math.sin(a) * 0.4]); }
+    arch.push([tx - 0.46, y1 + 0.005, 0]);
+    fill3(g, arch, "#1B1512");
+    g.strokeStyle = "rgba(60,50,40,.7)"; g.lineWidth = 1;
+    for (let k = 1; k < 5; k++) { const x = tx - 0.46 + k * 0.184, a = P(x, y1 + 0.006, 0.9 - Math.abs(k - 2.5) * 0.06), b = P(x, y1 + 0.006, 0.62); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
+    for (const bx of [tx - 1.1, tx + 1.1]) {
+      const pts = [[bx - 0.2, y1 + 0.01, Hg - 0.05], [bx + 0.2, y1 + 0.01, Hg - 0.05], [bx + 0.2, y1 + 0.01, 0.35], [bx, y1 + 0.01, 0.22], [bx - 0.2, y1 + 0.01, 0.35]];
+      fill3(g, pts, "#C8453A"); const c = P(bx, y1 + 0.02, 0.7); blob(g, c[0], c[1], scaleAt(c[2]) * 0.07, "#FFD24A");
+    }
+    g.restore();
+  }
   function drawSpinner(g) {
     const s = spinner, z = hole.hp(s.x, s.y);
     const dx = Math.cos(s.angle) * s.r, dy = Math.sin(s.angle) * s.r;
@@ -711,8 +912,53 @@
     g.fillStyle = "#6F6880"; g.fillRect(bot[0] - sc * 0.13, top[1], sc * 0.26, bot[1] - top[1]);
     g.fillStyle = "#9C95AC"; g.beginPath(); g.ellipse(top[0], top[1], sc * 0.13, sc * 0.07, 0, 0, TAU); g.fill();
   }
+  function drawSnowman(g, x, y, z, r) {
+    fill3(g, circle3(x + 0.08, y + 0.06, r * 1.05, () => z + 0.005, 16), "rgba(40,60,90,.2)");
+    const ball = (h, rr) => { const c = P(x, y, z + h), R = scaleAt(c[2]) * rr; const grd = g.createRadialGradient(c[0] - R * 0.35, c[1] - R * 0.35, R * 0.1, c[0], c[1], R); grd.addColorStop(0, "#FFFFFF"); grd.addColorStop(1, "#C9D8EA"); g.fillStyle = grd; g.beginPath(); g.arc(c[0], c[1], R, 0, TAU); g.fill(); return [c, R]; };
+    ball(r * 0.9, r); const [m, mr] = ball(r * 2.2, r * 0.72);
+    g.fillStyle = "#D8453A"; g.fillRect(m[0] - mr * 0.8, m[1] - mr * 0.95, mr * 1.6, mr * 0.28);
+    const [h, hr] = ball(r * 3.25, r * 0.52);
+    blob(g, h[0] - hr * 0.32, h[1] - hr * 0.15, Math.max(1, hr * 0.12), "#222"); blob(g, h[0] + hr * 0.32, h[1] - hr * 0.15, Math.max(1, hr * 0.12), "#222");
+    g.fillStyle = "#FF8A2A"; g.beginPath(); g.moveTo(h[0], h[1] + hr * 0.02); g.lineTo(h[0] + hr * 0.7, h[1] + hr * 0.18); g.lineTo(h[0], h[1] + hr * 0.26); g.closePath(); g.fill();
+    for (const q of [-0.3, 0.3]) blob(g, m[0], m[1] + mr * q * 0.9, Math.max(1, mr * 0.09), "#333");
+  }
+  function drawPumpkin(g, x, y, z, r) {
+    const c = P(x, y, z + r * 0.75), sc = scaleAt(c[2]), rx = sc * r, ry = rx * 0.8;
+    g.fillStyle = "rgba(0,0,0,.18)"; g.beginPath(); g.ellipse(c[0] + rx * 0.15, c[1] + ry * 0.8, rx * 1.1, ry * 0.4, 0, 0, TAU); g.fill();
+    for (const [dx, w, col] of [[-0.55, 0.55, "#D8651C"], [0.55, 0.55, "#D8651C"], [-0.25, 0.6, "#F07F24"], [0.25, 0.6, "#F07F24"], [0, 0.55, "#FF9A3A"]]) { g.fillStyle = col; g.beginPath(); g.ellipse(c[0] + dx * rx, c[1], rx * w, ry, 0, 0, TAU); g.fill(); }
+    g.strokeStyle = "#4E6B2A"; g.lineWidth = Math.max(1.5, rx * 0.16); g.lineCap = "round"; g.beginPath(); g.moveTo(c[0], c[1] - ry * 0.85); g.lineTo(c[0] + rx * 0.12, c[1] - ry * 1.3); g.stroke();
+  }
+  function drawCap(g, x, y, rx, ry, col, lit) {
+    g.fillStyle = shade(col, 1 + lit * 0.4); g.beginPath(); g.ellipse(x, y, rx, ry, 0, Math.PI, TAU); g.ellipse(x, y, rx, ry * 0.25, 0, 0, Math.PI); g.fill();
+    g.fillStyle = "rgba(255,255,255,.9)";
+    for (const [dx, dy, r] of [[-0.45, -0.35, 0.13], [0.1, -0.7, 0.12], [0.5, -0.3, 0.1], [-0.05, -0.25, 0.08]]) { g.beginPath(); g.ellipse(x + dx * rx, y + dy * ry, rx * r, rx * r * 0.8, 0, 0, TAU); g.fill(); }
+  }
   function drawBumper(g, bm) {
     const z = hole.hp(bm.x, bm.y), zt = z + 0.3;
+    if (bm.style === "snowman") return drawSnowman(g, bm.x, bm.y, z, bm.r);
+    if (bm.style === "pumpkin") return drawPumpkin(g, bm.x, bm.y, z, bm.r);
+    if (bm.style === "fountain") {
+      fill3(g, circle3(bm.x + 0.08, bm.y + 0.06, bm.r + 0.04, () => z + 0.005, 20), "rgba(0,0,0,.2)");
+      const c = cyl(g, bm.x, bm.y, z, z + 0.26, bm.r, "#CFC8BC", "#E4DED4");
+      fill3(g, circle3(bm.x, bm.y, bm.r * 0.82, () => z + 0.24, 20), "#5BA7DD");
+      cyl(g, bm.x, bm.y, z + 0.24, z + 0.62, 0.07, "#CFC8BC");
+      const top = P(bm.x, bm.y, z + 0.68);
+      g.strokeStyle = "rgba(220,240,255,.85)"; g.lineWidth = Math.max(1, c.sc * 0.025);
+      for (let k = 0; k < 6; k++) {
+        const a = (k / 6) * TAU + time * 0.4, ex = bm.x + Math.cos(a) * bm.r * 0.6, ey = bm.y + Math.sin(a) * bm.r * 0.6, e = P(ex, ey, z + 0.26);
+        const m = P((bm.x + ex) / 2, (bm.y + ey) / 2, z + 0.85);
+        g.beginPath(); g.moveTo(top[0], top[1]); g.quadraticCurveTo(m[0], m[1], e[0], e[1]); g.stroke();
+      }
+      return;
+    }
+    if (bm.style === "mushroom") {
+      fill3(g, circle3(bm.x + 0.08, bm.y + 0.06, bm.r + 0.04, (x, y) => hole.hp(x, y) + 0.005, 18), "rgba(0,0,0,.22)");
+      const b = P(bm.x, bm.y, z), t = P(bm.x, bm.y, z + 0.3), sc = scaleAt(b[2]);
+      g.fillStyle = "#EDE3D2"; g.fillRect(b[0] - sc * 0.08, t[1], sc * 0.16, b[1] - t[1]);
+      drawCap(g, t[0], t[1], sc * (bm.r + 0.08), sc * (bm.r + 0.08) * 0.62, "#8A5CF5", bm.glow);
+      bm.glowAt = [t[0], t[1], sc, "190,150,255"];
+      return;
+    }
     fill3(g, circle3(bm.x + 0.08, bm.y + 0.06, bm.r + 0.04, (x, y) => hole.hp(x, y) + 0.005, 18), "rgba(0,0,0,.22)");
     const b = P(bm.x, bm.y, z), t = P(bm.x, bm.y, zt), sc = scaleAt(b[2]), rx = sc * bm.r, ry = rx * 0.5;
     g.fillStyle = "#57506A"; g.fillRect(b[0] - rx, t[1], rx * 2, b[1] - t[1]);
@@ -745,7 +991,7 @@
     if (ball.sink >= 1) return;
     const p = partAt(ball.x, ball.y);
     let z = p ? surfZ(p, ball.x, ball.y) : 0;
-    if (p && p.surf === "bridge") z += 0.03;
+    if (p && (p.surf === "bridge" || (p.surf === "drawbridge" && !bridgeUp()))) z = hole.hp(ball.x, ball.y) + 0.03;
     const r = BALL_R;
     // shadow
     if (!ball.sink) fill3(g, circle3(ball.x + 0.06, ball.y + 0.04, r * 1.05, () => z + 0.004, 14), "rgba(0,0,0,.28)");
@@ -765,6 +1011,7 @@
   function drawScene(g) {
     g.drawImage(groundCv, 0, 0, W, H);
     drawWater(g);
+    drawDecals(g);
     const list = [];
     for (const w of walls) if (!w.hidden) {
       const mx = (w.a[0] + w.b[0] + w.oa[0] + w.ob[0]) / 4, my = (w.a[1] + w.b[1] + w.oa[1] + w.ob[1]) / 4;
@@ -778,6 +1025,8 @@
     if (mill) list.push({ d: objDepth((mill.x0 + mill.x1) / 2, mill.y1 - 0.1), mill: true });
     if (spinner) list.push({ d: objDepth(spinner.x, spinner.y), spin: true });
     for (const bm of bumpers) list.push({ d: objDepth(bm.x, bm.y), bm });
+    for (const sl of sliders) list.push({ d: objDepth(sl.x, sl.y), sl });
+    if (drawbridge) list.push({ d: objDepth((drawbridge.x0 + drawbridge.x1) / 2, (drawbridge.y0 + drawbridge.y1) / 2) + 0.4, db: true });
     list.push({ d: objDepth(cup[0], cup[1]) + 0.001, flag: true });
     // the ball: normally by depth, but always in front of rails behind it and behind rails in front of it
     let bd = P(ball.x, ball.y, 0.1)[2];
@@ -797,7 +1046,9 @@
     for (const it of list) {
       if (it.w) drawWall(g, it.w);
       else if (it.o) DRAW[it.o.type](g, it.o);
-      else if (it.mill) drawWindmill(g);
+      else if (it.mill) mill.kind === "gate" ? drawGatehouse(g) : drawWindmill(g);
+      else if (it.sl) drawSlider(g, it.sl);
+      else if (it.db) drawDrawbridge(g);
       else if (it.spin) drawSpinner(g);
       else if (it.bm) drawBumper(g, it.bm);
       else if (it.flag) drawFlag(g);
@@ -814,7 +1065,7 @@
         const x = i + 0.25 + ((hash(i + k, j) + time * 0.05) % 1) * 0.5, y = j + 0.3 + k * 0.4 + Math.sin(ph) * 0.06;
         const z = heightAt(p, x, y) - WATER_DROP + 0.005, s = P(x, y, z), sc = scaleAt(s[2]);
         const a = 0.18 + 0.18 * Math.sin(ph * 1.3);
-        g.strokeStyle = `rgba(255,255,255,${a})`; g.lineWidth = Math.max(1, sc * 0.025);
+        g.strokeStyle = T.lava ? `rgba(255,236,140,${a * 2})` : `rgba(255,255,255,${a})`; g.lineWidth = Math.max(1, sc * (T.lava ? 0.04 : 0.025));
         g.beginPath(); g.moveTo(s[0] - sc * 0.14, s[1]); g.quadraticCurveTo(s[0], s[1] - sc * 0.03, s[0] + sc * 0.14, s[1]); g.stroke();
       }
     }
@@ -823,7 +1074,7 @@
       for (let k = 1; k < 4; k++) {
         const x = lerp(f.a[0], f.b[0], k / 4), y = lerp(f.a[1], f.b[1], k / 4);
         const t = P(x, y, hole.hd(x, y) - WATER_DROP), b = P(x, y, -1.1);
-        g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(t[0], t[1]); g.lineTo(b[0], b[1]); g.stroke();
+        g.strokeStyle = T.lava ? "rgba(255,230,140,.7)" : "rgba(255,255,255,.55)"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(t[0], t[1]); g.lineTo(b[0], b[1]); g.stroke();
       }
     }
     g.setLineDash([]);
@@ -837,8 +1088,13 @@
       return;
     }
     g.save(); g.globalCompositeOperation = "lighter";
-    for (const o of objects) if (o.glowAt) glow(g, o.glowAt[0], o.glowAt[1], o.glowAt[2] * 1.4, "255,190,110", 0.45 + Math.sin(time * 3 + o.x) * 0.05);
-    for (const bm of bumpers) if (bm.glowAt) glow(g, bm.glowAt[0], bm.glowAt[1], bm.glowAt[2] * (0.9 + bm.glow * 0.9), "255,220,160", 0.35 + bm.glow * 0.5);
+    if (T.lava) for (const p of waterParts) {
+      const c = P(p.cx, p.cy, heightAt(p, p.cx, p.cy)), sc = scaleAt(c[2]);
+      glow(g, c[0], c[1], sc * 1.1, "255,110,30", 0.32 + Math.sin(time * 2.3 + p.cx * 3) * 0.06);
+    }
+    for (const w of warps) for (const [x, y] of [[w.ax, w.ay], [w.bx, w.by]]) { const c = P(x, y, hole.hp(x, y)), [r, gg, b] = hexRgb(w.c); glow(g, c[0], c[1], scaleAt(c[2]) * 0.8, `${r},${gg},${b}`, 0.3 + Math.sin(clock * 4) * 0.08); }
+    for (const o of objects) if (o.glowAt) glow(g, o.glowAt[0], o.glowAt[1], o.glowAt[2] * 1.4, o.glowAt[3] || "255,190,110", 0.45 + Math.sin(time * 3 + o.x) * 0.05);
+    for (const bm of bumpers) if (bm.glowAt) glow(g, bm.glowAt[0], bm.glowAt[1], bm.glowAt[2] * (0.9 + bm.glow * 0.9), bm.glowAt[3] || "255,220,160", 0.35 + bm.glow * 0.5);
     if (ball.screen && ball.sink < 1 && !ball.hidden) glow(g, ball.screen[0], ball.screen[1], ball.screen[2] * 3.5, "220,235,255", 0.25);
     g.restore();
   }
@@ -880,6 +1136,10 @@
     const R = rng(HI * 7 + 3);
     if (hole.critters === "butterflies") for (let k = 0; k < 4; k++) critters.push({ x: 1 + R() * 9, y: 1 + R() * 14, ph: R() * 6, c: ["#FFD84D", "#FF8FB1", "#FFFFFF", "#9FD4FF"][k] });
     if (hole.critters === "fireflies") for (let k = 0; k < 22; k++) critters.push({ x: R() * gridW, y: R() * gridH, ph: R() * 6, z: 0.3 + R() * 1.2 });
+    if (hole.critters === "snow") for (let k = 0; k < 70; k++) critters.push({ x: R(), y: R(), v: 0.03 + R() * 0.05, r: 0.8 + R() * 1.8, ph: R() * 6 });
+    if (hole.critters === "leaves") for (let k = 0; k < 14; k++) critters.push({ x: R() * gridW, y: R() * gridH, z: R() * 3, ph: R() * 6, c: ["#E07A2E", "#D2452F", "#E8B03A"][k % 3] });
+    if (hole.critters === "embers") for (let k = 0; k < 36; k++) critters.push({ z: -1, ph: R() * 6 });
+    if (hole.critters === "tumbleweed") critters.push({ t: 1, x: -1 });
     if (hole.critters === "fish") critters.push({ t: 2 });
   }
   function drawCritters(g, dt) {
@@ -891,13 +1151,58 @@
         g.fillStyle = b.c;
         g.beginPath(); g.ellipse(s[0] - sc * 0.5, s[1], sc * f, sc * 0.7, 0.4, 0, TAU); g.ellipse(s[0] + sc * 0.5, s[1], sc * f, sc * 0.7, -0.4, 0, TAU); g.fill();
       }
+    } else if (hole.critters === "snow") {
+      g.fillStyle = "rgba(255,255,255,.85)";
+      for (const f of critters) {
+        f.y += f.v * dt; f.ph += dt; if (f.y > 1.02) { f.y = -0.02; f.x = Math.random(); }
+        g.beginPath(); g.arc(((f.x + Math.sin(f.ph * 0.8) * 0.02) % 1) * W, f.y * H, f.r, 0, TAU); g.fill();
+      }
+    } else if (hole.critters === "leaves") {
+      for (const l of critters) {
+        l.ph += dt; l.z -= dt * 0.35; l.x += Math.sin(l.ph * 1.3) * dt * 0.6 + dt * 0.25;
+        if (l.z < hole.hd(l.x, l.y)) { l.z = 2.5 + Math.random(); l.x = Math.random() * gridW; l.y = Math.random() * gridH; }
+        const s = P(l.x, l.y, l.z), sc = scaleAt(s[2]) * 0.07;
+        g.save(); g.translate(s[0], s[1]); g.rotate(l.ph * 2); g.scale(1, Math.abs(Math.cos(l.ph * 3)) + 0.2);
+        g.fillStyle = l.c; g.beginPath(); g.ellipse(0, 0, sc, sc * 0.5, 0, 0, TAU); g.fill(); g.restore();
+      }
+    } else if (hole.critters === "embers") {
+      const lava = waterParts;
+      g.save(); g.globalCompositeOperation = "lighter";
+      for (const e of critters) {
+        e.ph += dt;
+        if (e.z < 0 || e.life <= 0) {
+          const fromCrater = Math.random() < 0.4, p = lava[(Math.random() * lava.length) | 0];
+          const [x, y] = fromCrater ? [cup[0] + (Math.random() - 0.5) * 1.6, cup[1] + (Math.random() - 0.5) * 1.6] : [p.cx, p.cy];
+          Object.assign(e, { x, y, z: hole.hp(x, y) + 0.05, vz: 0.4 + Math.random() * 0.6, life: 2 + Math.random() * 2, max: 4 });
+        }
+        e.life -= dt; e.z += e.vz * dt; e.x += Math.sin(e.ph * 2) * dt * 0.2;
+        const s = P(e.x, e.y, e.z), a = clamp(e.life / 2, 0, 1);
+        g.fillStyle = `rgba(255,${150 + (e.ph * 40) % 80 | 0},60,${a})`; g.fillRect(s[0] - 1, s[1] - 1, 2.2, 2.2);
+      }
+      g.restore();
+      // a slow plume of smoke from the crater
+      for (let k = 0; k < 6; k++) {
+        const u = (time * 0.12 + k / 6) % 1, s = P(cup[0] + Math.sin(k * 2 + time * 0.3) * 0.3 + u * 0.8, cup[1] - u * 0.6, hole.hp(cup[0], cup[1]) + 0.4 + u * 3.2), sc = scaleAt(s[2]);
+        glow(g, s[0], s[1], sc * (0.35 + u * 0.9), "90,70,80", 0.3 * Math.sin(u * Math.PI));
+      }
+    } else if (hole.critters === "tumbleweed") {
+      const tw = critters[0];
+      tw.t -= dt;
+      if (tw.t < 0 && tw.x < 0) { tw.x = -0.5; tw.y = [1.5, 6.9, 12][(Math.random() * 3) | 0] + 0.3; tw.t = 0; }
+      if (tw.x >= -0.6) {
+        tw.x += dt * 1.4; const z = hole.hd(tw.x, tw.y + 0.6) + 0.25 + Math.abs(Math.sin(tw.x * 3)) * 0.3;
+        const s = P(tw.x, tw.y + 0.6, z), sc = scaleAt(s[2]) * 0.22;
+        g.strokeStyle = "#A07A4A"; g.lineWidth = 1;
+        for (let k = 0; k < 5; k++) { g.beginPath(); g.ellipse(s[0], s[1], sc, sc * 0.8, tw.x * 2 + k, 0, TAU); g.stroke(); }
+        if (tw.x > gridW + 0.6) { tw.x = -1; tw.t = 4 + Math.random() * 5; }
+      }
     } else if (hole.critters === "fireflies") {
       g.save(); g.globalCompositeOperation = "lighter";
       for (const f of critters) {
         f.ph += dt;
         const x = f.x + Math.sin(f.ph * 0.5) * 0.8, y = f.y + Math.cos(f.ph * 0.37) * 0.8, s = P(x, y, f.z + Math.sin(f.ph) * 0.2);
         const a = Math.max(0, Math.sin(f.ph * 1.6)) * 0.9;
-        glow(g, s[0], s[1], scaleAt(s[2]) * 0.18, "255,240,150", a * 0.5);
+        glow(g, s[0], s[1], scaleAt(s[2]) * 0.18, hole.fireflyColor || "255,240,150", a * 0.5);
         g.fillStyle = `rgba(255,250,200,${a})`; g.fillRect(s[0] - 1, s[1] - 1, 2, 2);
       }
       g.restore();
@@ -922,9 +1227,13 @@
     const z = hole.hp(x, y) - WATER_DROP;
     for (let k = 0; k < 18 * amt; k++) {
       const a = Math.random() * TAU, v = 0.6 + Math.random() * 1.2;
-      particles.push({ x, y, z, vx: Math.cos(a) * v, vy: Math.sin(a) * v, vz: 2 + Math.random() * 2.5, life: 0.8, max: 0.8, c: "#E8F8FF", s: 0.035 });
+      particles.push({ x, y, z, vx: Math.cos(a) * v, vy: Math.sin(a) * v, vz: 2 + Math.random() * 2.5, life: 0.8, max: 0.8, c: T.lava ? (k % 2 ? "#FFB347" : "#FFE08A") : "#E8F8FF", s: 0.035 });
     }
     particles.push({ ring: true, x, y, z: z + 0.01, life: 0.9, max: 0.9 });
+  }
+  function sparkle(x, y, c) {
+    const z = hole.hp(x, y);
+    for (let k = 0; k < 16; k++) { const a = Math.random() * TAU, v = 0.4 + Math.random() * 1; particles.push({ x, y, z, vx: Math.cos(a) * v, vy: Math.sin(a) * v, vz: 1.5 + Math.random() * 2, life: 0.7, max: 0.7, c, s: 0.03 }); }
   }
   function confetti() {
     const cols = ["#FF5A6E", "#FFD84D", "#4CC3FF", "#7BE07B", "#FFFFFF", "#C69CFF"];
@@ -1005,7 +1314,7 @@
     let hit = 0, bumped = 0;
     for (let s = 0; s < n; s++) {
       const p = partAt(ball.x, ball.y);
-      const surf = p ? SURF[p.surf] || SURF.green : SURF.green;
+      const surf = p ? SURF[p.surf === "drawbridge" ? "bridge" : p.surf] || SURF.green : SURF.green;
       // rolling friction, then gravity along the slope
       let sp = Math.hypot(ball.vx, ball.vy);
       const f = (surf.mu + surf.drag * sp) * h;
@@ -1020,9 +1329,32 @@
         if (!ball.lip) { ball.lip = 1; ball.vx *= 0.72; ball.vy *= 0.72; const tw = (cdx * ball.vy - cdy * ball.vx) > 0 ? 0.25 : -0.25; const c = Math.cos(tw), si = Math.sin(tw); [ball.vx, ball.vy] = [ball.vx * c - ball.vy * si, ball.vx * si + ball.vy * c]; }
       } else if (cd > CUP_R + 0.1) ball.lip = 0;
       if (cd < CUP_R + 0.12 && sp < CAPTURE_V * 1.2) { ball.vx += (cdx / cd) * 7 * h; ball.vy += (cdy / cd) * 7 * h; }
+      // speed arrows push the ball along
+      let inBoost = false;
+      for (const b of boosts) {
+        if (ball.x < b.x || ball.x > b.x + b.w || ball.y < b.y || ball.y > b.y + b.h) continue;
+        inBoost = true;
+        if (ball.vx * b.dx + ball.vy * b.dy < 10) { ball.vx += b.dx * 32 * h; ball.vy += b.dy * 32 * h; }
+      }
+      if (inBoost && !ball.boosting) sfx.whoosh();
+      ball.boosting = inBoost;
+      // hollow stumps: in one, out the other
+      for (const w of warps) {
+        const wx = w.ax - ball.x, wy = w.ay - ball.y, wd = Math.hypot(wx, wy);
+        if (wd < 0.27) {
+          const l = Math.hypot(w.dx, w.dy), v = Math.max(2.4, Math.hypot(ball.vx, ball.vy) * 0.85);
+          sparkle(w.ax, w.ay, w.c); ball.x = w.bx + (w.dx / l) * 0.35; ball.y = w.by + (w.dy / l) * 0.35;
+          ball.vx = (w.dx / l) * v; ball.vy = (w.dy / l) * v; sparkle(w.bx, w.by, w.c); sfx.warp();
+          break;
+        } else if (wd < 0.55) { ball.vx += (wx / wd) * 6 * h; ball.vy += (wy / wd) * 6 * h; }
+      }
       ball.x += ball.vx * h; ball.y += ball.vy * h;
       // moving obstacles
-      if (mill) for (const b of millBlades()) hit = Math.max(hit, collideSeg(b.ax, b.y, b.bx, b.y, BALL_R, 0.6, b.v, 0, 0.03));
+      for (const sl of sliders) {
+        const x0 = sl.x - sl.w / 2, x1 = sl.x + sl.w / 2, y0 = sl.y - sl.d / 2, y1 = sl.y + sl.d / 2;
+        for (const [ax, ay, bx, by] of [[x0, y0, x1, y0], [x1, y0, x1, y1], [x1, y1, x0, y1], [x0, y1, x0, y0]]) hit = Math.max(hit, collideSeg(ax, ay, bx, by, BALL_R, 0.5, sl.vx, 0));
+      }
+      if (mill && mill.kind === "mill") for (const b of millBlades()) hit = Math.max(hit, collideSeg(b.ax, b.y, b.bx, b.y, BALL_R, 0.6, b.v, 0, 0.03));
       if (spinner) {
         const sn = spinner, dx = Math.cos(sn.angle) * sn.r, dy = Math.sin(sn.angle) * sn.r;
         const t = clamp(((ball.x - sn.x) * dx + (ball.y - sn.y) * dy) / (sn.r * sn.r), -1, 1);
@@ -1030,7 +1362,10 @@
         hit = Math.max(hit, collideSeg(sn.x - dx, sn.y - dy, sn.x + dx, sn.y + dy, BALL_R, 0.55, -w * (qy - sn.y), w * (qx - sn.x), 0.06));
         hit = Math.max(hit, collideCircle(sn.x, sn.y, 0.14, 0.5));
       }
-      for (const bm of bumpers) { const v = collideCircle(bm.x, bm.y, bm.r, 0.9, 3.2); if (v) { bm.glow = 1; bumped = Math.max(bumped, v); } }
+      for (const bm of bumpers) {
+        if (bm.bouncy === false) { hit = Math.max(hit, collideCircle(bm.x, bm.y, bm.r, 0.55)); continue; }
+        const v = collideCircle(bm.x, bm.y, bm.r, 0.9, 3.2); if (v) { bm.glow = 1; bumped = Math.max(bumped, v); }
+      }
       for (const w of walls) hit = Math.max(hit, collideSeg(w.a[0], w.a[1], w.b[0], w.b[1], BALL_R, 0.72));
     }
     if (hit > 0.35) sfx.knock(hit);
@@ -1038,11 +1373,25 @@
     // hazards
     const p = partAt(ball.x, ball.y);
     if (!p || !p.play) { toTee(false); return; }
-    if (p.surf === "water") { splash(); return; }
+    if (p.surf === "water" || (p.surf === "drawbridge" && bridgeUp())) { splash(); return; }
     const sp = Math.hypot(ball.vx, ball.vy), [gx, gy] = grad(ball.x, ball.y);
     const surf = SURF[p.surf] || SURF.green;
     if (sp < 0.07 && GRAV * Math.hypot(gx, gy) < surf.mu * 0.95) { ball.vx = ball.vy = 0; rest(); }
     if (stateT > 25) { ball.vx = ball.vy = 0; rest(); }
+  }
+
+  const bridgeUp = () => drawbridge && drawbridge.a > 0.3;
+  // everything that moves on its own runs off one clock, so a shot can be replayed exactly
+  function tick(dt) {
+    clock += dt;
+    if (mill && mill.speed) mill.angle += mill.speed * dt;
+    if (spinner) spinner.angle += spinner.speed * dt;
+    if (drawbridge) {
+      const ph = (clock % drawbridge.period) / drawbridge.period;
+      const u = ph < 0.55 ? 0 : ph < 0.68 ? (ph - 0.55) / 0.13 : ph < 0.87 ? 1 : 1 - (ph - 0.87) / 0.13;
+      drawbridge.a = u * u * (3 - 2 * u) * 1.3;
+    }
+    for (const sl of sliders) { const x = sl.cx + sl.amp * Math.sin((clock * TAU) / sl.period + (sl.phase || 0)); sl.vx = dt ? (x - sl.x) / dt : 0; sl.x = x; }
   }
 
   // ---------- flow ----------
@@ -1061,9 +1410,9 @@
     if (strokes >= MAX_STROKES) { setState("sunk"); ball.sink = 1; showCard(true); }
   }
   function splash() {
-    splashAt(ball.x, ball.y); sfx.splash();
+    splashAt(ball.x, ball.y); T.lava ? sfx.sizzle() : sfx.splash();
     ball.vx = ball.vy = 0; ball.drown = 0.01;
-    strokes++; updateHud(); toast("Splash! +1");
+    strokes++; updateHud(); toast(T.lava ? "Sizzle! +1" : "Splash! +1");
     setState("splash");
   }
   function toTee(penalty) { ball.x = lastRest[0]; ball.y = lastRest[1]; ball.vx = ball.vy = 0; ball.drown = 0; if (penalty) strokes++; setState("aim"); }
@@ -1079,7 +1428,7 @@
   function showCard(pickedUp) {
     if (cardShown) return;
     cardShown = true;
-    scores[HI] = strokes;
+    scores[HI] = strokes; updateHud();
     const par = hole.par, diff = strokes - par;
     $("#cardTitle").textContent = pickedUp ? "Picked up" : resultName(strokes, par);
     $("#cardSub").textContent = pickedUp ? `That's ${MAX_STROKES} for this one. On to the next.` : `${strokes} stroke${strokes === 1 ? "" : "s"} on a par ${par}${diff < 0 ? ". Beautiful." : diff === 0 ? ". Nicely done." : "."}`;
@@ -1189,6 +1538,9 @@
       ding() { if (!ok()) return; const t = ac.currentTime; tone(1046, t, 0.7, 0.22); tone(1568, t, 0.5, 0.12); tone(2093, t, 0.3, 0.06); },
       cup() { if (!ok()) return; const t = ac.currentTime; [0, 0.07, 0.13, 0.2].forEach((d, i) => burst(t + d, 0.04, 0.35 - i * 0.07, 3000 - i * 400, 4)); tone(180, t + 0.22, 0.25, 0.4, "sine", 90); },
       splash() { if (!ok()) return; const t = ac.currentTime; burst(t, 0.6, 0.6, 900, 0.7, "lowpass"); burst(t + 0.05, 0.4, 0.25, 2500, 1); tone(420, t, 0.2, 0.15, "sine", 120); },
+      whoosh() { if (!ok()) return; const t = ac.currentTime; burst(t, 0.35, 0.3, 1200, 0.8); tone(300, t, 0.3, 0.08, "sine", 900); },
+      warp() { if (!ok()) return; const t = ac.currentTime; [880, 1175, 1568, 2093].forEach((f, i) => tone(f, t + i * 0.05, 0.3, 0.1, "triangle")); },
+      sizzle() { if (!ok()) return; const t = ac.currentTime; burst(t, 0.9, 0.5, 4000, 0.5, "highpass"); tone(160, t, 0.3, 0.2, "sawtooth", 60); },
       chime() { if (!ok()) return; const t = ac.currentTime; [523, 659, 784].forEach((f, i) => tone(f, t + i * 0.09, 0.5, 0.15)); },
       cheer() { if (!ok()) return; const t = ac.currentTime; [523, 659, 784, 1046, 1318].forEach((f, i) => tone(f, t + i * 0.08, 0.6, 0.16, "triangle")); burst(t + 0.1, 1.2, 0.08, 3000, 0.4); },
     };
@@ -1199,8 +1551,24 @@
   const paintMute = () => { muteBtn.setAttribute("aria-pressed", String(sfx.muted)); muteBtn.setAttribute("aria-label", sfx.muted ? "Sound off" : "Sound on"); };
   paintMute();
   muteBtn.addEventListener("click", () => { sfx.unlock(); sfx.toggle(); paintMute(); });
-  $("#startBtn").addEventListener("click", () => { sfx.unlock(); $("#title").hidden = true; document.body.classList.remove("on-title"); scores = []; startHole(0); });
-  $("#nextBtn").addEventListener("click", () => { if (HI < HOLES.length - 1) startHole(HI + 1); else showFinal(); });
+  // a round in progress is saved after every hole, so it can be picked up later
+  const RUN_KEY = "rosenbergGolfRun";
+  const loadRun = () => { try { const r = JSON.parse(localStorage.getItem(RUN_KEY)); return r && r.next > 0 && r.next < HOLES.length ? r : null; } catch { return null; } };
+  const saveRun = (r) => { try { r ? localStorage.setItem(RUN_KEY, JSON.stringify(r)) : localStorage.removeItem(RUN_KEY); } catch {} };
+  function paintTitle() {
+    const run = loadRun();
+    $("#holeList").innerHTML = HOLES.map((h, i) => `<div class="${run && i < run.next ? "done" : ""}"><b>${i + 1}</b>${h.name}</div>`).join("");
+    $("#resumeBtn").hidden = !run;
+    if (run) $("#resumeBtn").textContent = `Continue at hole ${run.next + 1}`;
+    $("#startBtn").textContent = run ? "New round" : "Tee off";
+  }
+  paintTitle();
+  const leaveTitle = () => { sfx.unlock(); $("#title").hidden = true; document.body.classList.remove("on-title"); };
+  $("#startBtn").addEventListener("click", () => { leaveTitle(); scores = []; saveRun(null); startHole(0); });
+  $("#resumeBtn").addEventListener("click", () => { const run = loadRun(); leaveTitle(); scores = run ? run.scores : []; startHole(run ? run.next : 0); });
+  $("#nextBtn").addEventListener("click", () => {
+    if (HI < HOLES.length - 1) { saveRun({ next: HI + 1, scores }); startHole(HI + 1); } else { saveRun(null); showFinal(); }
+  });
   $("#againBtn").addEventListener("click", () => { $("#final").hidden = true; scores = []; startHole(0); });
   addEventListener("resize", resize);
   addEventListener("keydown", (e) => { if (e.key === "m" || e.key === "M") { sfx.toggle(); paintMute(); } });
@@ -1211,8 +1579,9 @@
   function frame(now) {
     const dt = Math.min(0.033, (now - last) / 1000); last = now;
     time += dt; stateT += dt; introT += dt; bumpCool -= dt;
-    if (mill) mill.angle += mill.speed * dt;
-    if (spinner) spinner.angle += spinner.speed * dt;
+    tick(dt);
+    // a ball left sitting on the drawbridge goes in when it rises
+    if (state === "aim" && bridgeUp() && partAt(ball.x, ball.y)?.surf === "drawbridge") splash();
     for (const bm of bumpers) bm.glow = Math.max(0, bm.glow - dt * 2.5);
     physics(dt);
     if (state === "sunk" && ball.sink && ball.sink < 1) {
@@ -1246,16 +1615,16 @@
   if (q.has("hole")) { $("#title").hidden = true; document.body.classList.remove("on-title"); scores = []; startHole(HI); }
   // test hook: fast-forward one shot from (x, y) without touching the screen
   function simulate(x, y, dx, dy, power, t0 = 0) {
-    const save = { ball: { ...ball }, strokes, state, stateT, lastRest, particles, ma: mill && mill.angle, sa: spinner && spinner.angle };
-    const l = Math.hypot(dx, dy);
+    const save = { ball: { ...ball }, strokes, state, stateT, lastRest, particles, clock, ma: mill && mill.angle, sa: spinner && spinner.angle };
+    const l = Math.hypot(dx, dy), muted = sfx.muted;
     ball.x = x; ball.y = y; ball.sink = 0; ball.drown = 0;
-    if (mill) mill.angle = 0.4 + mill.speed * t0; if (spinner) spinner.angle = spinner.speed * t0;
+    clock = 0; if (mill) mill.angle = 0.4; if (spinner) spinner.angle = 0; tick(t0);
     shoot(dx / l, dy / l, power);
     let t = 0;
-    while (state === "roll" && t < 30) { if (mill) mill.angle += mill.speed / 60; if (spinner) spinner.angle += spinner.speed / 60; physics(1 / 60); stateT += 1 / 60; t += 1 / 60; }
+    while (state === "roll" && t < 30) { tick(1 / 60); physics(1 / 60); stateT += 1 / 60; t += 1 / 60; }
     const out = { result: state === "sunk" ? "in" : state === "splash" ? "water" : "rest", x: ball.x, y: ball.y, t };
     Object.assign(ball, save.ball); strokes = save.strokes; state = save.state; stateT = save.stateT; lastRest = save.lastRest; particles = save.particles;
-    if (mill) mill.angle = save.ma; if (spinner) spinner.angle = save.sa;
+    clock = save.clock; if (mill) mill.angle = save.ma; if (spinner) spinner.angle = save.sa; tick(0);
     return out;
   }
   window.__golf = { simulate, get tee() { return tee; }, get ball() { return ball; }, get state() { return state; }, shoot: (dx, dy, p) => { const l = Math.hypot(dx, dy); shoot(dx / l, dy / l, p); }, get cup() { return cup; }, get strokes() { return strokes; } };

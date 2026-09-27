@@ -309,7 +309,7 @@
   G.register({
     id: "miniGolf",
     title: "Rosenberg Mini Golf",
-    subtitle: "Three floating-island holes. Pull back and let go to putt!",
+    subtitle: "Nine floating-island holes. Pull back and let go to putt!",
     destination: "minigolf",
     unlocked: true,
     entry: "games/mini-golf/index.html",
