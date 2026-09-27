@@ -43,9 +43,49 @@ canvas#room{position:absolute;inset:0;width:1600px;height:1000px}
 .c-boggle{background:#E8622A} .c-word{background:#2F5BEA}
 .sarah-hit{position:absolute;left:560px;top:360px;width:220px;height:260px;border:0;background:transparent;cursor:pointer;border-radius:40px}
 .sarah-hit:focus-visible{outline:4px solid #FFD23F}
-.wipe{position:fixed;inset:0;background:#3B2A22;opacity:0;pointer-events:none;transition:opacity .35s}
+.wipe{position:fixed;inset:0;z-index:30;background:#3B2A22;opacity:0;pointer-events:none;transition:opacity .35s}
 .wipe.on{opacity:1}
 @media (prefers-reduced-motion:reduce){.box,.box.pull{transition:none}}
+/* ---------- the big game picker that pops up after Sarah's welcome ---------- */
+.picker{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,2.6vh,26px);
+  padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));
+  background:radial-gradient(120% 90% at 50% 40%,rgba(59,42,34,.78),rgba(34,23,15,.94));opacity:0;pointer-events:none;transition:opacity .35s ease}
+.picker.on{opacity:1;pointer-events:auto}
+body.picking .topbtn{visibility:hidden}
+.pk-head{text-align:center;color:#F7E9D2}
+.pk-head h1{margin:0;font:700 clamp(30px,5.4vw,58px)/1 Fredoka,sans-serif;letter-spacing:.06em;text-shadow:0 4px 0 rgba(0,0,0,.35)}
+.pk-head p{margin:8px 0 0;font:600 clamp(16px,2.2vw,22px)/1.2 Fredoka,sans-serif;color:#E8C99A}
+.pk-cards{display:flex;gap:clamp(16px,3vw,40px);justify-content:center;width:100%;max-width:1100px}
+.gcard{flex:1 1 0;max-width:470px;min-width:0;border:0;padding:0;cursor:pointer;border-radius:34px;background:#FFFDF8;color:var(--ink);text-align:center;
+  display:flex;flex-direction:column;overflow:hidden;box-shadow:0 10px 0 var(--edge),0 24px 44px rgba(0,0,0,.45);
+  transform:translateY(60px) scale(.9);opacity:0;transition:transform .5s cubic-bezier(.3,1.5,.5,1),opacity .3s}
+.picker.on .gcard{transform:none;opacity:1}
+.picker.on .gcard:nth-child(2){transition-delay:.09s}
+.gcard:active{transform:translateY(6px) scale(.98)!important;box-shadow:0 4px 0 var(--edge),0 12px 24px rgba(0,0,0,.4)}
+.gcard:focus-visible{outline:5px solid #FFD23F;outline-offset:4px}
+.gcard.pick{transform:scale(1.06)!important;box-shadow:0 10px 0 var(--edge),0 0 0 8px #FFD23F,0 24px 44px rgba(0,0,0,.45)}
+.g-art{height:clamp(150px,30vh,280px);display:grid;place-items:center;background:var(--bg);position:relative}
+.g-body{padding:clamp(12px,2.2vh,20px) 20px clamp(16px,2.8vh,24px);display:flex;flex-direction:column;align-items:center;gap:6px}
+.g-name{font:700 clamp(26px,3.8vw,42px)/1 Fredoka,sans-serif;color:var(--edge)}
+.g-desc{font:600 clamp(15px,1.9vw,19px)/1.25 Fredoka,sans-serif;color:#6B5A50}
+.g-play{margin-top:8px;font:700 clamp(22px,3vw,30px)/1 Fredoka,sans-serif;color:#fff;background:#2EB872;padding:14px 44px;border-radius:999px;box-shadow:0 6px 0 #1D8752;letter-spacing:.06em}
+.g-boggle{--edge:#C8481A;--bg:radial-gradient(90% 90% at 50% 40%,#30469E,#1C2C6E)}
+.g-word{--edge:#2446B8;--bg:radial-gradient(90% 90% at 50% 40%,#FFE27A,#F2B632)}
+.bog-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(4px,min(.8vw,.9vh),8px);padding:clamp(7px,min(1.4vw,1.5vh),14px);background:#0C1538;border-radius:18px;box-shadow:0 8px 0 rgba(0,0,0,.3);transform:rotate(-4deg)}
+.bog-grid i{width:clamp(20px,min(5vw,4.5vh),50px);height:clamp(20px,min(5vw,4.5vh),50px);display:grid;place-items:center;font:900 clamp(12px,min(2.8vw,2.9vh),28px)/1 "Arial Black",Impact,sans-serif;font-style:normal;color:#1B1612;background:linear-gradient(180deg,#FCF7EA,#F2E8D0);border-radius:9px;box-shadow:0 4px 0 #D8C59C}
+.bog-grid i.hot{background:linear-gradient(180deg,#FFD877,#FFC23D);box-shadow:0 4px 0 #C98314}
+.word-chain{display:flex;flex-direction:column;gap:clamp(5px,1.2vh,12px);align-items:center}
+.word-chain span{display:flex;gap:5px}
+.word-chain i{width:clamp(20px,min(4.2vw,6vh),46px);height:clamp(20px,min(4.2vw,6vh),46px);display:grid;place-items:center;font:900 clamp(12px,min(2.4vw,3.4vh),26px)/1 "Arial Black",Impact,sans-serif;font-style:normal;color:#fff;background:#2F5BEA;border-radius:8px;box-shadow:0 4px 0 #1B3A9E}
+.word-chain i.link{background:#E8622A;box-shadow:0 4px 0 #A8401A}
+.pk-soon{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;color:#E8C99A;font:600 clamp(14px,1.7vw,17px) Fredoka,sans-serif}
+.pk-soon b{font-weight:700;letter-spacing:.12em}
+.pk-soon span{background:rgba(255,255,255,.1);border-radius:999px;padding:6px 14px;color:#F7E9D2}
+.pk-foot{display:flex;gap:18px;align-items:center}
+.pk-link{border:0;background:none;color:#F7E9D2;font:600 clamp(16px,2vw,19px) Fredoka,sans-serif;text-decoration:underline;text-underline-offset:4px;cursor:pointer;opacity:.9;padding:8px}
+@media (max-height:560px){.g-art{height:clamp(110px,26vh,200px)}.pk-soon{display:none}.g-desc{display:none}}
+@media (prefers-reduced-motion:reduce){.picker,.gcard{transition:none}}
+
 </style>
 </head>
 <body>
@@ -81,6 +121,23 @@ canvas#room{position:absolute;inset:0;width:1600px;height:1000px}
 </div>
 <div class="wipe" id="wipe"></div>
 
+<!-- big game cards: pop up right after Sarah says hi -->
+<section class="picker" id="picker" aria-label="Pick a game">
+  <div class="pk-head"><h1>PICK A GAME</h1><p id="pkSub">Sarah's Game Room</p></div>
+  <div class="pk-cards">
+    <button class="gcard g-boggle" type="button" data-game="rosenboggle">
+      <span class="g-art"><span class="bog-grid" aria-hidden="true"><i class="hot">R</i><i>E</i><i>T</i><i>S</i><i>A</i><i class="hot">O</i><i>L</i><i>K</i><i>M</i><i>P</i><i class="hot">S</i><i>I</i><i>D</i><i>U</i><i class="hot">E</i><i>N</i></span></span>
+      <span class="g-body"><span class="g-name">ROSENBOGGLE</span><span class="g-desc">Shake the letters and find as many words as you can!</span><span class="g-play">PLAY</span></span>
+    </button>
+    <button class="gcard g-word" type="button" data-game="word-game">
+      <span class="g-art"><span class="word-chain" aria-hidden="true"><span><i>C</i><i>A</i><i class="link">T</i></span><span><i class="link">T</i><i>I</i><i>G</i><i>E</i><i class="link">R</i></span><span><i class="link">R</i><i>A</i><i>B</i><i>B</i><i>I</i><i>T</i></span></span></span>
+      <span class="g-body"><span class="g-name">THE WORD GAME</span><span class="g-desc">Each word starts with the last letter. Beat the computer!</span><span class="g-play">PLAY</span></span>
+    </button>
+  </div>
+  <div class="pk-soon"><b>COMING SOON</b><span>♞ Chess</span><span>⛀ Checkers</span><span>🧩 Puzzle</span><span>🃏 Cards</span></div>
+  <div class="pk-foot"><button class="pk-link" type="button" data-rw-back hidden>Back to Rosenberg World</button></div>
+</section>
+
 <script src="../../js/core.js"></script>
 <script src="../../js/art.js"></script>
 <script>
@@ -105,6 +162,24 @@ canvas#room{position:absolute;inset:0;width:1600px;height:1000px}
   let talkT = 0;
   $("sarahHit").addEventListener("click", () => { say(LINES[Math.floor(Math.random() * LINES.length)]); talkT = 1.2; });
 
+  // ---------- the big game cards ----------
+  // Sarah waves you in, then the cards pop up over the room (right away when coming back from a game)
+  const picker = $("picker");
+  let pickerUp = false;
+  $("pkSub").textContent = back ? `Welcome back${hi}! Play another one?` : `Sarah's Game Room${NAME ? " · " + NAME + " is playing" : ""}`;
+  function showPicker() {
+    if (pickerUp) return; pickerUp = true;
+    $("bubble").hidden = true;
+    document.body.classList.add("picking");
+    picker.classList.add("on");
+  }
+  if (back) showPicker();
+  else {
+    const t = setTimeout(showPicker, 2300);
+    // tapping during the welcome skips straight to the cards
+    $("fit").addEventListener("pointerdown", () => { clearTimeout(t); showPicker(); }, { once: true });
+  }
+
   // ---------- pick a game ----------
   function go(game, boxEl) {
     const q = new URLSearchParams(location.search); q.delete("back"); q.set("room", "1");
@@ -115,6 +190,7 @@ canvas#room{position:absolute;inset:0;width:1600px;height:1000px}
     setTimeout(() => { location.href = `../${game}/index.html?${q}`; }, 760);
   }
   document.querySelectorAll("[data-game]").forEach((b) => b.addEventListener("click", () => {
+    if (b.classList.contains("gcard")) { b.classList.add("pick"); setTimeout(() => $("wipe").classList.add("on"), 300); return go(b.dataset.game, null); }
     const shelfBox = b.classList.contains("box") ? b : document.querySelector(`.box[data-game="${b.dataset.game}"]`);
     go(b.dataset.game, shelfBox);
   }));
