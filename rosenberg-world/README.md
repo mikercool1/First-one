@@ -147,7 +147,8 @@ The Star Shop (next to the plaza) is a full-page store with three sections, chea
 Buying something puts it on right away, and everything is saved per player.
 
 - **Rides**: Skateboard, Scooter, ATV and Motorbike (5 stars each); Hoverboard 20, Golf Cart 25,
-  Unicorn 40, and two big goals, the Go-Kart 50 and the Jetpack 100. Once you own a ride, the RIDE
+  Unicorn 40, and two big goals, the Go-Kart 50 and the Jetpack 100. The jetpack flies over everything
+  (buildings, trees, the sea, straight to Baha Mar); take it off and you land on the nearest open ground. Once you own a ride, the RIDE
   button (bottom right) picks what you ride, or walking.
 - **Pets** follow you everywhere, even onto the sea plane, and say hello when tapped: Puppy 10,
   Kitten 10, Bunny 15, Penguin 20, and the Baby Dragon 75 (a big goal: it flies and puffs little flames).

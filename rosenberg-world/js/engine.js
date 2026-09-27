@@ -152,6 +152,10 @@
       if (Math.hypot(x - P.x, y - P.y) > 30 || cb) E.later(0.45, () => E.walkTo(x, y, cb));
     };
   }
+  // ---------- jetpack: flies over everything, only the edge of the world stops it ----------
+  const jetpacking = (P) => P.ride === "jetpack" && !P.jetski;
+  E.jetpacking = () => !!(E.player && jetpacking(E.player));
+  const clampSky = (x, y) => [U.clamp(x, WORLD.minX - 60, WORLD.W - 100), U.clamp(y, WORLD.minY, WORLD.H - 160)];
   function moveBody(b, dx, dy, r = 16) {
     let moved = false;
     if (!E.blocked(b.x + dx, b.y, r)) { b.x += dx; moved = true; }
@@ -282,6 +286,14 @@
     const P = E.player;
     if (!P || P.lock) return;
     if (P.jetski) { jetTo(x, y, onArrive); return; }
+    if (jetpacking(P)) {
+      // straight there through the air
+      const f = clampSky(x, y);
+      P.path = [f]; P.onArrive = onArrive || null; P.stopDist = stopDist; P.replanned = true; P.sitOn = null;
+      if (P.pose === "sit") endPose(P);
+      E.marker = { x: f[0], y: f[1], t: 0 };
+      return;
+    }
     const f = nearestFree(x, y);
     if (!f) return;
     P.path = findPath(P.x, P.y, f[0], f[1]);
@@ -315,6 +327,13 @@
     // back on land without hopping off (e.g. straight into a game from the water): park the jet ski
     if (P.jetski && !E.isWater(P.x, P.y)) { P.jetski = false; if (P.lastWater) { JS.x = P.lastWater[0]; JS.y = P.lastWater[1]; } }
     if (P.jetski) P.lastWater = [P.x, P.y];
+    // took the jetpack off in mid-air over water or a roof: come down on the nearest open ground
+    const flyingNow = jetpacking(P);
+    if (P.wasFlying && !flyingNow && !P.jetski && E.blocked(P.x, P.y, 12)) {
+      const f = nearestFree(P.x, P.y) || (E.onIsland(P.x, P.y) ? [P.x, P.y] : [4100, 2100]);
+      P.x = f[0]; P.y = f[1]; P.path = null; E.burst(P.x, P.y, 0, "puff", 14, { up: 120, sp: 90 });
+    }
+    P.wasFlying = flyingNow;
     if (input && !P.lock) {
       P.path = null; P.onArrive = null; P.target = null;
       if (P.pose === "sit" || P.pose === "look") endPose(P);
@@ -336,7 +355,9 @@
     const moving = vx || vy;
     if (moving) {
       const before = [P.x, P.y];
-      if (P.jetski) moveBoat(P, vx * dt, vy * dt); else moveBody(P, vx * dt, vy * dt, 15);
+      if (P.jetski) moveBoat(P, vx * dt, vy * dt);
+      else if (jetpacking(P)) [P.x, P.y] = clampSky(P.x + vx * dt, P.y + vy * dt);
+      else moveBody(P, vx * dt, vy * dt, 15);
       const real = Math.hypot(P.x - before[0], P.y - before[1]);
       P.wheel += real;
       P.move = U.lerp(P.move, real > 0.2 ? 1 : 0, 0.3);
@@ -512,8 +533,9 @@
     if (e) { useEntity(e); return; }
     // tapping Baha Mar from the mainland (or the mainland from Baha Mar) takes the sea plane
     const onI = E.onIsland(P.x, P.y);
-    if (!P.jetski && !onI && E.onIsland(wx, wy)) { RW.world.flyTo("bahamar"); return; }
-    if (!P.jetski && onI && wx < RW.layout.shoreX(wy) - 30) { RW.world.flyTo("mainland"); return; }
+    const byPlane = !P.jetski && !jetpacking(P);
+    if (byPlane && !onI && E.onIsland(wx, wy)) { RW.world.flyTo("bahamar"); return; }
+    if (byPlane && onI && wx < RW.layout.shoreX(wy) - 30) { RW.world.flyTo("mainland"); return; }
     E.walkTo(wx, wy);
     RW.sfx.play("tap");
   }
