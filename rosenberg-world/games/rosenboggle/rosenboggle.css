@@ -1,4 +1,4 @@
-/* Rattle: a classic 4x4 word-dice game on a walnut table. One committed dark tabletop look. */
+/* Rosenboggle: a classic 4x4 word-dice game on a walnut table. One committed dark tabletop look. */
 :root{
   color-scheme:dark;
   --table:#3A2418; --table-dark:#1E120B; --table-hi:#5A3923;
@@ -41,7 +41,7 @@ button{font:inherit}
   box-shadow:inset 0 2px 1px #fff,inset 0 -3px 5px rgba(140,105,50,.35),0 4px 0 #BCA67A,0 5px 0 #8E7A52,0 10px 12px rgba(0,0,0,.5);
   transform:rotate(var(--r,0deg)) translateY(var(--y,0));
 }
-.logo span:nth-child(2){background:radial-gradient(circle at 50% 40%,#FFF3C4,#FFD45A 60%,#F0A92A);box-shadow:inset 0 2px 1px #fff,0 4px 0 #D08A1C,0 5px 0 #9C6410,0 10px 16px rgba(255,170,40,.4)}
+.logo span:nth-child(6){background:radial-gradient(circle at 50% 40%,#FFF3C4,#FFD45A 60%,#F0A92A);box-shadow:inset 0 2px 1px #fff,0 4px 0 #D08A1C,0 5px 0 #9C6410,0 10px 16px rgba(255,170,40,.4)}
 .readouts{display:flex;gap:10px}
 .chip{display:grid;gap:2px;justify-items:center;min-width:72px;padding:7px 12px 9px;border-radius:14px;color:var(--ink);
   background:linear-gradient(180deg,var(--ivory-hi),var(--ivory));box-shadow:inset 0 2px 0 #fff,0 5px 0 #B19B6E,0 10px 16px rgba(0,0,0,.45)}
@@ -212,7 +212,8 @@ button{font:inherit}
 }
 @media (max-width:520px){
   .app{padding-inline:16px}
-  .logo span{width:28px;font-size:16px}
+  .logo{gap:3px}
+  .logo span{width:26px;font-size:15px}
   .chip{min-width:0;padding:6px 9px 8px}
   .chip small{font-size:9px;letter-spacing:.08em}
   .chip b{font-size:19px}

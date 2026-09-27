@@ -29,12 +29,12 @@
 
   // Game night in the Rosenberg House: the first games you play, right at the front door.
   G.register({
-    id: "rattle",
-    title: "Rattle",
+    id: "rosenboggle",
+    title: "Rosenboggle",
     subtitle: "Shake the dice, find the words. 1 star for every word!",
     destination: "house",
     unlocked: true,
-    entry: "games/rattle/index.html",
+    entry: "games/rosenboggle/index.html",
     color: "#F0642A",
     icon: "🎲",
     maxStars: 200,      // one star per word found, so a great round can pass 10

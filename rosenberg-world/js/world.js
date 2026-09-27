@@ -208,8 +208,8 @@
       kind: "building", x: hx, y: hy, box: [-340, -275, 500, 34], sprite: true, occludes: true,
       solid: [{ r: [-304, -170, 282, -4] }, { r: [-100, -20, 10, 14] }, { r: [282, -150, 470, -22] }],
       draw: (c) => B.house(c),
-      // Game night: walking up to the front door opens the house's games (Rattle and The Word Game)
-      tap: { reach: "walk", at: [-45, 50], range: 50, act: (E2) => { E2.say(E2.player, U.pick(["Game night!", "Knock knock!", "Who wants to play Rattle?"]), 1.8); RW.sfx.play("tap"); E2.later(0.8, () => { if (!world.cameoActive("cari")) world.houseWave(); }); } },
+      // Game night: walking up to the front door opens the house's games (Rosenboggle and The Word Game)
+      tap: { reach: "walk", at: [-45, 50], range: 50, act: (E2) => { E2.say(E2.player, U.pick(["Game night!", "Knock knock!", "Who wants to play Rosenboggle?"]), 1.8); RW.sfx.play("tap"); E2.later(0.8, () => { if (!world.cameoActive("cari")) world.houseWave(); }); } },
       live: (c, E2) => drawHouseLive(c, E2),
     });
     house.hit = [-320, -260, 480, 10];
@@ -268,9 +268,9 @@
   }
 
   function drawHouseLive(c, E2) {
-    // GAME NIGHT sign over the front door; it bounces until this player has tried Rattle
+    // GAME NIGHT sign over the front door; it bounces until this player has tried Rosenboggle
     let fresh = false;
-    try { fresh = !RW.games.stats("rattle").plays; } catch (e) { /* no profile yet */ }
+    try { fresh = !RW.games.stats("rosenboggle").plays; } catch (e) { /* no profile yet */ }
     B.plate(c, "GAME NIGHT", -45, -192 + (fresh ? Math.sin(E2.t * 3.2) * 5 : 0), 13, "#F0642A", "#FFFFFF", { r: 8 });
     // Ikey watching TV in the living room
     const k = B.HOUSE_WINDOWS.ikey;

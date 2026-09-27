@@ -1,4 +1,4 @@
-// Rattle: classic 4x4 word dice against a 3 minute sand timer.
+// Rosenboggle: classic 4x4 word dice against a 3 minute sand timer.
 // Every word found earns one Rosenberg Star, banked in Rosenberg World through rw-bridge.js.
 (() => {
   "use strict";
@@ -21,9 +21,9 @@
     }
     return out;
   }
-  const WORDS = decode(window.RATTLE_WORDS || "");
+  const WORDS = decode(window.ROSENBOGGLE_WORDS || "");
   const DICT = new Set(WORDS);
-  const COMMON = new Set(decode(window.RATTLE_COMMON || ""));
+  const COMMON = new Set(decode(window.ROSENBOGGLE_COMMON || ""));
   function hasPrefix(p) {
     let lo = 0, hi = WORDS.length;
     while (lo < hi) { const m = (lo + hi) >> 1; if (WORDS[m] < p) lo = m + 1; else hi = m; }
@@ -457,7 +457,7 @@
 
   function saveLocal() {
     try {
-      const key = "rattle." + (bridge.player || "solo");
+      const key = "rosenboggle." + (bridge.player || "solo");
       const rec = JSON.parse(localStorage.getItem(key) || "{}");
       rec.best = Math.max(rec.best || 0, S.score);
       rec.stars = (rec.stars || 0) + S.stars;
@@ -465,7 +465,7 @@
     } catch (e) { /* storage unavailable */ }
   }
 
-  if (/[?&]dev\b/.test(location.search)) window.__rattle = { S, startRound, endRound };
+  if (/[?&]dev\b/.test(location.search)) window.__rosenboggle = { S, startRound, endRound };
   $("start").addEventListener("click", startRound);
   $("again").addEventListener("click", startRound);
   addEventListener("resize", drawPath);

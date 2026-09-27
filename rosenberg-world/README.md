@@ -41,10 +41,10 @@ if the game needs to stop timers.
 ### Game Night: more than one game behind a door
 
 A game can list extra destinations with `also: ["house"]`. When a door has two or more games,
-its PLAY card turns into a picker. The Rosenberg House front door works this way: Rattle and
+its PLAY card turns into a picker. The Rosenberg House front door works this way: Rosenboggle and
 The Word Game are the first games a new player sees, since everyone starts at the house.
 
-Games that pay a star per action (Rattle pays one per word) set `maxStars` higher than the default 10.
+Games that pay a star per action (Rosenboggle pays one per word) set `maxStars` higher than the default 10.
 A game can also call `RosenbergBridge.onLeave(fn)` to report a round in progress when the player
 taps the world's ✕ button; the world waits a moment for that report before closing the game.
 
@@ -61,7 +61,7 @@ Every linked game is also one tap away from the ALL GAMES button in the HUD.
 
 | Where in the world | Game | Folder |
 | --- | --- | --- |
-| Rosenberg House front door (Game Night) | Rattle | `games/rattle` |
+| Rosenberg House front door (Game Night) | Rosenboggle | `games/rosenboggle` |
 | Rosenberg House front door (Game Night) and the Mystery Plaza building | The Word Game | `games/word-game` |
 | Backyard Baseball field | Backyard Baseball | `games/backyard-baseball` |
 | The family car in the driveway | Fish Friday | `games/lox-run` |
