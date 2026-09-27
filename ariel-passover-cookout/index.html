@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#2A1D33">
+<title>Ariel Passover Cookout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Playfair+Display:ital,wght@1,700;1,800&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<canvas id="cv" aria-label="Ariel's kitchen: cook Passover dishes and serve the hungry family"></canvas>
+
+<div id="ui">
+  <!-- In-game heads-up display -->
+  <header id="hud" hidden>
+    <div class="hud-group">
+      <div class="pill round-pill"><span class="lbl">Round</span><b id="hRound">1</b></div>
+      <div class="pill"><span class="lbl">Score</span><b id="hScore">0</b></div>
+      <div class="pill"><span class="lbl">Served</span><b id="hServed">0/5</b></div>
+      <div class="pill strikes-pill"><span class="lbl">Meltdowns</span><span class="strikes" id="hStrikes"><i></i><i></i><i></i></span></div>
+    </div>
+    <div id="queue" aria-label="Orders waiting"></div>
+    <div class="hud-group">
+      <div class="pill combo-pill" id="hCombo" hidden></div>
+      <div class="pill star-pill" title="Rosenberg Stars"><span class="star">★</span><b id="hStars">0</b></div>
+      <button class="icon-btn" id="muteBtn" type="button" aria-label="Sound on">♪</button>
+      <button class="icon-btn" id="pauseBtn" type="button" aria-label="Pause">❚❚</button>
+    </div>
+  </header>
+
+  <div id="maxAlert" hidden>
+    <div class="max-top">
+      <div class="siren"></div>
+      <div class="max-copy"><strong>MAX IS LOOSE!</strong><span id="maxText">Max is up to something…</span></div>
+      <button class="btn gold feed-btn" id="feedBtn" type="button">FEED MAX</button>
+    </div>
+    <div class="max-bar"><i id="maxBar"></i></div>
+  </div>
+
+  <div id="bottom" hidden>
+    <div id="carry">
+      <div class="carry-icon"><img id="carryImg" alt=""></div>
+      <div class="carry-info">
+        <span class="lbl">Ariel is carrying</span>
+        <b id="carryName">Nothing yet</b>
+        <div class="steps" id="carrySteps"></div>
+      </div>
+      <button class="toss" id="tossBtn" type="button" aria-label="Toss it">Toss</button>
+    </div>
+    <div id="hint"></div>
+  </div>
+
+  <div id="picker" hidden>
+    <div class="picker-title" id="pickerTitle">Fridge</div>
+    <div class="picker-items" id="pickerItems"></div>
+  </div>
+
+  <!-- Title -->
+  <section id="menu" class="screen">
+    <div class="title-plaque">
+      <div class="kicker">A Rosenberg World Game</div>
+      <h1><span class="t-ariel">Ariel</span><span class="t-pass">Passover</span><span class="t-cook">Cookout</span></h1>
+      <p class="tagline">Cook it. Plate it. Serve it. Feed Max.</p>
+    </div>
+    <div class="menu-buttons">
+      <button class="btn gold big" id="playBtn" type="button">PLAY</button>
+      <button class="btn cream" id="continueBtn" type="button" hidden>CONTINUE</button>
+      <button class="btn cream" id="howBtn" type="button">HOW TO PLAY</button>
+      <button class="btn plum" id="backBtn" type="button">BACK TO ROSENBERG WORLD</button>
+    </div>
+    <div class="menu-meta" id="menuMeta"></div>
+  </section>
+
+  <!-- How to play -->
+  <section id="howto" class="screen" hidden>
+    <div class="card how-card">
+      <h2>How to Play</h2>
+      <div class="how-steps">
+        <div class="how-step"><div class="num">1</div><b>Tap to cook</b><p>Tap the Fridge or Pantry to grab ingredients. Ariel walks there by herself. Glowing stations show where to go next.</p></div>
+        <div class="how-step"><div class="num">2</div><b>Plate &amp; serve</b><p>Take finished food to the Plating island, then tap the family member who ordered it. The Serving Pass holds extra plates.</p></div>
+        <div class="how-step"><div class="num">3</div><b>Feed Max!</b><p>When Max gets loose, tap him. Pick the snack he wants, then chase him down before he wrecks the kitchen.</p></div>
+      </div>
+      <div class="recipes" id="recipes"></div>
+      <p class="how-note">Ariel carries one thing at a time. Don't let food burn, and don't let the family melt down: three meltdowns and the round is over.</p>
+      <button class="btn gold" id="howClose" type="button">GOT IT</button>
+    </div>
+  </section>
+
+  <!-- Round intro -->
+  <section id="intro" class="screen dim" hidden>
+    <div class="card intro-card">
+      <div class="kicker" id="introKicker">Round 1</div>
+      <h2 id="introTitle">First Night</h2>
+      <p id="introText"></p>
+      <div class="intro-menu" id="introMenu"></div>
+      <div class="goal" id="introGoal"></div>
+      <button class="btn gold big" id="introGo" type="button">LET'S COOK!</button>
+    </div>
+  </section>
+
+  <!-- Pause -->
+  <section id="pause" class="screen dim" hidden>
+    <div class="card small-card">
+      <h2>Paused</h2>
+      <p class="muted">The soup will wait. Probably.</p>
+      <div class="stack">
+        <button class="btn gold" id="resumeBtn" type="button">RESUME</button>
+        <button class="btn cream" id="restartBtn" type="button">RESTART ROUND</button>
+        <button class="btn cream" id="pauseHowBtn" type="button">HOW TO PLAY</button>
+        <button class="btn plum" id="quitBtn" type="button">MAIN MENU</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Round won -->
+  <section id="win" class="screen side" hidden>
+    <div class="card end-card">
+      <div class="kicker" id="winKicker">Round 1 complete</div>
+      <h2 class="saved">PASSOVER SAVED!</h2>
+      <div class="big-stars" id="winStars"><span>★</span><span>★</span><span>★</span></div>
+      <ul class="stats" id="winStats"></ul>
+      <div class="awards" id="winAwards"></div>
+      <div class="total-line"><span>Round score</span><b id="winScore">0</b></div>
+      <p class="muted" id="winStarLine"></p>
+      <div class="row-btns">
+        <button class="btn gold" id="nextBtn" type="button">NEXT ROUND</button>
+        <button class="btn cream" id="winMenuBtn" type="button">MENU</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Round lost -->
+  <section id="lose" class="screen side" hidden>
+    <div class="card end-card">
+      <div class="kicker" id="loseKicker">Round 1</div>
+      <h2 class="meltdown">KITCHEN MELTDOWN!</h2>
+      <p class="reason" id="loseReason"></p>
+      <div class="max-moment"><img id="loseMaxImg" alt=""><p id="loseMax"></p></div>
+      <div class="total-line"><span>Score</span><b id="loseScore">0</b></div>
+      <div class="row-btns">
+        <button class="btn gold" id="retryBtn" type="button">TRY AGAIN</button>
+        <button class="btn cream" id="loseMenuBtn" type="button">MENU</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast" hidden></div>
+</div>
+
+<div id="rotate" hidden><div>↻</div><p>Turn your device sideways for the whole kitchen</p><button type="button" id="rotateOk">Play anyway</button></div>
+
+<script src="art.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
