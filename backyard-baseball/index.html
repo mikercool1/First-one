@@ -802,7 +802,16 @@ function drawGrill(c, s, t, lid) {
 }
 const EVER_W = 2.3;
 let EVERGREENS = null;
-const evergreens = () => EVERGREENS || (EVERGREENS = Array.from({ length: Math.ceil(2 * FENCE_X / EVER_W) + 1 }, (_, i) => ({ x: -FENCE_X + i * EVER_W, h: 4.3 + ((i * 37) % 7) * 0.12, seed: i })));
+const evergreens = () => {
+  if (EVERGREENS) return EVERGREENS;
+  const hgt = i => 4.3 + ((i * 37) % 7) * 0.12;
+  EVERGREENS = [];
+  // back fence
+  for (let x = -FENCE_X; x <= FENCE_X + 0.01; x += EVER_W) EVERGREENS.push({ x, z: EVER_Z, h: hgt(EVERGREENS.length), seed: EVERGREENS.length });
+  // both side fences, running toward home
+  for (const sx of [-1, 1]) for (let z = EVER_Z - EVER_W; z > -12; z -= EVER_W) EVERGREENS.push({ x: sx * (FENCE_X - 1.3), z, h: hgt(EVERGREENS.length), seed: EVERGREENS.length });
+  return EVERGREENS;
+};
 function drawEvergreen(c, s, h, t, seed) {
   const k = s / 100; c.save(); c.scale(k, k);
   const w = EVER_W * 100, H2 = h * 100, sway = Math.sin(t * 0.7 + seed) * 3;
@@ -825,20 +834,6 @@ function drawChair(c, s) {
   RR(c, -52, -70, 104, 16, 7); fs(c, '#F3F6FB', '#B9C2D3', 3);
   RR(c, -60, -88, 22, 12, 5); fs(c, '#FFFFFF', '#B9C2D3', 3); RR(c, 38, -88, 22, 12, 5); fs(c, '#FFFFFF', '#B9C2D3', 3);
   c.lineWidth = 7; c.lineCap = 'round'; c.strokeStyle = '#E6EBF3'; c.beginPath(); c.moveTo(-44, -60); c.lineTo(-48, 0); c.moveTo(44, -60); c.lineTo(48, 0); c.stroke();
-  c.restore();
-}
-function drawFlowers(c, s, seed, w) {
-  const k = s / 100; c.save(); c.scale(k, k);
-  RR(c, -w / 2, -26, w, 32, 16); c.fillStyle = '#7A5230'; c.fill();
-  const cols = ['#FF7EB9', '#FFD24A', '#FFFFFF', '#B77CFF', '#FF8A5B'];
-  let r = seed * 99;
-  const rr = () => { r = (r * 9301 + 49297) % 233280; return r / 233280; };
-  for (let x = -w / 2 + 14; x < w / 2 - 10; x += 20) {
-    const h = 30 + rr() * 30; c.strokeStyle = '#3E8E3A'; c.lineWidth = 4; c.beginPath(); c.moveTo(x, -20); c.lineTo(x + rr() * 6 - 3, -20 - h); c.stroke();
-    C(c, x - 10, -30 - h * 0.3, 10); c.fillStyle = '#4FAE48'; c.fill();
-    const col = cols[Math.floor(rr() * cols.length)]; for (let p = 0; p < 5; p++) { const a = p / 5 * TAU; C(c, x + Math.cos(a) * 8, -20 - h + Math.sin(a) * 8, 7); c.fillStyle = col; c.fill(); }
-    C(c, x, -20 - h, 5); c.fillStyle = '#FFB020'; c.fill();
-  }
   c.restore();
 }
 function drawSprinkler(c, s, on, t) {
@@ -1573,8 +1568,7 @@ function renderYard() {
   add(12.5, () => billboard(13, 0, 12.5, () => drawChair(g, 100)));
   add(13.2, () => billboard(17.5, 0, 13.2, () => drawChair(g, 100)));
   add(SPRINK.z, () => billboard(SPRINK.x, 0, SPRINK.z, () => drawSprinkler(g, 100, sprinklerOn > 0, rt)));
-  for (const [x, w, sd, z] of [[-22, 700, 1, EVER_Z - 1.3], [-12, 600, 2, EVER_Z - 1.3], [0, 900, 7, EVER_Z - 1.3], [12, 600, 3, EVER_Z - 1.3], [21, 600, 4, EVER_Z - 1.3]]) add(z, () => billboard(x, 0, z, () => drawFlowers(g, 100, sd, w)));
-  for (const e of evergreens()) add(EVER_Z, () => { const p = P3(e.x, 0, EVER_Z); if (!p) return; g.save(); g.translate(p.x, p.y); drawEvergreen(g, p.s, e.h, rt, e.seed); g.restore(); });
+  for (const e of evergreens()) add(e.z, () => { const p = P3(e.x, 0, e.z); if (!p) return; g.save(); g.translate(p.x, p.y); drawEvergreen(g, p.s, e.h, rt, e.seed); g.restore(); });
   add(FENCE_Z, () => drawFence(FENCE_Z, -FENCE_X, FENCE_X, false));
   // pitcher, fielder & Frank
   add(frank.z, () => billboard(frank.x, 0, frank.z, () => drawNeighbor(g, 'frank', { pose: frank.pose, ph: 0 }, rt), 0.6));
