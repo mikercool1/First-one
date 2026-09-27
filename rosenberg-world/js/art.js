@@ -182,48 +182,60 @@
       outfit: "dress", shirt: "#F28AA8",
       legs: [[0, 0.72, "#FFE1CF"], [0.72, 1, "#FFFFFF"]], shoe: "#FF9EBB", shoeAccent: "#D9678A",
     },
+    // Family designs match Ariel's Passover Cookout.
     max: {
-      id: "max", name: "Max", L: 15, T: 18, R: 18, bw: 22, legW: 7.5, armW: 6.5, stride: 15,
-      skin: "#F6D0B4", hair: "#3B2A20", hairStyle: "curly",
-      outfit: "shirt", shirt: "#F0533F", pattern: "hstripe", patternCol: "#FFFFFF",
-      legs: [[0, 0.4, "#3D5A9E"], [0.4, 0.8, "#F6D0B4"], [0.8, 1, "#FFFFFF"]], shoe: "#2E6DE8", shoeAccent: "#FFFFFF", prop: "spoon",
+      id: "max", name: "Max", L: 15, T: 18, R: 18, bw: 24, belly: 1.15, legW: 8.5, armW: 7, stride: 15,
+      skin: "#F8D4BA", hair: "#A8713D", hairStyle: "curly", curl: true,
+      outfit: "shirt", shirt: "#F9C74F", pattern: "hstripe", patternCol: "#F07C4A",
+      legs: [[0, 0.4, "#5A86C8"], [0.4, 0.82, "#F8D4BA"], [0.82, 1, "#FFFFFF"]], shoe: "#FFFFFF", shoeAccent: "#8FB9E6", prop: "spoon",
     },
     ariel: {
-      id: "ariel", name: "Ariel", L: 36, T: 38, R: 17, bw: 32, legW: 10, armW: 8.5, stride: 7,
-      skin: "#EFC7A6", hair: "#4A3022", hairStyle: "chef",
-      outfit: "apron", shirt: "#3F7FD9", apron: "#FFFFFF",
-      legs: [[0, 1, "#39405A"]], shoe: "#2A2A33", shoeAccent: "#2A2A33",
+      id: "ariel", name: "Ariel", L: 36, T: 38, R: 17, bw: 30, legW: 9.5, armW: 8, stride: 7,
+      skin: "#F1C8A6", hair: "#512D1B", hairStyle: "long", hairLen: 2.5, lashes: true, lip: "#B8475A",
+      outfit: "dress", dressLen: 0.55, shirt: "#1E1A24", belt: "#E3C274",
+      legs: [[0, 1, "#F1C8A6"]], shoe: "#1A1620", shoeAccent: "#E6C77F",
     },
     nana: {
-      id: "nana", name: "Nana", L: 32, T: 36, R: 17, bw: 34, legW: 10, armW: 8.5, stride: 6,
-      skin: "#F3D2BE", hair: "#D9D9E3", hairStyle: "bun", glasses: true,
-      outfit: "shirt", shirt: "#D96C8B", pattern: "cardigan", patternCol: "#F4E9EE",
-      legs: [[0, 1, "#6C6A86"]], shoe: "#5A4034", shoeAccent: "#5A4034", prop: "knit",
+      id: "nana", name: "Nana", L: 34, T: 36, R: 17, bw: 29, legW: 9.5, armW: 8, stride: 7,
+      skin: "#F2D3C0", hair: "#74462A", hairStyle: "long", hairLen: 2.2, lashes: true, lip: "#B5646B",
+      outfit: "shirt", shirt: "#F4EADB",
+      legs: [[0, 1, "#3A4660"]], shoe: "#8A5A3A", shoeAccent: "#8A5A3A", prop: "knit",
     },
     ikey: {
-      id: "ikey", name: "Ikey", L: 30, T: 34, R: 17, bw: 30, legW: 9.5, armW: 8, stride: 8,
-      skin: "#F2CFB3", hair: "#2F2520", hairStyle: "short",
-      outfit: "shirt", shirt: "#3FA66A", legs: [[0, 1, "#3B4668"]], shoe: "#EEEEEE", shoeAccent: "#EEEEEE",
+      id: "ikey", name: "Ikey", L: 34, T: 36, R: 17, bw: 32, legW: 10, armW: 8.5, stride: 8,
+      skin: "#E2AF89", hair: "#2E2018", hairStyle: "short", stubble: true,
+      outfit: "jersey", shirt: "#2F5BB5", num: "12", numCol: "#FFFFFF", trim: "#FFFFFF",
+      legs: [[0, 1, "#34435E"]], shoe: "#F2F2F2", shoeAccent: "#F2F2F2",
     },
     simon: {
-      id: "simon", name: "Simon", L: 36, T: 38, R: 17, bw: 32, legW: 10, armW: 8.5, stride: 7.5,
-      skin: "#F1CCAE", hair: "#8A5A36", hairStyle: "short", headphones: true,
-      outfit: "shirt", shirt: "#F2A33A", legs: [[0, 1, "#4B5570"]], shoe: "#3A3A44", shoeAccent: "#3A3A44", prop: "radio",
+      id: "simon", name: "Simon", L: 35, T: 39, R: 17.5, bw: 36, belly: 1.25, legW: 10.5, armW: 9, stride: 7,
+      skin: "#ECC4A4", hair: "#3E2E22", hairStyle: "side", glasses: true, neckphones: true,
+      outfit: "shirt", shirt: "#8C7A5E", collar: "#9FB6D6",
+      legs: [[0, 1, "#5E5A52"]], shoe: "#3E2C22", shoeAccent: "#3E2C22", prop: "radio",
     },
     cari: {
-      id: "cari", name: "Cari", L: 35, T: 36, R: 17, bw: 30, legW: 9.5, armW: 8, stride: 7.5,
-      skin: "#F4D2BA", hair: "#7A4B2E", hairStyle: "long",
-      outfit: "shirt", shirt: "#43B5B0", legs: [[0, 1, "#2F3550"]], shoe: "#FFFFFF", shoeAccent: "#FFFFFF",
+      id: "cari", name: "Cari", L: 34, T: 36, R: 17, bw: 30, legW: 9.5, armW: 8, stride: 7.5,
+      skin: "#F0C6A6", hair: "#6E4428", hairStyle: "curly", lashes: true, lip: "#C8456A",
+      outfit: "shirt", shirt: "#E0678D", necklace: "#F1DA9E",
+      legs: [[0, 1, "#2F3550"]], shoe: "#F2F2F2", shoeAccent: "#E0678D",
     },
     michael: {
-      id: "michael", name: "Michael", L: 37, T: 39, R: 17, bw: 33, legW: 10.5, armW: 9, stride: 7,
-      skin: "#F1CDB1", hair: "#3A2C24", hairStyle: "short",
-      outfit: "shirt", shirt: "#5566D8", legs: [[0, 1, "#2B3042"]], shoe: "#2B2B30", shoeAccent: "#FFFFFF", prop: "phone",
+      id: "michael", name: "Michael", L: 36, T: 39, R: 17.5, bw: 35, belly: 1.15, legW: 10.5, armW: 9, stride: 7,
+      skin: "#EBBE9B", hair: "#5E3F28", hairStyle: "short", swoop: true,
+      outfit: "shirt", shirt: "#34343C", collar: "#2A2A31",
+      legs: [[0, 0.5, "#1F2A4A"], [0.5, 0.86, "#EBBE9B"], [0.86, 1, "#F4F4F4"]], shoe: "#F4F4F4", shoeAccent: "#C9CDD8", prop: "phone",
     },
     sarah: {
-      id: "sarah", name: "Sarah", L: 35, T: 36, R: 17, bw: 30, legW: 9.5, armW: 8, stride: 7.5,
-      skin: "#F6D6C0", hair: "#C9974F", hairStyle: "long",
-      outfit: "shirt", shirt: "#E86A74", legs: [[0, 1, "#384065"]], shoe: "#F5F5F5", shoeAccent: "#E86A74",
+      id: "sarah", name: "Sarah", L: 36, T: 36, R: 17, bw: 29, legW: 11, armW: 8, stride: 7.5,
+      skin: "#F4CFB2", hair: "#1B1618", hairStyle: "long", hairLen: 2.9, lashes: true, lip: "#B5646B",
+      outfit: "shirt", shirt: "#F3ECE0", belt: "#8A5A2E",
+      legs: [[0, 1, "#CDA67D"]], shoe: "#D9B29A", shoeAccent: "#D9B29A",
+    },
+    molly: {
+      id: "molly", name: "Molly", L: 35, T: 37, R: 17.5, bw: 32, legW: 10.5, armW: 8.5, stride: 7,
+      skin: "#F3CBAA", hair: "#A87A42", hairStyle: "long", hairLen: 1.45, lashes: true, lip: "#B8475A",
+      outfit: "dress", dressLen: 0.5, shirt: "#2C4570", pattern: "floral", belt: "#243A60",
+      legs: [[0, 1, "#F3CBAA"]], shoe: "#6B3F2A", shoeAccent: "#6B3F2A",
     },
   };
 
@@ -340,6 +352,12 @@
     c.rotate(lean);
     c.translate(0, -hipY);
 
+    // long hair hangs behind the body, so it goes down first
+    if (s.hairStyle === "long" && !back) {
+      c.save(); c.translate(0, hipY - T - R * 0.72); c.rotate(P.headTilt || 0);
+      hairBack(c, s, R, 0, back, t);
+      c.restore();
+    }
     // back arm, legs, body, front arm, head
     if (!back) drawArm(1);
     else drawArm(0);
@@ -369,24 +387,41 @@
     c.save();
     c.beginPath();
     if (s.outfit === "dress") {
-      const hw = bw * 0.36, flare = bw * 0.62;
+      const adult = !!s.dressLen;
+      const hw = bw * (adult ? 0.42 : 0.36), flare = bw * (adult ? 0.72 : 0.62);
+      const hem = bot + 4 + (s.dressLen || 0) * s.L;
       c.moveTo(-hw, top + 3);
       c.quadraticCurveTo(0, top - 3, hw, top + 3);
-      c.quadraticCurveTo(hw + 3, top + T * 0.4, flare, bot + 4);
-      c.quadraticCurveTo(0, bot + 10, -flare, bot + 4);
-      c.quadraticCurveTo(-hw - 3, top + T * 0.4, -hw, top + 3);
+      c.quadraticCurveTo(hw + 3, top + T * (adult ? 0.7 : 0.4), flare, hem);
+      c.quadraticCurveTo(0, hem + 6, -flare, hem);
+      c.quadraticCurveTo(-hw - 3, top + T * (adult ? 0.7 : 0.4), -hw, top + 3);
       c.closePath();
-      c.fillStyle = lin(c, -flare, top, flare, bot, [shade(s.shirt, 0.25), s.shirt, shade(s.shirt, -0.22)]);
+      c.fillStyle = lin(c, -flare, top, flare, hem, [shade(s.shirt, 0.25), s.shirt, shade(s.shirt, -0.22)]);
       c.fill();
       c.clip();
-      // soft ruffle hem + tiny white dots
-      c.fillStyle = "rgba(255,255,255,.28)";
-      for (let i = -3; i <= 3; i++) { c.beginPath(); c.arc(i * flare * 0.3, bot + 4, 3.2, 0, TAU); c.fill(); }
-      c.strokeStyle = "rgba(150,50,80,.22)"; c.lineWidth = 1.4;
-      c.beginPath(); c.moveTo(-3, top + T * 0.4); c.quadraticCurveTo(-5, top + T * 0.8, -4, bot + 4); c.moveTo(5, top + T * 0.45); c.quadraticCurveTo(7, top + T * 0.85, 6, bot + 4); c.stroke();
+      if (!adult) {
+        // soft ruffle hem
+        c.fillStyle = "rgba(255,255,255,.28)";
+        for (let i = -3; i <= 3; i++) { c.beginPath(); c.arc(i * flare * 0.3, bot + 4, 3.2, 0, TAU); c.fill(); }
+      }
+      if (s.pattern === "floral") {
+        [[-9, 0.5], [6, 0.7], [-4, 1.0], [10, 1.15], [-11, 1.35], [3, 1.45]].forEach(([fx, fy]) => {
+          const y = top + T * fy;
+          c.fillStyle = "rgba(255,255,255,.85)";
+          for (let k = 0; k < 5; k++) { const a = (k / 5) * TAU; c.beginPath(); c.arc(fx + Math.cos(a) * 1.8, y + Math.sin(a) * 1.8, 1.2, 0, TAU); c.fill(); }
+          c.fillStyle = "#F2C94C"; c.beginPath(); c.arc(fx, y, 0.9, 0, TAU); c.fill();
+        });
+      }
+      c.strokeStyle = adult ? "rgba(255,255,255,.12)" : "rgba(150,50,80,.22)"; c.lineWidth = 1.4;
+      c.beginPath(); c.moveTo(-3, top + T * 0.4); c.quadraticCurveTo(-5, top + T * 0.8, -4, hem); c.moveTo(5, top + T * 0.45); c.quadraticCurveTo(7, top + T * 0.85, 6, hem); c.stroke();
       c.restore();
-      // collar
-      c.beginPath(); c.moveTo(-bw * 0.22, top + 1); c.quadraticCurveTo(0, top + 6, bw * 0.22, top + 1); c.strokeStyle = "#C9607F"; c.lineWidth = 1.6; c.stroke();
+      if (s.belt) { c.fillStyle = s.belt; rr(c, -hw - 1, hipY - 5, hw * 2 + 2, 4, 2); c.fill(); }
+      if (adult) {
+        // V neckline
+        c.fillStyle = s.skin; c.beginPath(); c.moveTo(-5, top + 1); c.lineTo(0, top + 9); c.lineTo(5, top + 1); c.closePath(); c.fill();
+      } else {
+        c.beginPath(); c.moveTo(-bw * 0.22, top + 1); c.quadraticCurveTo(0, top + 6, bw * 0.22, top + 1); c.strokeStyle = "#C9607F"; c.lineWidth = 1.6; c.stroke();
+      }
       return;
     }
     const r = Math.min(10, T * 0.35);
@@ -427,6 +462,17 @@
     c.fillRect(-wB, top, wB * 2, bot - top);
     c.restore();
     c.restore();
+    if (s.collar) {
+      c.fillStyle = s.collar;
+      c.beginPath(); c.moveTo(-8, top); c.lineTo(0, top + 10); c.lineTo(-1, top); c.closePath(); c.fill();
+      c.beginPath(); c.moveTo(8, top); c.lineTo(0, top + 10); c.lineTo(1, top); c.closePath(); c.fill();
+    }
+    if (s.belt) { c.fillStyle = s.belt; rr(c, -wB / 2 + 1, bot - 6, wB - 2, 4, 2); c.fill(); }
+    if (s.necklace) { c.strokeStyle = s.necklace; c.lineWidth = 1.3; c.beginPath(); c.moveTo(-6, top); c.quadraticCurveTo(0, top + 8, 6, top); c.stroke(); }
+    if (s.neckphones && !back) {
+      c.strokeStyle = "#2B2B33"; c.lineWidth = 3; c.beginPath(); c.arc(0, top - 1, 11, Math.PI * 0.1, Math.PI * 0.9); c.stroke();
+      c.fillStyle = "#B8323A"; rr(c, -15, top - 2, 6, 9, 3); c.fill(); rr(c, 9, top - 2, 6, 9, 3); c.fill();
+    }
     // trim + number
     if (s.trim) {
       c.strokeStyle = s.trim; c.lineWidth = 2.2;
@@ -444,8 +490,8 @@
     // neck
     c.fillStyle = shade(s.skin, -0.12);
     rr(c, -R * 0.24, R * 0.5, R * 0.48, R * 0.5, 4); c.fill();
-    // hair behind head
-    hairBack(c, s, R, fs, back, t);
+    // hair behind head (long hair was already drawn behind the body)
+    if (!(s.hairStyle === "long" && !back)) hairBack(c, s, R, fs, back, t);
     // head
     c.beginPath(); c.arc(0, 0, R, 0, TAU);
     c.fillStyle = rad(c, -R * 0.35, -R * 0.4, R * 0.1, 0, 0, R * 1.05, [shade(s.skin, 0.18), s.skin, shade(s.skin, -0.14)]);
@@ -472,6 +518,14 @@
           c.beginPath(); c.arc(x + R * 0.045, ey + R * 0.06, R * 0.025, 0, TAU); c.fill();
         }
       });
+      if (s.lashes && blink > 0.5) {
+        c.strokeStyle = "#2A1D18"; c.lineWidth = R * 0.05; c.lineCap = "round";
+        [[fx - ex2, -1], [fx + ex2, 1]].forEach(([x, k]) => { c.beginPath(); c.moveTo(x + k * R * 0.1, ey - R * 0.12); c.lineTo(x + k * R * 0.2, ey - R * 0.2); c.stroke(); });
+      }
+      if (s.stubble) {
+        c.fillStyle = "rgba(60,40,30,.16)";
+        c.beginPath(); c.ellipse(fx * 0.6, R * 0.55, R * 0.62, R * 0.36, 0, 0, Math.PI); c.fill();
+      }
       if (s.glasses) {
         c.strokeStyle = "#6B4E3D"; c.lineWidth = 1.6;
         [fx - ex2, fx + ex2].forEach((x) => { c.beginPath(); c.arc(x, ey, R * 0.24, 0, TAU); c.stroke(); });
@@ -493,7 +547,7 @@
       } else if (mouth === "o") {
         c.fillStyle = "#8C2F39"; ell(c, mx, my + R * 0.04, R * 0.08, R * 0.1); c.fill();
       } else {
-        c.strokeStyle = "#8C2F39"; c.lineWidth = R * 0.075; c.lineCap = "round";
+        c.strokeStyle = s.lip || "#8C2F39"; c.lineWidth = R * (s.lip ? 0.09 : 0.075); c.lineCap = "round";
         c.beginPath(); c.arc(mx, my - R * 0.1, R * 0.18, 0.5, Math.PI - 0.5); c.stroke();
       }
     }
@@ -522,8 +576,13 @@
         c.restore();
       });
     } else if (hs === "long") {
-      c.fillStyle = lin(c, 0, -R, 0, R * 1.4, [shade(h, 0.1), h, shade(h, -0.2)]);
-      rr(c, -R * 1.02, -R * 0.3, R * 2.04, R * 1.7, R * 0.6); c.fill();
+      const len = s.hairLen || 1.4;
+      c.fillStyle = lin(c, 0, -R, 0, R * len, [shade(h, 0.12), h, shade(h, -0.22)]);
+      c.beginPath(); c.moveTo(-R * 1.02, -R * 0.15);
+      c.bezierCurveTo(-R * 1.2, R * 0.8, -R * 1.08, R * (len - 0.6), -R * 0.82, R * len);
+      c.quadraticCurveTo(0, R * (len + 0.12), R * 0.82, R * len);
+      c.bezierCurveTo(R * 1.08, R * (len - 0.6), R * 1.2, R * 0.8, R * 1.02, -R * 0.15);
+      c.closePath(); c.fill();
     } else if (hs === "cap" && !back) {
       c.fillStyle = h;
       ell(c, -R * 0.82, R * 0.05, R * 0.24, R * 0.3); c.fill();
@@ -608,6 +667,26 @@
       }
       if (!back) { c.beginPath(); c.arc(0, -R * 0.55, R * 0.6, 0, TAU); c.fill(); }
       else { c.beginPath(); c.arc(0, -R * 0.1, R * 0.85, 0, TAU); c.fill(); }
+      if (s.curl) {
+        c.save(); c.translate(R * 0.05, -R * 1.25); c.rotate(Math.sin(t * 5) * 0.3);
+        c.strokeStyle = shade(h, -0.1); c.lineWidth = R * 0.1; c.lineCap = "round";
+        c.beginPath(); c.arc(0, -R * 0.1, R * 0.16, Math.PI * 0.2, Math.PI * 1.7); c.stroke(); c.restore();
+      }
+    } else if (hs === "side") {
+      c.fillStyle = hg(-R * 1.4, R * 0.2);
+      c.beginPath();
+      if (back) { c.arc(0, 0, R * 1.06, Math.PI * 0.85, Math.PI * 2.15); c.quadraticCurveTo(0, R * 0.55, -R * 0.9, R * 0.4); c.closePath(); c.fill(); }
+      else {
+        c.moveTo(-R * 1.06, R * 0.2);
+        c.bezierCurveTo(-R * 1.2, -R * 0.95, -R * 0.5, -R * 1.42, R * 0.2, -R * 1.3);
+        c.bezierCurveTo(R * 0.95, -R * 1.2, R * 1.2, -R * 0.5, R * 1.06, R * 0.22);
+        c.bezierCurveTo(R * 0.98, -R * 0.25, R * 0.7, -R * 0.56, R * 0.35, -R * 0.64);
+        c.lineTo(-R * 0.25, -R * 0.62);
+        c.bezierCurveTo(-R * 0.7, -R * 0.52, -R * 0.96, -R * 0.2, -R * 1.06, R * 0.2);
+        c.fill();
+        c.strokeStyle = shade(h, -0.35); c.lineWidth = R * 0.05;
+        c.beginPath(); c.moveTo(-R * 0.36, -R * 1.24); c.quadraticCurveTo(-R * 0.31, -R * 0.92, -R * 0.27, -R * 0.62); c.stroke();
+      }
     } else if (hs === "bun" || hs === "short" || hs === "long") {
       c.fillStyle = hg(-R * 1.1, 0);
       c.beginPath();
@@ -619,6 +698,7 @@
         c.closePath(); c.fill();
       }
       if (hs === "bun") { c.beginPath(); c.arc(0, -R * 1.05, R * 0.38, 0, TAU); c.fill(); }
+      if (s.swoop && !back) { c.fillStyle = shade(h, 0.12); c.beginPath(); c.moveTo(-R * 0.2, -R * 1.02); c.quadraticCurveTo(R * 0.3, -R * 1.42, R * 0.7, -R * 0.95); c.quadraticCurveTo(R * 0.3, -R * 1.1, -R * 0.2, -R * 1.02); c.fill(); }
       if (s.headphones) {
         c.strokeStyle = "#2B2F3A"; c.lineWidth = 3.2;
         c.beginPath(); c.arc(0, -R * 0.05, R * 1.08, Math.PI * 1.05, Math.PI * 1.95); c.stroke();

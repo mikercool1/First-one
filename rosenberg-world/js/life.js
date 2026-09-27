@@ -152,6 +152,7 @@
     cari: ["Hi honey!", "Time to wash up soon!", "Having fun?"],
     nana: ["Hello, sweetheart!", "I'm knitting you a sweater!", "Have you eaten?", "Come give Nana a hug!"],
     max: ["Hehehe!", "Can't catch me!", "I have a spoon!", "Nope!"],
+    molly: ["Hi sweetie!", "Chag sameach!", "Look how big you're getting!"],
   };
   const cameos = [];
   world.cameoActive = (id) => cameos.some((n) => n.charId === id && !n.dead);
@@ -255,6 +256,7 @@
     { id: "sarah", near: [2400, 2200], make: () => makeNPC("sarah", 2300, 2640, [{ to: [2290, 2300] }, { to: [2330, 1990] }, { to: [2440, 1905] }, { to: [2405, 1765] }, { wait: 0.5, say: "I'm home!" }, { vanish: true }]) },
     { id: "simon", near: [3200, 1200], make: () => makeNPC("simon", 2405, 1760, [{ to: [2960, 1900] }, { to: [2985, 1640] }, { to: [2940, 1340] }, { to: [3000, 1100] }, { to: [3300, 1000] }, { to: [3620, 900] }, { wait: 14, pose: "carry", say: "Mission control online!" }, { to: [3300, 1000] }, { vanish: true }], { walkPose: "carry", speed: 85 }) },
     { id: "michael", near: [2450, 1850], make: () => makeNPC("michael", 2620, 1840, [{ wait: 1, pose: "phone" }, { to: [2560, 1860], speed: 30 }, { wait: 4, pose: "phone" }, { to: [2340, 1845], speed: 30 }, { wait: 1.4, say: "Oops! Almost hit the mailbox." }, { wait: 4, pose: "phone" }, { to: [2405, 1765] }, { vanish: true }], { walkPose: "phone" }) },
+    { id: "molly", near: [3700, 1800], make: () => makeNPC("molly", 4050, 1870, [{ to: [3780, 1890] }, { to: [3420, 1890] }, { to: [3345, 1905] }, { wait: 3, say: "Hi Nana! Love the scarf!" }, { to: [3000, 1905] }, { to: [2600, 1905] }, { to: [2405, 1765] }, { vanish: true }]) },
     { id: "cari", near: [3300, 1850], make: () => makeNPC("cari", 2405, 1760, [{ to: [2600, 1905] }, { to: [3250, 1905] }, { to: [3330, 1840] }, { wait: 3, say: "Hi Nana!" }, { to: [3250, 1905] }, { to: [2600, 1905] }, { to: [2405, 1765] }, { vanish: true }]) },
   ];
 
