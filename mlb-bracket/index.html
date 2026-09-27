@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>October Bracket</title>
+<meta name="description" content="Pick the 2026 MLB postseason. Seeds and results update live from MLB.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <p class="eyebrow"><span id="season">2026</span> MLB Postseason</p>
+      <h1>October Bracket</h1>
+    </div>
+    <div class="feed">
+      <span id="feedDot" class="dot" aria-hidden="true"></span>
+      <span id="feedText">Loading the real bracket…</span>
+      <button id="refreshBtn" class="btn ghost sm" type="button">Refresh</button>
+    </div>
+  </header>
+
+  <section class="bar" aria-label="Your brackets">
+    <div class="bar-group">
+      <label class="field">
+        <span>Bracket</span>
+        <select id="bracketSelect"></select>
+      </label>
+      <label class="field grow">
+        <span>Name</span>
+        <input id="bracketName" type="text" maxlength="40" autocomplete="off">
+      </label>
+      <button id="newBtn" class="btn ghost" type="button">New</button>
+      <button id="deleteBtn" class="btn ghost" type="button">Delete</button>
+    </div>
+    <div class="bar-group">
+      <div class="score" id="score" aria-live="polite"></div>
+      <button id="chalkBtn" class="btn ghost" type="button" title="Fill empty picks with the higher seed">Fill by seed</button>
+      <button id="clearBtn" class="btn ghost" type="button">Clear</button>
+      <button id="copyBtn" class="btn ghost" type="button">Copy picks</button>
+      <button id="shareBtn" class="btn primary" type="button">Share link</button>
+    </div>
+    <p class="saved" id="savedNote">Picks save automatically on this device.</p>
+  </section>
+
+  <section class="champ" id="champ" aria-live="polite"></section>
+
+  <main class="bracket" id="bracket"></main>
+
+  <section class="picture" aria-labelledby="pictureTitle">
+    <div class="picture-head">
+      <h2 id="pictureTitle">Playoff picture</h2>
+      <p class="muted" id="pictureNote"></p>
+    </div>
+    <div class="picture-grid" id="picture"></div>
+  </section>
+
+  <footer class="foot-note">
+    <p>Seeds, series scores and results come from MLB's public stats feed and refresh on their own. Picks lock at a series' first pitch: you can still fill in a started series to keep your bracket going, but those late picks don't score.
+    Scoring: Wild Card 1 · Division Series 2 · LCS 4 · World Series 8.</p>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
