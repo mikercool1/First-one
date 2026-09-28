@@ -221,8 +221,8 @@
     const tree = (i, x, s = 1) => add(i, { type: R() < 0.2 ? "pine2" : "pine", x, w: 420 * s, h: 720 * s, cw: 170 * s, ch: 500 * s, hit: "crash" });
     const rock = (i, x, s = 1) => add(i, { type: "rock", x, w: 300 * s, h: 190 * s, cw: 250 * s, ch: 150 * s, hit: "crash" });
     const gate = (i, x, gap = 720) => { add(i, { type: "gate", x, gap, w: gap, h: 420, hit: "gate", col: TOTAL_GATES % 2 ? "#2F6BD6" : "#E8453C" }); TOTAL_GATES++; };
-    const ramp = (i, x, size) => add(i, { type: "ramp" + size, x, size, w: [0, 560, 660, 780][size], h: [0, 90, 170, 290][size], cw: [0, 560, 660, 780][size], hit: "ramp" });
-    const bump = (i, x) => add(i, { type: "bump", x, w: 520, h: 70, cw: 480, hit: "bump" });
+    const ramp = (i, x, size) => add(i, { type: "ramp" + size, x, size, w: [0, 720, 860, 1000][size], h: [0, 220, 320, 465][size], cw: [0, 720, 860, 1000][size], hit: "ramp" });
+    const bump = (i, x) => add(i, { type: "bump", x, w: 720, h: 150, cw: 640, hit: "bump" });
     const bank = (i, x) => add(i, { type: "bank", x, w: 820, h: 280, cw: 700, ch: 200, hit: "crash" });
     const fence = (i, x) => add(i, { type: "fence", x, w: 560, h: 170, cw: 540, ch: 120, hit: "crash" });
     SECTIONS.forEach((sec, si) => {
@@ -317,10 +317,17 @@
       g.fillStyle = "#8C95A8"; g.beginPath(); g.moveTo(-w * 0.36, -h * 0.62); g.lineTo(-w * 0.06, -h * 0.95); g.lineTo(w * 0.1, -h * 0.5); g.lineTo(-w * 0.2, -h * 0.3); g.closePath(); g.fill();
       g.fillStyle = "#FFFFFF"; g.beginPath(); g.moveTo(-w * 0.3, -h * 0.66); g.quadraticCurveTo(-w * 0.06, -h * 1.02, w * 0.28, -h * 0.8); g.quadraticCurveTo(0, -h * 0.72, -w * 0.3, -h * 0.66); g.fill();
     });
-    sprite("bump", 260, 40, (g, w, h) => {
-      g.fillStyle = "rgba(90,130,190,.28)"; g.beginPath(); g.ellipse(0, -2, w * 0.5, 9, 0, 0, TAU); g.fill();
-      g.fillStyle = "#FFFFFF"; g.beginPath(); g.moveTo(-w * 0.5, 0); g.quadraticCurveTo(0, -h * 1.9, w * 0.5, 0); g.closePath(); g.fill();
-      g.fillStyle = "rgba(150,185,225,.45)"; g.beginPath(); g.moveTo(-w * 0.2, -2); g.quadraticCurveTo(w * 0.1, -h * 1.1, w * 0.5, 0); g.closePath(); g.fill();
+    sprite("bump", 260, 56, (g, w, h) => {
+      // a snow mound outlined in blue, with a painted stripe and marker cones so it shows up on white snow
+      g.fillStyle = "rgba(60,90,150,.3)"; g.beginPath(); g.ellipse(0, -3, w * 0.5, 9, 0, 0, TAU); g.fill();
+      g.beginPath(); g.moveTo(-w * 0.44, -2); g.quadraticCurveTo(0, -h * 1.5, w * 0.44, -2); g.closePath();
+      const gr = g.createLinearGradient(0, -h, 0, 0); gr.addColorStop(0, "#FFFFFF"); gr.addColorStop(1, "#B9D6F2"); g.fillStyle = gr; g.fill();
+      g.lineWidth = 3; g.strokeStyle = "#3A6FD8"; g.stroke();
+      g.save(); g.clip();
+      g.fillStyle = "#9B5CF0"; g.beginPath(); g.moveTo(-w * 0.44, -h * 0.34); g.quadraticCurveTo(0, -h * 1.06, w * 0.44, -h * 0.34); g.lineTo(w * 0.44, -h * 0.18); g.quadraticCurveTo(0, -h * 0.88, -w * 0.44, -h * 0.18); g.closePath(); g.fill();
+      g.fillStyle = "#FFD23F"; for (let k = -2; k <= 2; k++) { g.beginPath(); g.arc(k * w * 0.13, -h * 0.58 + Math.abs(k) * h * 0.1 - (k === 0 ? h * 0.04 : 0), 4, 0, TAU); g.fill(); }
+      g.restore();
+      for (const sd of [-1, 1]) { const x = sd * w * 0.47; g.fillStyle = "#FF7A1F"; g.beginPath(); g.moveTo(x - 9, 0); g.lineTo(x, -h * 0.6); g.lineTo(x + 9, 0); g.closePath(); g.fill(); g.fillStyle = "#FFFFFF"; g.fillRect(x - 5, -h * 0.34, 10, 5); }
     });
     sprite("bank", 410, 140, (g, w, h) => {
       g.fillStyle = "rgba(90,130,190,.28)"; g.beginPath(); g.ellipse(0, -3, w * 0.5, 14, 0, 0, TAU); g.fill();
@@ -328,19 +335,26 @@
       g.fillStyle = "rgba(150,185,225,.5)"; g.beginPath(); g.moveTo(0, 0); g.bezierCurveTo(w * 0.1, -h * 0.5, w * 0.35, -h * 0.7, w * 0.5, 0); g.closePath(); g.fill();
       g.fillStyle = "rgba(255,255,255,.9)"; g.beginPath(); g.ellipse(-w * 0.18, -h * 0.72, w * 0.12, h * 0.08, -0.2, 0, TAU); g.fill();
     });
-    const rampSpr = (key, w, h, icy) => sprite(key, w, h + 24, (g, ww, hh) => {
-      const top = -h;
-      g.fillStyle = "rgba(60,90,150,.25)"; g.beginPath(); g.ellipse(0, -3, ww * 0.52, 10, 0, 0, TAU); g.fill();
-      // the lip of the ramp faces us: a snow wedge with a wooden (or ice) face and arrows
-      g.fillStyle = icy ? "#9FD8F7" : "#FFFFFF"; g.beginPath(); g.moveTo(-ww * 0.5, 0); g.lineTo(-ww * 0.42, top); g.lineTo(ww * 0.42, top); g.lineTo(ww * 0.5, 0); g.closePath(); g.fill();
-      g.fillStyle = icy ? "#5FAEDC" : "#C98A4A"; g.beginPath(); g.moveTo(-ww * 0.42, top); g.lineTo(ww * 0.42, top); g.lineTo(ww * 0.4, top + h * 0.22); g.lineTo(-ww * 0.4, top + h * 0.22); g.closePath(); g.fill();
-      g.fillStyle = icy ? "#E6F7FF" : "#FFC83D";
-      for (let k = -1; k <= 1; k++) { const x = k * ww * 0.25, y = top + h * 0.55; g.beginPath(); g.moveTo(x - ww * 0.07, y + h * 0.16); g.lineTo(x, y - h * 0.12); g.lineTo(x + ww * 0.07, y + h * 0.16); g.lineTo(x, y + h * 0.06); g.closePath(); g.fill(); }
-      g.fillStyle = "#FF4F8B"; g.fillRect(-ww * 0.46, top - 26, 6, 26); g.fillRect(ww * 0.46 - 6, top - 26, 6, 26);
-      g.fillStyle = "#FFC83D"; g.beginPath(); g.moveTo(-ww * 0.46 + 6, top - 26); g.lineTo(-ww * 0.46 + 30, top - 19); g.lineTo(-ww * 0.46 + 6, top - 12); g.fill(); g.beginPath(); g.moveTo(ww * 0.46, top - 26); g.lineTo(ww * 0.46 + 24, top - 19); g.lineTo(ww * 0.46, top - 12); g.fill();
+    const rampSpr = (key, w, h, body, icy) => sprite(key, w, h + 34, (g, ww, hh) => {
+      const top = -h, ink = "#16204A", dark = icy ? "#3F8FC0" : shade(body, 0.72);
+      g.fillStyle = "rgba(60,90,150,.3)"; g.beginPath(); g.ellipse(0, -3, ww * 0.52, 10, 0, 0, TAU); g.fill();
+      // the kicker faces us: bright side walls, a snowy lip, a striped face and big arrows
+      g.beginPath(); g.moveTo(-ww * 0.5, 0); g.lineTo(-ww * 0.42, top); g.lineTo(ww * 0.42, top); g.lineTo(ww * 0.5, 0); g.closePath();
+      const gr = g.createLinearGradient(0, top, 0, 0); gr.addColorStop(0, icy ? "#CFEFFF" : body); gr.addColorStop(1, dark); g.fillStyle = gr; g.fill();
+      g.lineWidth = 4; g.strokeStyle = ink; g.lineJoin = "round"; g.stroke();
+      g.save(); g.clip();
+      g.fillStyle = "rgba(255,255,255,.28)"; for (let k = -6; k <= 6; k++) { const x = k * ww * 0.12; g.beginPath(); g.moveTo(x, 0); g.lineTo(x + ww * 0.05, 0); g.lineTo(x + ww * 0.05 + h * 0.4, top); g.lineTo(x + h * 0.4, top); g.closePath(); g.fill(); }
+      g.restore();
+      g.fillStyle = icy ? "#E6F7FF" : "#FFFFFF"; g.beginPath(); g.moveTo(-ww * 0.44, top + h * 0.02); g.quadraticCurveTo(0, top - h * 0.12, ww * 0.44, top + h * 0.02); g.lineTo(ww * 0.43, top + h * 0.2); g.quadraticCurveTo(0, top + h * 0.1, -ww * 0.43, top + h * 0.2); g.closePath(); g.fill(); g.lineWidth = 2.5; g.stroke();
+      g.fillStyle = "#FFD23F"; g.strokeStyle = ink; g.lineWidth = 2.5;
+      for (let k = -1; k <= 1; k++) { const x = k * ww * 0.25, y = top + h * 0.6; g.beginPath(); g.moveTo(x - ww * 0.08, y + h * 0.22); g.lineTo(x, y - h * 0.18); g.lineTo(x + ww * 0.08, y + h * 0.22); g.lineTo(x, y + h * 0.08); g.closePath(); g.fill(); g.stroke(); }
+      for (const sd of [-1, 1]) {
+        const x = sd * ww * 0.46; g.fillStyle = ink; g.fillRect(x - 3, top - 34, 6, 34);
+        g.fillStyle = sd < 0 ? "#FF4F8B" : "#FFD23F"; g.beginPath(); g.moveTo(x + 3 * sd, top - 34); g.lineTo(x + 30 * sd, top - 26); g.lineTo(x + 3 * sd, top - 17); g.closePath(); g.fill();
+      }
     });
-    rampSpr("ramp1", 280, 45); rampSpr("ramp2", 330, 85); rampSpr("ramp3", 390, 145);
-    rampSpr("ramp2ice", 330, 85, true);
+    rampSpr("ramp1", 280, 52, "#2EC46A"); rampSpr("ramp2", 330, 90, "#FF8A2A"); rampSpr("ramp3", 390, 148, "#FF4F8B");
+    rampSpr("ramp2ice", 330, 90, "#9FD8F7", true);
     sprite("fence", 280, 85, (g, w, h) => {
       g.strokeStyle = "#8A5A2E"; g.lineWidth = 6; [-w * 0.45, 0, w * 0.45].forEach((x) => { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, -h); g.stroke(); });
       g.fillStyle = "#FF7A1F"; g.fillRect(-w * 0.47, -h * 0.9, w * 0.94, h * 0.62);
@@ -462,6 +476,7 @@
     gate: () => { tone(988, 0.12, "triangle", 0.14); tone(1319, 0.16, "triangle", 0.12, 0.08); },
     trick: (big) => [523, 659, 784, 1047, big ? 1319 : 0].forEach((f, i) => f && tone(f, 0.18, "square", 0.06, i * 0.07)),
     crash: () => { poof(0.5, 0.6, 900); tone(300, 0.4, "sine", 0.15, 0.1, 80); },
+    whoosh: () => tone(420, 0.3, "sawtooth", 0.05, 0, 1400),
     beep: (hi) => tone(hi ? 1046 : 523, hi ? 0.4 : 0.18, "square", 0.08),
     finish: () => { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, i === 5 ? 0.6 : 0.16, "triangle", 0.1, i * 0.12)); for (let k = 0; k < 40; k++) setTimeout(() => poof(0.06, 0.05, 2500), Math.random() * 1600); },
   };
@@ -494,6 +509,7 @@
     if (e.key === "ArrowLeft" || e.key === "a") input.keyL = true;
     if (e.key === "ArrowRight" || e.key === "d") input.keyR = true;
     if (e.key === " " || e.key === "ArrowUp") { e.preventDefault(); audio(); tap(); }
+    if ((e.key === "t" || e.key === "x" || e.key === "Shift") && !e.repeat) { audio(); trick(); }
   });
   addEventListener("keyup", (e) => { if (e.key === "ArrowLeft" || e.key === "a") input.keyL = false; if (e.key === "ArrowRight" || e.key === "d") input.keyR = false; });
   function steerInput() {
@@ -501,6 +517,20 @@
     if (input.id != null) return clamp((input.x - input.x0) / (Math.min(W, 900) * 0.2), -1, 1);
     return 0;
   }
+  // the TRICK button: on the ground it jumps; in the air each press adds a full 360.
+  // A spin is only taken if it can finish before touching down, so the button never makes you crash.
+  const SPIN_RATE = 1000;
+  function airLeft() { const g = 3000; return (P.vy + Math.sqrt(Math.max(0, P.vy * P.vy + 2 * g * P.alt))) / g; }
+  function trick() {
+    if (mode !== "race" || P.crash > 0 || P.finished) return;
+    const b = $("#trickBtn"); b.classList.add("hit"); setTimeout(() => b.classList.remove("hit"), 120);
+    if (!P.air) { P.pre = 0.08; return; }
+    const dir = P.spinDir || (P.steer < -0.2 ? -1 : 1), goal = (P.spinGoal == null ? Math.round(P.rot / 360) * 360 : P.spinGoal) + dir * 360;
+    if (Math.abs(goal - P.rot) / SPIN_RATE < airLeft() - 0.05) { P.spinGoal = goal; P.spinDir = dir; SFX.whoosh && SFX.whoosh(); }
+    else if (!P.grabbed) { P.grab = 0.6; P.grabbed = true; } // no time to spin: grab the board instead
+  }
+  const trickBtn = $("#trickBtn");
+  trickBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); audio(); trick(); });
   function tap() {
     if (mode !== "race" || P.crash > 0 || P.finished) return;
     if (!P.air) { P.pre = 0.08; } // a quick crouch, then the ollie
@@ -512,7 +542,7 @@
   // ---------------------------------------------------------------------------
   const segAt = (z) => segments[clamp(Math.floor(z / SEG), 0, segments.length - 1)];
   function launch(vy, kind) {
-    P.air = true; P.vy = vy; P.airT = 0; P.rot = 0; P.grabbed = false; P.grab = 0; P.kind = kind;
+    P.air = true; P.vy = vy; P.airT = 0; P.rot = 0; P.grabbed = false; P.grab = 0; P.kind = kind; P.spinGoal = null; P.spinDir = 0;
     SFX.jump();
     if (kind !== "ollie") burst(0, 10, "#FFFFFF");
   }
@@ -556,9 +586,12 @@
     // airtime, spins and landing
     if (P.air) {
       P.airT += dt; P.vy -= 3000 * dt; P.alt += P.vy * dt;
-      P.rot += P.steer * 760 * dt; // drag left/right in the air to spin
+      if (P.spinGoal != null) { // a TRICK-button spin plays out by itself
+        const d = P.spinGoal - P.rot; P.rot += Math.sign(d) * Math.min(Math.abs(d), SPIN_RATE * dt);
+        if (Math.abs(P.spinGoal - P.rot) < 0.5) { P.rot = P.spinGoal; P.spinGoal = null; }
+      } else P.rot += P.steer * 760 * dt; // drag left/right in the air to spin
       // let go and the rider straightens out by themselves, so landings stay easy for little kids
-      if (Math.abs(P.steer) < 0.2 && P.rot) { const goal = Math.round(P.rot / 180) * 180, d = goal - P.rot; P.rot += Math.sign(d) * Math.min(Math.abs(d), 540 * dt); }
+      if (P.spinGoal == null && Math.abs(P.steer) < 0.2 && P.rot) { const goal = Math.round(P.rot / 180) * 180, d = goal - P.rot; P.rot += Math.sign(d) * Math.min(Math.abs(d), 540 * dt); }
       if (P.grab > 0) P.grab -= dt;
       if (P.alt <= 0) land();
     }
@@ -595,6 +628,7 @@
     shake = Math.max(0, shake - dt * 40);
   }
   function land() {
+    if (P.spinGoal != null) { P.rot = P.spinGoal; P.spinGoal = null; } // finish the last few degrees
     P.air = false; P.alt = 0; P.vy = 0;
     const turns = P.rot / 360, a = ((P.rot % 360) + 360) % 360;
     const off = Math.min(a, 360 - a, Math.abs(a - 180));
@@ -899,7 +933,7 @@
     resetRace();
     mode = "countdown"; countT = 3.2;
     ["#riderScreen", "#boardScreen", "#finishScreen", "#pauseScreen"].forEach((s) => ($(s).hidden = true));
-    ["#hudTime", "#hudScore", "#hudSpeed", "#hudGates", "#pauseBtn"].forEach((s) => ($(s).hidden = false));
+    ["#hudTime", "#hudScore", "#hudSpeed", "#hudGates", "#pauseBtn", "#trickBtn"].forEach((s) => ($(s).hidden = false));
     $("#hint").hidden = false; $("#hint").style.opacity = 1;
     call("3", "", "blue"); SFX.beep(false);
   }
@@ -914,7 +948,7 @@
     $("#fSpeed").textContent = Math.round(P.top);
     $("#fGates").textContent = `${P.gates} / ${TOTAL_GATES}`;
     $("#fTrick").textContent = P.best || "—";
-    ["#hudTime", "#hudScore", "#hudSpeed", "#hudGates", "#pauseBtn", "#hint"].forEach((s) => ($(s).hidden = true));
+    ["#hudTime", "#hudScore", "#hudSpeed", "#hudGates", "#pauseBtn", "#trickBtn", "#hint"].forEach((s) => ($(s).hidden = true));
     $("#finishScreen").hidden = false;
     if (window.RosenbergBridge) {
       const stars = Math.min(5, 1 + (P.score >= 6000 ? 1 : 0) + (P.score >= 12000 ? 1 : 0) + (P.score >= 18000 ? 1 : 0) + (P.gates >= TOTAL_GATES * 0.7 ? 1 : 0));
@@ -923,7 +957,7 @@
   }
   function toMenu(screen) {
     mode = "menu";
-    ["#hudTime", "#hudScore", "#hudSpeed", "#hudGates", "#pauseBtn", "#hint", "#finishScreen", "#pauseScreen", "#riderScreen", "#boardScreen"].forEach((s) => ($(s).hidden = true));
+    ["#hudTime", "#hudScore", "#hudSpeed", "#hudGates", "#pauseBtn", "#trickBtn", "#hint", "#finishScreen", "#pauseScreen", "#riderScreen", "#boardScreen"].forEach((s) => ($(s).hidden = true));
     $(screen).hidden = false;
     if (screen === "#boardScreen") drawBoardPick();
   }
@@ -1008,6 +1042,7 @@
       }
       if (mode !== "menu") update(dt);
       if (mode === "race" && P.time > 6) $("#hint").style.opacity = 0;
+      trickBtn.classList.toggle("ready", mode === "race" && P.air && P.crash <= 0);
     }
     if (mode === "menu" || mode === "finish") {
       // idle scenery behind the menus: a gentle ride down the ridge

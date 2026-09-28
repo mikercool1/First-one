@@ -24,7 +24,14 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #8FD0FF; fon
 .hud b { font-weight: 400; font-size: 34px; }
 #hudSpeed { right: calc(env(safe-area-inset-right, 0px) + 14px); bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); width: 150px; height: 96px; -webkit-text-stroke: 0; }
 #hudSpeed canvas { width: 150px; height: 96px; }
-#hudGates { left: calc(env(safe-area-inset-left, 0px) + 16px); bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); font-size: 18px; }
+#hudGates { left: calc(env(safe-area-inset-left, 0px) + 16px); bottom: calc(env(safe-area-inset-bottom, 0px) + 156px); font-size: 18px; }
+#trickBtn { position: fixed; z-index: 6; left: calc(env(safe-area-inset-left, 0px) + 18px); bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); width: 124px; height: 124px; border-radius: 50%; border: 5px solid #FFFFFF; padding: 0;
+  background: radial-gradient(circle at 35% 30%, #FF9ACB, #FF4F8B 45%, #B42A8C); color: #FFFFFF; font: 400 26px/1 var(--display); -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; letter-spacing: .03em;
+  box-shadow: 0 7px 0 #7A1E60, 0 12px 26px rgba(20,30,70,.35); touch-action: none; -webkit-user-select: none; user-select: none; cursor: pointer; }
+#trickBtn i { display: block; font-style: normal; font-size: 34px; -webkit-text-stroke: 0; margin-bottom: 2px; }
+#trickBtn:active, #trickBtn.hit { transform: translateY(5px); box-shadow: 0 2px 0 #7A1E60, 0 6px 14px rgba(20,30,70,.35); }
+#trickBtn.ready { background: radial-gradient(circle at 35% 30%, #FFF3A6, #FFC83D 45%, #FF7A1F); box-shadow: 0 7px 0 #A8480E, 0 0 0 8px rgba(255,210,63,.45), 0 12px 26px rgba(20,30,70,.35); animation: trickPulse .5s ease-in-out infinite alternate; }
+@keyframes trickPulse { to { transform: scale(1.08); } }
 #pauseBtn { position: fixed; z-index: 6; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 50%; transform: translateX(-50%); width: 50px; height: 50px; border-radius: 50%; border: 0; background: rgba(255,255,255,.85); font-size: 20px; box-shadow: 0 6px 16px rgba(20,30,70,.25); }
 
 /* centre call-outs */
@@ -79,9 +86,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #8FD0FF; fon
 <div class="hud" id="hudGates" hidden>🚩 <span id="tGates">0</span></div>
 <div class="hud" id="hudSpeed" hidden><canvas id="speedCv" width="300" height="192"></canvas></div>
 <button id="pauseBtn" type="button" aria-label="Pause" hidden>⏸</button>
+<button id="trickBtn" type="button" aria-label="Trick" hidden><i>★</i>TRICK</button>
 <div id="call"></div>
 <div id="section"></div>
-<div id="hint" hidden>Drag left and right to steer · Tap to jump!</div>
+<div id="hint" hidden>Drag to steer · Tap to jump · In the air, hit TRICK to spin!</div>
 
 <section class="screen" id="riderScreen">
   <h1 class="logo">360<em>SNOWBOARDING</em></h1>
