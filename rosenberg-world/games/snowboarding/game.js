@@ -46,6 +46,123 @@
     const pose = P.pose === "crash" ? "lostMind" : P.pose === "idle" ? "idle" : P.pose;
     KIDS_ART.draw(c, id, x, y, s, { pose, crouch: P.crouch, lean: P.lean, face: P.face || 1, noShadow: true, exp: P.exp }, P.t);
   }
+  // On the mountain the rider is seen from behind, riding straight down the hill with the board pointing
+  // away from the camera. front: true turns them round to face us (mid-spin, and cheering at the finish).
+  const MAX_FIG = { L: 40, T: 38, R: 25, sw: 15, legW: 11, skin: "#F8D4BA", skinD: "#D9A98A", hair: "#C08850", hairD: "#8A5A2C" };
+  const MAX_WINTER = { coat: "#D8443B", coatL: "#F06A5E", coatD: "#A8302A", pants: "#C23A33", pantsD: "#8E2622", boot: "#2F3A6B", bootD: "#1E2548",
+    hat: "#FFD24A", hatD: "#E0A21A", band: "#2F3A6B", pom: "#FFFFFF", scarf: "#2F3A6B", scarfD: "#1E2548", mitt: "#FFD24A", mittD: "#E0A21A" };
+  const figOf = (id) => (id === "max" ? MAX_FIG : KIDS_ART.KIDS[id]);
+  const winterOf = (id) => (id === "max" ? MAX_WINTER : KIDS_ART.WINTER[id]);
+  function figUnits(id) { const K = figOf(id); return K.L + K.T + K.R * 2.3; }
+  function tube(c, pts, w, col, ol) {
+    c.lineCap = "round"; c.lineJoin = "round";
+    for (const [lw, st] of [[w + 3, ol], [w, col]]) {
+      c.beginPath(); c.moveTo(pts[0][0], pts[0][1]);
+      if (pts.length === 3) c.quadraticCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1]); else c.lineTo(pts[1][0], pts[1][1]);
+      c.lineWidth = lw; c.strokeStyle = st; c.stroke();
+    }
+  }
+  function blob(c, x, y, rx, ry, fill, ol, lw = 1.4) { c.beginPath(); c.ellipse(x, y, Math.max(0.1, rx), Math.max(0.1, ry), 0, 0, TAU); c.fillStyle = fill; c.fill(); if (ol) { c.lineWidth = lw; c.strokeStyle = ol; c.stroke(); } }
+  // P: { pose: board|air|grab|crash|cheer, crouch 0..1, lean -1..1, front, squash 0..1, board, yaw (radians), noBoard, t }
+  function drawBack(c, id, px, P) {
+    const K = figOf(id), Wc = winterOf(id), s = px / figUnits(id), t = P.t || 0;
+    const pose = P.pose || "board", ln = clamp(P.lean || 0, -1, 1), front = !!P.front;
+    const air = pose === "air" || pose === "grab";
+    const feetY = air ? -7 : 0, fx = K.sw * 0.68;
+    // the board, pointing down the hill (away from us); it spins flat under the feet
+    if (!P.noBoard) {
+      const yaw = -Math.PI / 2 + (P.yaw || 0);
+      c.save(); c.translate(0, feetY * s + px * (front ? 0.03 : -0.05));
+      // a darker copy just below gives the board some thickness
+      c.save(); c.translate(0, px * 0.025); c.scale(1, 0.5); c.rotate(yaw); const bl = px * 0.51, bw = px * 0.17; c.beginPath(); c.moveTo(-bl + bw, -bw); c.lineTo(bl - bw, -bw); c.arc(bl - bw, 0, bw, -Math.PI / 2, Math.PI / 2); c.lineTo(-bl + bw, bw); c.arc(-bl + bw, 0, bw, Math.PI / 2, Math.PI * 1.5); c.fillStyle = "#1A2036"; c.fill(); c.restore();
+      c.scale(1, 0.5); c.rotate(yaw);
+      BOARDS.draw(c, P.board, px * 1.02, px * 0.34, t, true);
+      c.restore();
+    }
+    c.save(); c.scale(s * (P.squash == null ? 1 : P.squash), s);
+    const cr = clamp(P.crouch || 0, 0, 1);
+    const hipY = feetY - (K.L - 4 - cr * K.L * 0.32);
+    // legs: knees bent and pushed out a little
+    for (const sd of [-1, 1]) {
+      const kx = sd * (fx + 3 + cr * 5), ky = feetY + (hipY - feetY) * 0.5;
+      tube(c, [[sd * K.sw * 0.42, hipY], [kx + sd * 3, ky], [sd * fx, feetY - 4]], K.legW, sd > 0 ? Wc.pants : shade(Wc.pants), Wc.pantsD);
+      blob(c, sd * fx, feetY - 4, K.legW * 0.85, K.legW * 0.62, Wc.boot, Wc.bootD);
+      blob(c, sd * fx, feetY - 9, K.legW * 0.75, K.legW * 0.3, "#FFFFFF", "#D9DEE8", 1);
+    }
+    c.save(); c.translate(0, hipY); c.rotate(ln * 0.22);
+    const T = K.T, sw = K.sw, shY = -T + 7;
+    // seat of the pants
+    c.beginPath(); c.ellipse(0, 2, sw * 0.95, 8, 0, 0, TAU); c.fillStyle = Wc.pants; c.fill(); c.strokeStyle = Wc.pantsD; c.lineWidth = 1.5; c.stroke();
+    // jacket (puffy rows) or Ellie's flared coat
+    c.beginPath();
+    if (id === "ellie") { c.moveTo(-sw - 1, -T + 1); c.quadraticCurveTo(-sw - 3, -T * 0.4, -sw - 6, 8); c.quadraticCurveTo(0, 12, sw + 6, 8); c.quadraticCurveTo(sw + 3, -T * 0.4, sw + 1, -T + 1); c.quadraticCurveTo(0, -T - 4, -sw - 1, -T + 1); c.closePath(); }
+    else { const x0 = -sw - 2, y0 = -T - 1, w = sw * 2 + 4, h = T + 6, r = 11; c.moveTo(x0 + r, y0); c.arcTo(x0 + w, y0, x0 + w, y0 + h, r); c.arcTo(x0 + w, y0 + h, x0, y0 + h, r); c.arcTo(x0, y0 + h, x0, y0, r); c.arcTo(x0, y0, x0 + w, y0, r); c.closePath(); }
+    const gr = c.createLinearGradient(-sw, 0, sw, 0); gr.addColorStop(0, Wc.coatL); gr.addColorStop(0.55, Wc.coat); gr.addColorStop(1, Wc.coatD);
+    c.fillStyle = gr; c.fill(); c.lineWidth = 1.8; c.strokeStyle = Wc.coatD; c.stroke();
+    c.save(); c.clip();
+    if (id === "ellie") { c.fillStyle = "#FFFFFF"; c.fillRect(-sw - 8, 4, sw * 2 + 16, 8); }
+    else for (let y = -T + 9; y < 4; y += 9) { c.strokeStyle = "rgba(0,0,0,.16)"; c.lineWidth = 1.6; c.beginPath(); c.moveTo(-sw - 2, y); c.quadraticCurveTo(0, y + 2.5, sw + 2, y); c.stroke(); }
+    if (front) { c.strokeStyle = shade(Wc.coatD); c.lineWidth = 1.6; c.beginPath(); c.moveTo(0, -T + 2); c.lineTo(0, 6); c.stroke(); }
+    else { c.strokeStyle = "rgba(0,0,0,.12)"; c.lineWidth = 1.4; c.beginPath(); c.moveTo(0, -T + 4); c.lineTo(0, 4); c.stroke(); }
+    c.restore();
+    // scarf: round the neck, the tail streaming out behind in the wind
+    c.beginPath(); c.ellipse(0, -T - 1, sw * 0.8, 4.5, 0, 0, TAU); c.fillStyle = Wc.scarf; c.fill(); c.strokeStyle = Wc.scarfD; c.lineWidth = 1.3; c.stroke();
+    const fl = Math.sin(t * 11) * 3, tail = front ? 0.35 : 1;
+    c.beginPath(); c.moveTo(sw * 0.2, -T); c.quadraticCurveTo(sw * 0.7 + fl, -T + 8 * tail, sw * 0.9 + fl * 1.4, -T + 20 * tail);
+    c.lineTo(sw * 0.9 + fl * 1.4 - 6, -T + 20 * tail + 1); c.quadraticCurveTo(sw * 0.4 + fl, -T + 8 * tail, sw * 0.2 - 5, -T + 1); c.closePath();
+    c.fillStyle = Wc.scarf; c.fill(); c.strokeStyle = Wc.scarfD; c.stroke();
+    // head
+    const R = K.R, hx = ln * R * 0.12;
+    c.save(); c.translate(hx, -T - R + 9);
+    if (id === "ellie") { // pigtails bounce out both sides
+      const bob = Math.sin(t * 9) * 0.15;
+      for (const sd of [-1, 1]) { c.save(); c.translate(sd * R * 0.8, -R * 0.15); c.rotate(sd * (0.9 + bob)); blob(c, 0, R * 0.42, R * 0.24, R * 0.48, K.hair, K.hairD, 1.4); c.restore(); }
+    }
+    for (const sd of [-1, 1]) blob(c, sd * R * 0.93, R * 0.14, R * 0.17, R * 0.24, K.skin, K.skinD, 1.4);
+    if (front) {
+      const hg = c.createRadialGradient(-R * 0.3, -R * 0.4, R * 0.1, 0, 0, R); hg.addColorStop(0, "#FFF1E6"); hg.addColorStop(1, K.skin);
+      blob(c, 0, 0, R, R, hg, K.skinD, 1.8);
+      c.fillStyle = K.hair; for (const bx of [-0.7, -0.35, 0, 0.35, 0.7]) { c.beginPath(); c.arc(bx * R, -R * 0.42, R * 0.2, 0, TAU); c.fill(); }
+      c.fillStyle = "rgba(255,120,130,.3)"; for (const sd of [-1, 1]) { c.beginPath(); c.arc(sd * R * 0.52, R * 0.38, R * 0.15, 0, TAU); c.fill(); }
+      c.fillStyle = "#2A1A14"; for (const sd of [-1, 1]) { c.beginPath(); c.ellipse(sd * R * 0.32, R * 0.08, R * 0.1, R * 0.14, 0, 0, TAU); c.fill(); }
+      c.fillStyle = "#FFFFFF"; for (const sd of [-1, 1]) { c.beginPath(); c.arc(sd * R * 0.32 + R * 0.03, R * 0.03, R * 0.04, 0, TAU); c.fill(); }
+      c.beginPath(); c.moveTo(-R * 0.3, R * 0.42); c.quadraticCurveTo(0, R * 0.78, R * 0.3, R * 0.42); c.closePath(); c.fillStyle = "#8A2A2A"; c.fill();
+    } else {
+      const hg = c.createRadialGradient(-R * 0.3, -R * 0.2, R * 0.1, 0, 0, R * 1.05); hg.addColorStop(0, shade(K.hair, 1.15)); hg.addColorStop(1, K.hair);
+      blob(c, 0, 0, R, R, hg, K.hairD, 1.8);
+      c.strokeStyle = "rgba(0,0,0,.14)"; c.lineWidth = 1.3;
+      for (const bx of [-0.5, -0.17, 0.17, 0.5]) { c.beginPath(); c.moveTo(bx * R, -R * 0.3); c.quadraticCurveTo(bx * R * 1.1, R * 0.4, bx * R * 0.9, R * 0.85); c.stroke(); }
+    }
+    if (id === "max") { c.fillStyle = K.hair; for (const [bx, by] of [[-0.95, 0.05], [-0.85, 0.4], [0.95, 0.05], [0.85, 0.4]]) { c.beginPath(); c.arc(bx * R, by * R, R * 0.2, 0, TAU); c.fill(); } }
+    KIDS_ART.beanie(c, Wc, R);
+    c.restore();
+    // arms and mittens
+    const arms = armsFor(pose, ln, sw, shY, t, feetY - hipY, cr);
+    for (const sd of [-1, 1]) {
+      const [hx2, hy2, ex, ey] = arms[sd < 0 ? 0 : 1];
+      tube(c, [[sd * sw * 0.85, shY], [ex, ey], [hx2, hy2]], 8.5, sd > 0 ? Wc.coatD : Wc.coat, shade(Wc.coatD));
+      blob(c, sd * sw * 0.85, shY + 1, 7, 7, sd > 0 ? Wc.coat : Wc.coatL, Wc.coatD);
+      blob(c, hx2, hy2, 5.6, 5.6, Wc.mitt, Wc.mittD, 1.3);
+    }
+    c.restore();
+    c.restore();
+  }
+  // hands and elbows for the two arms: [[handX, handY, elbowX, elbowY] left, right]
+  function armsFor(pose, ln, sw, shY, t, feet, cr) {
+    const out = sw + 22;
+    if (pose === "air") return [[-out, shY - 16, -sw - 14, shY - 2], [out, shY - 20, sw + 14, shY - 4]];
+    if (pose === "grab") return [[-out, shY - 20, -sw - 14, shY - 6], [sw * 0.7, feet - 10, sw + 10, shY + 16]];
+    if (pose === "cheer") { const w = Math.sin(t * 10) * 5; return [[-sw - 12 + w, shY - 34, -sw - 12, shY - 12], [sw + 12 - w, shY - 36, sw + 12, shY - 14]]; }
+    if (pose === "crash") { const a = t * 14; return [[-out + Math.sin(a) * 8, shY - 20 + Math.cos(a) * 16, -sw - 10, shY - 4], [out + Math.cos(a) * 8, shY - 20 + Math.sin(a) * 16, sw + 10, shY - 4]]; }
+    // riding: arms out for balance, dipping to the side you lean into
+    const dip = 12 + cr * 4;
+    return [[-out, shY + dip - ln * 14, -sw - 12, shY + 6 - ln * 5], [out, shY + dip + ln * 14, sw + 12, shY + 6 + ln * 5]];
+  }
+  function shade(col, f = 0.86) {
+    const m = /^#(..)(..)(..)$/.exec(col); if (!m) return col;
+    const g = (v) => Math.min(255, Math.round(parseInt(v, 16) * f)).toString(16).padStart(2, "0");
+    return "#" + g(m[1]) + g(m[2]) + g(m[3]);
+  }
 
   // ---------------------------------------------------------------------------
   // the course: COCO MOUNTAIN
@@ -492,7 +609,6 @@
     else if (off < 40) pts += 50;
     else { P.wobble = 0.6; P.v *= 0.8; sub.push("WOBBLY!"); }
     if (P.kind === "bump" && !name) { pts += 50; name = null; }
-    if (a > 90 && a < 270) P.face = -P.face; // landed switch (backwards)
     P.rot = 0; P.landT = 0.3;
     SFX.land(); burst(0, 16, "#FFFFFF"); shake = Math.max(shake, big ? 8 : 4);
     if (name) {
@@ -653,14 +769,11 @@
     if (P.wobble > 0) ctx.rotate(Math.sin(P.wobble * 30) * 0.12);
     if (mode === "countdown") { crouch = 0.4; lean = 0; }
     ctx.rotate(tilt);
-    // spins: turn the rider around the vertical axis by squashing and flipping
-    const ang = P.rot * Math.PI / 180, cs = Math.cos(ang), face = P.face * (cs < 0 ? -1 : 1);
-    ctx.scale(Math.max(0.18, Math.abs(cs)), 1);
-    drawRider(ctx, rider, 0, 0, px, { pose, crouch, lean: lean * face, face, t });
-    // the board on the feet (seen from behind and above)
-    if (!crashing || !boardFly) {
-      ctx.save(); ctx.scale(1, 0.3); BOARDS.draw(ctx, board, px * 1.05, px * 0.28, t); ctx.restore();
-    }
+    // spins: the board turns flat under the feet; the body narrows side-on and shows its face half way round
+    const ang = P.rot * Math.PI / 180, cs = Math.cos(ang);
+    const front = P.finished || cs < 0;
+    const yaw = P.air ? ang : P.steer * 0.35;
+    drawBack(ctx, rider, px, { pose, crouch, lean, front, squash: P.air ? 0.45 + 0.55 * Math.abs(cs) : 1, board, yaw: P.finished ? 0 : yaw, noBoard: crashing && boardFly, t });
     ctx.restore();
     if (crashing && boardFly) {
       ctx.save(); ctx.translate(x + boardFly.x, groundY + boardFly.y); ctx.rotate(boardFly.rot); ctx.scale(1, 0.5); BOARDS.draw(ctx, board, px, px * 0.27, t); ctx.restore();
@@ -878,8 +991,7 @@
     if (c.width !== Math.round(r.width * DPR)) { c.width = Math.round(r.width * DPR); c.height = Math.round(r.height * DPR); }
     const g = c.getContext("2d"), w = c.width, h = c.height;
     g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, w, h);
-    g.save(); g.translate(w * 0.5, h * 0.92); g.save(); g.scale(1, 0.3); BOARDS.draw(g, board, h * 0.7, h * 0.19, t); g.restore(); g.restore();
-    drawRider(g, rider, w * 0.5, h * 0.9, h * 0.72, { pose: "cheer", t, face: 1 });
+    g.save(); g.translate(w * 0.5, h * 0.86); drawBack(g, rider, h * 0.72, { pose: "cheer", front: true, board, yaw: Math.PI, t }); g.restore();
   }
 
   // ---------------------------------------------------------------------------

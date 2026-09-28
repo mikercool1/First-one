@@ -403,5 +403,5 @@ function drawBall(c, x, y, r) {
 }
   function draw(c, id, x, y, s, P, t) { c.save(); c.translate(x, y); c.scale(s, s); if (!P.noShadow) shadowAt(c, 0, 1, 26, 6, .25); drawKid(c, id, P, t); c.restore(); }
   function shadowAt(c, x, y, rx, ry, a) { const gr = c.createRadialGradient(x, y, 0, x, y, rx); gr.addColorStop(0, `rgba(60,35,20,${a})`); gr.addColorStop(1, "rgba(60,35,20,0)"); c.fillStyle = gr; E(c, x, y, rx, ry); c.fill(); }
-  return { draw, KIDS };
+  return { draw, KIDS, WINTER, beanie };
 })();

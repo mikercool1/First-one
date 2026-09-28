@@ -115,7 +115,7 @@ const BOARDS = (() => {
       }
     }
   }
-  function draw(c, id, L, W, t = 0) {
+  function draw(c, id, L, W, t = 0, noBind = false) {
     c.save();
     outline(c, L, W); c.clip();
     art(c, id, L, W, t);
@@ -124,6 +124,7 @@ const BOARDS = (() => {
     c.restore();
     c.lineWidth = Math.max(1.2, W * 0.05); c.strokeStyle = "rgba(20,20,30,.75)"; outline(c, L, W); c.stroke();
     // bindings
+    if (noBind) return;
     c.fillStyle = "rgba(20,24,40,.85)";
     for (const x of [-L * 0.2, L * 0.2]) { c.beginPath(); c.ellipse(x, 0, W * 0.2, W * 0.36, 0, 0, TAU); c.fill(); }
   }
