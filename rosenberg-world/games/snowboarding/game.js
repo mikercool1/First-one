@@ -812,13 +812,13 @@
       maxy = b.y;
     }
     // board trail: two faint lines between the camera and the rider
-    const segScreen = (z) => { const i = Math.floor(z / SEG) - base.index; const s = vis[i]; if (!s) return null; const u = (z % SEG) / SEG; return { x: lerp(s.p1.screen.x, s.p2.screen.x, u), y: lerp(s.p1.screen.y, s.p2.screen.y, u), sc: lerp(s.p1.screen.scale, s.p2.screen.scale, u) }; };
+    const segScreen = (z) => { const i = Math.floor(z / SEG) - base.index; const s = vis[i]; if (!s || i < 1 || s.p1.camera.z <= 1) return null; /* the slice at the lens projects upside down */ const u = (z % SEG) / SEG; return { x: lerp(s.p1.screen.x, s.p2.screen.x, u), y: lerp(s.p1.screen.y, s.p2.screen.y, u), sc: lerp(s.p1.screen.scale, s.p2.screen.scale, u) }; };
     const pc = segScreen(pz + PLAYER_Z) || { x: W / 2, y: H * 0.75, sc: camDepth / PLAYER_Z };
     riderScreen.x = pc.x + pc.sc * P.x * W / 2; riderScreen.y = pc.y;
     if (P.trail.length > 1) {
       for (const off of [-45, 45]) {
         ctx.beginPath(); let started = false;
-        for (const tp of P.trail) { if (tp.z < pz + 40 || tp.z > pz + PLAYER_Z) continue; /* only between the camera and the rider */ const s = segScreen(tp.z); if (!s) continue; const X = s.x + s.sc * (tp.x + off) * W / 2; if (!started) { ctx.moveTo(X, s.y); started = true; } else ctx.lineTo(X, s.y); }
+        for (const tp of P.trail) { if (tp.z < pz + 40 || tp.z > pz + PLAYER_Z) continue; /* only between the camera and the rider */ const s = segScreen(tp.z); if (!s || s.y < riderScreen.y - 2) continue; const X = s.x + s.sc * (tp.x + off) * W / 2; if (!started) { ctx.moveTo(X, s.y); started = true; } else ctx.lineTo(X, s.y); }
         if (started && !P.air) ctx.lineTo(riderScreen.x + off * pc.sc * W / 2, riderScreen.y);
         ctx.strokeStyle = "rgba(140,170,215,.45)"; ctx.lineWidth = 2.2; ctx.stroke();
       }
