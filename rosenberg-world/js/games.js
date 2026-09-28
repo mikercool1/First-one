@@ -327,7 +327,16 @@
     icon: "🩰",
     only: "ellie", // only Ellie can play
   });
-  G.register({ id: "skiRun", title: "Ski Run", subtitle: "", destination: "skirun", unlocked: false, entry: null, color: "#2F6BD6", icon: "⛷️" });
+  G.register({
+    id: "skiRun",
+    title: "360 Snowboarding",
+    subtitle: "Race down Coco Mountain! Carve, catch big air and land a 360.",
+    destination: "skirun",
+    unlocked: true,
+    entry: "games/snowboarding/index.html",
+    color: "#2F6BD6",
+    icon: "🏂",
+  });
 
   G.register({
     id: "frogger",

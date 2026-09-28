@@ -57,11 +57,8 @@ else gets a friendly "This is Ellie's!" and it's left off their map and ALL GAME
 
 The bottom-left corner of the world is **Ice Mountain**: snow on the ground, snowy pines, a frozen
 stream you can walk across, falling snow and a snowman, reached by the snowy trail past the
-treehouse (the ICE MOUNTAIN arch marks the way in). Cocoa Party, Max's Bunny Hill and Rosenberg Ice Hockey are open; one place waits for its game:
+treehouse (the ICE MOUNTAIN arch marks the way in). Cocoa Party, Max's Bunny Hill, Rosenberg Ice Hockey and 360 Snowboarding are all open.
 
-| Place | Game id in `js/games.js` | Destination |
-| --- | --- | --- |
-| Ski Run (a big snowy peak with slalom flags and a moving ski lift) | `skiRun` | `skirun` | (hidden until it's unlocked)
 
 Switch one on: copy the game into `games/<name>/` (with the bridge lines) and in `js/games.js` set
 `unlocked: true` and `entry`. The ribbon then shows the game's title, and it appears on the map and
@@ -118,6 +115,7 @@ BAHA MAR"), or just tap the island; the plane on the island flies you home. The 
 | Cocoa Party hut (Ice Mountain, a log cabin with a steaming mug) | Cocoa Party | `games/coco-party` |
 | Bunny Hill (Ice Mountain, the sled hill someone keeps whooshing down) | Max's Bunny Hill | `games/maxs-bunny-hill` |
 | Ice Rink (bottom-left of Ice Mountain, kids skating laps) | Rosenberg Ice Hockey | `games/rosenberg-hockey` |
+| The big snowy peak with the ski lift (Ice Mountain) | 360 Snowboarding | `games/snowboarding` |
 | Windmill mini golf course (between the Star Shop and the arcade) | Rosenberg Mini Golf | `games/mini-golf` |
 | Ellie's Ballet House (the pink princess tower in the woods; **Ellie only**) | Tiptoe, Gallop or March | `games/ellie-ballet` |
 | Baha Mar Hotel (the east end of the island) | Checking In | `games/checking-in` |

@@ -28,7 +28,7 @@
     { id: "frogpond", name: "Frog Pond", icon: "🐸", kind: "game", portal: [2080, 2842], portalR: 80, arrive: [2080, 2830], map: [2080, 2900] },
     // Ice Mountain: winter games on their way
     { id: "hotchoc", name: "Cocoa Party", icon: "☕", kind: "game", portal: [820, 2612], portalR: 70, arrive: [820, 2630], map: [820, 2480] },
-    { id: "skirun", name: "Ski Run", icon: "⛷️", kind: "game", portal: [300, 2742], portalR: 80, arrive: [300, 2760], map: [280, 2560] },
+    { id: "skirun", name: "Coco Mountain", icon: "🏂", kind: "game", portal: [300, 2742], portalR: 80, arrive: [300, 2760], map: [280, 2560] },
     { id: "minigolf", name: "Mini Golf", icon: "⛳", kind: "game", portal: [3200, 2512], portalR: 80, arrive: [3200, 2532], map: [3200, 2380] },
     { id: "ballet", name: "Ellie's Ballet House", icon: "🩰", kind: "game", portal: [580, 2268], portalR: 70, arrive: [580, 2290], map: [580, 2080] },
     { id: "icerink", name: "Ice Rink", icon: "🏒", kind: "game", portal: [250, 2842], portalR: 80, arrive: [250, 2830], map: [250, 2930] },
@@ -92,7 +92,7 @@
     ballet:   { name: "ELLIE'S BALLET HOUSE", icon: "🩰", color: "#E8559B", go: "ballet", zone: [470, 2080, 690, 2300] },
     woods:    { name: "WOODS", icon: "🌲", color: "#3E7A3A", go: [640, 1900], zone: [110, 1160, 880, 2340] },
     hotchoc:  { name: "COCOA PARTY", icon: "☕", color: "#8A5A3C", go: "hotchoc", zone: [700, 2400, 900, 2640] },
-    ski:      { name: "SKI RUN", icon: "⛷️", color: "#2F6BD6", go: "skirun", zone: [100, 2400, 470, 2800] },
+    ski:      { name: "360 SNOWBOARDING", icon: "🏂", color: "#2F6BD6", go: "skirun", zone: [100, 2400, 470, 2800] },
     sled:     { name: "MAX'S BUNNY HILL", icon: "🐰", color: "#E8453C", go: "sledhill", zone: [460, 2800, 860, 3060] },
     rink:     { name: "ICE HOCKEY", icon: "🏒", color: "#2F6BD6", go: "icerink", zone: [110, 2800, 410, 3060] },
     icemtn:   { name: "ICE MOUNTAIN", icon: "❄️", color: "#4A90D9", go: [720, 2430], zone: [100, 2340, 900, 3070] },
@@ -102,7 +102,7 @@
   world.mapLabels = () => {
     if (labelCache) return labelCache;
     const out = [];
-    const skip = { home: 0, ski: 1, icemtn: 0 };
+    const skip = { home: 0, icemtn: 0 };
     for (const k in PLACES) {
       const pl = PLACES[k];
       if (!pl.zone || skip[k]) continue;
@@ -1395,7 +1395,8 @@
     signpost(2590, 1992, [["home", "U"], ["shop", "R"], ["arcade", "D"]]);        // boulevard, below the house
     signpost(1236, 1992, [["kitchen", "U"], ["witch", "L"], ["sports", "D"]]);
     signpost(770, 1995, [["witch", "U"], ["ballet", "D"], ["icemtn", "D"]]);                     // boulevard, where the woods trails start   // boulevard, west of the sports gate
-    signpost(560, 2470, [["hotchoc", "R"], ["sled", "D"], ["rink", "L"]]);                      // Ice Mountain, as the trail comes in
+    signpost(560, 2470, [["hotchoc", "R"], ["ski", "L"], ["sled", "D"]]);
+    signpost(660, 2730, [["rink", "L"]]);                                         // on the snowy trail, pointing to the ice rink
     signpost(3392, 1992, [["plaza", "U"], ["shop", "R"], ["bahamar", "R"]]);      // boulevard at the plaza
     signpost(4150, 1995, [["beach", "U"], ["jetski", "U"], ["bahamar", "D"]]);                    // on the sand, where the trail heads south
     signpost(1880, 900, [["academy", "L"], ["raceway", "L"], ["baseball", "R"]]); // north lane, west of the ballpark
@@ -1561,9 +1562,6 @@
     [[40, -300, "#E8453C"], [-40, -220, "#2F6BD6"], [50, -140, "#E8453C"], [-20, -60, "#2F6BD6"]].forEach(([x, y, col]) => { A.line(c, x, y, x, y - 26, 3, "#3A4252"); c.fillStyle = col; c.beginPath(); c.moveTo(x, y - 26); c.lineTo(x + 16, y - 20); c.lineTo(x, y - 14); c.closePath(); c.fill(); });
     // ski lift towers
     [-190, -110].forEach((x) => { c.fillStyle = "#8E96A6"; c.fillRect(x - 3, -(x + 230) * 1.6 - 40, 6, 60); });
-    // base lodge sign
-    c.fillStyle = "#2F6BD6"; A.rr(c, -80, -36, 160, 30, 10); c.fill();
-    A.text(c, "⛷ SKI RUN", 0, -21, 17, "#FFFFFF", { weight: 700 });
   }
   function drawSledHill(c) {
     c.fillStyle = "rgba(90,140,200,.25)"; c.beginPath(); c.ellipse(0, 2, 196, 16, 0, 0, TAU); c.fill();
