@@ -1,0 +1,1448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Fart Man 2</title>
+<style>
+/* Planet Bean at sunset: teal-to-tangerine sky, orange bean dunes, lime-green gas, bubblegum and banana-yellow trim. */
+:root {
+  --space: #0E2A3F; --ink: #FFF8E8; --dim: #C3B6EC; --line: rgba(215,195,255,.24);
+  --amber: #FFD23F; --amber-ink: #2B1650; --good: #9BE83C; --bad: #FF5A7A; --pink: #FF5FA2; --outline: #2B1650;
+  --panel: rgba(18,52,74,.88);
+  --sans: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body {
+  height: 100%; margin: 0; background: var(--space); color: var(--ink); font-family: var(--sans);
+  overflow: hidden; overscroll-behavior: none; touch-action: none;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+}
+#game { position: fixed; inset: 0; overflow: hidden; background: var(--space); }
+#c { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; }
+
+/* HUD */
+#hud {
+  position: absolute; z-index: 2; top: calc(env(safe-area-inset-top, 0px) + 8px);
+  left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px));
+  max-width: 760px; margin: 0 auto; display: flex; padding: 6px 2px; border-radius: 12px;
+  background: rgba(18,52,74,.62); border: 2px solid var(--line);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: none;
+}
+.cell { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 4px; }
+.cell + .cell { border-left: 1px solid var(--line); }
+.k { font: 700 9px/1.2 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); white-space: nowrap; }
+.k .long { display: none; }
+@media (min-width: 640px) { .k { font-size: 10px; } }
+.v { font: 700 17px/1.1 var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.v small { font-size: 10px; color: var(--dim); margin-left: 2px; }
+.bar { display: block; width: 78%; height: 3px; border-radius: 2px; background: rgba(255,255,255,.12); overflow: hidden; }
+#hFuelBar { display: block; height: 100%; width: 100%; background: var(--amber); transition: background .2s; }
+.cell.low #hFuelBar { background: var(--bad); }
+.cell.low .v, .cell.warn .v { color: var(--amber); }
+.cell.bad .v { color: var(--bad); animation: pulse .45s ease-in-out infinite alternate; }
+@keyframes pulse { to { opacity: .45; } }
+
+#callout {
+  position: absolute; z-index: 2; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 64px); transform: translateX(-50%);
+  padding: 6px 14px; border-radius: 999px; font: 800 13px/1.2 var(--sans); letter-spacing: .14em; white-space: nowrap;
+  background: rgba(18,52,74,.85); border: 2px solid currentColor; pointer-events: none;
+}
+#callout.good { color: var(--good); }
+#callout.warn { color: var(--amber); }
+#callout.bad { color: var(--bad); }
+
+#banner {
+  position: absolute; z-index: 3; left: 16px; right: 16px; top: 30%; text-align: center; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+#banner b { font: 900 clamp(30px, 8vw, 60px)/1 var(--sans); letter-spacing: .06em; text-wrap: balance;
+  color: var(--amber); -webkit-text-stroke: 2px var(--outline); paint-order: stroke fill; text-shadow: 0 4px 0 var(--pink), 0 8px 0 var(--outline); }
+#banner span { font: 800 15px/1.2 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--good); text-shadow: 0 2px 0 var(--outline); }
+#banner.show { animation: pop .45s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes pop { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
+
+/* Screens */
+.overlay {
+  position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center;
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
+  overflow-y: auto; touch-action: manipulation;
+}
+#startScreen { background: radial-gradient(120% 90% at 50% 40%, rgba(14,42,63,.2), rgba(8,26,40,.86)); }
+#winScreen, #crashScreen { background: rgba(8,26,40,.3); }
+.card {
+  width: min(100%, 440px); margin: auto; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 24px 20px; border-radius: 26px; background: var(--panel); border: 3px solid var(--outline); outline: 2px solid var(--line); outline-offset: -6px;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 30px 80px rgba(0,0,0,.5);
+}
+.card.show { animation: rise .4s cubic-bezier(.2,1,.3,1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+h1 { margin: 0; font: 900 clamp(40px, 12vw, 66px)/.95 var(--sans); letter-spacing: .03em; text-wrap: balance; color: var(--amber);
+  -webkit-text-stroke: 3px var(--outline); paint-order: stroke fill; text-shadow: 0 5px 0 var(--pink), 0 10px 0 var(--outline); transform: rotate(-2deg); }
+h1 span { display: block; margin-top: 6px; font-size: .5em; letter-spacing: .3em; padding-left: .3em; color: var(--good); text-shadow: 0 4px 0 var(--outline); }
+h2 { margin: 0; font: 900 clamp(24px, 6.5vw, 34px)/1.1 var(--sans); letter-spacing: .08em; text-wrap: balance; }
+.eyebrow { margin: 0; font: 800 14px/1.2 var(--sans); letter-spacing: .2em; color: var(--good); text-transform: uppercase; }
+.lead { margin: 0; font: 800 15px/1.3 var(--sans); letter-spacing: .12em; color: var(--ink); }
+.muted { margin: 0; color: var(--dim); font-size: 14px; line-height: 1.4; max-width: 34ch; }
+.howto { list-style: none; margin: 4px 0; padding: 0; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; text-align: left; }
+.howto li { display: flex; align-items: center; gap: 12px; font: 700 13px/1.3 var(--sans); letter-spacing: .06em; }
+.howto svg { flex: none; width: 34px; height: 34px; }
+.keys { margin: 0; font: 500 12px/1.4 var(--sans); color: var(--dim); }
+.keys kbd { font: 600 11px var(--mono); padding: 1px 5px; border: 1px solid var(--line); border-radius: 4px; color: var(--ink); }
+.btn {
+  font: 900 21px/1 var(--sans); letter-spacing: .08em; color: #1E3A08; cursor: pointer;
+  background: linear-gradient(#C8FA72, #7FD62E); border: 3px solid var(--outline); border-radius: 999px; padding: 18px 22px; width: min(100%, 320px);
+  box-shadow: 0 6px 0 var(--outline), 0 14px 30px rgba(155,232,60,.35), inset 0 -4px 0 rgba(0,0,0,.14); transition: opacity .3s, transform .1s;
+}
+.btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--outline); }
+.btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.btn.wait { visibility: hidden; opacity: 0; }
+.grade { margin: 0; font: 900 clamp(30px, 8vw, 44px)/1.05 var(--sans); letter-spacing: .03em; color: var(--amber); -webkit-text-stroke: 2px var(--outline); paint-order: stroke fill; text-shadow: 0 4px 0 var(--pink), 0 7px 0 var(--outline); text-wrap: balance; transform: rotate(-2deg); }
+.grade.bad { color: #FF8FB0; text-shadow: 0 4px 0 #7A2BD6, 0 7px 0 var(--outline); }
+.stats { list-style: none; margin: 0; padding: 0; width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 6px; }
+.stats li { background: rgba(255,255,255,.08); border-radius: 10px; padding: 7px 4px; display: flex; flex-direction: column; gap: 3px; }
+.stats span { font: 700 9px/1.2 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+.stats b { font: 700 16px/1 var(--mono); font-variant-numeric: tabular-nums; }
+.total { margin: 0; font: 700 14px/1.4 var(--mono); letter-spacing: .06em; color: var(--dim); font-variant-numeric: tabular-nums; }
+.total b { color: var(--ink); font-size: 18px; }
+@media (max-height: 460px) {
+  .card { gap: 8px; padding: 14px 16px; }
+  h1 { font-size: 34px; }
+  .howto { gap: 6px; } .howto svg { width: 26px; height: 26px; }
+  .btn { padding: 14px 20px; }
+  .grade { font-size: 26px; } h2 { font-size: 22px; }
+}
+.mute {
+  position: absolute; z-index: 6; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  width: 44px; height: 44px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; touch-action: manipulation;
+  background: var(--panel); border: 2px solid var(--line); color: var(--ink);
+}
+.mute svg { width: 22px; height: 22px; }
+.mute:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.mute[aria-pressed="true"] { color: var(--dim); }
+@media (prefers-reduced-motion: reduce) {
+  #banner.show, .card.show { animation: none; }
+  .cell.bad .v { animation: none; }
+}
+</style>
+</head>
+<body>
+<div id="game">
+  <canvas id="c" aria-label="Fart Man 2 game. Hold to toot, drag left or right to steer. Grab beans, dodge rocks, land on the Fart Pad."></canvas>
+
+  <header id="hud" aria-live="off">
+    <div class="cell"><span class="k">Mission</span><span class="v" id="hMission">1</span></div>
+    <div class="cell" id="cFuel"><span class="k">Gas</span><span class="v" id="hFuel">100</span><i class="bar"><i id="hFuelBar"></i></i></div>
+    <div class="cell"><span class="k">Beans</span><span class="v" id="hBeans">0</span></div>
+    <div class="cell"><span class="k"><span class="short">Alt</span><span class="long">Altitude</span></span><span class="v" id="hAlt">0<small>m</small></span></div>
+    <div class="cell" id="cVs"><span class="k"><span class="short">V speed</span><span class="long">Vertical speed</span></span><span class="v" id="hVs">0.0</span></div>
+    <div class="cell" id="cHs"><span class="k"><span class="short">H speed</span><span class="long">Horizontal speed</span></span><span class="v" id="hHs">0.0</span></div>
+  </header>
+  <div id="callout" hidden></div>
+  <button type="button" id="muteBtn" class="mute" aria-pressed="false" aria-label="Sound on">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="currentColor"/><g id="icoOn"><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g><g id="icoOff" style="display:none"><path d="M15.5 9.5l5 5M20.5 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g></svg>
+  </button>
+  <div id="banner" hidden><b id="bannerBig"></b><span id="bannerSmall"></span></div>
+
+  <section class="overlay" id="startScreen">
+    <div class="card show">
+      <h1>FART MAN 2<span>RETURN OF THE TOOT</span></h1>
+      <p class="eyebrow" id="startMission">Mission 1</p>
+      <p class="muted">Fart Man is out of beans and stuck on Planet Bean! Grab the bean cans, dodge the space rocks and land on the Fart Pad.</p>
+      <ul class="howto">
+        <li>
+          <svg viewBox="0 0 34 34" aria-hidden="true"><circle cx="12" cy="19" r="8" fill="#9BE83C" stroke="#2B1650" stroke-width="1.5"/><circle cx="22" cy="14" r="7" fill="#B8F55E" stroke="#2B1650" stroke-width="1.5"/><circle cx="23" cy="24" r="5" fill="#9BE83C" stroke="#2B1650" stroke-width="1.5"/></svg>
+          HOLD YOUR FINGER DOWN TO TOOT
+        </li>
+        <li>
+          <svg viewBox="0 0 34 34" aria-hidden="true"><path d="M4 17h26M4 17l6-5M4 17l6 5M30 17l-6-5M30 17l-6 5" fill="none" stroke="#E8EDF6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="17" r="4" fill="#9BE83C"/></svg>
+          DRAG LEFT OR RIGHT TO STEER
+        </li>
+        <li>
+          <svg viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="21" r="7" fill="none" stroke="#8B96AB" stroke-width="2" stroke-dasharray="3 3"/><path d="M17 12V3M17 3l-4 4M17 3l4 4" fill="none" stroke="#E8EDF6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          LIFT YOUR FINGER TO STOP TOOTING
+        </li>
+        <li>
+          <svg viewBox="0 0 34 34" aria-hidden="true"><rect x="9" y="6" width="16" height="22" rx="3" fill="#FF8A3D" stroke="#2B1650" stroke-width="1.5"/><rect x="9" y="12" width="16" height="9" fill="#FFF3D6" stroke="#2B1650" stroke-width="1.2"/><ellipse cx="17" cy="16.5" rx="4" ry="2.4" fill="#B5542A"/></svg>
+          GRAB BEANS FOR MORE GAS
+        </li>
+        <li>
+          <svg viewBox="0 0 34 34" aria-hidden="true"><path d="M8 20l2-9 8-4 8 4 1 9-7 6-8-1z" fill="#8C6A9E" stroke="#2B1650" stroke-width="1.5" stroke-linejoin="round"/><circle cx="14" cy="16" r="2" fill="#5F4474"/><circle cx="21" cy="20" r="1.5" fill="#5F4474"/></svg>
+          DON&rsquo;T BONK THE SPACE ROCKS
+        </li>
+      </ul>
+      <button type="button" class="btn" id="beginBtn">TOOT TOOT, LET&rsquo;S GO!</button>
+      <p class="keys">Keyboard: <kbd>↑</kbd> or <kbd>Space</kbd> to toot, <kbd>←</kbd> <kbd>→</kbd> to steer</p>
+    </div>
+  </section>
+
+  <section class="overlay" id="winScreen" hidden>
+    <div class="card" id="winCard">
+      <p class="eyebrow" id="winStars">★★★ Perfect landing</p>
+      <p class="grade" id="winGrade">SAFE TOOTDOWN!</p>
+      <h2 id="winTitle">MISSION 1 COMPLETE!</h2>
+      <ul class="stats" id="winStats"></ul>
+      <p class="total" id="winTotal"></p>
+      <button type="button" class="btn wait" id="nextBtn">NEXT MISSION</button>
+      <button type="button" class="btn" data-rw-back hidden>BACK TO ROSENBERG WORLD</button>
+    </div>
+  </section>
+
+  <section class="overlay" id="crashScreen" hidden>
+    <div class="card" id="crashCard">
+      <p class="grade bad">BAD TOOT!</p>
+      <h2>TRY AGAIN!</h2>
+      <p class="muted" id="crashTip"></p>
+      <button type="button" class="btn" id="restartBtn">RESTART MISSION</button>
+      <button type="button" class="btn" data-rw-back hidden>BACK TO ROSENBERG WORLD</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const cv = $("c"), ctx = cv.getContext("2d");
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+  const DEG = Math.PI / 180;
+
+  // ---------- tuning ----------
+  const PLAY_W = 520, PLAY_H = 600;   // world units that must always fit on screen
+  const SPEED_UNIT = 20;              // world units/s per displayed speed unit
+  const ALT_UNIT = 4;                 // world units per displayed metre
+  const SAFE_VY = 2.5, SAFE_VX = 2.0, SAFE_ANG = 15;
+  const MAX_TILT = 35;                // degrees
+  const DEAD_ZONE = 10;               // px of finger travel that does nothing
+  const THRUST = 58;                  // world units/s^2
+  const PLAT = 12;                    // flat ground either side of the pad
+  const LS = 1.25;                    // lander drawing scale
+  const START_Y = 130;                // lander start, below the top of the play area
+  const START_GAS = 75;               // he starts low on beans...
+  const BEAN_GAS = 20;                // ...and each can tops him up
+  const BEAN_R = 26;                  // pickup reach from his middle
+
+  // ---------- missions ----------
+  // float: the pad hovers over a canyon of bean soup. move: how far a floating pad slides.
+  // rocks: space rocks to dodge (drift = how far they wander). beans: cans to grab for gas.
+  const MISSIONS = [
+    null,
+    { padW: 240, pc: .60, sc: .40, vx0: 0,   vy0: 8,  rough: .6,  beans: 3, rocks: 0, drift: 0,  tag: "Grab the beans!" },
+    { padW: 200, pc: .30, sc: .70, vx0: -8,  vy0: 10, rough: .8,  beans: 3, rocks: 3, drift: 0,  tag: "Space rocks! Don't bonk them" },
+    { padW: 190, pc: .62, sc: .30, vx0: 0,   vy0: 8,  rough: .9,  beans: 3, rocks: 2, drift: 0,  float: true, tag: "The Fart Pad is floating!" },
+    { padW: 170, pc: .80, sc: .20, vx0: 16,  vy0: 12, rough: 1.2, beans: 4, rocks: 4, drift: 26, tag: "Wobbly rocks everywhere" },
+    { padW: 170, pc: .45, sc: .80, vx0: -12, vy0: 12, rough: 1.1, beans: 4, rocks: 3, drift: 18, float: true, move: 70, tag: "The pad is on the move!" },
+  ];
+  function missionCfg(n) {
+    let m;
+    if (n < MISSIONS.length) m = { ...MISSIONS[n] };
+    else {
+      const r = mulberry32(n * 104729 + 7), k = n - 5, left = r() < .5;
+      m = {
+        padW: Math.max(96, 130 - 5 * k),
+        pc: left ? .16 + r() * .2 : .64 + r() * .2,
+        sc: left ? .6 + r() * .25 : .15 + r() * .25,
+        vx0: (r() < .5 ? -1 : 1) * Math.min(38, 16 + 3 * k),
+        vy0: Math.min(28, 18 + 1.5 * k),
+        rough: Math.min(1.8, 1.2 + .08 * k),
+        beans: 4, rocks: Math.min(7, 3 + (k >> 1)), drift: Math.min(40, 18 + 3 * k),
+        float: k % 2 === 1, move: k % 2 === 1 ? Math.min(110, 50 + 8 * k) : 0,
+        tag: pickTag(k),
+      };
+    }
+    m.padW = Math.max(m.padW, 120);
+    m.g = Math.min(28, 22 + (n - 1) * 0.9);
+    m.burn = Math.min(7, 4.5 + 0.55 * (n - 1));
+    return m;
+  }
+  function pickTag(k) { return ["Extra beans for breakfast", "Sliding pad over the soup", "Rock storm", "Steady toots", "Big gassy finish"][k % 5]; }
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  // ---------- state ----------
+  let W = 0, H = 0, S = 1, DPR = 1, CW = 0, CH = 0, playTop = 0, groundBase = 0;
+  let stars = [];
+  let world = null, L = null;
+  let mission = 1, totalScore = 0, best = 0;
+  let state = "title";        // title | flying | landed | crashed
+  let stateT = 0, time = 0;
+  let parts = [], pieces = [], ring = null, flash = 0, shake = 0;
+  let landing = null, beansGot = 0;
+  const touch = { id: null, active: false, startX: 0, startY: 0, x: 0 };
+  const keys = { left: false, right: false, thrust: false };
+
+  try { best = +localStorage.getItem("fartMan2Best") || 0; } catch (e) { best = 0; }
+
+  // ---------- sizing ----------
+  function resize() {
+    const r = $("game").getBoundingClientRect();
+    CW = Math.max(1, r.width); CH = Math.max(1, r.height);
+    DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+    cv.width = Math.round(CW * DPR); cv.height = Math.round(CH * DPR);
+    const oldW = W, oldTop = playTop;
+    S = Math.min(CW / PLAY_W, CH / PLAY_H);
+    W = CW / S; H = CH / S;
+    playTop = (H - PLAY_H) * 0.5;
+    groundBase = playTop + PLAY_H - 40;
+    makeStars();
+    if (!world) return;
+    if (state === "title") { buildMission(mission); return; }
+    // keep the current mission, stretched to the new screen
+    const kx = W / oldW, dy = playTop - oldTop;
+    const mv = (o) => { o.x *= kx; o.y += dy; };
+    world.pts.forEach(mv); world.far.forEach(mv); world.near.forEach(mv);
+    world.craters.forEach(mv); world.rocks.forEach(mv); world.specks.forEach(mv); world.beans.forEach(mv);
+    world.space.forEach((o) => { o.bx *= kx; o.by += dy; o.x *= kx; o.y += dy; });
+    if (world.soupY != null) { world.soupY += dy; world.canyon.l *= kx; world.canyon.r *= kx; }
+    const p = world.pad; p.l *= kx; p.r *= kx; p.c *= kx; p.c0 *= kx; p.y += dy;
+    // pad must stay flat and wide: rebuild its edges
+    p.w = p.r - p.l;
+    mv(L); pieces.forEach(mv); parts = []; ring = null;
+    if (landing) { landing.y0 += dy; }
+  }
+
+  function makeStars() {
+    const r = mulberry32(99), n = Math.round(CW * CH / 2300);
+    stars = [];
+    for (let i = 0; i < n; i++) {
+      stars.push({ x: r() * CW, y: r() * CH, s: r() < .06 ? 1.3 + r() * .8 : .35 + r() * .8, p: r() * 6.28, f: .6 + r() * 2.2, b: .35 + r() * .65 });
+    }
+  }
+
+  // ---------- world generation ----------
+  function buildMission(n) {
+    const cfg = missionCfg(n), rnd = mulberry32(n * 7919 + 17);
+    const padW = cfg.padW;
+    const c = clamp(cfg.pc * W, padW / 2 + 40, W - padW / 2 - 40);
+    const padH = cfg.float ? 190 + rnd() * 40 : 42 + rnd() * 22;
+    const pad = { l: c - padW / 2, r: c + padW / 2, c, c0: c, w: padW, y: groundBase - padH, vx: 0, t: 0,
+      float: !!cfg.float, move: Math.min(cfg.move || 0, c - padW / 2 - 40, W - 40 - c - padW / 2) };
+    const ph = [rnd() * 9, rnd() * 9, rnd() * 9], R = cfg.rough;
+    const pts = [], step = 14;
+    for (let x = -step * 2; x <= W + step * 2; x += step) {
+      let h = 64 + R * (34 * Math.sin(x * .011 + ph[0]) + 20 * Math.sin(x * .027 + ph[1]) + 9 * Math.sin(x * .071 + ph[2])) + (rnd() - .5) * 8 * R;
+      if (cfg.float) {
+        // a deep canyon full of bean soup under the whole range the pad slides over
+        const cl = pad.l - pad.move - 30, cr = pad.r + pad.move + 30;
+        const d = x < cl ? cl - x : x > cr ? x - cr : 0;
+        h = clamp(h, 30, 250);
+        h = -60 + (h + 60) * smooth(0, 70, d);
+        pts.push({ x, y: groundBase - h });
+        continue;
+      }
+      const d = x < pad.l ? pad.l - x : x > pad.r ? x - pad.r : 0;
+      h = padH + (h - padH) * smooth(PLAT, PLAT + 90, d);
+      h = clamp(h, 10, 250);
+      if (d > PLAT + 1) pts.push({ x, y: groundBase - h });
+    }
+    if (!cfg.float) pts.push({ x: pad.l - PLAT, y: pad.y }, { x: pad.r + PLAT, y: pad.y });
+    pts.sort((a, b) => a.x - b.x);
+
+    const ridge = (base, amp, f1, f2, q) => {
+      const out = [];
+      for (let x = -40; x <= W + 40; x += 20) {
+        const h = base + amp * (Math.sin(x * f1 + q) * .6 + Math.sin(x * f2 + q * 2.3) * .4) + rnd() * 10;
+        out.push({ x, y: groundBase - Math.max(20, h) });
+      }
+      return out;
+    };
+    const far = ridge(150, 60, .005, .013, rnd() * 9);
+    const near = ridge(105, 45, .008, .021, rnd() * 9);
+
+    world = { cfg, pad, pts, far, near, craters: [], rocks: [], specks: [], space: [], beans: [], soupY: null, canyon: null };
+    if (cfg.float) {
+      world.soupY = groundBase - 18;
+      world.canyon = { l: pad.l - pad.move - 30, r: pad.r + pad.move + 30 };
+    }
+
+    const inSoup = (x) => world.soupY != null && x > world.canyon.l - 10 && x < world.canyon.r + 10;
+    const clearOfPad = (x, m) => (x < pad.l - m || x > pad.r + m) && !inSoup(x);
+    for (let i = 0; i < 8 + R * 4; i++) {
+      const x = rnd() * W; if (!clearOfPad(x, 40)) continue;
+      const w = 10 + rnd() * 22;
+      world.craters.push({ x, y: groundAt(x) + 3 + w * .28, w });
+    }
+    for (let i = 0; i < 9; i++) {    // bigger craters in the foreground
+      const x = rnd() * W, gy = groundAt(x); if (!clearOfPad(x, 60)) continue;
+      const w = 18 + rnd() * 40, y = gy + 40 + rnd() * Math.max(20, H - gy - 30);
+      world.craters.push({ x, y, w });
+    }
+    for (let i = 0; i < 16; i++) {
+      const x = rnd() * W; if (!clearOfPad(x, PLAT + 6)) continue;
+      const r = 2 + rnd() * 5, shape = [];
+      for (let k = 0; k < 7; k++) { const a = Math.PI + k / 6 * Math.PI; shape.push([Math.cos(a) * r * (.7 + rnd() * .5), Math.sin(a) * r * (.6 + rnd() * .5)]); }
+      world.rocks.push({ x, y: groundAt(x) + 1.5, shape });
+    }
+    for (let i = 0; i < 260; i++) {
+      const x = rnd() * W, gy = groundAt(x);
+      if (world.soupY != null && gy >= world.soupY - 1) continue;
+      world.specks.push({ x, y: gy + 4 + rnd() * (H + 40 - gy), r: .5 + rnd() * 1.4, l: rnd() < .5 });
+    }
+    placeSpaceStuff(cfg, rnd);
+    resetLander();
+  }
+
+  // where the lander starts, before it is placed
+  function startX(cfg) { return clamp(world.pad.c + (cfg.sc - cfg.pc) * Math.min(W, 800), 50, W - 50); }
+
+  // space rocks and bean cans, kept clear of the start and of the air right above the pad
+  function placeSpaceStuff(cfg, rnd) {
+    const pad = world.pad, sx = startX(cfg), sy = playTop + START_Y;
+    const padZone = (x, y, m) => x > pad.l - pad.move - m && x < pad.r + pad.move + m && y > pad.y - 130 - m && y < pad.y + 40;
+    for (let tries = 0; world.space.length < cfg.rocks && tries < 400; tries++) {
+      const r = 15 + rnd() * 13, amp = cfg.drift * (.5 + rnd() * .5), m = r + amp;
+      const x = 30 + rnd() * (W - 60), y = playTop + 60 + rnd() * (PLAY_H - 120);
+      if (y > groundAt(x) - m - 40) continue;
+      if (Math.hypot(x - sx, y - sy) < 120 + m) continue;
+      if (Math.abs(x - sx) < 55 + m && y > sy) continue;           // never right under where he starts
+      if (padZone(x, y, m)) continue;
+      if (world.space.some((o) => Math.hypot(o.bx - x, o.by - y) < o.r + o.amp + m + 40)) continue;
+      const shape = [];
+      for (let k = 0; k < 9; k++) { const a = k / 9 * Math.PI * 2; shape.push([Math.cos(a) * r * (.85 + rnd() * .25), Math.sin(a) * r * (.85 + rnd() * .25)]); }
+      const ang = rnd() * 6.28;
+      world.space.push({ bx: x, by: y, x, y, r, amp, ax: Math.cos(ang), ay: Math.sin(ang) * .6, f: .5 + rnd() * .6, ph: rnd() * 6.28,
+        rot: 0, spin: (rnd() - .5) * .8, shape, dents: [[-r * .3, -r * .2, r * .22], [r * .35, r * .3, r * .16]] });
+    }
+    // beans along the way from Fart Man to the pad, plus some off to the side
+    const tx = pad.c, ty = pad.y - 70;
+    for (let i = 0, tries = 0; world.beans.length < cfg.beans && tries < 300; tries++) {
+      const along = world.beans.length < cfg.beans - 1;
+      let x, y;
+      if (along) { const t = (i + 1) / cfg.beans; x = sx + (tx - sx) * t + (rnd() - .5) * 150; y = sy + (ty - sy) * t + (rnd() - .5) * 90; }
+      else { x = 40 + rnd() * (W - 80); y = playTop + 50 + rnd() * 200; }
+      x = clamp(x, 34, W - 34);
+      if (y > groundAt(x) - 50 || y < playTop + 30) continue;
+      if (Math.hypot(x - sx, y - sy) < 60) continue;
+      if (world.space.some((o) => Math.hypot(o.bx - x, o.by - y) < o.r + o.amp + 34)) continue;
+      if (world.beans.some((b) => Math.hypot(b.x - x, b.y - y) < 60)) continue;
+      world.beans.push({ x, y, ph: rnd() * 6.28, got: false });
+      if (along) i++;
+    }
+  }
+
+  function moveSpace(dt) {
+    for (const o of world.space) {
+      const s = Math.sin(time * o.f + o.ph) * o.amp;
+      o.x = o.bx + o.ax * s; o.y = o.by + o.ay * s; o.rot += o.spin * dt;
+    }
+  }
+  function movePad(dt) {
+    const p = world.pad;
+    if (!p.move) { p.vx = 0; return; }
+    p.t += dt;
+    const c = p.c0 + Math.sin(p.t * .7) * p.move;
+    p.vx = (c - p.c) / dt;
+    p.l += c - p.c; p.r += c - p.c; p.c = c;
+  }
+
+  function groundAt(x) {
+    const soup = world.soupY;
+    if (soup != null) return Math.min(soup, terrainAt(x));
+    const p = world.pad;
+    if (x >= p.l - PLAT && x <= p.r + PLAT) return p.y;
+    return terrainAt(x);
+  }
+  function terrainAt(x) {
+    const pts = world.pts;
+    if (x <= pts[0].x) return pts[0].y;
+    if (x >= pts[pts.length - 1].x) return pts[pts.length - 1].y;
+    let lo = 0, hi = pts.length - 1;
+    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (pts[m].x <= x) lo = m; else hi = m; }
+    const a = pts[lo], b = pts[hi], t = (x - a.x) / ((b.x - a.x) || 1);
+    return a.y + (b.y - a.y) * t;
+  }
+
+  function resetLander() {
+    const cfg = world.cfg, pad = world.pad;
+    const x = startX(cfg);
+    L = { x, y: playTop + START_Y, vx: cfg.vx0, vy: cfg.vy0, angle: 0, fuel: START_GAS, thrusting: false };
+    parts = []; pieces = []; ring = null; flash = 0; shake = 0; landing = null; beansGot = 0;
+  }
+
+  // ---------- lander geometry (local units, y down, before LS scale) ----------
+  const FOOT_L = { x: -22, y: 23.5, foot: true }, FOOT_R = { x: 22, y: 23.5, foot: true };
+  const HULL = [FOOT_L, FOOT_R,
+    { x: -15, y: -2 }, { x: 15, y: -2 }, { x: -15, y: 10 }, { x: 15, y: 10 },
+    { x: -8, y: -22 }, { x: 8, y: -22 }, { x: 12, y: -31 }, { x: -7, y: 17 }, { x: 7, y: 17 },
+    { x: -18, y: 13 }, { x: 18, y: 13 }];
+  function toWorld(p, o = L) {
+    const a = o.angle * DEG, c = Math.cos(a), s = Math.sin(a), px = p.x * LS, py = p.y * LS;
+    return { x: o.x + px * c - py * s, y: o.y + px * s + py * c, foot: p.foot };
+  }
+
+  // ---------- input: pointer ----------
+  function steerRange() { return clamp(Math.min(CW, CH) * 0.26, 70, 150); }
+  function touchAngle() {
+    const dx = touch.x - touch.startX, m = Math.max(0, Math.abs(dx) - DEAD_ZONE);
+    return Math.sign(dx) * Math.min(MAX_TILT, MAX_TILT * m / steerRange());
+  }
+  function releaseTouch() { touch.active = false; touch.id = null; }
+
+  cv.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    if (touch.active) return;              // one steering finger at a time
+    touch.id = e.pointerId; touch.active = true;
+    touch.startX = touch.x = e.clientX; touch.startY = e.clientY;
+    try { cv.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  });
+  cv.addEventListener("pointermove", (e) => {
+    if (touch.active && e.pointerId === touch.id) { e.preventDefault(); touch.x = e.clientX; }
+  });
+  const endPointer = (e) => { if (e.pointerId === touch.id) releaseTouch(); };
+  cv.addEventListener("pointerup", endPointer);
+  cv.addEventListener("pointercancel", endPointer);
+  cv.addEventListener("lostpointercapture", endPointer);
+  window.addEventListener("pointerup", endPointer);
+  window.addEventListener("pointercancel", endPointer);
+  window.addEventListener("blur", () => { releaseTouch(); keys.left = keys.right = keys.thrust = false; });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) { releaseTouch(); keys.left = keys.right = keys.thrust = false; } });
+
+  // no scrolling, zooming or long-press menus while playing
+  const stop = (e) => { if (e.cancelable) e.preventDefault(); };
+  cv.addEventListener("touchstart", stop, { passive: false });
+  cv.addEventListener("touchmove", stop, { passive: false });
+  document.addEventListener("touchmove", (e) => { if (!e.target.closest || !e.target.closest(".overlay")) stop(e); }, { passive: false });
+  document.addEventListener("gesturestart", stop, { passive: false });
+  document.addEventListener("dblclick", stop, { passive: false });
+  cv.addEventListener("contextmenu", stop);
+
+  // ---------- input: keyboard ----------
+  const KEYMAP = { ArrowLeft: "left", ArrowRight: "right", ArrowUp: "thrust", " ": "thrust", Spacebar: "thrust", a: "left", d: "right", w: "thrust" };
+  window.addEventListener("keydown", (e) => {
+    const k = KEYMAP[e.key];
+    if (!k) return;
+    if (state === "flying" || !(document.activeElement && document.activeElement.tagName === "BUTTON")) e.preventDefault();
+    keys[k] = true;
+  });
+  window.addEventListener("keyup", (e) => { const k = KEYMAP[e.key]; if (k) keys[k] = false; });
+
+  // ---------- simulation ----------
+  const STEP = 1 / 120;
+  function update(dt) {
+    time += dt; stateT += dt;
+    if (world && state !== "crashed") moveSpace(dt);
+    if (state === "flying") fly(dt);
+    else if (state === "landed") settle(dt);
+    else if (state === "title") hover();
+    updateParts(dt);
+    updatePieces(dt);
+    if (ring) { ring.t += dt; if (ring.t > .7) ring = null; }
+    flash = Math.max(0, flash - dt * 2.2);
+    shake = Math.max(0, shake - dt * 2.5);
+  }
+
+  function hover() {
+    L.y = playTop + START_Y + Math.sin(time * 1.4) * 3;
+    L.angle = Math.sin(time * .9) * 2;
+  }
+
+  function fly(dt) {
+    const cfg = world.cfg;
+    // steering: the finger sets a target angle; the ship eases toward it
+    let target = 0, k = 1.1;                        // no input: gentle self-levelling
+    if (touch.active) { target = touchAngle(); k = 6; }
+    else if (keys.left !== keys.right) { target = keys.right ? MAX_TILT : -MAX_TILT; k = 3.5; }
+    else if (keys.thrust) { k = 3; }
+    L.angle += (target - L.angle) * (1 - Math.exp(-k * dt));
+    L.angle = clamp(L.angle, -MAX_TILT - 1, MAX_TILT + 1);
+
+    const wantThrust = touch.active || keys.thrust;
+    L.thrusting = wantThrust && L.fuel > 0;
+    let ax = 0, ay = cfg.g;
+    if (L.thrusting) {
+      const a = L.angle * DEG;
+      ax += Math.sin(a) * THRUST; ay -= Math.cos(a) * THRUST;
+      L.fuel = Math.max(0, L.fuel - cfg.burn * dt);
+      if (L.fuel === 0) sfx.empty();
+      exhaust();
+    }
+    L.vx += ax * dt; L.vy += ay * dt;
+    movePad(dt);
+    L.x += L.vx * dt; L.y += L.vy * dt;
+    grabBeans();
+    if (L.x < 30) { L.x = 30; if (L.vx < 0) L.vx = 0; }
+    if (L.x > W - 30) { L.x = W - 30; if (L.vx > 0) L.vx = 0; }
+    if (L.y < -200) { L.y = -200; if (L.vy < 0) L.vy = 0; }
+    collide();
+  }
+
+  function grabBeans() {
+    for (const b of world.beans) {
+      if (b.got) continue;
+      const by = b.y + Math.sin(time * 2 + b.ph) * 4;
+      if (Math.hypot(b.x - L.x, by - L.y) > BEAN_R + 10) continue;
+      b.got = true; beansGot++;
+      L.fuel = Math.min(100, L.fuel + BEAN_GAS);
+      sfx.bean();
+      popText(pickWord(["BEANS!", "YUM!", "MORE GAS!", "BEAN POWER!"]), b.x, by - 22, 0, -40, 15);
+      for (let i = 0; i < 16; i++) {
+        const a = i / 16 * Math.PI * 2, v = rand(60, 130);
+        parts.push({ x: b.x, y: by, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: rand(.35, .6), s: rand(2, 3.5), c: pickWord(["#FFD23F", "#B8F55E", "#FF9A4D"]), g: 0, drag: 2.5, glow: true, star: true, rot: rand(0, 6) });
+      }
+    }
+  }
+
+  function collide() {
+    // space rocks first: any bit of Fart Man touching one is a bonk
+    for (const o of world.space) {
+      if (Math.hypot(o.x - L.x, o.y - L.y) > o.r + 50) continue;
+      if (Math.hypot(o.x - L.x, o.y - L.y) < o.r + 8) return crash("rock");
+      for (const p of HULL) { const w = toWorld(p); if (Math.hypot(w.x - o.x, w.y - o.y) < o.r * .92) return crash("rock"); }
+    }
+    let footHit = false, bodyHit = false, padFoot = false;
+    const pad = world.pad, PT = 12;
+    for (const p of HULL) {
+      const w = toWorld(p);
+      if (pad.float && w.x >= pad.l && w.x <= pad.r && w.y >= pad.y && w.y <= pad.y + PT) {
+        if (p.foot && L.vy > -5) { footHit = true; padFoot = true; } else bodyHit = true;
+      } else if (w.y >= groundAt(w.x)) { if (p.foot) footHit = true; else bodyHit = true; }
+    }
+    if (!footHit && !bodyHit) return;
+    const soupy = world.soupY != null && groundAt(L.x) >= world.soupY - .5 && !padFoot;
+    if (bodyHit) return crash(soupy ? "soup" : "body");
+    const fl = toWorld(FOOT_L), fr = toWorld(FOOT_R);
+    const onPad = (pad.float ? padFoot : true) && Math.min(fl.x, fr.x) >= pad.l - 3 && Math.max(fl.x, fr.x) <= pad.r + 3;
+    const vy = L.vy / SPEED_UNIT, vx = Math.abs((L.vx - pad.vx) / SPEED_UNIT), ang = Math.abs(L.angle);
+    if (!onPad) return crash(soupy ? "soup" : "missed");
+    if (vy > SAFE_VY) return crash("fast");
+    if (vx > SAFE_VX) return crash("drift");
+    if (ang > SAFE_ANG) return crash("tilt");
+    land(vy, vx, ang);
+  }
+
+  // ---------- landing ----------
+  function land(vy, vx, ang) {
+    const cfg = world.cfg, pad = world.pad;
+    state = "landed"; stateT = 0;
+    L.thrusting = false;
+    const soft = clamp(1 - Math.max(0, vy) / SAFE_VY, 0, 1);
+    const drift = clamp(1 - vx / SAFE_VX, 0, 1);
+    const up = clamp(1 - ang / SAFE_ANG, 0, 1);
+    const center = clamp(1 - Math.abs(L.x - pad.c) / (pad.w / 2), 0, 1);
+    const q = (soft * 1.2 + drift * .8 + up * .8 + center * 1.2) / 4;
+    const grade = "SAFE TOOTDOWN!";
+    const rating = q >= .78 ? "★★★ Perfect landing" : q >= .5 ? "★★ Great landing" : "★ Good landing";
+    const rows = [
+      ["Beans", beansGot * 150],
+      ["Gas left", Math.round(L.fuel) * 10],
+      ["Soft touchdown", Math.round(soft * 400)],
+      ["Low drift", Math.round(drift * 200)],
+      ["Upright", Math.round(up * 200)],
+      ["On target", Math.round(center * 300)],
+    ];
+    const score = rows.reduce((s, r) => s + r[1], 0);
+    totalScore += score;
+    if (totalScore > best) { best = totalScore; try { localStorage.setItem("fartMan2Best", String(best)); } catch (e) { /* ignore */ } }
+    landing = { y0: L.y, a0: L.angle, vx0: L.vx, grade, rating, rows, score, cfg };
+    if (window.RosenbergBridge) RosenbergBridge.report({ score: totalScore, stars: q >= .78 ? 3 : q >= .5 ? 2 : 1 });
+    L.vx = 0; L.vy = 0; pad.vx = 0; pad.move = 0;
+    sfx.land();
+    for (let i = 0; i < 26; i++) dust(L.x + rand(-30, 30), pad.y, rand(-70, 70), rand(-30, -4), .5 + Math.random() * .6);
+    showBanner(grade, beansGot === world.beans.length ? "All the beans! Fart Man wins!" : "Fart Man wins!");
+    popText("TA-DA!", L.x, L.y - 44, 0, -30, 14);
+  }
+
+  function settle(dt) {
+    if (!landing) return;
+    const t = smooth(0, .4, stateT);
+    L.angle = landing.a0 * (1 - t);
+    const restY = world.pad.y - FOOT_L.y * LS;
+    L.y = landing.y0 + (restY - landing.y0) * t;
+    if (stateT > 1.0 && $("winScreen").hidden) showWin();
+    if (stateT > 2.0) { const b = $("nextBtn"); if (b.classList.contains("wait")) { b.classList.remove("wait"); try { b.focus({ preventScroll: true }); } catch (e) { /* ignore */ } } }
+  }
+
+  function showWin() {
+    hideBanner();
+    $("winGrade").textContent = landing.grade;
+    $("winStars").textContent = landing.rating;
+    $("winTitle").textContent = "MISSION " + mission + " COMPLETE!";
+    $("winStats").innerHTML = landing.rows.map(([k, v]) => "<li><span>" + k + "</span><b>+" + v.toLocaleString("en-US") + "</b></li>").join("");
+    $("winTotal").innerHTML = "Mission score <b>" + landing.score.toLocaleString("en-US") + "</b> &middot; Total <b>" + totalScore.toLocaleString("en-US") + "</b>" + (best > 0 ? "<br>Best total " + best.toLocaleString("en-US") : "");
+    $("nextBtn").classList.add("wait");
+    $("winScreen").hidden = false;
+    const c = $("winCard"); c.classList.remove("show"); void c.offsetWidth; c.classList.add("show");
+  }
+
+  // ---------- crash ----------
+  const TIPS = {
+    body: "Fart Man bonked the ground. Land on his feet, on the Fart Pad between the green lights.",
+    missed: "Fart Man missed the Fart Pad! Steer toward the green lights.",
+    rock: "Bonk! Fart Man hit a space rock. Steer around the rocks, and grab beans if gas runs low.",
+    soup: "Splash! Fart Man fell in the bean soup. The Fart Pad floats up high, so keep tooting till you're over it.",
+    fast: "Coming down too fast! Start tooting sooner to slow the fall.",
+    drift: "Sliding sideways too fast! Drag the other way for a moment to slow down.",
+    tilt: "Fart Man was leaning too far! Slide your finger back to where you started to stand him up.",
+  };
+  function crash(reason) {
+    state = "crashed"; stateT = 0;
+    L.thrusting = false;
+    const tip = TIPS[reason] || TIPS.body;
+    $("crashTip").textContent = tip;
+    breakApart();
+    flash = .7; shake = reduced ? 0 : 1;
+    ring = { x: L.x, y: L.y + 10, t: 0 };
+    sfx.crash();
+  }
+
+  function breakApart() {
+    // Fart Man bounces off the ground and ends up sitting there, dazed. Only rocks and dust fly.
+    const hero = {
+      hero: true, x: L.x, y: L.y, a: L.angle * DEG, va: (Math.random() < .5 ? -1 : 1) * rand(5, 9),
+      vx: L.vx * .4 + rand(-30, 30), vy: -rand(90, 140), r: FOOT_L.y * LS, p: [],
+    };
+    const shards = [];
+    for (let i = 0; i < 9; i++) {
+      const s = rand(2, 4.5), p = [[-s, s * .6], [s * .2, -s], [s, s * .7]];
+      shards.push({ x: L.x + rand(-12, 12), y: L.y + 22, a: rand(0, 6), va: rand(-10, 10), c: ["#F2B27A", "#D9793A", "#8C6A9E"][i % 3],
+        vx: rand(-110, 110), vy: -rand(60, 160), r: 2, p });
+    }
+    pieces = [hero, ...shards];
+    for (let i = 0; i < 30; i++) {
+      const a = rand(Math.PI * 1.05, Math.PI * 1.95), v = rand(80, 240);
+      parts.push({ x: L.x, y: L.y + 6, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: rand(.4, .9), s: rand(2.5, 4.5), c: ["#FFF6C9", "#FFD23F", "#FF8FC0"][i % 3], g: 60, drag: 1.4, glow: true, star: true, rot: rand(0, 6) });
+    }
+    popText(pickWord(["BONK!", "OOF!", "BOING!", "WHOOPS!"]), L.x, L.y - 30, 0, -40, 18);
+    const gy = groundAt(L.x);
+    for (let i = 0; i < 40; i++) dust(L.x + rand(-20, 20), gy, rand(-140, 140), rand(-60, -10), rand(.9, 1.8));
+  }
+
+  function updatePieces(dt) {
+    if (!pieces.length) return;
+    const g = world.cfg.g;
+    for (const p of pieces) {
+      p.vy += g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.a += p.va * dt;
+      const gy = groundAt(p.x) - p.r;
+      if (p.y > gy) {
+        p.y = gy;
+        if (p.vy > 0) { p.vy *= -.32; p.vx *= .7; p.va *= .6; if (Math.abs(p.vy) < 10) p.vy = 0; }
+        p.vx *= .96; p.va *= .96;
+        if (p.hero && p.vy === 0) {       // sit back up, a bit wobbly
+          p.a = Math.atan2(Math.sin(p.a), Math.cos(p.a));
+          p.va *= .8; p.a *= Math.exp(-4 * dt);
+        }
+      }
+      if (p.x < 5 || p.x > W - 5) p.vx *= -.5;
+    }
+    if (state === "crashed" && stateT > 1.1 && $("crashScreen").hidden) {
+      $("crashScreen").hidden = false;
+      const c = $("crashCard"); c.classList.remove("show"); void c.offsetWidth; c.classList.add("show");
+      try { $("restartBtn").focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+    }
+  }
+
+  // ---------- particles ----------
+  const pickWord = (a) => a[Math.floor(Math.random() * a.length)];
+  function popText(text, x, y, vx, vy, size) {
+    parts.push({ text, x, y, vx, vy, life: 0, max: .9, s: size || 12, g: 0, drag: 1.5, c: "#FFD23F", tilt: rand(-.25, .25) });
+  }
+  function dust(x, y, vx, vy, max) {
+    if (parts.length > 600) return;
+    const shade = 170 + Math.floor(Math.random() * 50);
+    parts.push({ x, y, vx, vy, life: 0, max, s: rand(1.5, 4), c: "rgb(" + (shade + 50) + "," + (shade - 20) + "," + (shade - 80) + ")", g: 8, drag: 1.6, grow: 5 });
+  }
+  let tootClock = 0;
+  function exhaust() {
+    const a = L.angle * DEG, dirx = -Math.sin(a), diry = Math.cos(a);
+    const n = toWorld({ x: 0, y: 14 });
+    // puffs of gas trailing out behind him
+    if (Math.random() < .6 && parts.length < 600) {
+      const v = rand(60, 120);
+      parts.push({ x: n.x + dirx * 45, y: n.y + diry * 45, vx: dirx * v + rand(-25, 25) + L.vx, vy: diry * v + rand(-12, 12) + L.vy, life: 0, max: rand(.3, .55), s: rand(3, 5.5), c: pickWord(["#B8F55E", "#9BE83C", "#D8FF9A"]), g: -6, drag: 2.5, grow: 8, puff: true });
+    }
+    // a sound-effect word every so often
+    tootClock -= STEP;
+    if (tootClock <= 0) {
+      tootClock = rand(.55, .9);
+      sfx.toot();
+      const side = Math.random() < .5 ? -1 : 1;
+      popText(pickWord(["TOOT!", "PFFT!", "BRAAP!", "FWOOSH!", "PFFFT!", "TOOT TOOT!"]), n.x + dirx * 30 + side * 26, n.y + diry * 30, side * 30 + L.vx * .5, diry * 20 + L.vy * .5 - 20, 12);
+    }
+    // dust kicked up when close to the ground
+    if (diry < .3) return;
+    const d = groundAt(n.x) - n.y;
+    if (d > 110 || d < -4) return;
+    const hx = n.x + dirx * (Math.max(0, d) / diry), gy = groundAt(hx);
+    const power = 1 - clamp(d / 110, 0, 1);
+    if (Math.random() < .35 + power * .6) {
+      for (let i = 0; i < 2; i++) {
+        const side = Math.random() < .5 ? -1 : 1;
+        dust(hx + rand(-4, 4), gy - 1, side * rand(40, 130) * (.4 + power) + dirx * 60, rand(-24, -4), rand(.5, 1.1));
+      }
+    }
+  }
+  function updateParts(dt) {
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i];
+      p.life += dt;
+      if (p.life >= p.max) { parts.splice(i, 1); continue; }
+      const f = Math.exp(-p.drag * dt);
+      p.vx *= f; p.vy = p.vy * f + p.g * dt;
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      if (world && !p.text && p.y > groundAt(p.x)) { p.y = groundAt(p.x); p.vy *= -.2; }
+    }
+  }
+
+  // ---------- drawing ----------
+  const OUT = "#2B1650";     // cartoon outline
+  function render() {
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const sky = ctx.createLinearGradient(0, 0, 0, CH);
+    sky.addColorStop(0, "#0B1F3A"); sky.addColorStop(.45, "#1F5A7A"); sky.addColorStop(.78, "#E0806A"); sky.addColorStop(1, "#FFC36B");
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, CW, CH);
+    const STAR_C = ["#FFFFFF", "#FFF2A8", "#FFC2E0", "#BFF4FF"];
+    stars.forEach((s, i) => {
+      const tw = .55 + .45 * Math.sin(time * s.f + s.p);
+      ctx.globalAlpha = s.b * (reduced ? 1 : tw) * clamp(1.3 - s.y / CH * 1.7, 0, 1);   // stars fade into the sunset
+      ctx.fillStyle = STAR_C[i % 4];
+      if (s.s > 1.3) { drawStar(s.x, s.y, s.s * 1.6, s.p, ctx.fillStyle, null); }
+      else ctx.fillRect(s.x, s.y, s.s, s.s);
+    });
+    ctx.globalAlpha = 1;
+
+    let sx = 0, sy = 0;
+    if (shake > 0) { sx = rand(-1, 1) * 6 * shake; sy = rand(-1, 1) * 6 * shake; }
+    ctx.setTransform(DPR * S, 0, 0, DPR * S, sx * DPR, sy * DPR);
+
+    drawShootingStar();
+    drawBeanMoon(W * .82, Math.max(playTop * .55 + 96, 96), 24);
+    drawRidge(world.far, "#C8665A", "#8A3F52", .9);
+    drawRidge(world.near, "#E0864E", "#A5503F", 1);
+    drawTerrain();
+    drawSoup();
+    drawPad();
+    drawBeans();
+    drawSpaceRocks();
+    drawParts(false);
+    if (state === "crashed") drawPieces();
+    else drawHero(L.x, L.y, L.angle * DEG, false, L.thrusting);
+    drawParts(true);
+    drawTexts();
+    if (ring) {
+      const t = ring.t / .7;
+      ctx.strokeStyle = "rgba(255,210,63," + (1 - t) * .8 + ")"; ctx.lineWidth = 3 * (1 - t) + .5;
+      ctx.beginPath(); ctx.ellipse(ring.x, ring.y, 12 + t * 90, 5 + t * 30, 0, 0, Math.PI * 2); ctx.stroke();
+    }
+    if (state === "flying" && L.y < 40) drawAboveMarker();
+
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (state === "flying" && touch.active) drawTouchGuide();
+    if (flash > 0) { ctx.fillStyle = "rgba(255,245,210," + flash * .35 + ")"; ctx.fillRect(0, 0, CW, CH); }
+  }
+
+  function drawStar(x, y, r, rot, fill, stroke) {
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = rot + i * Math.PI / 5 - Math.PI / 2, rr = i % 2 ? r * .45 : r;
+      i ? ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr) : ctx.moveTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+    }
+    ctx.closePath();
+    ctx.fillStyle = fill; ctx.fill();
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.1; ctx.stroke(); }
+  }
+
+  function drawShootingStar() {
+    if (reduced) return;
+    const ph = (time % 7) / 7;
+    if (ph > .14) return;
+    const k = ph / .14, x = W * (.1 + k * .55), y = playTop * .4 + 40 + k * 90;
+    const g = ctx.createLinearGradient(x - 60, y - 10, x, y);
+    g.addColorStop(0, "rgba(255,242,168,0)"); g.addColorStop(1, "rgba(255,242,168," + (1 - k) + ")");
+    ctx.strokeStyle = g; ctx.lineWidth = 2; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(x - 60, y - 10); ctx.lineTo(x, y); ctx.stroke();
+    drawStar(x, y, 4, time * 6, "rgba(255,242,168," + (1 - k) + ")", null);
+  }
+
+  // a big smiling bean-shaped moon, with a little bean moon of its own
+  function drawBeanMoon(x, y, r) {
+    ctx.save();
+    ctx.translate(x, y);
+    const halo = ctx.createRadialGradient(0, 0, r * .8, 0, 0, r * 2.2);
+    halo.addColorStop(0, "rgba(255,210,120,.35)"); halo.addColorStop(1, "rgba(255,210,120,0)");
+    ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(0, 0, r * 2.2, 0, Math.PI * 2); ctx.fill();
+    ctx.rotate(-.4);
+    const body = ctx.createRadialGradient(-r * .4, -r * .4, r * .1, 0, 0, r * 1.3);
+    body.addColorStop(0, "#FFD8A0"); body.addColorStop(1, "#D9793A");
+    ctx.fillStyle = body; ctx.strokeStyle = OUT; ctx.lineWidth = 1.5;
+    beanPath(0, 0, r * 1.25, r * .8); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,.35)"; ell(-r * .5, -r * .38, r * .35, r * .12);
+    ctx.rotate(.4);
+    ctx.fillStyle = OUT;
+    ell(-r * .3, -r * .05, r * .09, r * .12); ell(r * .3, -r * .05, r * .09, r * .12);
+    ctx.fillStyle = "rgba(255,110,140,.5)"; ell(-r * .55, r * .2, r * .14, r * .08); ell(r * .55, r * .2, r * .14, r * .08);
+    ctx.strokeStyle = OUT; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(0, r * .12, r * .25, .15 * Math.PI, .85 * Math.PI); ctx.stroke();
+    const a = reduced ? 1 : time * .5;
+    ctx.fillStyle = "#FFB25C"; ctx.lineWidth = 1.1;
+    ctx.save(); ctx.translate(Math.cos(a) * r * 2.1, Math.sin(a) * r * .7); ctx.rotate(a);
+    beanPath(0, 0, r * .3, r * .2); ctx.fill(); ctx.stroke(); ctx.restore();
+    ctx.restore();
+  }
+  // a kidney-bean outline centred on (x, y)
+  function beanPath(x, y, rx, ry) {
+    ctx.beginPath();
+    ctx.moveTo(x - rx, y);
+    ctx.bezierCurveTo(x - rx, y - ry * 1.1, x - rx * .45, y - ry * 1.05, x, y - ry * .62);
+    ctx.bezierCurveTo(x + rx * .45, y - ry * 1.05, x + rx, y - ry * 1.1, x + rx, y);
+    ctx.bezierCurveTo(x + rx, y + ry * 1.35, x - rx, y + ry * 1.35, x - rx, y);
+    ctx.closePath();
+  }
+
+  // bubbling bean soup in the canyon under a floating pad
+  function drawSoup() {
+    if (world.soupY == null) return;
+    const y0 = world.soupY, c = world.canyon;
+    const g = ctx.createLinearGradient(0, y0, 0, H);
+    g.addColorStop(0, "#C1602B"); g.addColorStop(1, "#6E2A1A");
+    // fill the canyon up to the soup line, only where the ground dips below it
+    let x0 = c.l - 80, x1 = c.r + 80;
+    while (x0 < c.l && terrainAt(x0) <= y0) x0 += 2;
+    while (x1 > c.r && terrainAt(x1) <= y0) x1 -= 2;
+    const wave = (x) => y0 + (reduced ? 0 : Math.sin(x * .07 + time * 2.4) * 1.6);
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.moveTo(x0, y0);
+    for (let x = x0; x <= x1; x += 4) ctx.lineTo(x, wave(x));
+    ctx.lineTo(x1, y0);
+    for (let x = x1; x >= x0; x -= 4) ctx.lineTo(x, Math.max(y0, terrainAt(x)) + 1);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#FFB27A"; ctx.lineWidth = 1.4;
+    ctx.beginPath(); for (let x = x0; x <= x1; x += 4) x === x0 ? ctx.moveTo(x, wave(x)) : ctx.lineTo(x, wave(x)); ctx.stroke();
+    // beans floating in it, and bubbles popping
+    for (let i = 0; i < 10; i++) {
+      const x = c.l + (c.r - c.l) * ((i * .37 + .1) % 1), bob = reduced ? 0 : Math.sin(time * 1.6 + i) * 1.4;
+      ctx.fillStyle = "#8C3A1E"; ctx.strokeStyle = OUT; ctx.lineWidth = .7;
+      beanPath(x, y0 + 5 + (i % 3) * 3 + bob, 3.4, 2.2); ctx.fill(); ctx.stroke();
+    }
+    if (!reduced) {
+      for (let i = 0; i < 6; i++) {
+        const ph = (time * .6 + i * .37) % 1, x = c.l + (c.r - c.l) * ((i * .53 + .2) % 1);
+        ctx.strokeStyle = "rgba(255,210,160," + (1 - ph) + ")"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(x, y0 - 1 - ph * 4, 1.5 + ph * 3, Math.PI, Math.PI * 2); ctx.stroke();
+      }
+    }
+  }
+
+  // cans of beans: grab them for more gas
+  function drawBeans() {
+    for (const b of world.beans) {
+      if (b.got) continue;
+      const y = b.y + Math.sin(time * 2 + b.ph) * 4;
+      const glow = ctx.createRadialGradient(b.x, y, 2, b.x, y, 24);
+      glow.addColorStop(0, "rgba(255,230,120,.55)"); glow.addColorStop(1, "rgba(255,230,120,0)");
+      ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(b.x, y, 24, 0, Math.PI * 2); ctx.fill();
+      ctx.save(); ctx.translate(b.x, y); ctx.rotate(Math.sin(time * 1.5 + b.ph) * .15);
+      ctx.strokeStyle = OUT; ctx.lineWidth = 1.3;
+      ctx.fillStyle = "#FF8A3D"; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-8, -11, 16, 22, 3) : ctx.rect(-8, -11, 16, 22); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#C9CED8"; ell(0, -11, 8, 2.2); ctx.stroke();
+      ctx.fillStyle = "#FFF3D6"; ctx.fillRect(-8, -5, 16, 10); ctx.strokeRect(-8, -5, 16, 10);
+      ctx.fillStyle = "#B5542A"; ctx.lineWidth = .8; beanPath(0, 0, 4.5, 2.8); ctx.fill(); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // grumpy space rocks: bonk one and it's over
+  function drawSpaceRocks() {
+    for (const o of world.space) {
+      ctx.save(); ctx.translate(o.x, o.y); ctx.rotate(o.rot);
+      ctx.fillStyle = "#8C6A9E"; ctx.strokeStyle = OUT; ctx.lineWidth = 1.6;
+      poly(o.shape); polyStroke(o.shape);
+      ctx.fillStyle = "rgba(255,255,255,.18)"; ell(-o.r * .3, -o.r * .45, o.r * .4, o.r * .14);
+      ctx.fillStyle = "#6E4F82";
+      o.dents.forEach(([x, y, r]) => ell(x, y, r, r * .8));
+      ctx.restore();
+      // face stays upright
+      ctx.fillStyle = OUT; const e = o.r * .28;
+      ell(o.x - e, o.y - o.r * .05, 1.8, 2.2); ell(o.x + e, o.y - o.r * .05, 1.8, 2.2);
+      ctx.strokeStyle = OUT; ctx.lineWidth = 1.4;
+      line(o.x - e - 3, o.y - o.r * .3, o.x - e + 2.5, o.y - o.r * .22); line(o.x + e + 3, o.y - o.r * .3, o.x + e - 2.5, o.y - o.r * .22);
+      ctx.beginPath(); ctx.arc(o.x, o.y + o.r * .38, o.r * .2, 1.15 * Math.PI, 1.85 * Math.PI); ctx.stroke();
+    }
+  }
+
+  function drawRidge(pts, top, bottom, alpha) {
+    const g = ctx.createLinearGradient(0, groundBase - 220, 0, groundBase);
+    g.addColorStop(0, top); g.addColorStop(1, bottom);
+    ctx.globalAlpha = alpha; ctx.fillStyle = g;
+    ctx.beginPath(); ctx.moveTo(pts[0].x, H + 10);
+    for (const p of pts) ctx.lineTo(p.x, p.y);
+    ctx.lineTo(pts[pts.length - 1].x, H + 10); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawTerrain() {
+    const pts = world.pts;
+    const g = ctx.createLinearGradient(0, groundBase - 200, 0, H);
+    g.addColorStop(0, "#FFD39A"); g.addColorStop(.35, "#EE9A5A"); g.addColorStop(1, "#9A4A38");
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.moveTo(pts[0].x, H + 20);
+    for (const p of pts) ctx.lineTo(p.x, p.y);
+    ctx.lineTo(pts[pts.length - 1].x, H + 20); ctx.closePath(); ctx.fill();
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = OUT; ctx.lineWidth = 2.4;
+    ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
+    ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 1.2;
+    ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y + 2.4) : ctx.moveTo(p.x, p.y + 2.4)); ctx.stroke();
+    for (const s of world.specks) {
+      ctx.fillStyle = s.l ? "rgba(255,255,255,.22)" : "rgba(120,50,30,.18)";
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
+    }
+    for (const c of world.craters) {
+      ctx.fillStyle = "rgba(140,60,40,.35)";
+      ctx.beginPath(); ctx.ellipse(c.x, c.y, c.w, c.w * .3, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.45)"; ctx.lineWidth = 1.3;
+      ctx.beginPath(); ctx.ellipse(c.x, c.y + 1, c.w, c.w * .3, 0, .1, Math.PI - .1); ctx.stroke();
+      ctx.strokeStyle = "rgba(90,35,30,.5)";
+      ctx.beginPath(); ctx.ellipse(c.x, c.y - 1, c.w * 1.02, c.w * .32, 0, Math.PI + .1, Math.PI * 2 - .1); ctx.stroke();
+    }
+    for (const r of world.rocks) {
+      ctx.fillStyle = "#C9774A"; ctx.strokeStyle = OUT; ctx.lineWidth = 1;
+      ctx.beginPath(); r.shape.forEach(([x, y], i) => i ? ctx.lineTo(r.x + x, r.y + y) : ctx.moveTo(r.x + x, r.y + y)); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+  }
+
+  function drawPad() {
+    const p = world.pad, w = p.r - p.l;
+    const col = ctx.createLinearGradient(0, p.y - 170, 0, p.y);
+    col.addColorStop(0, "rgba(155,232,60,0)"); col.addColorStop(1, "rgba(155,232,60,.16)");
+    ctx.fillStyle = col; ctx.fillRect(p.l, p.y - 170, w, 170);
+    // platform: lime top, pink base, yellow-and-purple stripes on the ends
+    ctx.fillStyle = "#FF5FA2"; ctx.fillRect(p.l, p.y + 3.5, w, 5);
+    ctx.fillStyle = "#B8F55E"; ctx.fillRect(p.l, p.y, w, 3.5);
+    ctx.save(); ctx.beginPath(); ctx.rect(p.l, p.y, 16, 8.5); ctx.rect(p.r - 16, p.y, 16, 8.5); ctx.clip();
+    ctx.fillStyle = "#6A3FC2"; ctx.fillRect(p.l, p.y, w, 8.5);
+    ctx.fillStyle = "#FFD23F";
+    for (let x = p.l - 10; x < p.r + 10; x += 7) { ctx.beginPath(); ctx.moveTo(x, p.y + 8.5); ctx.lineTo(x + 3.5, p.y + 8.5); ctx.lineTo(x + 7.5, p.y); ctx.lineTo(x + 4, p.y); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+    ctx.strokeStyle = OUT; ctx.lineWidth = 1.4; ctx.strokeRect(p.l, p.y, w, 8.5);
+    if (p.float) {       // little green toot-jets keep it hovering
+      [p.l + 18, p.c, p.r - 18].forEach((x, i) => {
+        ctx.fillStyle = "#6A3FC2"; ctx.strokeStyle = OUT; ctx.lineWidth = 1;
+        ctx.fillRect(x - 5, p.y + 8.5, 10, 5); ctx.strokeRect(x - 5, p.y + 8.5, 10, 5);
+        const k = reduced ? 1 : .8 + .25 * Math.sin(time * 16 + i * 2);
+        ctx.fillStyle = i % 2 ? "#9BE83C" : "#B8F55E"; ctx.strokeStyle = "#3E7F18"; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(x, p.y + 19 * k, 5 * k, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x + 1, p.y + 27 * k, 3.4 * k, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      });
+    }
+    ctx.fillStyle = "#FFD23F"; ctx.beginPath(); ctx.arc(p.c, p.y + 1.7, 1.8, 0, Math.PI * 2); ctx.fill();
+    // label
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = "900 14px ui-rounded, 'SF Pro Rounded', 'Arial Rounded MT Bold', system-ui, sans-serif";
+    if ("letterSpacing" in ctx) ctx.letterSpacing = "2px";
+    ctx.lineJoin = "round"; ctx.strokeStyle = OUT; ctx.lineWidth = 4; ctx.strokeText("FART PAD", p.c, p.y + (p.float ? 40 : 23));
+    ctx.fillStyle = "#FFD23F"; ctx.fillText("FART PAD", p.c, p.y + (p.float ? 40 : 23));
+    if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+    // glowing green marker bulbs
+    [[p.l - 6, 0], [p.r + 6, Math.PI]].forEach(([x, ph]) => {
+      ctx.fillStyle = "#6A3FC2"; ctx.fillRect(x - 1.2, p.y - 16, 2.4, 16);
+      const on = .35 + .65 * (reduced ? 1 : (Math.sin(time * 4 + ph) * .5 + .5));
+      const glow = ctx.createRadialGradient(x, p.y - 18, 0, x, p.y - 18, 18);
+      glow.addColorStop(0, "rgba(184,245,94," + .65 * on + ")"); glow.addColorStop(1, "rgba(184,245,94,0)");
+      ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, p.y - 18, 18, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(220,255,170," + (.55 + .45 * on) + ")"; ctx.strokeStyle = OUT; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(x, p.y - 18, 3.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    });
+  }
+
+  // ---------- Fart Man ----------
+  const SUIT = "#4C7DFF", SUIT_HI = "#7FA6FF", CAPE = "#E8364F", SKIN = "#FFCB98", GOLD = "#FFD23F";
+  function limb(x1, y1, x2, y2, w, color) {
+    ctx.strokeStyle = OUT; ctx.lineWidth = w + 2.2; line(x1, y1, x2, y2);
+    ctx.strokeStyle = color; ctx.lineWidth = w; line(x1, y1, x2, y2);
+  }
+  function drawHero(x, y, a, dazed, thrusting) {
+    ctx.save();
+    ctx.translate(x, y); ctx.rotate(a); ctx.scale(LS, LS);
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    if (thrusting) drawFart();
+    // cape flapping behind him
+    const f = reduced ? 0 : Math.sin(time * 9) * 1.6;
+    ctx.fillStyle = CAPE; ctx.strokeStyle = OUT; ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.moveTo(-9, -9);
+    ctx.quadraticCurveTo(-20, 1, -18 + f, 15); ctx.quadraticCurveTo(-12, 11 + f, -6, 16);
+    ctx.quadraticCurveTo(0, 12, 6, 16); ctx.quadraticCurveTo(12, 11 - f, 18 - f, 15);
+    ctx.quadraticCurveTo(20, 1, 9, -9); ctx.closePath(); ctx.fill(); ctx.stroke();
+    // legs pointing down, boots on the ground points
+    limb(-6, 9, -18.5, 19.5, 6, SUIT); limb(6, 9, 18.5, 19.5, 6, SUIT);
+    ctx.fillStyle = CAPE; ctx.strokeStyle = OUT; ctx.lineWidth = 1.2;
+    [-1, 1].forEach((s) => { ctx.beginPath(); ctx.ellipse(s * 20, 21.3, 5.6, 2.4, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); });
+    // arms out wide
+    const wave = thrusting && !reduced ? Math.sin(time * 18) * 1.2 : 0;
+    limb(-9, -4, -23, -11 + wave, 5, SUIT); limb(9, -4, 23, -11 - wave, 5, SUIT);
+    ctx.fillStyle = GOLD; ctx.strokeStyle = OUT; ctx.lineWidth = 1.1;
+    [[-23.5, -11.5 + wave], [23.5, -11.5 - wave]].forEach(([hx, hy]) => { ctx.beginPath(); ctx.arc(hx, hy, 3.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); });
+    // chubby body
+    const body = ctx.createRadialGradient(-4, -3, 2, 0, 2, 14);
+    body.addColorStop(0, SUIT_HI); body.addColorStop(1, SUIT);
+    ctx.fillStyle = body; ctx.strokeStyle = OUT; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.ellipse(0, 1.5, 12.5, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    // belt and emblem
+    ctx.fillStyle = GOLD; ctx.fillRect(-11.6, 6.5, 23.2, 3.2);
+    ctx.strokeStyle = OUT; ctx.lineWidth = .8; ctx.strokeRect(-11.6, 6.5, 23.2, 3.2);
+    ctx.fillStyle = GOLD; ctx.beginPath(); ctx.arc(0, -1.5, 5.2, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = "#3FA82B"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = "900 8px ui-rounded, 'Arial Rounded MT Bold', system-ui, sans-serif"; ctx.fillText("F", 0, -1.2);
+    // head
+    ctx.fillStyle = SKIN; ctx.strokeStyle = OUT; ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.arc(0, -16, 8.6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "rgba(255,110,140,.45)"; ell(-5.6, -12.6, 2, 1.3); ell(5.6, -12.6, 2, 1.3);
+    // helmet with little wings
+    ctx.fillStyle = CAPE; ctx.beginPath(); ctx.arc(0, -17, 9, Math.PI * 1.05, Math.PI * 1.95); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#FFFFFF";
+    [-1, 1].forEach((s) => { ctx.beginPath(); ctx.moveTo(s * 7.5, -21); ctx.lineTo(s * 12.5, -30.5); ctx.lineTo(s * 11, -24); ctx.lineTo(s * 13.5, -25); ctx.lineTo(s * 9, -19.5); ctx.closePath(); ctx.fill(); ctx.stroke(); });
+    // goggles
+    ctx.strokeStyle = OUT; ctx.lineWidth = 1.6; line(-8.6, -17, 8.6, -17);
+    ctx.fillStyle = "#A8F0FF"; ctx.lineWidth = 1.2;
+    [-3.7, 3.7].forEach((gx) => { ctx.beginPath(); ctx.arc(gx, -17, 3.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); });
+    if (dazed) {
+      ctx.lineWidth = 1;
+      [-3.7, 3.7].forEach((gx) => { ctx.beginPath(); for (let t = 0; t < 12; t++) { const r = t * .22, an = t * .9 + time * 8 * (gx < 0 ? 1 : -1); ctx.lineTo(gx + Math.cos(an) * r, -17 + Math.sin(an) * r); } ctx.stroke(); });
+      ctx.fillStyle = "#FF7FA8"; ell(1.5, -9.8, 1.8, 2.4);
+      ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-3.5, -11); ctx.quadraticCurveTo(-1.5, -12.5, 0, -11); ctx.quadraticCurveTo(1.5, -9.5, 3.5, -11); ctx.stroke();
+    } else {
+      ctx.fillStyle = OUT; ell(-3.3, -16.4, 1.3, 1.5); ell(3.3, -16.4, 1.3, 1.5);
+      ctx.fillStyle = "#FFFFFF"; ell(-2.8, -17.1, .45, .45); ell(3.8, -17.1, .45, .45);
+      ctx.strokeStyle = OUT; ctx.lineWidth = 1.4;
+      line(-6.8, -21.6, -1.8, -20.6); line(6.8, -21.6, 1.8, -20.6);   // determined eyebrows
+      if (thrusting) {                                                  // straining grin
+        ctx.fillStyle = "#FFFFFF"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(-3.6, -11.8); ctx.quadraticCurveTo(0, -9, 3.6, -11.8); ctx.quadraticCurveTo(0, -10.6, -3.6, -11.8); ctx.fill(); ctx.stroke();
+        line(0, -11.2, 0, -10.2);
+      } else {
+        ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(0, -13.2, 3, .2 * Math.PI, .8 * Math.PI); ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+  function line(a, b, c, d) { ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke(); }
+  function ell(x, y, rx, ry) { ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); }
+  function poly(p) { ctx.beginPath(); p.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath(); ctx.fill(); }
+  function polyStroke(p) { ctx.beginPath(); p.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath(); ctx.stroke(); }
+
+  // The fart blast: a chain of puffy green clouds with speed streaks, in the lander's local space.
+  function drawFart() {
+    const t = time * 14;
+    ctx.save();
+    ctx.strokeStyle = "rgba(230,255,190,.75)"; ctx.lineWidth = 1.2; ctx.lineCap = "round";
+    for (let i = -2; i <= 2; i++) {
+      const ox = i * 4.5, l = 8 + Math.sin(t * 1.3 + i * 2) * 3;
+      line(ox * 1.8, 30 + Math.abs(i) * 2, ox * 3, 40 + l * 1.6 + Math.abs(i) * 3);
+    }
+    const puffs = [[1, 54, 9.5], [-2.5, 44, 10], [2.5, 34.5, 9], [-1, 26, 7.4], [0, 18.5, 5.6]];
+    puffs.forEach(([px, py, r], i) => {
+      const k = .88 + .16 * Math.sin(t + i * 1.9);
+      const wx = px + Math.sin(t * .8 + i) * 1.3, rr = r * k;
+      ctx.fillStyle = i % 2 ? "#9BE83C" : "#B8F55E";
+      ctx.strokeStyle = "#3E7F18"; ctx.lineWidth = 2.2;
+      ctx.beginPath(); ctx.arc(wx, py, rr, 0, Math.PI * 2);
+      ctx.moveTo(wx - rr * .7 + rr * .6, py + rr * .2); ctx.arc(wx - rr * .7, py + rr * .2, rr * .6, 0, Math.PI * 2);
+      ctx.moveTo(wx + rr * .7 + rr * .55, py + rr * .25); ctx.arc(wx + rr * .7, py + rr * .25, rr * .55, 0, Math.PI * 2);
+      ctx.stroke(); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.55)"; ell(wx - rr * .3, py - rr * .35, rr * .3, rr * .2);
+    });
+    ctx.restore();
+  }
+
+  function drawPieces() {
+    for (const p of pieces) {
+      if (p.hero) continue;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a);
+      ctx.fillStyle = p.c; poly(p.p);
+      ctx.strokeStyle = OUT; ctx.lineWidth = .7; polyStroke(p.p);
+      ctx.restore();
+    }
+    const h = pieces.find((p) => p.hero);
+    if (!h) return;
+    drawHero(h.x, h.y, h.a, true, false);
+    if (stateT > .25) {    // stars circling his head
+      const hx = h.x + Math.sin(h.a) * 22, hy = h.y - Math.cos(h.a) * 22 - 14;
+      for (let k = 0; k < 3; k++) {
+        const an = time * 4 + k * 2.09;
+        drawStar(hx + Math.cos(an) * 15, hy + Math.sin(an) * 4.5, 4.2, time * 3, GOLD, OUT);
+      }
+    }
+  }
+
+  function drawParts(glowPass) {
+    if (glowPass) ctx.globalCompositeOperation = "lighter";
+    for (const p of parts) {
+      if (p.text || !!p.glow !== glowPass) continue;
+      const t = p.life / p.max;
+      ctx.globalAlpha = glowPass ? 1 - t : p.puff ? 1 - t * t : (1 - t) * .55;
+      const r = p.s + (p.grow || 0) * t;
+      if (p.star) { drawStar(p.x, p.y, r, p.rot + t * 4, p.c, null); continue; }
+      ctx.fillStyle = p.c;
+      ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+  }
+
+  function drawTexts() {
+    ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+    for (const p of parts) {
+      if (!p.text) continue;
+      const t = p.life / p.max, sc = t < .15 ? .6 + t / .15 * .4 : 1;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.tilt); ctx.scale(sc, sc);
+      ctx.globalAlpha = t > .6 ? (1 - t) / .4 : 1;
+      ctx.font = "900 " + p.s + "px ui-rounded, 'SF Pro Rounded', 'Arial Rounded MT Bold', system-ui, sans-serif";
+      ctx.strokeStyle = OUT; ctx.lineWidth = p.s * .3; ctx.strokeText(p.text, 0, 0);
+      ctx.fillStyle = p.c; ctx.fillText(p.text, 0, 0);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawAboveMarker() {
+    const y = 70;
+    ctx.fillStyle = GOLD;
+    ctx.beginPath(); ctx.moveTo(L.x, y - 8); ctx.lineTo(L.x - 7, y + 3); ctx.lineTo(L.x + 7, y + 3); ctx.closePath(); ctx.fill();
+  }
+
+  function drawTouchGuide() {
+    const x0 = touch.startX, y0 = touch.startY, range = steerRange();
+    const dx = clamp(touch.x - x0, -range - DEAD_ZONE, range + DEAD_ZONE);
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "rgba(255,255,255,.18)"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(x0, y0, 22, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,.22)";
+    ctx.beginPath(); ctx.arc(x0, y0, 3, 0, Math.PI * 2); ctx.fill();
+    // faint track showing the full steering range
+    ctx.strokeStyle = "rgba(255,255,255,.07)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x0 - range - DEAD_ZONE, y0); ctx.lineTo(x0 + range + DEAD_ZONE, y0); ctx.stroke();
+    if (Math.abs(dx) > DEAD_ZONE) {
+      ctx.strokeStyle = "rgba(184,245,94,.6)"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(x0 + Math.sign(dx) * DEAD_ZONE, y0); ctx.lineTo(x0 + dx, y0); ctx.stroke();
+      ctx.fillStyle = "rgba(184,245,94,.8)";
+      ctx.beginPath(); ctx.arc(x0 + dx, y0, 4, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  // ---------- HUD ----------
+  const hud = { beans: $("hBeans"), mission: $("hMission"), fuel: $("hFuel"), bar: $("hFuelBar"), alt: $("hAlt"), vs: $("hVs"), hs: $("hHs"), cFuel: $("cFuel"), cVs: $("cVs"), cHs: $("cHs"), callout: $("callout") };
+  const last = {};
+  function setText(key, el, txt, html) { if (last[key] !== txt) { last[key] = txt; if (html) el.innerHTML = txt; else el.textContent = txt; } }
+  function setClass(key, el, cls) { if (last[key] !== cls) { last[key] = cls; el.className = cls; } }
+  function altitude() {
+    const fl = toWorld(FOOT_L), fr = toWorld(FOOT_R);
+    return Math.max(0, Math.min(groundAt(fl.x) - fl.y, groundAt(fr.x) - fr.y)) / ALT_UNIT;
+  }
+  function updateHUD() {
+    const vy = L.vy / SPEED_UNIT, vx = L.vx / SPEED_UNIT, alt = state === "landed" ? 0 : altitude();
+    setText("m", hud.mission, String(mission));
+    setText("b", hud.beans, beansGot + "/" + world.beans.length);
+    setText("f", hud.fuel, String(Math.ceil(L.fuel)));
+    const fw = L.fuel.toFixed(1) + "%";
+    if (last.fw !== fw) { last.fw = fw; hud.bar.style.width = fw; }
+    setClass("cf", hud.cFuel, "cell" + (L.fuel < 25 ? " low" : ""));
+    setText("a", hud.alt, Math.round(alt) + "<small>m</small>", true);
+    setText("vs", hud.vs, Math.abs(vy).toFixed(1) + (vy > 0.05 ? " ↓" : vy < -0.05 ? " ↑" : ""));
+    setText("hs", hud.hs, (vx < -0.05 ? "← " : "") + Math.abs(vx).toFixed(1) + (vx > 0.05 ? " →" : ""));
+    const flying = state === "flying";
+    setClass("cvs", hud.cVs, "cell" + (flying && vy > SAFE_VY ? " bad" : flying && vy > SAFE_VY * .75 ? " warn" : ""));
+    setClass("chs", hud.cHs, "cell" + (flying && Math.abs(vx) > SAFE_VX ? " bad" : flying && Math.abs(vx) > SAFE_VX * .75 ? " warn" : ""));
+
+    let msg = "", cls = "";
+    if (flying) {
+      const low = alt < 60;
+      if (L.fuel <= 0) { msg = "OUT OF GAS"; cls = "bad"; }
+      else if (vy > SAFE_VY && (low || vy > SAFE_VY * 1.8)) { msg = "TOO FAST"; cls = "bad"; }
+      else if (low && Math.abs(vx) > SAFE_VX) { msg = "TOO FAST"; cls = "bad"; }
+      else if (low && Math.abs(L.angle) > SAFE_ANG) { msg = "STRAIGHTEN UP"; cls = "warn"; }
+      else if (low) { msg = "LANDING SPEED SAFE"; cls = "good"; }
+    }
+    setText("co", hud.callout, msg);
+    setClass("coc", hud.callout, cls);
+    if (hud.callout.hidden !== !msg) hud.callout.hidden = !msg;
+  }
+
+  // ---------- banners & flow ----------
+  let bannerTimer = 0;
+  function showBanner(big, small, ms) {
+    clearTimeout(bannerTimer);
+    const b = $("banner");
+    $("bannerBig").textContent = big; $("bannerSmall").textContent = small || "";
+    b.hidden = false; b.classList.remove("show"); void b.offsetWidth; b.classList.add("show");
+    if (ms) bannerTimer = setTimeout(hideBanner, ms);
+  }
+  function hideBanner() { clearTimeout(bannerTimer); $("banner").hidden = true; }
+
+  function startMission(n) {
+    mission = n;
+    buildMission(n);
+    $("startScreen").hidden = true; $("winScreen").hidden = true; $("crashScreen").hidden = true;
+    releaseTouch(); keys.thrust = false;
+    state = "flying"; stateT = 0;
+    sfx.start();
+    showBanner("MISSION " + n, world.cfg.tag, 1700);
+    try { document.activeElement && document.activeElement.blur(); } catch (e) { /* ignore */ }
+  }
+
+  $("beginBtn").addEventListener("click", () => startMission(mission));
+  $("nextBtn").addEventListener("click", () => startMission(mission + 1));
+  $("restartBtn").addEventListener("click", () => startMission(mission));
+
+  const MUTE_KEY = "fartMan2Muted";
+  // ---------- sound (synthesized; unlocked on the first tap) ----------
+  let ac = null, master = null, noiseBuf = null, muted = false;
+  try { muted = localStorage.getItem(MUTE_KEY) === "1"; } catch (e) { muted = false; }
+  // "playback" lets sound play even when the iPhone silent switch is on; the mute button still works
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) { /* ignore */ }
+  function audio() {
+    if (!ac) {
+      try {
+        ac = new (window.AudioContext || window.webkitAudioContext)();
+        master = ac.createGain(); master.gain.value = muted ? 0 : 1; master.connect(ac.destination);
+        noiseBuf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
+        const ch = noiseBuf.getChannelData(0);
+        for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+      } catch (e) { ac = null; }
+    }
+    return ac;
+  }
+  // iPhone/iPad Safari keeps audio silent until the context is resumed inside a tap
+  function unlockAudio() {
+    const a = audio(); if (!a) return;
+    try {
+      if (a.state !== "running") a.resume();
+      const s = a.createBufferSource(); s.buffer = a.createBuffer(1, 1, 22050); s.connect(a.destination); s.start(0);
+    } catch (e) { /* ignore */ }
+  }
+  ["pointerdown", "touchend", "keydown", "click"].forEach((ev) => window.addEventListener(ev, unlockAudio, { capture: true, passive: true }));
+
+  function tone(f, d, type, v, delay, slide) {
+    const a = audio(); if (!a) return;
+    const t = a.currentTime + (delay || 0), o = a.createOscillator(), g = a.createGain();
+    o.type = type || "sine"; o.frequency.setValueAtTime(f, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(f * slide, t + d);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v || .1, t + .01); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g).connect(master); o.start(t); o.stop(t + d + .05);
+  }
+  function burst(d, v, freq, type, delay) {
+    const a = audio(); if (!a) return;
+    const t = a.currentTime + (delay || 0), s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+    s.buffer = noiseBuf; f.type = type || "lowpass"; f.frequency.value = freq || 800;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    s.connect(f).connect(g).connect(master); s.start(t, Math.random()); s.stop(t + d + .05);
+  }
+  function setMuted(m) {
+    muted = m;
+    try { localStorage.setItem(MUTE_KEY, m ? "1" : "0"); } catch (e) { /* ignore */ }
+    if (master) master.gain.setTargetAtTime(m ? 0 : 1, ac.currentTime, .02);
+    const b = $("muteBtn");
+    b.setAttribute("aria-pressed", m ? "true" : "false");
+    b.setAttribute("aria-label", m ? "Sound off" : "Sound on");
+    $("icoOn").style.display = m ? "none" : ""; $("icoOff").style.display = m ? "" : "none";
+  }
+  $("muteBtn").addEventListener("click", (e) => { e.stopPropagation(); setMuted(!muted); });
+  window.addEventListener("keydown", (e) => { if (e.key === "m" || e.key === "M") setMuted(!muted); });
+  // The fart engine: a buzzing sawtooth wobbled by two LFOs (pitch wobble + lip flutter),
+  // through a resonant lowpass, with a little breathy noise. Faded in and out with the thrust.
+  let engine = null;
+  function engineNodes() {
+    const a = audio(); if (!a) return null;
+    if (engine) return engine;
+    const osc = a.createOscillator(); osc.type = "sawtooth"; osc.frequency.value = 90;
+    const wob = a.createOscillator(); wob.frequency.value = 6.5;
+    const wobG = a.createGain(); wobG.gain.value = 14; wob.connect(wobG).connect(osc.frequency);
+    const flut = a.createOscillator(); flut.type = "square"; flut.frequency.value = 26;
+    const flutG = a.createGain(); flutG.gain.value = .45;
+    const amp = a.createGain(); amp.gain.value = .55; flut.connect(flutG).connect(amp.gain);
+    const lp = a.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 700; lp.Q.value = 6;
+    const air = a.createBufferSource(); air.buffer = noiseBuf; air.loop = true;
+    const bp = a.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 380; bp.Q.value = 1.2;
+    const airG = a.createGain(); airG.gain.value = .35;
+    const g = a.createGain(); g.gain.value = 0;
+    osc.connect(amp).connect(lp).connect(g); air.connect(bp).connect(airG).connect(g); g.connect(master);
+    osc.start(); wob.start(); flut.start(); air.start();
+    engine = { g, osc, flut, lp, on: false };
+    return engine;
+  }
+  function soundTick() {
+    const want = state === "flying" && L.thrusting;
+    if (!want && (!engine || !engine.on)) return;
+    const e = engineNodes(); if (!e) return;
+    const t = ac.currentTime;
+    if (want !== e.on) {
+      e.on = want;
+      e.g.gain.cancelScheduledValues(t);
+      if (want) {
+        // each new toot starts with a "prrt": higher pitch that drops into the rumble
+        e.g.gain.setValueAtTime(0, t); e.g.gain.linearRampToValueAtTime(.55, t + .03); e.g.gain.setTargetAtTime(.4, t + .05, .1);
+        e.osc.frequency.cancelScheduledValues(t);
+        e.osc.frequency.setValueAtTime(150 + Math.random() * 40, t); e.osc.frequency.setTargetAtTime(80 + Math.random() * 25, t, .09);
+        burst(.12, .3, 600, "bandpass");
+      } else {
+        e.g.gain.setTargetAtTime(0, t, .02);
+      }
+    }
+  }
+  const sfx = {
+    // a squeaky accent when a TOOT!/PFFT! word pops out
+    toot: () => {
+      const e = engine; if (!e || !ac) return;
+      const t = ac.currentTime, f = 70 + Math.random() * 60;
+      e.osc.frequency.setTargetAtTime(f * 1.6, t, .02); e.osc.frequency.setTargetAtTime(f, t + .08, .08);
+      e.flut.frequency.setTargetAtTime(18 + Math.random() * 20, t, .05);
+      e.lp.frequency.setTargetAtTime(500 + Math.random() * 500, t, .05);
+    },
+    bean: () => { [660, 880, 1175].forEach((f, i) => tone(f, .12, "triangle", .09, i * .06)); tone(1568, .2, "sine", .05, .18); },
+    start: () => { tone(523, .1, "square", .06); tone(784, .14, "square", .06, .1); },
+    empty: () => {                                   // out of gas: a sad little sputter
+      [0, .16, .34].forEach((d, i) => { tone(140 - i * 25, .12, "sawtooth", .12, d, .7); burst(.08, .15, 500, "bandpass", d); });
+      tone(600, .25, "sine", .05, .55, .5);
+    },
+    land: () => {
+      [523, 659, 784, 1046].forEach((f, i) => tone(f, .28, "square", .07, i * .11));
+      tone(1046, .5, "triangle", .08, .44);
+      tone(180, .35, "sawtooth", .1, .9, 1.5);        // proud little victory toot
+    },
+    crash: () => {
+      tone(220, .18, "triangle", .25, 0, .45); burst(.25, .5, 350, "lowpass");      // BONK
+      tone(160, .5, "sine", .18, .05, 1.8);                                          // boing
+      tone(1300, .7, "sine", .06, .2, .25);                                          // slide whistle down
+      [294, 277, 262, 247].forEach((f, i) => tone(f, i === 3 ? .8 : .32, "sawtooth", .07, .95 + i * .34, i === 3 ? .94 : 1)); // wah wah wah waaah
+    },
+  };
+
+  // ---------- main loop ----------
+  let prev = performance.now(), acc = 0;
+  function frame(now) {
+    const dt = Math.min(.05, Math.max(0, (now - prev) / 1000)); prev = now;
+    acc += dt;
+    try {
+      while (acc >= STEP) { update(STEP); acc -= STEP; }
+      render(); updateHUD(); soundTick();
+    } catch (err) { console.error(err); acc = 0; }
+    requestAnimationFrame(frame);
+  }
+
+  function boot(data) {
+    data = data || {};
+    if (data.mission > 1) { mission = data.mission | 0; totalScore = data.total | 0; $("startMission").textContent = "Mission " + mission; }
+    setMuted(muted);
+    resize();
+    buildMission(mission);
+    window.addEventListener("resize", resize);
+    window.addEventListener("orientationchange", () => setTimeout(resize, 200));
+    requestAnimationFrame((t) => { prev = t; frame(t); });
+  }
+  // Start straight away. (This used to wait on a window.claude.hot "ready" signal left over from
+  // where the game was first built; on claude.ai that signal never came, so the game sat on a black screen.)
+  boot({});
+})();
+</script>
+</body>
+</html>
