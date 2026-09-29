@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#152543">
 <title>Fart Cave</title>
+<script src="../rw-bridge.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap">
@@ -38,6 +39,13 @@ html, body {
   background: rgba(21,37,67,.55); border: 3px solid rgba(42,20,51,.8); pointer-events: none; white-space: nowrap;
 }
 #hud .dist { font-size: clamp(28px, 5.4vw, 46px); line-height: 1; text-shadow: 0 4px 0 var(--out); }
+#hud .starCount { display: inline-flex; align-items: center; gap: 4px; align-self: center; font-size: clamp(22px, 4vw, 34px); line-height: 1;
+  color: var(--yellow); -webkit-text-stroke: 3px var(--out); paint-order: stroke fill; }
+#hud .starCount svg { width: 1em; height: 1em; fill: var(--yellow); stroke: var(--out); stroke-width: 1.6; stroke-linejoin: round; }
+#hud .starCount.bump { animation: bump .35s cubic-bezier(.2,1.8,.4,1); }
+@keyframes bump { 40% { transform: scale(1.35); } }
+/* inside Rosenberg World the hub puts its close button top-left */
+@media (max-width: 640px) { .rw-in-world #hud { left: auto; right: 12px; transform: none; max-width: calc(100% - 80px); gap: 10px; padding-inline: 14px; } }
 #hud .best { font-size: clamp(16px, 2.6vw, 22px); color: var(--lime); -webkit-text-stroke: 2px var(--out); paint-order: stroke fill; }
 
 /* NEW FART RECORD! and PFFFFFT! */
@@ -101,6 +109,9 @@ h1 {
 .row { margin: 0; font-size: clamp(26px, 5.4vw, 38px); -webkit-text-stroke: 3px var(--out); paint-order: stroke fill; }
 .row b { font-weight: 400; color: var(--yellow); }
 .row.best b { color: var(--lime); }
+.row.stars b { color: var(--yellow); }
+.card .btn.back { margin-top: 4px; font-size: clamp(18px, 3.6vw, 24px); padding: 14px 22px 17px; animation: none;
+  background: linear-gradient(#FFE27A, #F2B81E); color: #4A2A00; box-shadow: 0 6px 0 var(--out); }
 #overRecord { margin: 2px 0 6px; font-size: clamp(24px, 5vw, 34px); color: var(--lime); -webkit-text-stroke: 3px var(--out); paint-order: stroke fill; text-shadow: 0 4px 0 var(--pink); }
 .card .btn { margin-top: 14px; }
 
@@ -128,6 +139,7 @@ h1 {
   <div id="hud" hidden>
     <span class="dist pop" id="dist">DISTANCE: 0</span>
     <span class="best" id="best">BEST: 0</span>
+    <span class="starCount" id="starHud"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.3 1.3-6.6L2.5 9.1l6.6-.8z"/></svg><span id="starNum">0</span></span>
   </div>
   <div id="record" class="shout pop" hidden>NEW FART RECORD!</div>
   <div id="pfft" class="shout pop" hidden>PFFFFFT!</div>
@@ -139,7 +151,7 @@ h1 {
     </div>
     <div class="startBottom">
       <button type="button" class="btn" id="startBtn">START FARTING</button>
-      <p class="hint">Hold to fart up. Let go to fall.</p>
+      <p class="hint">Hold to fart up. Let go to fall. Grab the stars!</p>
       <p class="bestLine" id="startBest" hidden></p>
     </div>
   </section>
@@ -150,7 +162,9 @@ h1 {
       <p id="overRecord" hidden>NEW FART RECORD!</p>
       <p class="row">Distance: <b id="overDist">0</b></p>
       <p class="row best">Best: <b id="overBest">0</b></p>
+      <p class="row stars">Stars: <b id="overStars">0</b></p>
       <button type="button" class="btn wait" id="againBtn">FART AGAIN</button>
+      <button type="button" class="btn back wait" id="backBtn" data-rw-back hidden>BACK TO ROSENBERG WORLD</button>
     </div>
   </section>
 
@@ -187,12 +201,15 @@ h1 {
   let CW = 1, CH = 1, DPR = 1, S = 1, W = 700, H = 600;
   let state = "title";           // title | play | crash
   let stateT = 0, time = 0, camX = 0, speed = 0;
-  let best = 0, dist = 0, recordShown = false, shake = 0;
-  let cols = [], obs = [], gags = [], parts = [], gen = null;
+  let best = 0, dist = 0, recordShown = false, shake = 0, starsGot = 0;
+  let cols = [], obs = [], gags = [], stars = [], parts = [], gen = null;
   const hero = { sx: 350, wx: 0, y: 300, vy: 0, ang: 0, cvx: 0, va: 0, hitTop: false };
   const held = new Set();
   let keyHeld = false, wasHolding = false;
-  try { best = +localStorage.getItem("fartCaveBest") || 0; } catch (e) { best = 0; }
+  // each Rosenberg kid gets their own best
+  const BRIDGE = window.RosenbergBridge || null;
+  const BEST_KEY = "fartCaveBest" + (BRIDGE && BRIDGE.player ? "-" + BRIDGE.player : "");
+  try { best = +localStorage.getItem(BEST_KEY) || 0; } catch (e) { best = 0; }
 
   // ---------- sizing ----------
   let bgGrad = null, ceilGrad = null, floorGrad = null;
@@ -208,7 +225,7 @@ h1 {
       const k = H / oldH;
       cols.forEach((c) => { c.top *= k; c.bot *= k; });
       obs.forEach((o) => { o.root *= k; o.tip *= k; if (o.y1 != null) { o.y1 *= k; o.y2 *= k; } });
-      gags.forEach((g) => { g.y *= k; });
+      gags.forEach((g) => { g.y *= k; }); stars.forEach((st) => { st.y *= k; });
       hero.y *= k; if (gen) { gen.c0 *= k; gen.c1 *= k; }
     }
     bgGrad = ctx.createLinearGradient(0, 0, 0, H);
@@ -223,9 +240,9 @@ h1 {
   const hash = (n) => { n = Math.imul(n ^ 0x5bd1e995, 2654435761) >>> 0; n ^= n >>> 15; return Math.imul(n, 2246822519) >>> 0; };
 
   function resetCave(withObstacles) {
-    cols = []; obs = []; gags = [];
+    cols = []; obs = []; gags = []; stars = [];
     gen = { x: -SEG * 10, i: 0, c0: H / 2, c1: H / 2, legX: -SEG * 10, legLen: 700,
-      nextObs: 750, nextGag: rand(500, 900), lastGag: "", lastObsX: -9999,
+      nextObs: 750, nextGag: rand(500, 900), nextStar: 520, lastGag: "", lastObsX: -9999,
       sqX: 3500, sqLen: 0, obstacles: withObstacles, p1: rand(0, 9), p2: rand(0, 9), p3: rand(0, 9), p4: rand(0, 9) };
     genTo(W + 300);
   }
@@ -262,6 +279,17 @@ h1 {
     cols.push(col);
     if (gen.obstacles && x >= gen.nextObs) makeObstacle(col, d);
     if (x >= gen.nextGag) makeGag(col);
+    if (gen.obstacles && x >= gen.nextStar) makeStar(col);
+  }
+
+  // gold stars to grab, always in open air: never next to an obstacle
+  function makeStar(col) {
+    const x = col.x;
+    if (obs.some((o) => Math.abs(o.x - x) < 130)) { gen.nextStar = x + 60; return; }
+    gen.nextStar = x + rand(700, 1250);
+    gen.nextObs = Math.max(gen.nextObs, x + 140);
+    const room = col.bot - col.top, m = Math.min(70, room * .3);
+    stars.push({ x, y: col.top + m + Math.random() * (room - 2 * m), got: false, ph: rand(0, 6) });
   }
 
   function makeObstacle(col, d) {
@@ -324,6 +352,7 @@ h1 {
     while (cols.length > 3 && cols[1].x < camX - 80) cols.shift();
     obs = obs.filter((o) => o.x + o.w > camX - 80);
     gags = gags.filter((g) => g.x > camX - 140 && g.x < camX + W + 600);
+    stars = stars.filter((st) => st.x > camX - 80);
   }
 
   // ---------- Fart Man hitbox (local units, facing right, before HS) ----------
@@ -370,12 +399,12 @@ h1 {
 
   // ---------- game flow ----------
   function startRun() {
-    state = "play"; stateT = 0; camX = 0; dist = 0; recordShown = false; shake = 0;
+    state = "play"; stateT = 0; camX = 0; dist = 0; recordShown = false; shake = 0; starsGot = 0;
     resetCave(true);
     parts = [];
     hero.y = (wallAt(hero.sx)[0] + wallAt(hero.sx)[1]) / 2; hero.vy = -40; hero.ang = 0;
-    $("start").hidden = true; $("over").hidden = true; $("hud").hidden = false; $("muteBtn").hidden = true;
-    $("pfft").hidden = true; $("record").hidden = true;
+    $("start").hidden = true; $("over").hidden = true; $("backBtn").classList.add("wait"); $("hud").hidden = false; $("muteBtn").hidden = true;
+    $("pfft").hidden = true; $("record").hidden = true; $("starNum").textContent = "0";
     try { document.activeElement && document.activeElement.blur(); } catch (e) { /* ignore */ }
     sfx.start();
   }
@@ -386,10 +415,12 @@ h1 {
     hero.cvx = -rand(60, 110); hero.vy = hitTop ? 120 : -260; hero.va = (Math.random() < .5 ? -1 : 1) * rand(7, 10);
     shake = reduced ? 0 : 1;
     const isRecord = dist > best;
-    if (isRecord) { best = dist; try { localStorage.setItem("fartCaveBest", String(best)); } catch (e) { /* ignore */ } }
+    if (isRecord) { best = dist; try { localStorage.setItem(BEST_KEY, String(best)); } catch (e) { /* ignore */ } }
     $("overDist").textContent = dist.toLocaleString("en-US");
     $("overBest").textContent = best.toLocaleString("en-US");
     $("overRecord").hidden = !(isRecord && dist > 0);
+    $("overStars").textContent = String(starsGot);
+    if (BRIDGE) BRIDGE.report({ score: dist, stars: Math.min(10, starsGot) });
     $("record").hidden = true;
     const p = $("pfft"); p.hidden = false; p.classList.remove("show"); void p.offsetWidth; p.classList.add("show");
     // one giant harmless fart cloud and a shower of stars
@@ -470,9 +501,28 @@ h1 {
     hero.ang += (want - hero.ang) * (1 - Math.exp(-10 * dt));
     fartPuffs(dt, h);
 
+    grabStars();
     dist = Math.floor(camX / 10);
     if (!recordShown && best > 0 && dist > best) showRecord();
     collide();
+  }
+
+  function grabStars() {
+    const mid = toWorld({ x: 6, y: -4 }, hero.wx, hero.y, hero.ang);
+    for (const st of stars) {
+      if (st.got) continue;
+      const sy = st.y + Math.sin(time * 2.5 + st.ph) * 6;
+      if (Math.hypot(st.x - mid.x, sy - mid.y) > 44) continue;
+      st.got = true; starsGot++;
+      const el = $("starHud"); $("starNum").textContent = String(starsGot);
+      el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump");
+      sfx.star();
+      word(pick(["STAR!", "+1 STAR!", "SHINY!", "GOT IT!"]), st.x, sy - 30, 20, "#FFF6C9");
+      for (let i = 0; i < 18; i++) {
+        const a = i / 18 * Math.PI * 2, v = rand(90, 200);
+        parts.push({ kind: "star", x: st.x, y: sy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: rand(.4, .7), r: rand(3, 6), c: pick(["#FFD23F", "#FFF6C9", "#FFB020"]), drag: 2.4, g: 40, rot: rand(0, 6) });
+      }
+    }
   }
 
   function collide() {
@@ -513,7 +563,7 @@ h1 {
     if (stateT > 1.0 && $("over").hidden) showOver();
     if (stateT > 1.45) {
       const b2 = $("againBtn");
-      if (b2.classList.contains("wait")) { b2.classList.remove("wait"); try { b2.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
+      if (b2.classList.contains("wait")) { b2.classList.remove("wait"); $("backBtn").classList.remove("wait"); try { b2.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
     }
   }
 
@@ -582,6 +632,7 @@ h1 {
     obs.forEach(drawObstacle);
     drawWalls();
     gags.forEach((g) => { if (g.type === "bat") drawBat(g); });
+    drawStars();
     drawParts("puff");
     const dazed = state === "crash";
     drawHero(hero.wx, hero.y, hero.ang, state !== "crash" && (state === "title" ? Math.sin(time * 1.6) < .2 : holding()), dazed);
@@ -592,6 +643,29 @@ h1 {
     drawParts("star");
     drawTexts();
     ctx.restore();
+  }
+
+  // big spinning gold stars
+  function drawStars() {
+    for (const st of stars) {
+      if (st.got || st.x < camX - 60 || st.x > camX + W + 60) continue;
+      const y = st.y + Math.sin(time * 2.5 + st.ph) * 6, pulse = reduced ? 1 : 1 + Math.sin(time * 5 + st.ph) * .06;
+      const glow = ctx.createRadialGradient(st.x, y, 4, st.x, y, 46);
+      glow.addColorStop(0, "rgba(255,226,110,.6)"); glow.addColorStop(1, "rgba(255,226,110,0)");
+      ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(st.x, y, 46, 0, Math.PI * 2); ctx.fill();
+      ctx.save(); ctx.translate(st.x, y);
+      ctx.scale((reduced ? 1 : Math.cos(time * 2.2 + st.ph) * .25 + .75) * pulse, pulse);   // a lazy spin
+      const g = ctx.createRadialGradient(-5, -7, 2, 0, 0, 22);
+      g.addColorStop(0, "#FFF7C2"); g.addColorStop(.5, "#FFD23F"); g.addColorStop(1, "#F29E0C");
+      ctx.lineJoin = "round";
+      drawStar(0, 0, 21, 0, g, null);
+      ctx.strokeStyle = OUT; ctx.lineWidth = 3.2; ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.7)"; ell(-6, -7, 4, 2.4);
+      ctx.fillStyle = OUT; ell(-4.5, 1, 1.6, 2.2); ell(4.5, 1, 1.6, 2.2);
+      ctx.strokeStyle = OUT; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(0, 4, 3.4, .2 * Math.PI, .8 * Math.PI); ctx.stroke();
+      ctx.restore();
+      if (!reduced && Math.sin(time * 3 + st.ph) > .8) drawStar(st.x + 16, y - 18, 4, time * 4, "#FFFFFF", null);
+    }
   }
 
   // distant cave shapes, sliding slower than the walls
@@ -1114,6 +1188,7 @@ h1 {
       [294, 277, 262, 247].forEach((f, i) => tone(f, i === 3 ? .7 : .28, "triangle", .08, 1.0 + i * .3, i === 3 ? .94 : 1));
     },
     record: () => { [523, 659, 784, 1046, 1318].forEach((f, i) => tone(f, .18, "square", .06, i * .08)); tone(180, .3, "sawtooth", .1, .45, 1.6); },
+    star: () => { [988, 1319, 1568].forEach((f, i) => tone(f, .14, "triangle", .08, i * .06)); tone(2093, .25, "sine", .05, .18); },
     eek: () => { tone(2400, .06, "sine", .04); tone(2900, .06, "sine", .04, .08); },
   };
 
