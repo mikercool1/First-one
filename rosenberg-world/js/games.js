@@ -250,6 +250,18 @@
     icon: "🏎️",
   });
 
+  // Fart Cave lives in the cave in Adventure Woods (its sign is next to the cave mouth).
+  G.register({
+    id: "fartCave",
+    title: "Fart Cave",
+    subtitle: "Hold to fart up, let go to fall. Grab the stars!",
+    destination: "fartcave",
+    unlocked: true,
+    entry: "games/fart-cave/index.html",
+    color: "#2EB872",
+    icon: "💨",
+  });
+
   // ---------------- Witch Mountain, Frogger and the hotel ----------------
   // Their places are in the world (Witch Mountain in the north, the Frog Pond by the road, the
   // hotel on Baha Mar). The hotel is still coming: set unlocked: true and entry when it arrives.

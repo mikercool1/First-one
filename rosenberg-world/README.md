@@ -96,6 +96,7 @@ door and the stars you earned fly into your total.
 | Basketball court (Sports Complex) | Buckets | `games/buckets` |
 | Ariel's Kitchen | Ariel's Passover Cookout | `games/ariel-passover-cookout` |
 | Fart Man Landing Zone | Fart Man Lander | `games/fart-man-lander` |
+| The cave in Adventure Woods (walk up to its mouth, or tap the FART CAVE sign) | Fart Cave | `games/fart-cave` |
 | The big white rocket (Fart Man Landing Zone) | Lunar Lander | `games/lunar-lander` |
 | Math Blaster Academy | Reuben's Math Blaster | `games/math-blaster` |
 | Soccer field (Sports Complex) | Backyard Soccer | `games/backyard-soccer` |

@@ -24,6 +24,7 @@
     { id: "soccer", name: "Soccer Field", icon: "⚽", kind: "game", portal: [1425, 2240], portalR: 80, arrive: [1425, 2258], map: [1150, 2210] },
     { id: "volleyball", name: "Beach Volleyball", icon: "🏐", kind: "game", portal: [4120, 2612], portalR: 90, arrive: [4120, 2630], map: [4120, 2530] },
     // places ready for games that are on their way (see "Coming soon" in README.md)
+    { id: "fartcave", name: "Fart Cave", icon: "💨", kind: "game", portal: [270, 1592], portalR: 75, arrive: [270, 1622], map: [270, 1400] },
     { id: "witchmtn", name: "Witch Mountain", icon: "🧙", kind: "game", portal: [680, 1450], portalR: 80, arrive: [680, 1472], map: [680, 1280] },
     { id: "frogpond", name: "Frog Pond", icon: "🐸", kind: "game", portal: [2080, 2842], portalR: 80, arrive: [2080, 2830], map: [2080, 2900] },
     // Ice Mountain: winter games on their way
@@ -2468,7 +2469,8 @@
       c.beginPath(); c.moveTo(-74, -30); c.quadraticCurveTo(0, -58, 74, -30); c.lineTo(74, -40); c.quadraticCurveTo(0, -68, -74, -40); c.closePath(); c.fill();
     }, { kind: "rail", solid: [{ r: [-60, -6, 60, 3] }] });
     rail(-40); rail(42);
-    // cave
+    // cave: Fart Cave is inside (walk up to the mouth, or tap the sign). Tapping the rock still echoes.
+    marquee(135, 1668, ["FART", "CAVE"], "#2EB872", "fartcave", { size: 24 });
     add({
       kind: "building", x: 270, y: 1570, box: [-160, -180, 160, 14], sprite: true, occludes: true,
       solid: [{ r: [-140, -110, -54, -4] }, { r: [54, -110, 140, -4] }, { r: [-54, -110, 54, -30] }],
