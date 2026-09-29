@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Adam's House</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@500;600;700;800&family=Orbitron:wght@700;900&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <div class="stage" id="stage">
+    <svg id="scene" viewBox="0 0 400 720" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Adam at his desk waiting for the IPO, then at his mansion">
+      <defs>
+        <linearGradient id="gNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B2440"/><stop offset="1" stop-color="#2C3A5E"/></linearGradient>
+        <linearGradient id="gWallO" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A3552"/><stop offset="1" stop-color="#3B4A6E"/></linearGradient>
+        <linearGradient id="gDesk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9A6A42"/><stop offset="1" stop-color="#6E4428"/></linearGradient>
+        <linearGradient id="gDeskTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B98356"/><stop offset="1" stop-color="#8F5E38"/></linearGradient>
+        <radialGradient id="gLamp" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFD58A" stop-opacity=".75"/><stop offset="1" stop-color="#FFD58A" stop-opacity="0"/></radialGradient>
+        <radialGradient id="gScreenGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#6FE3B0" stop-opacity=".45"/><stop offset="1" stop-color="#6FE3B0" stop-opacity="0"/></radialGradient>
+        <radialGradient id="gSkin" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#F8D5B4"/><stop offset="1" stop-color="#DEA67C"/></radialGradient>
+        <radialGradient id="gRed" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#FF7A6B"/><stop offset=".6" stop-color="#E0271E"/><stop offset="1" stop-color="#8E0F0A"/></radialGradient>
+        <linearGradient id="gMetal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D5DAE2"/><stop offset="1" stop-color="#7C8594"/></linearGradient>
+        <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5BB4F0"/><stop offset=".7" stop-color="#A8DCF8"/><stop offset="1" stop-color="#E6F6FF"/></linearGradient>
+        <linearGradient id="gWater" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6FE0E6"/><stop offset=".5" stop-color="#23B5D3"/><stop offset="1" stop-color="#0E7FB0"/></linearGradient>
+        <linearGradient id="gStone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4EEE3"/><stop offset="1" stop-color="#DCD2C1"/></linearGradient>
+        <linearGradient id="gFacade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFDF7"/><stop offset="1" stop-color="#EDE4D3"/></linearGradient>
+        <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE9A6"/><stop offset=".5" stop-color="#D9AE4E"/><stop offset="1" stop-color="#A67A22"/></linearGradient>
+        <linearGradient id="gSilver" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#C9D0DA"/><stop offset="1" stop-color="#8C95A3"/></linearGradient>
+        <radialGradient id="gSun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFF8D8"/><stop offset=".35" stop-color="#FFE9A0" stop-opacity=".9"/><stop offset="1" stop-color="#FFE9A0" stop-opacity="0"/></radialGradient>
+      </defs>
+      <g id="office"></g>
+      <g id="mansion" opacity="0" style="display:none"></g>
+      <g id="fx"></g>
+    </svg>
+
+    <div class="hud" id="hud">
+      <div class="pill" id="hudPill">Waiting for the IPO&hellip;</div>
+      <div class="worth" id="worth" hidden><span>Net worth</span><b id="worthVal">$0</b><i>&#9650;</i></div>
+    </div>
+    <div class="bubble" id="bAdam"></div>
+    <div class="bubble butler" id="bButler"></div>
+    <div class="pop" id="pop"></div>
+    <div class="bigtitle" id="bigTitle" hidden><small>Welcome to</small>Adam&rsquo;s House</div>
+    <div class="flash" id="flash"></div>
+
+    <div class="prompt" id="prompt" hidden>
+      <button type="button" class="smash" id="smashBtn">SMASH IT</button>
+      <div class="meter"><i id="smashBar"></i></div>
+    </div>
+
+    <div class="actions" id="actions" hidden>
+      <button type="button" class="act pool" id="poolBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 17c2 0 2-1.5 4-1.5S8 17 10 17s2-1.5 4-1.5S16 17 18 17s2-1.5 4-1.5M2 21c2 0 2-1.5 4-1.5S8 21 10 21s2-1.5 4-1.5S16 21 18 21s2-1.5 4-1.5M8 14V5a2 2 0 0 1 4 0M16 14V5a2 2 0 0 0-4 0M8 8h8M8 11h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Jump in the pool</button>
+      <button type="button" class="act bell" id="bellBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2ZM10 20a2 2 0 0 0 4 0M12 3v2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Ring for the butler</button>
+      <button type="button" class="back" id="backBtn">Back to the desk</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="title">
+  <div class="card">
+    <p class="kicker">A very understated story</p>
+    <h1>Adam&rsquo;s <em>House</em></h1>
+    <p class="blurb">The IPO drops in ten seconds.<br>Adam is being very calm about it.</p>
+    <button type="button" class="cta" id="startBtn">START THE CLOCK</button>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
