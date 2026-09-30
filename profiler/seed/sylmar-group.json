@@ -1,0 +1,572 @@
+{
+ "name": "Sylmar Group",
+ "platform_name": "Sylmar Group (Sylmar Water Treatment + Sylmar Utilities Group)",
+ "website": "https://sylmargrp.com",
+ "hq_address": "360 E 2nd St, Ste 800, Los Angeles, CA (per ZoomInfo)",
+ "what_it_is": "Founder-led, long-hold water services HoldCo (founded 2019/2020 by Peter Brooks and Michael Warady) that has bought ~17 small regional businesses since 2021. Two divisions: Sylmar Water Treatment (industrial/commercial cooling, boiler, closed-loop, Legionella and process-water chemical treatment programs, plus two custom chemical blenders ETI and ProChem, and RO/UF/ClO2 equipment) and Sylmar Utilities Group (water-well drilling/rehab and pump services for Southern California utilities and agriculture).",
+ "primary_category": "Core water treatment (industrial/commercial programs & service)",
+ "water_relevance": "Water-heavy (40-75%)",
+ "bluntly": "A roll-up of regional HVAC/industrial water treaters, the kind that compete with Chem-Aqua, ChemTreat and local independents. It also owns a small toll/private-label blending business (ETI) that supplies other treaters. About a quarter to a third of revenue is well-drilling and pump contracting (General Pump, Water Well Solutions, Legend, Airburst). That work is water infrastructure services, not chemicals. On a strict basis, water treatment chemicals and service make up about 67% of pro forma revenue.",
+ "owner_type": "Other",
+ "ultimate_parent": "Sylmar Group (independent founder-led HoldCo backed by family offices / independent sponsors)",
+ "pe_sponsor": "Not a traditional PE fund. Equity: Westerly Group (anchor investor, 2020), with M2O and Novidam also listed as investors (PitchBook). Debt: Balance Point Capital (2022, junior/sub debt); Manulife | Comvest Credit Partners ($130M senior secured refinancing, Feb 2026).",
+ "pe_entry_year": "2020",
+ "pe_entry_ev_usd_m": null,
+ "pe_entry_multiple": "n/a (de novo HoldCo; capital raise amount undisclosed)",
+ "prior_owners": "Each add-on was founder/family-owned before acquisition (e.g., EAI 1986 founders; ETI founders incl. Robert Keeler; Tower Water, Baskin family; Butler Water Corrections, founded 1938).",
+ "total_revenue_usd_m": 112.0,
+ "total_revenue_year": "2026E pro forma (incl. 2026 add-ons)",
+ "total_revenue_basis": "Estimate. ZoomInfo lists $77.3M (last-resort source, likely pre-2026 add-ons). Built up from brand-level estimates: water treatment brands owned through 2025 are ~$62M. The 2026 add-ons add ~$17M (Tower ~$11M, since it has 50+ employees and is described as the 'largest acquisition to date'; Aquatrol ~$3M; Butler ~$2M; Atlantic ~$1M). Equipment is ~$7M and utility (pump/well) services are ~$30M (prior 30% share). No company-disclosed revenue.",
+ "us_revenue_usd_m": 112.0,
+ "total_ebitda_usd_m": 20.0,
+ "ebitda_margin_pct": 18.0,
+ "ebitda_year": "2026E run-rate",
+ "ebitda_basis": "Estimate. Manulife|Comvest led a $130M senior secured facility in Feb 2026 to refinance debt and fund acquisitions. Assume ~$90-110M funded at typical lower-middle-market leverage of ~4.5-5.5x, which implies ~$18-22M EBITDA. That is consistent with an ~18% margin for route-based water treatment service plus blending. The prior estimate of ~$24M is revised down slightly. No reported EBITDA was found.",
+ "revenue_by_business": [
+  {
+   "business": "Sylmar Water Treatment: service programs (EAI, Clearwater, R2J, LaMotte, Western Water, Tower, Atlantic, Aquatrol, Butler)",
+   "category": "Water treatment - industrial/commercial",
+   "revenue_usd_m": 64.0,
+   "pct": 57.1,
+   "how_derived": "Sum of brand-level universe estimates plus 2026 add-ons, less the ETI/ProChem blending share and equipment"
+  },
+  {
+   "business": "Custom chemical blending/private label for water treaters (Eastern Technologies Inc., ProChem blending)",
+   "category": "Water treatment - industrial/commercial",
+   "revenue_usd_m": 11.0,
+   "pct": 9.8,
+   "how_derived": "ETI ~$11M universe estimate; external third-party blending sales only (intercompany excluded)"
+  },
+  {
+   "business": "Equipment: RO/UF/EDI membrane systems, softeners, on-site ClO2/chlorine generators (EAI Vista plant, Aqua Clear, Dioxide Pacific, Artech)",
+   "category": "Media, membranes & equipment",
+   "revenue_usd_m": 7.0,
+   "pct": 6.3,
+   "how_derived": "Estimate: Aqua Clear + Dioxide Pacific + Artech + EAI equipment share"
+  },
+  {
+   "business": "Sylmar Utilities Group: water well drilling/rehab and pump services (General Pump, Water Well Solutions, Legend Pump & Well, Airburst)",
+   "category": "Other",
+   "revenue_usd_m": 30.0,
+   "pct": 26.8,
+   "how_derived": "Prior estimate of ~30% of pro forma revenue from pump/well services; earlier headcount of ~150 utility-services staff \u00d7 ~$200k/employee"
+  }
+ ],
+ "us_water_treatment_revenue_usd_m": 75.0,
+ "us_water_treatment_arithmetic": "Service programs $64M + external blending $11M = $75M. Equipment ($7M) and pump/well services ($30M) are excluded. 100% US. Check: $112M - $7M - $30M = $75M. This matches the prior $75M, but that figure now includes the 2026 add-ons (Tower, Aquatrol, Butler, Atlantic), and the pre-2026 base is revised down to ~$58M.",
+ "end_markets_total_platform": {
+  "Municipal drinking water": 12,
+  "Municipal wastewater": 3,
+  "Power generation": 2,
+  "Oil & gas / refining": 1,
+  "Chemicals & petrochem": 2,
+  "Pulp & paper": 0,
+  "Food & beverage": 6,
+  "Mining & metals": 0,
+  "Primary metals/steel": 1,
+  "Commercial HVAC / buildings": 30,
+  "Healthcare & institutional": 10,
+  "Data centers": 6,
+  "Pharma/life sciences": 2,
+  "Microelectronics/semis": 1,
+  "Manufacturing (general industrial)": 14,
+  "Pools & spa": 0,
+  "Agriculture & farm": 8,
+  "Consumer / retail": 1,
+  "Other": 1
+ },
+ "employees_total": 500,
+ "employees_basis": "Estimate. Prior research put headcount at ~450-480 (~330 water treatment, ~150 utility services). Tower Water (50+ employees, company-stated) and the other 2026 add-ons bring it to ~500. ZoomInfo shows 51-200 and PitchBook shows 5 (HoldCo staff only). No company-stated platform total was found.",
+ "us_sites_count": 19,
+ "key_sites": [
+  {
+   "type": "HQ",
+   "address": "360 E 2nd St, Ste 800",
+   "city": "Los Angeles",
+   "state": "CA"
+  },
+  {
+   "type": "Branch",
+   "address": "EAI Water HQ",
+   "city": "Walnut",
+   "state": "CA"
+  },
+  {
+   "type": "Plant",
+   "address": "2790 La Mirada Dr (EAI equipment manufacturing, R&D, 8,500 sq ft)",
+   "city": "Vista",
+   "state": "CA"
+  },
+  {
+   "type": "Plant",
+   "address": "Aqua Clear (membrane systems & membrane chemicals)",
+   "city": "San Diego",
+   "state": "CA"
+  },
+  {
+   "type": "Branch",
+   "address": "Western Water Associates",
+   "city": "Aptos",
+   "state": "CA"
+  },
+  {
+   "type": "Blending",
+   "address": "Eastern Technologies Inc. (custom blending)",
+   "city": "Morgantown",
+   "state": "PA"
+  },
+  {
+   "type": "Blending",
+   "address": "ProChem Water (blending, engineered systems)",
+   "city": "Elliston",
+   "state": "VA"
+  },
+  {
+   "type": "Branch",
+   "address": "LaMotte Water Management",
+   "city": "Williamsburg",
+   "state": "VA"
+  },
+  {
+   "type": "Branch",
+   "address": "Clearwater Industries",
+   "city": "Shelton",
+   "state": "CT"
+  },
+  {
+   "type": "Branch",
+   "address": "Artech Water Systems",
+   "city": "Madison",
+   "state": "CT"
+  },
+  {
+   "type": "Branch",
+   "address": "Atlantic Water Management",
+   "city": "Coventry",
+   "state": "RI"
+  },
+  {
+   "type": "Plant",
+   "address": "Butler Water Corrections (manufacturer, patented products)",
+   "city": "Hamilton Township",
+   "state": "NJ"
+  },
+  {
+   "type": "Branch",
+   "address": "Tower Water (NYC/NJ/E. PA/S. CT)",
+   "city": "New York metro",
+   "state": "NY"
+  },
+  {
+   "type": "Branch",
+   "address": "R2J Chemical Services (Tampa Bay)",
+   "city": "Tampa Bay area",
+   "state": "FL"
+  },
+  {
+   "type": "Blending",
+   "address": "Aquatrol Services (custom blending, lab)",
+   "city": "",
+   "state": "TX"
+  },
+  {
+   "type": "Branch",
+   "address": "General Pump Company",
+   "city": "San Dimas",
+   "state": "CA"
+  },
+  {
+   "type": "Branch",
+   "address": "General Pump Company",
+   "city": "Camarillo",
+   "state": "CA"
+  },
+  {
+   "type": "Branch",
+   "address": "Legend Pump & Well Service",
+   "city": "San Bernardino",
+   "state": "CA"
+  }
+ ],
+ "chemistries": [
+  {
+   "product_line": "Cooling water treatment (scale/corrosion inhibitors, dispersants, biocides); non-phosphorus line",
+   "made_or_resold": "Made (blended in-house at ETI, ProChem, Aquatrol) plus some resold",
+   "brands": "ETI COOLGARD non-phosphorus line (launched Jul 2026)"
+  },
+  {
+   "product_line": "Boiler/steam and closed-loop treatment",
+   "made_or_resold": "Made (blended in-house) / resold",
+   "brands": "ETI Water Treatment Specialties formulations"
+  },
+  {
+   "product_line": "Potable, process and wastewater chemicals (coagulants, dispersants, biocides)",
+   "made_or_resold": "Made (ETI blending)",
+   "brands": "ETI"
+  },
+  {
+   "product_line": "Membrane-compatible chemicals (antiscalants/cleaners) and RO/UF/EDI systems",
+   "made_or_resold": "Made (Aqua Clear, EAI Vista)",
+   "brands": "Aqua Clear, EAI"
+  },
+  {
+   "product_line": "On-site chlorine dioxide, chlorine, ozone and UV disinfection generators",
+   "made_or_resold": "Made (EAI Vista plant; Dioxide Pacific engineering)",
+   "brands": "Dioxide Pacific, EAI"
+  },
+  {
+   "product_line": "Non-toxic HVAC and food-service equipment treatments; cathodic protection",
+   "made_or_resold": "Made (patented)",
+   "brands": "Butler Water Corrections"
+  },
+  {
+   "product_line": "Legionella water management plans and compliance services",
+   "made_or_resold": "Service",
+   "brands": "Tower Water, R2J, Clearwater, EAI"
+  },
+  {
+   "product_line": "Well rehabilitation (compressed-air bursts, no chemicals), pump repair",
+   "made_or_resold": "Service",
+   "brands": "Airburst, Water Well Solutions, General Pump, Legend"
+  }
+ ],
+ "acquisitions": [
+  {
+   "date": "2021",
+   "target": "Economic Alternatives Inc. (EAI Water)",
+   "universe_id": 32,
+   "what_it_does": "Walnut, CA industrial water treatment (founded 1986): cooling/boiler, RO/UF, on-site disinfection. Operates in CA, AZ, NV, UT, WA, OH. First Sylmar platform",
+   "revenue_usd_m": 26.0,
+   "value_usd_m": null,
+   "source_url": "https://www.prnewswire.com/news-releases/balance-point-announces-its-investment-in-the-sylmar-group-301670763.html"
+  },
+  {
+   "date": "2021-2022",
+   "target": "General Pump Company",
+   "universe_id": 581,
+   "what_it_does": "Water well redevelopment and pump contractor (San Dimas & Camarillo, CA). Second platform (utility services)",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://sylmargrp.com/portfolio/"
+  },
+  {
+   "date": "pre-2024 (date not found)",
+   "target": "Aqua Clear Water Treatment Specialists",
+   "universe_id": 97,
+   "what_it_does": "San Diego (est. 1993): membrane systems (RO/UF/CMF/EDI) and membrane-compatible chemicals. EAI tuck-in",
+   "revenue_usd_m": 1.5,
+   "value_usd_m": null,
+   "source_url": "https://sylmargrp.com/portfolio/"
+  },
+  {
+   "date": "date not found",
+   "target": "Dioxide Pacific",
+   "universe_id": 580,
+   "what_it_does": "Engineering firm (est. 1997) for on-site ClO2/chlorine/ozone/UV disinfection generation and dosing. EAI tuck-in",
+   "revenue_usd_m": 2.3,
+   "value_usd_m": null,
+   "source_url": "https://sylmargrp.com/portfolio/"
+  },
+  {
+   "date": "2024-09-23",
+   "target": "Clearwater Industries",
+   "universe_id": 33,
+   "what_it_does": "Shelton, CT industrial/commercial water treatment (est. 1992): boiler, cooling, closed loop, Legionella. EAI's East Coast entry",
+   "revenue_usd_m": 5.0,
+   "value_usd_m": null,
+   "source_url": "https://www.businesswire.com/news/home/20240923426994/en/"
+  },
+  {
+   "date": "2024-10-10",
+   "target": "Water Well Solutions (merger with General Pump)",
+   "universe_id": 582,
+   "what_it_does": "Well design, drilling, maintenance and rehabilitation",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.businesswire.com/news/home/20241010854458/en/General-Pump-Company-Announces-Merger-with-Water-Well-Solutions"
+  },
+  {
+   "date": "2024-10 (with Water Well Solutions)",
+   "target": "Airburst Technology",
+   "universe_id": 583,
+   "what_it_does": "Patented compressed-air well rehabilitation (no chemicals)",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://sylmargrp.com/portfolio/"
+  },
+  {
+   "date": "2024-12-02",
+   "target": "Eastern Technologies Inc. (ETI)",
+   "universe_id": 35,
+   "what_it_does": "Morgantown, PA custom chemical blender (est. 1986) for industrial water treaters: cooling, heating, process, wastewater, potable. Sylmar's first blending asset; runs an annual distributor summit",
+   "revenue_usd_m": 11.1,
+   "value_usd_m": null,
+   "source_url": "https://www.businesswire.com/news/home/20241202435142/en/"
+  },
+  {
+   "date": "2025-01",
+   "target": "Artech Water Systems",
+   "universe_id": 199,
+   "what_it_does": "Madison, CT water softening/conditioning service (est. 1992). Clearwater tuck-in",
+   "revenue_usd_m": 0.3,
+   "value_usd_m": null,
+   "source_url": "https://eaiwater.com/eai-news/"
+  },
+  {
+   "date": "2025-02",
+   "target": "Western Water Associates",
+   "universe_id": 586,
+   "what_it_does": "Aptos, CA HVAC water treatment: chemicals, service, lab testing",
+   "revenue_usd_m": 4.5,
+   "value_usd_m": null,
+   "source_url": "https://eaiwater.com/eai-news/"
+  },
+  {
+   "date": "2025-02",
+   "target": "Legend Pump & Well Service",
+   "universe_id": 584,
+   "what_it_does": "San Bernardino, CA well and pump services (est. 2010). Joined General Pump",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://sylmargrp.com/general-pump-company-and-legend-pump-well-service-join-forces/"
+  },
+  {
+   "date": "2025-06-30",
+   "target": "LaMotte Water Management",
+   "universe_id": 38,
+   "what_it_does": "Williamsburg, VA cooling/boiler treatment consulting and service (est. 2007), with an ozone specialty. Serves VA/NC/MD/DC",
+   "revenue_usd_m": 2.5,
+   "value_usd_m": null,
+   "source_url": "https://www.businesswire.com/news/home/20250630153329/en/"
+  },
+  {
+   "date": "2025-07-15",
+   "target": "R2J Chemical Services",
+   "universe_id": 34,
+   "what_it_does": "Tampa Bay, FL industrial water treatment (est. 1982): cooling, boiler, potable, Legionella. Florida entry",
+   "revenue_usd_m": 5.0,
+   "value_usd_m": null,
+   "source_url": "https://www.businesswire.com/news/home/20250715217082/en/"
+  },
+  {
+   "date": "2025-12-02",
+   "target": "ProChem Water",
+   "universe_id": 37,
+   "what_it_does": "Elliston, VA (est. 1999) industrial/commercial water and wastewater treatment, engineered reuse systems, proprietary chemical blends. Near data center hubs",
+   "revenue_usd_m": 8.8,
+   "value_usd_m": null,
+   "source_url": "https://www.businesswire.com/news/home/20251202603016/en/"
+  },
+  {
+   "date": "2026-01-20",
+   "target": "Atlantic Water Management",
+   "universe_id": 39,
+   "what_it_does": "Coventry, RI cooling/boiler treatment programs across New England (founded ~1998 by Kevin Rabbitt)",
+   "revenue_usd_m": 1.0,
+   "value_usd_m": null,
+   "source_url": "https://www.businesswire.com/news/home/20260120284448/en/"
+  },
+  {
+   "date": "2026-04-16",
+   "target": "Aquatrol Services, Inc.",
+   "universe_id": 198,
+   "what_it_does": "Texas cooling/boiler water treatment, laboratory services, custom chemical blending. Texas entry",
+   "revenue_usd_m": 3.0,
+   "value_usd_m": null,
+   "source_url": "https://www.businesswire.com/news/home/20260416983171/en/"
+  },
+  {
+   "date": "2026-05-14",
+   "target": "Butler Water Corrections, Inc.",
+   "universe_id": 190,
+   "what_it_does": "Hamilton Twp, NJ (est. 1938) manufacturer of non-toxic HVAC and food-service equipment water treatment. Cathodic protection pioneer; patents",
+   "revenue_usd_m": 2.0,
+   "value_usd_m": null,
+   "source_url": "https://www.businesswire.com/news/home/20260514896684/en/"
+  },
+  {
+   "date": "2026-06-09",
+   "target": "Tower Water",
+   "universe_id": 40,
+   "what_it_does": "NYC/NJ/E. PA/S. CT Legionella compliance, HVAC water treatment and piping commissioning (est. 1992, 50+ employees) for commercial real estate, healthcare, data centers and education. Sylmar's largest deal to date",
+   "revenue_usd_m": 11.0,
+   "value_usd_m": null,
+   "source_url": "https://www.businesswire.com/news/home/20260609102609/en/"
+  }
+ ],
+ "addon_corrections": "All 18 listed add-ons are confirmed as Sylmar-owned. Corrections: EAI (32) was acquired in 2021 (Sylmar's 'first acquisition in 2021'), not '?'. Artech (199) was bought by Clearwater in Jan 2025, consistent with prior data. Western Water (586) closed in Feb 2025. Legend (584) is a pump/well business and should be flagged as NOT water treatment; its rev should not count in US water (set to 0). LaMotte (38) was bought by EAI on 2025-06-30. R2J (34) was announced 2025-07-15. ProChem (37) was announced 2025-12-02, not a later December date. Atlantic (39) closed 2026-01-20. Aquatrol (198) closed 2026-04-16. Butler (190) closed 2026-05-14. Tower (40) closed 2026-06-09. General Pump (581) was the second platform (utility services, c.2021-22), not a tuck-in. Water Well Solutions (582) merged into General Pump in Oct 2024, and Airburst (583) is its patented well-rehab technology brand. No missing add-ons were found; the PitchBook item 'Tower Cleaning Plus' (June 2026) appears to be the Tower Water deal. Dates for Aqua Clear (97; the 2022 date is unverified) and Dioxide Pacific (580) were not found publicly. The platform's June 2026 release cites '8 brands across 30+ states'.",
+ "confidence": "Low",
+ "what_changed_vs_prior": "Confirmed ownership: Westerly anchor (Yale SOM, Oct 2020); M2O, Novidam and Balance Point per PitchBook; Balance Point debt in Nov 2022. Confirmed the $130M Manulife|Comvest senior secured refinancing on 2026-02-24 (sole lender and agent). Verified all add-on dates, including EAI in 2021. Total revenue moves from $110M to $112M pro forma (method unchanged). EBITDA is cut from ~$24M to ~$20M, now tied to the credit facility size. US water treatment stays at $75M pro forma but is split into service vs. blending. Employees are ~500 including Tower. Added the CFO Mark Hardee appointment (Jun 2026) and the two-division structure (Sylmar Water Treatment, Sylmar Utilities Group).",
+ "open_questions": "Actual revenue/EBITDA and the funded amount of the Comvest facility (term vs. DDTL). Equity check sizes from Westerly/M2O/Novidam. Acquisition dates for Aqua Clear and Dioxide Pacific. Tower Water revenue. Whether ETI sells mostly to third-party treaters or intercompany. Utility services revenue share. Total headcount.",
+ "evidence": [
+  {
+   "metric": "deal",
+   "value": "$130M senior secured credit facility, Manulife|Comvest sole lender",
+   "year": "2026",
+   "source_type": "Press release (PR Newswire)",
+   "url": "https://www.prnewswire.com/news-releases/manulife--comvest-credit-partners-leads-130-million-refinancing-of-sylmar-to-support-expansion-strategy-302695715.html",
+   "quote": "Over the last five years, we have grown to a size and scale where we needed a trusted, long-term credit capital partner"
+  },
+  {
+   "metric": "ownership",
+   "value": "Westerly Group anchor investor",
+   "year": "2020",
+   "source_type": "Yale SOM blog",
+   "url": "https://som.yale.edu/blog/michael-warady-17-launches-sylmar-group",
+   "quote": "Westerly Group ... anchor investor ... 'our largest investment to date'"
+  },
+  {
+   "metric": "ownership",
+   "value": "Investors: Balance Point Capital, M2O, Novidam, Westerly Group; $144M raised across 4 rounds (incl. debt)",
+   "year": "2026",
+   "source_type": "PitchBook profile",
+   "url": "https://pitchbook.com/profiles/company/469937-17",
+   "quote": "Investors: Balance Point Capital, M2O, Novidam, and Westerly Group"
+  },
+  {
+   "metric": "ownership",
+   "value": "Balance Point debt financing; two Southwest platforms (water treatment, pump/well)",
+   "year": "2022",
+   "source_type": "Press release",
+   "url": "https://www.prnewswire.com/news-releases/balance-point-announces-its-investment-in-the-sylmar-group-301670763.html",
+   "quote": "initial two platform businesses ... regional leaders in the Southwest U.S. ... industrial water treatment and water pump/well maintenance services"
+  },
+  {
+   "metric": "total_revenue",
+   "value": "$77.3M",
+   "year": "2025/26",
+   "source_type": "ZoomInfo (last resort)",
+   "url": "https://www.zoominfo.com/c/sylmar-group/476125964",
+   "quote": "Revenue: $77.3 Million"
+  },
+  {
+   "metric": "segment",
+   "value": "Two divisions; 8 brands across 30+ states; first acquisition in 2021",
+   "year": "2026",
+   "source_type": "Press release (Business Wire, Jun 25 2026)",
+   "url": "https://markets.financialcontent.com/kelownadailycourier/article/bizwire-2026-6-25-sylmar-announces-cfo-and-water-treatment-leadership-as-company-enters-next-stage-of-growth",
+   "quote": "Sylmar Water Treatment ... Sylmar Utilities Group"
+  },
+  {
+   "metric": "employees",
+   "value": "Tower Water 50+ employees",
+   "year": "2026",
+   "source_type": "Press release",
+   "url": "https://www.businesswire.com/news/home/20260609102609/en/",
+   "quote": "grown into a respected organization with over 50 employees"
+  },
+  {
+   "metric": "sites",
+   "value": "EAI Vista CA manufacturing plant, 2790 La Mirada Dr, 8,500 sq ft",
+   "year": "2024",
+   "source_type": "Press release",
+   "url": "https://www.businesswire.com/news/home/20240625780247/en/",
+   "quote": "manufacturing, in-house process engineering, R&D center"
+  },
+  {
+   "metric": "ebitda",
+   "value": "~$20M estimate",
+   "year": "2026E",
+   "source_type": "Estimate from facility size",
+   "url": "https://comvest.com/manulife-comvest-credit-partners-leads-130-million-refinancing-of-sylmar-to-support-expansion-strategy/",
+   "quote": "$130 million senior secured credit facility"
+  }
+ ],
+ "profile_md": "## Sylmar Group: investor profile\n\n**Overview.** Sylmar Group is a Los Angeles-based, founder-led water services holding company. It was formed in 2019-2020 by Peter Brooks (CEO; ex-US Marine infantry officer, HBS) and Michael Warady (President; Yale SOM). Sylmar presents itself as a \"neither PE fund nor strategic\" permanent-capital buyer of legacy, founder-owned water businesses. Since its first acquisition in 2021 it has assembled about 17 businesses in two divisions:\n- **Sylmar Water Treatment** is the industrial/commercial chemical treatment and service business and the bulk of value.\n- **Sylmar Utilities Group** does water-well drilling, rehabilitation and pump services, mainly for Southern California utilities and agriculture.\n\nThe company markets \"8 brands across 30+ states.\" We estimate 2026 pro forma revenue at about $112M and EBITDA at about $20M; neither is disclosed. Water-treatment chemicals and service make up about two-thirds of the total.\n\n**History & ownership.** Westerly Group (a Yale-alumni investment firm) anchored the 2020 equity raise and called it its \"largest investment to date.\" PitchBook also lists M2O and Novidam as equity investors. Balance Point Capital provided debt in November 2022 to fund the first two platforms: EAI Water (Walnut, CA, founded 1986) and General Pump Company (San Dimas/Camarillo, CA). In February 2026, Manulife | Comvest Credit Partners was sole lender and agent on a $130M senior secured facility that refinanced prior debt and funds more M&A. In June 2026 Sylmar hired CFO Mark Hardee and appointed Melinda Sych (President) and Kevin Donaldson (COO) to run Sylmar Water Treatment. That is a professionalization step typical ahead of a larger recap.\n\n**Products & chemistries.** The core business is route-based service chemistry: cooling-tower, boiler/steam and closed-loop programs, Legionella water-management plans, softening, RO pre-treatment, and wastewater and reuse treatment. Sylmar has vertically integrated into blending:\n- **Eastern Technologies Inc.** (Morgantown, PA, 1986; acquired Dec 2024) is a custom/private-label blender that supplies independent water treaters. It hosts an annual distributor summit and launched the COOLGARD non-phosphorus cooling line in 2026.\n- **ProChem** (Elliston, VA) and **Aquatrol** (TX) also blend.\n- **Butler Water Corrections** (NJ, 1938) makes patented, non-toxic HVAC and food-service equipment treatments.\n\nOn the equipment side, EAI's Vista, CA plant builds RO/UF systems, softeners, and on-site chlorine/ClO2 generators. Aqua Clear (San Diego) supplies membrane systems and membrane chemicals, and Dioxide Pacific engineers ClO2/ozone/UV disinfection.\n\n**End markets & customers.** Commercial HVAC and buildings is the largest end market (about 30%): office and commercial real estate portfolios in NYC and New England, healthcare and education (about 10%), and data centers (about 6%, a stated theme for ProChem and Tower). General manufacturing and food & beverage follow. The utilities division sells mainly to municipal water districts (about 12% municipal drinking water) and agricultural well owners (about 8%).\n\n**Footprint.** Sylmar is strongest in Southern and Northern California (EAI, Aqua Clear, Western Water, the pump/well brands). A Northeast corridor was built from 2024-26 with Clearwater and Artech (CT), Atlantic (RI), Tower (NYC/NJ/PA/CT), Butler (NJ) and ETI (PA). Mid-Atlantic and Southeast coverage comes from ProChem and LaMotte (VA) and R2J (Tampa). Aquatrol, acquired in 2026, adds Texas.\n\n**Financials.** No figures are disclosed. ZoomInfo shows $77.3M, which is consistent with the pre-2026 perimeter.\n- **Revenue build-up (estimate):** water treatment service about $64M, external blending about $11M, equipment about $7M, pump/well about $30M, for about $112M.\n- **US water treatment revenue (strict):** about $75M.\n- **EBITDA (estimate):** about $20M (about 18% margin). This is inferred from the $130M senior facility at typical lower-middle-market leverage (4.5-5.5x on a partly funded facility). Treat it as low confidence.\n\n**M&A strategy.** Sylmar runs a programmatic buy-and-build of founder-owned regional treaters at small-deal multiples. Brands, founders and local names are kept (a \"decentralized network\"), backed by central finance, procurement and in-house blending (ETI/ProChem) that captures chemical margin. Deal pace has accelerated: 2 in 2024, 5 in 2025 and 4 by mid-2026 (Atlantic, Aquatrol, Butler, Tower). Tower Water (50+ employees) is the largest deal to date and creates a dense NY/NJ/CT position. The McLean Group has named Sylmar among the most active buyers in water.\n\n**Competitive position.** Sylmar is a mid-sized consolidator competing against Chem-Aqua (Diversey), ChemTreat (Veralto), Nalco (Ecolab) and other consolidators such as Vanguard/Veolia-backed platforms. Its edge is local service density, Legionella compliance expertise and a captive blender. It has scale disadvantages versus the majors in R&D and national accounts.\n\n**Risks.**\n- Integration risk across roughly 17 small brands.\n- Key-person and founder-retention risk at acquired firms.\n- Leverage following the $130M facility.\n- The non-core, cyclical, capex-heavy well/pump business. It dilutes the \"water treatment\" story and may be separated at exit.\n\n**Uncertainties.** Actual revenue, EBITDA and headcount; equity investors' economics; the dates of the Aqua Clear and Dioxide Pacific deals; and how much of ETI's volume is intercompany.\n",
+ "universe_id": 29,
+ "id": "sylmar-group",
+ "customers": [
+  {
+   "name": "Commercial real estate portfolios (NYC, New England)",
+   "what": "HVAC cooling/boiler programs, Legionella plans",
+   "share_pct": 30,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Healthcare & education campuses",
+   "what": "Water management and compliance programs",
+   "share_pct": 10,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "SoCal municipal water districts",
+   "what": "Well drilling, rehab and pump service",
+   "share_pct": 12,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Agricultural well owners (CA)",
+   "what": "Pump and well service",
+   "share_pct": 8,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Data center operators (VA, NY metro)",
+   "what": "Cooling water programs",
+   "share_pct": 6,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Independent water treaters",
+   "what": "Private-label blending from ETI",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  }
+ ],
+ "competitors": [
+  {
+   "name": "Chem-Aqua (Diversey)",
+   "overlap": "Commercial HVAC programs"
+  },
+  {
+   "name": "ChemTreat (Veralto)",
+   "overlap": "Industrial/commercial service"
+  },
+  {
+   "name": "Nalco (Ecolab)",
+   "overlap": "National accounts"
+  },
+  {
+   "name": "Veolia-backed regional platforms",
+   "overlap": "Roll-up competition for founder-owned treaters"
+  },
+  {
+   "name": "CRB Water",
+   "overlap": "PE roll-up in Southeast and Midwest"
+  }
+ ],
+ "buyers": [
+  {
+   "name": "Veolia",
+   "type": "Strategic",
+   "rationale": "Adds dense Northeast and California service routes"
+  },
+  {
+   "name": "Kurita America",
+   "type": "Strategic",
+   "rationale": "US service footprint plus captive blending"
+  },
+  {
+   "name": "Ecolab",
+   "type": "Strategic",
+   "rationale": "Fills gaps in mid-market HVAC accounts"
+  },
+  {
+   "name": "Upper-middle-market PE",
+   "type": "Financial",
+   "rationale": "Scaled platform ready for a larger sponsor; well/pump arm likely carved out"
+  }
+ ],
+ "addon_ideas": [],
+ "source_of_truth": [],
+ "locked": [],
+ "status": "ready",
+ "runs": [
+  {
+   "at": "2026-09-27T00:00:00Z",
+   "kind": "Imported",
+   "summary": "Imported from WTC deep-dive batch P05A"
+  }
+ ],
+ "updated_at": "2026-09-27T00:00:00Z"
+}

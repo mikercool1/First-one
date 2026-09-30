@@ -1,0 +1,360 @@
+{
+ "name": "Seven Seas Water Group",
+ "platform_name": "Seven Seas Water Group (EQT Infrastructure VI)",
+ "website": "https://www.sevenseaswater.com",
+ "hq_address": "14400 Carlson Circle, Tampa, FL 33626 (co-HQ Houston, TX - AUC Group)",
+ "what_it_is": "Build-own-operate Water-as-a-Service provider: desalination (SWRO/BWRO) and potable water plants plus decentralized wastewater treatment plants (AUC Group) under long-term take-or-pay contracts in the US (Texas, USVI), Caribbean and Latin America; 220+ plants.",
+ "primary_category": "Water utility / O&M operator",
+ "water_relevance": "Pure-play water",
+ "bluntly": "100% water, but 0% water treatment chemicals: it sells treated water and wastewater capacity, not chemicals. It is a chemical CONSUMER (antiscalants, coagulants, hypochlorite, membrane cleaners), so treat it as a demand-side account, not a supplier. Most revenue is Caribbean/LatAm desal; the US is ~40% (est.).",
+ "owner_type": "PE-owned",
+ "ultimate_parent": "EQT AB (EQT Infrastructure VI fund)",
+ "pe_sponsor": "EQT Infrastructure VI",
+ "pe_entry_year": "2025",
+ "pe_entry_ev_usd_m": 1000,
+ "pe_entry_multiple": "Not disclosed; est. ~14-16x EBITDA (EV >$1B press-reported vs est. EBITDA ~$65-75M)",
+ "prior_owners": "Morgan Stanley Infrastructure Partners (Mar 2020-2025, bought for a reported ~$500M, ~10.7x 2019 Adj. EBITDA of $46.7M); AquaVenture Holdings (NYSE: WAAS, IPO 2016), taken private by Culligan (Mar 2020, ~$1.1B EV for all of AquaVenture) and SSW spun to MSIP the same day; founded 1997 in the USVI. NOTE: NOT Brookfield.",
+ "total_revenue_usd_m": 145,
+ "total_revenue_year": "2025E",
+ "total_revenue_basis": "Estimate. Last reported: FY2019 SSW segment revenue $88.3M (AquaVenture). 2025E adds Panama APSA (20 MGD, acq. 2020), Antigua plants (2025-26), Texas BWRO (Alice, STWA), AUC growth, and inflation escalators; cross-checked with the >$1B EV. Range $120-175M.",
+ "us_revenue_usd_m": 58,
+ "total_ebitda_usd_m": 70,
+ "ebitda_margin_pct": 48,
+ "ebitda_year": "2025E",
+ "ebitda_basis": "Estimate: the >$1B EV (Bloomberg, incl. debt) at a ~14-16x infrastructure multiple gives ~$63-72M; consistent with the historical 50-53% margin (FY2019 Adj. EBITDA $46.7M on $88.3M; 1H19 52.3%). History: FY2018 $31.7M; FY2019 $46.7M (reported, AquaVenture).",
+ "revenue_by_business": [
+  {
+   "business": "Bulk water (desalination / potable & industrial water sales, Caribbean, LatAm, Texas)",
+   "category": "Other",
+   "revenue_usd_m": 105,
+   "pct": 72,
+   "how_derived": "2019 bulk water $60.5M (68% of SSW) + Panama APSA + Antigua + Texas; estimate"
+  },
+  {
+   "business": "Wastewater treatment plant rental/leasing (AUC, US)",
+   "category": "Other",
+   "revenue_usd_m": 24,
+   "pct": 17,
+   "how_derived": "2019 rental $14.8M grown ~7%/yr; estimate"
+  },
+  {
+   "business": "Plant/equipment sales incl. WAWCON clarifiers (AUC)",
+   "category": "Media, membranes & equipment",
+   "revenue_usd_m": 12,
+   "pct": 8,
+   "how_derived": "2019 product sales $9.4M plus growth; estimate"
+  },
+  {
+   "business": "Financing (customer-owned plants)",
+   "category": "Other",
+   "revenue_usd_m": 4,
+   "pct": 3,
+   "how_derived": "2019 financing revenue $3.7M; roughly flat"
+  }
+ ],
+ "us_water_treatment_revenue_usd_m": 0,
+ "us_water_treatment_arithmetic": "Strict definition = water treatment chemicals and chemical-based treatment services sold. Seven Seas sells treated water, wastewater plant capacity/leases and equipment; it does not sell chemicals, so US water treatment chemical revenue = $0. For context, US water/wastewater SERVICE revenue is est. ~$58M = AUC rental ~$24M + AUC product sales ~$12M + Texas/USVI bulk water ~$20M + financing ~$2M (estimate). Its chemical purchases (demand) are perhaps 3-6% of revenue, ~$4-9M/yr worldwide (analyst estimate, not sourced).",
+ "end_markets_total_platform": {
+  "Municipal drinking water": 50,
+  "Municipal wastewater": 20,
+  "Power generation": 0,
+  "Oil & gas / refining": 4,
+  "Chemicals & petrochem": 0,
+  "Pulp & paper": 0,
+  "Food & beverage": 0,
+  "Mining & metals": 7,
+  "Primary metals/steel": 0,
+  "Commercial HVAC / buildings": 0,
+  "Healthcare & institutional": 0,
+  "Data centers": 0,
+  "Pharma/life sciences": 0,
+  "Microelectronics/semis": 0,
+  "Manufacturing (general industrial)": 5,
+  "Pools & spa": 0,
+  "Agriculture & farm": 0,
+  "Consumer / retail": 0,
+  "Other": 14
+ },
+ "employees_total": null,
+ "employees_basis": "Not company-stated. PitchBook lists 137 (2025, likely the Seven Seas Water Corp entity only). The prior estimate of ~450 for the group incl. AUC and island operations is plausible but unverified.",
+ "us_sites_count": null,
+ "key_sites": [
+  {
+   "type": "HQ",
+   "address": "14400 Carlson Circle",
+   "city": "Tampa",
+   "state": "FL"
+  },
+  {
+   "type": "HQ",
+   "address": "AUC Group headquarters (street address not verified)",
+   "city": "Houston",
+   "state": "TX"
+  },
+  {
+   "type": "Plant",
+   "address": "City of Alice brackish water RO plant (commissioned Jul 2025)",
+   "city": "Alice",
+   "state": "TX"
+  },
+  {
+   "type": "Plant",
+   "address": "South Texas Water Authority BWRO facility (groundbreaking Jul 2025)",
+   "city": "Robstown",
+   "state": "TX"
+  },
+  {
+   "type": "Plant",
+   "address": "USVI desalination operations (historical WAPA contracts)",
+   "city": "St. Croix / St. Thomas",
+   "state": "VI"
+  }
+ ],
+ "chemistries": [
+  {
+   "product_line": "None sold. Consumes RO antiscalants, membrane cleaners, coagulants, chlorine/hypochlorite, and pH adjustment chemicals in its plants",
+   "made_or_resold": "Purchased from third parties (consumer)",
+   "brands": "n/a"
+  },
+  {
+   "product_line": "Water-as-a-Service (bulk water, SWRO/BWRO)",
+   "made_or_resold": "Service",
+   "brands": "Water-as-a-Service(R)"
+  },
+  {
+   "product_line": "Packaged/field-erected wastewater plants, clarifiers",
+   "made_or_resold": "Designed/fabricated (AUC, WAWCON assets)",
+   "brands": "AUC Group"
+  }
+ ],
+ "acquisitions": [
+  {
+   "date": "2018-11-01",
+   "target": "AUC Group, L.P. (Houston, TX)",
+   "universe_id": null,
+   "what_it_does": "Decentralized wastewater treatment plants: design, lease, sale, operation; founded 1970; 1,500-2,000+ installations",
+   "revenue_usd_m": null,
+   "value_usd_m": 130,
+   "source_url": "https://www.marketscreener.com/quote/stock/AQUAVENTURE-HOLDINGS-LIMI-31513860/news/AquaVenture-Holdings-Limited-acquired-AUC-Group-L-P-from-NewSpring-Capital-and-Argosy-Capital-Grou-34530768/"
+  },
+  {
+   "date": "2020-11-02",
+   "target": "Aguas de Panama S.A. and Sembcorp Investments Ltd (from Sembcorp)",
+   "universe_id": null,
+   "what_it_does": "20 MGD Lake Gatun potable water plant, 30-year concession with IDAAN, serves ~420k people in Arraijan, Panama",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://sevenseaswater.com/seven-seas-water-acquires-water-treatment-business-in-panama/"
+  },
+  {
+   "date": "2024-10-08",
+   "target": "WAWCON, Inc. (key assets)",
+   "universe_id": null,
+   "what_it_does": "Clarifier internals and water/wastewater treatment equipment manufacturer (since 1987)",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://aucgroup.net/auc-group-a-member-of-seven-seas-water-group-acquires-key-assets-of-wawcon-inc-to-expand-clarifier-design-capabilities/"
+  },
+  {
+   "date": "2016-10 (pre-MSIP)",
+   "target": "Aguas de Bayovar (Peru)",
+   "universe_id": null,
+   "what_it_does": "Desal plant supplying Vale's Bayovar phosphate mine (per PitchBook, a buyout/LBO of an existing asset)",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://pitchbook.com/profiles/company/32184-19"
+  }
+ ],
+ "addon_corrections": "No add-ons in the universe; none of its acquisitions are chemical companies, so none should be added to the chemical universe. Missing from the prior: Aguas de Panama (2020) and WAWCON assets (2024).",
+ "confidence": "Medium",
+ "what_changed_vs_prior": "Ownership chain corrected: AquaVenture was taken private by CULLIGAN (not Brookfield) in Mar 2020 for ~$1.1B EV; Culligan kept Quench and sold Seven Seas the same day to MSIP (reported ~$500M), so MSIP entered in 2020, not ~2022. AUC was acquired Nov 2018 (not 2019) for ~$130M. EQT EV >$1B (Bloomberg). Revenue cut from $175M to $145M est. (anchored on the reported FY2019 $88.3M plus identified growth). EBITDA estimated at ~$70M (was not given). Added the Panama and WAWCON acquisitions. Employees unverified (PitchBook 137 vs prior 450).",
+ "open_questions": "Current revenue/EBITDA (EQT/lender docs); US vs international split; US plant count (share of the 220 plants that are AUC Texas sites); group headcount; whether the EQT deal has closed (likely H2 2025); current USVI WAPA contract status.",
+ "evidence": [
+  {
+   "metric": "total_revenue",
+   "value": "SSW FY2019 revenue $88.3M; Adj. EBITDA $46.7M",
+   "year": "2019",
+   "source_type": "Company earnings release (AquaVenture)",
+   "url": "https://www.businesswire.com/news/home/20200305005872/en/AquaVenture-Holdings-Limited-Announces-Fourth-Quarter-and-Full-Year-2019-Earnings-Results",
+   "quote": "Seven Seas Water revenues were $88.3 million, an increase of 33.0% over revenues of $66.4 million in the prior year... Adjusted EBITDA was $46.7 million"
+  },
+  {
+   "metric": "segment",
+   "value": "Bulk water $60.5M, rental $14.8M, product sales $9.4M, financing $3.7M",
+   "year": "2019",
+   "source_type": "Company earnings release",
+   "url": "https://www.businesswire.com/news/home/20200305005872/en/AquaVenture-Holdings-Limited-Announces-Fourth-Quarter-and-Full-Year-2019-Earnings-Results",
+   "quote": "Bulk water revenues: $60.5 million; Rental $14.8 million; Product sales $9.4 million; Financing $3.7 million"
+  },
+  {
+   "metric": "ebitda",
+   "value": "1H19 Adj. EBITDA $22.5M, 52.3% margin",
+   "year": "2019",
+   "source_type": "Investor presentation",
+   "url": "https://s24.q4cdn.com/323398743/files/presentation/aquaventure-investor-presentation-august-2019.pdf",
+   "quote": "1H 2019 revenues $37.8 million; Adjusted EBITDA $22.5 million (52.3% margin)"
+  },
+  {
+   "metric": "deal",
+   "value": "EQT EV >$1B incl. debt",
+   "year": "2025",
+   "source_type": "Bloomberg",
+   "url": "https://news.bloomberglaw.com/private-equity/buyout-firm-eqt-is-said-to-near-deal-for-seven-seas-water",
+   "quote": "the deal values Seven Seas at more than $1 billion, including debt, according to people familiar with the matter"
+  },
+  {
+   "metric": "deal",
+   "value": "MSIP 2020 entry reported ~$500M",
+   "year": "2020",
+   "source_type": "Trade podcast/blog (press-reported)",
+   "url": "https://dww.show/water-as-a-service-seven-seas-billion-dollar-exit/",
+   "quote": "Morgan Stanley acquisition (March 2020): Reported ~$500 million"
+  },
+  {
+   "metric": "ownership",
+   "value": "Culligan acquired AquaVenture and divested SSW to MSIP",
+   "year": "2020",
+   "source_type": "Press release",
+   "url": "https://www.nasdaq.com/press-release/seven-seas-water-acquired-by-morgan-stanley-infrastructure-partners-2020-03-30",
+   "quote": "Seven Seas Water... previously an operating segment of AquaVenture Holdings Limited (NYSE:WAAS)... acquired by Morgan Stanley Infrastructure Partners"
+  },
+  {
+   "metric": "ownership",
+   "value": "EQT Infrastructure VI to acquire from MSIP",
+   "year": "2025",
+   "source_type": "Press release",
+   "url": "https://www.prnewswire.com/news-releases/eqt-to-acquire-seven-seas-water-group-a-leading-provider-of-sustainable-water-and-wastewater-solutions-302463361.html",
+   "quote": "over 220 plants currently under management... United States, Caribbean and Latin America"
+  },
+  {
+   "metric": "deal",
+   "value": "AUC acquired for ~$130M",
+   "year": "2018",
+   "source_type": "MarketScreener deal record",
+   "url": "https://www.marketscreener.com/quote/stock/AQUAVENTURE-HOLDINGS-LIMI-31513860/news/AquaVenture-Holdings-Limited-acquired-AUC-Group-L-P-from-NewSpring-Capital-and-Argosy-Capital-Grou-34530768/",
+   "quote": "approximately $130 million... closed on November 1, 2018"
+  },
+  {
+   "metric": "sites",
+   "value": "20bn gal/yr water; 150 MGD wastewater; 14 locations",
+   "year": "2025",
+   "source_type": "Company website",
+   "url": "https://sevenseaswater.com/about/",
+   "quote": "deliver 20 billion gallons of treated water every year... 150,000,000 gallons of wastewater treated, every day"
+  },
+  {
+   "metric": "employees",
+   "value": "137 (PitchBook, likely partial)",
+   "year": "2025",
+   "source_type": "Database (last resort)",
+   "url": "https://pitchbook.com/profiles/company/32184-19",
+   "quote": "Employees: 137"
+  },
+  {
+   "metric": "deal",
+   "value": "$205M syndicated loan refinancing a $163M June 2020 facility",
+   "year": "2021",
+   "source_type": "Legal press",
+   "url": "https://lexlatin.com/noticias/seven-seas-water-obtiene-prestamo-sindicado",
+   "quote": "refinance a $163 million debt contracted in June 2020... portfolio of 100 plants"
+  }
+ ],
+ "profile_md": "## Seven Seas Water Group - Water-as-a-Service operator (not a chemical supplier)\n\n**Overview.** Seven Seas Water Group (Tampa, FL and Houston, TX) designs, finances, builds, owns and operates decentralized water and wastewater treatment plants under long-term, take-or-pay, inflation-linked contracts it brands \"Water-as-a-Service(R)\". It sells treated water by the gallon (seawater and brackish reverse osmosis desalination, surface-water treatment) and wastewater treatment capacity (packaged/modular plants leased or sold through its AUC Group subsidiary). It runs more than 220 plants across the US, the Caribbean and Latin America. The company says it produces about 20 billion gallons of treated water a year and treats about 150 million gallons of wastewater a day. **For a water treatment chemicals map it is a customer, not a competitor.** It buys antiscalants, coagulants, chlorine/hypochlorite, pH chemicals and membrane cleaners for its plants, and it does not make or resell chemicals as a business line. It belongs in the universe as a *Water utility / O&M operator* and a demand-side account.\n\n**History & ownership.** Founded in 1997 in the US Virgin Islands. It became part of AquaVenture Holdings, which listed on the NYSE as WAAS in October 2016 with two segments, Seven Seas Water (SSW) and Quench. On 1 Nov 2018 AquaVenture bought AUC Group, a Houston decentralized-wastewater company founded in 1970, from NewSpring Capital and Argosy for about $130M. On 30 Mar 2020 Culligan (then Advent/BC Partners-backed) took AquaVenture private for about $1.1B EV, kept Quench, and sold Seven Seas Water the same day to Morgan Stanley Infrastructure Partners (MSIP). The price was not disclosed. Trade press reports it at about $500M. Under MSIP the company bought Aguas de Panama from Sembcorp (Nov 2020: a 20 MGD Lake Gatun plant on a 30-year IDAAN concession serving about 420k people). It refinanced with a $205M Deutsche Bank/Investec syndicated loan in 2021, won the City of Alice (TX) BWRO and South Texas Water Authority (Robstown, TX) contracts, a 20-year Aqualectra BOOT in Cura\u00e7ao (2024), and new Antigua (APUA) plants and an Aruba (WEB) project. Through AUC it bought the WAWCON clarifier assets in Oct 2024. On 22 May 2025 EQT Infrastructure VI agreed to buy the company from MSIP. Bloomberg reported a value of \"more than $1 billion, including debt\". RBC advised the seller and A&O Shearman advised EQT.\n\n**Products & chemistries.** It has no chemical product lines. Its service lines are (1) bulk potable/industrial water from SWRO/BWRO and conventional plants; (2) wastewater treatment plant rental and leasing plus plant/equipment sales (AUC); and (3) financing of customer-owned plants. Chemicals are an operating cost within opex, bought from third parties such as membrane-chemical, coagulant and hypochlorite suppliers.\n\n**End markets & customers.** The main customers are government utilities and water authorities: USVI WAPA historically, BVI, Anguilla, Trinidad, Cura\u00e7ao Aqualectra, Antigua APUA, Aruba WEB, Panama IDAAN, and Texas municipalities and water authorities. Other customers are hospitality/resort developers (Turks & Caicos, Bahamas, Sint Maarten), industrial and mining users (Aguas de Bayovar, which supplies Vale's phosphate mine in Peru), and US property developers, MUDs, RV parks, schools and industrial sites served by AUC's packaged wastewater plants. The end-market split in this file is an analyst estimate.\n\n**Footprint.** Corporate offices are at 14400 Carlson Circle, Tampa, FL 33626 and in Houston, TX (AUC). US plants are concentrated in Texas (the AUC decentralized wastewater fleet, Alice, Robstown/STWA) and the US Virgin Islands. International plants are in Anguilla, Antigua & Barbuda, Aruba, Bahamas, BVI, Cura\u00e7ao, Panama, Peru, Sint Maarten, Trinidad and Turks & Caicos.\n\n**Financials.** The last disclosed figures are for FY2019 (AquaVenture 10-K/earnings): SSW revenue of $88.3M (bulk water $60.5M, rental $14.8M, product sales $9.4M, financing $3.7M) and Adjusted EBITDA of $46.7M (53% margin). The plant count grew from about 100 (2021) to more than 220 (2025), and annual water output from 8.5bn gallons (mid-2019) to about 20bn gallons. That growth came mainly from Panama (20 MGD, about 7bn gal/yr), new Antigua plants and Texas. **Estimate** for 2025: revenue about $145M (range $120-175M) and EBITDA about $70M (about 48%). The EBITDA estimate cross-checks against the >$1B EV at a 14-16x infrastructure multiple. US revenue is estimated at about 40%, or about $58M (AUC plus Texas bulk water plus USVI). Revenue from water treatment chemicals is zero.\n\n**M&A strategy.** It buys contracted, cash-yielding water assets and concessions: AUC in 2018 and APSA Panama in 2020. It also does tuck-ins for capability (WAWCON clarifiers, 2024) and advertises that it will buy existing water and wastewater plants. EQT is expected to push US decentralized wastewater and municipal P3 growth.\n\n**Competitive position.** Its competitors are other BOO/P3 water providers and O&M firms rather than chemical companies: Veolia, Jacobs/Inframark, Aqua/Essential's decentralized business, Consolidated Water (Caribbean desal), IDE and Acciona in Caribbean desal, and local packaged-plant vendors. Its moat is a 20+ year record of long-term take-or-pay contracts and financing capability.\n\n**Risks.** Contracts are concentrated with small island governments, where payment and sovereign credit risk apply (arrears have been an issue in past USVI and Caribbean utility contracts). There is hurricane exposure, re-tender risk at contract expiry, leverage under infrastructure ownership, and execution risk on Texas desal P3s.\n\n**Uncertainties.** No revenue or EBITDA has been disclosed since 2019. The 2025 figures here are estimates, the EQT EV is press-reported, the employee count is unverified, and the number of US plants is not disclosed.\n",
+ "universe_id": 81,
+ "id": "seven-seas-water-group",
+ "customers": [
+  {
+   "name": "USVI WAPA",
+   "what": "Desalinated water under long-term contract",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Cura\u00e7ao Aqualectra",
+   "what": "Water supply contract",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Antigua APUA",
+   "what": "Water supply contract",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Aruba WEB",
+   "what": "Water supply contract",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Panama IDAAN",
+   "what": "Concession water supply",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Aguas de Bayovar (Vale, Peru)",
+   "what": "Industrial desal for phosphate mine",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Texas MUDs and municipalities",
+   "what": "Decentralized wastewater (AUC)",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  }
+ ],
+ "competitors": [
+  {
+   "name": "Veolia",
+   "overlap": "BOO / O&M"
+  },
+  {
+   "name": "Inframark (Jacobs)",
+   "overlap": "O&M"
+  },
+  {
+   "name": "Consolidated Water",
+   "overlap": "Caribbean desal"
+  },
+  {
+   "name": "IDE",
+   "overlap": "Desal"
+  },
+  {
+   "name": "Acciona",
+   "overlap": "Desal"
+  }
+ ],
+ "buyers": [
+  {
+   "name": "Infrastructure funds",
+   "type": "Financial",
+   "rationale": "Contracted take-or-pay cash flows"
+  },
+  {
+   "name": "Veolia",
+   "type": "Strategic",
+   "rationale": "Caribbean and US decentralized footprint"
+  },
+  {
+   "name": "Consolidated Water",
+   "type": "Strategic",
+   "rationale": "Caribbean desal consolidation"
+  }
+ ],
+ "addon_ideas": [],
+ "source_of_truth": [],
+ "locked": [],
+ "status": "ready",
+ "runs": [
+  {
+   "at": "2026-09-27T00:00:00Z",
+   "kind": "Imported",
+   "summary": "Imported from WTC deep-dive batch P05A"
+  }
+ ],
+ "updated_at": "2026-09-27T00:00:00Z"
+}

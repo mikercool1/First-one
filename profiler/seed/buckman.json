@@ -1,0 +1,351 @@
+{
+ "name": "Buckman",
+ "platform_name": "Buckman Laboratories International (Bulab Holdings, Inc.)",
+ "website": "https://www.buckman.com",
+ "hq_address": "1256 N. McLean Blvd., Memphis, TN 38108",
+ "what_it_is": "Vertically integrated specialty chemical maker. Its core is microbial control/biocides and process chemistry for pulp & paper and leather, with an industrial water treatment line (cooling, boiler, raw/process water, wastewater) mostly for paper mills, ethanol, oil & gas and power.",
+ "primary_category": "Specialty / intermediate chemicals (water is a minor outlet)",
+ "water_relevance": "Water is a segment (10-40%)",
+ "bluntly": "Mostly a pulp & paper and leather process-chemicals and biocide company. Industrial water treatment is an estimated ~25% of sales, focused on its own process verticals (paper, ethanol, O&G, power) rather than broad commercial/institutional water service. In 2017 it sold its eastern-Canada general water book to Klenzoid.",
+ "owner_type": "PE-owned",
+ "ultimate_parent": "Pritzker Private Capital (with Buckman family and management co-investing), via Bulab Holdings, Inc.",
+ "pe_sponsor": "Pritzker Private Capital",
+ "pe_entry_year": "2025",
+ "pe_entry_ev_usd_m": null,
+ "pe_entry_multiple": "Not disclosed",
+ "prior_owners": "Buckman family (founded 1945 by Dr. Stanley J. Buckman; family holding company Bulab Holdings since 1987). The family still holds a stake after the PPC deal.",
+ "total_revenue_usd_m": 600,
+ "total_revenue_year": "2024 (estimate)",
+ "total_revenue_basis": "Estimate. Company-stated 'sales of more than $500 million' (Buckman history timeline, c.2020, when it had 1,500 associates). Adjusted up for 2021-24 inflation/pricing (announced 5-9% NA/APAC and 5-12% EMEA paper increases in late 2024) but tempered by lower headcount (>1,300 in 2025). Range $550-700M. Grokipedia's unsourced '$800M+' is not relied on. Growjo ~$300M is too low.",
+ "us_revenue_usd_m": 225,
+ "total_ebitda_usd_m": 95,
+ "ebitda_margin_pct": 16,
+ "ebitda_year": "2024 (estimate)",
+ "ebitda_basis": "Estimate: ~16% margin assumed for a biocide-heavy specialty chemicals mid-cap x $600M revenue. Not disclosed; no rating agency or credit docs found. Deal EV not disclosed.",
+ "revenue_by_business": [
+  {
+   "business": "Pulp & paper process chemistry (microbial control, enzymes, retention/strength, deposit control)",
+   "category": "Pulp & paper process",
+   "revenue_usd_m": 240,
+   "pct": 40,
+   "how_derived": "Estimate. Founding and largest market; listed first in all company descriptions; 2025 deal release highlights 'paper and packaging recycling'."
+  },
+  {
+   "business": "Industrial water treatment (cooling, boiler, raw/process water, reuse, wastewater; digital dosing)",
+   "category": "Water treatment - industrial/commercial",
+   "revenue_usd_m": 150,
+   "pct": 25,
+   "how_derived": "Estimate. Company describes itself as 'a global leader in water treatment, process chemistry and digital solutions'; water is one of 3 named core markets; allocated ~25%."
+  },
+  {
+   "business": "Leather chemicals (beamhouse, tanning, biocides, fungicides)",
+   "category": "Specialty / intermediate (non-water)",
+   "revenue_usd_m": 72,
+   "pct": 12,
+   "how_derived": "Estimate. Named core market #2/3."
+  },
+  {
+   "business": "Performance chemicals: metalworking fluids, coatings/plastics/wood preservation",
+   "category": "Specialty / intermediate (non-water)",
+   "revenue_usd_m": 60,
+   "pct": 10,
+   "how_derived": "Estimate."
+  },
+  {
+   "business": "Agriculture (fungicides/organosulfur actives, ag biocides)",
+   "category": "Agriculture / farm",
+   "revenue_usd_m": 42,
+   "pct": 7,
+   "how_derived": "Estimate."
+  },
+  {
+   "business": "Biofuels/sugar & ethanol and oil & gas process chemistry (non-water)",
+   "category": "Other",
+   "revenue_usd_m": 36,
+   "pct": 6,
+   "how_derived": "Estimate."
+  }
+ ],
+ "us_water_treatment_revenue_usd_m": 68,
+ "us_water_treatment_arithmetic": "Total est. $600M x water share ~25% = $150M global water treatment; x US share of water ~45% (US-heavy ethanol, O&G, power and paper-mill water programs, versus ~37% US share of total) = ~$68M. Range $55-90M. Prior was $80M (30% water x 45% on $600M); the water share was trimmed to 25% because pulp-mill biocides are process chemistry, not water treatment.",
+ "end_markets_total_platform": {
+  "Municipal drinking water": 0,
+  "Municipal wastewater": 2,
+  "Power generation": 4,
+  "Oil & gas / refining": 6,
+  "Chemicals & petrochem": 4,
+  "Pulp & paper": 43,
+  "Food & beverage": 6,
+  "Mining & metals": 2,
+  "Primary metals/steel": 1,
+  "Commercial HVAC / buildings": 1,
+  "Healthcare & institutional": 0,
+  "Data centers": 0,
+  "Pharma/life sciences": 0,
+  "Microelectronics/semis": 0,
+  "Manufacturing (general industrial)": 10,
+  "Pools & spa": 0,
+  "Agriculture & farm": 7,
+  "Consumer / retail": 0,
+  "Other": 14
+ },
+ "employees_total": 1300,
+ "employees_basis": "Company-stated 'more than 1,300 employees' (PPC/Buckman release, Mar 2025). Earlier: 1,500 associates (c.2020 timeline); Wikipedia says ~1,700 (older).",
+ "us_sites_count": 2,
+ "key_sites": [
+  {
+   "type": "HQ",
+   "address": "1256 N. McLean Blvd.",
+   "city": "Memphis",
+   "state": "TN"
+  },
+  {
+   "type": "Plant",
+   "address": "1256 N. McLean Blvd. (manufacturing complex + $10M R&D Pilot Plant opened Dec 2024)",
+   "city": "Memphis",
+   "state": "TN"
+  },
+  {
+   "type": "Plant",
+   "address": "14664 E. Highway 47",
+   "city": "Cadet",
+   "state": "MO"
+  }
+ ],
+ "chemistries": [
+  {
+   "product_line": "Biocides / microbial control (organosulfur, DTEA/Oxamine-type, isothiazolinone formulations, preservatives)",
+   "made_or_resold": "Made in-house (Memphis, Cadet); EPA-registered actives",
+   "brands": "Busan, Oxamine"
+  },
+  {
+   "product_line": "Enzymes for papermaking/recycled fiber",
+   "made_or_resold": "Formulated; enzymes likely sourced",
+   "brands": "Maximyze"
+  },
+  {
+   "product_line": "Ionene and other water-soluble polymers; retention/drainage/strength aids",
+   "made_or_resold": "Made",
+   "brands": "Bufloc, Bubond (brand names from general knowledge, unverified)"
+  },
+  {
+   "product_line": "Cooling/boiler inhibitors, dispersants, wastewater treatment chemicals",
+   "made_or_resold": "Mostly formulated/blended",
+   "brands": "Buckman water programs"
+  },
+  {
+   "product_line": "Leather process chemicals",
+   "made_or_resold": "Made/formulated",
+   "brands": "Buckman leather"
+  },
+  {
+   "product_line": "Digital monitoring/dosing (entrained air measurement)",
+   "made_or_resold": "Licensed tech (CiDRA)",
+   "brands": "ECHOWISE"
+  }
+ ],
+ "acquisitions": [
+  {
+   "date": "2001",
+   "target": "Eclipse Chemical Company",
+   "universe_id": null,
+   "what_it_does": "Canadian water treatment company; made Buckman the third-largest water treatment company in Canada",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.buckman.com/wp-content/uploads/2018/09/Buckman_timeline-2020.pdf"
+  },
+  {
+   "date": "2017",
+   "target": "CiDRA Chemical Management, Inc. (CCMI)",
+   "universe_id": null,
+   "what_it_does": "Entrained-air measurement / digital process monitoring; exclusive global license to ECHOWISE patents",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.buckman.com/wp-content/uploads/2018/09/Buckman_timeline-2020.pdf"
+  },
+  {
+   "date": "2025-08",
+   "target": "Atul-Buckman JV (with Atul Ltd) - joint venture, not an acquisition",
+   "universe_id": null,
+   "what_it_does": "Manufactures and markets water treatment chemicals and digital solutions in India and Sri Lanka",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.buckman.com/news/buckman-and-atul-joint-venture/"
+  },
+  {
+   "date": "2017-01-31",
+   "target": "DIVESTITURE: select eastern-Canada water treatment assets sold to Klenzoid Canada (Triwater Holdings)",
+   "universe_id": null,
+   "what_it_does": "Cooling/boiler/influent-effluent programs for manufacturing, F&B, institutional and power customers",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://gracematthews.com/press_release/grace-matthews-advises-buckman-laboratories-on-the-sale-of-select-canadian-water-treatment-chemicals-assets/"
+  }
+ ],
+ "addon_corrections": "No add-ons listed in the universe, which is correct: no acquisitions since the PPC deal as of Sep 2026. Historical deals: Eclipse Chemical (2001), CiDRA Chemical Management (2017). The 2017 divestiture to Klenzoid/Triwater is relevant to the Triwater universe entry. 'Integrated Biotechnology' in the prior could not be confirmed and is not included.",
+ "confidence": "Low",
+ "what_changed_vs_prior": "Confirmed PPC deal: signed 2025-03-03, closed 2025-07-01, with family and management co-investing; advisors Evercore (company), Houlihan Lokey (a family shareholder), McMillan (PPC Canadian counsel); terms undisclosed. Employees are >1,300 (company-stated), in line with the prior 1,350. Found a company-stated '>$500M sales' anchor (c.2020); revenue estimate kept at ~$600M. EBITDA est. raised to ~$95M (16% x $600M, from $88M). Water share cut from 30% to 25%, so US water falls from $80M to ~$68M. Cadet MO confirmed as a plant (14664 E. Hwy 47). Added the 2017 Klenzoid divestiture, CiDRA 2017, Eclipse 2001 and the 2025 Atul JV. ABF Journal's claim that Peninsula Pacific was the seller is rejected as unreliable.",
+ "open_questions": "Actual revenue and EBITDA (no credit docs found; financing likely private credit or club). Deal EV. Water vs paper split and US share. Current number of manufacturing plants (6 'hubs' in 2025 vs 10 sites in c.2020). Any post-close add-ons.",
+ "evidence": [
+  {
+   "metric": "total_revenue",
+   "value": ">$500M sales",
+   "year": "c.2020",
+   "source_type": "Company history timeline PDF",
+   "url": "https://www.buckman.com/wp-content/uploads/2018/09/Buckman_timeline-2020.pdf",
+   "quote": "sales of more than $500 million ... employs 1,500 associates worldwide"
+  },
+  {
+   "metric": "deal",
+   "value": "PPC agrees to acquire Buckman; Evercore advises Buckman; terms undisclosed",
+   "year": "2025",
+   "source_type": "Press release (Business Wire)",
+   "url": "https://www.businesswire.com/news/home/20250302632514/en/Pritzker-Private-Capital-Agrees-to-Acquire-Buckman",
+   "quote": "PPC will invest alongside members of the Buckman family and management"
+  },
+  {
+   "metric": "deal",
+   "value": "Closed July 1, 2025",
+   "year": "2025",
+   "source_type": "Company news",
+   "url": "https://www.buckman.com/news/pritzker-private-capital-completes-acquisition-of-buckman/",
+   "quote": "Pritzker Private Capital Completes Acquisition of Buckman"
+  },
+  {
+   "metric": "deal",
+   "value": "Houlihan Lokey advised a select Buckman family shareholder",
+   "year": "2025",
+   "source_type": "Advisor tombstone",
+   "url": "https://hl.com/about-us/transactions/buckman-laboratories-pritzker-private-capital/",
+   "quote": "Buckman Laboratories has been acquired by Pritzker Private Capital."
+  },
+  {
+   "metric": "employees",
+   "value": ">1,300; six manufacturing hubs; 90+ countries",
+   "year": "2025",
+   "source_type": "Trade press of deal release",
+   "url": "https://www.paperadvance.com/news/industry-news/pritzker-capital-to-acquire-buckman.html",
+   "quote": "more than 1,300 employees ... six manufacturing hubs"
+  },
+  {
+   "metric": "segment",
+   "value": "Focus markets after Canada divestiture",
+   "year": "2017",
+   "source_type": "Advisor press release",
+   "url": "https://gracematthews.com/press_release/grace-matthews-advises-buckman-laboratories-on-the-sale-of-select-canadian-water-treatment-chemicals-assets/",
+   "quote": "focus on water treatment and process chemistry for the oil/gas, ethanol, utilities, paper and leather markets"
+  },
+  {
+   "metric": "sites",
+   "value": "Memphis HQ; Cadet MO plant",
+   "year": "2026",
+   "source_type": "Company website",
+   "url": "https://www.buckman.com/contact-us/north-america/",
+   "quote": "1256 North McLean Blvd. Memphis, TN 38108-1241 ... 14664 E. Highway 47 Cadet, MO 63630"
+  },
+  {
+   "metric": "ownership",
+   "value": "Wholly owned subsidiary of Bulab Holdings, Inc.",
+   "year": "2025",
+   "source_type": "Company news (Atul JV)",
+   "url": "https://www.buckman.com/news/buckman-and-atul-joint-venture/",
+   "quote": "a wholly owned subsidiary of Bulab Holdings, Inc."
+  },
+  {
+   "metric": "us_water",
+   "value": "Water services: cooling, boiler, raw water, process water, reuse, wastewater",
+   "year": "2026",
+   "source_type": "Company website",
+   "url": "https://www.buckman.com/industries/water-treatment/",
+   "quote": "Cooling systems ... Boiler ... Raw water conditioning ... Process water ... Water reuse and reclamation ... Wastewater"
+  }
+ ],
+ "profile_md": "## Buckman (Buckman Laboratories International) - Investor Profile\n\n**Overview.** Buckman is a Memphis-based, vertically integrated specialty chemical maker. It started in 1945 with microbial control (biocides) for pulp and paper, and that is still its core. Its own descriptions list three main markets: pulp & paper, leather and water treatment, plus process chemistry for oil & gas, biofuels/ethanol, sugar, power, metalworking, coatings, plastics, wood and agriculture. Bluntly, Buckman is **not a pure water treatment company**. It is a paper and leather process-chemicals business with a sizeable industrial water treatment line (cooling, boiler, raw water, process water, reuse and wastewater). We estimate water treatment at about a quarter of sales.\n\n**History & ownership.** Dr. Stanley J. Buckman founded the company in Memphis in 1945 with a single 55-gallon reactor making BSM-11. It expanded early: Canada in 1948, the Cadet, Missouri plant and Mexico in 1963, Belgium in 1964, and South Africa, Brazil and Australia from 1971. The family holding company is Bulab Holdings, Inc., set up in 1987. Leadership passed from Stanley to Robert (Bob) Buckman, then to Steven Buckman and Katherine Buckman Gibson. Junai Maharaj has been CEO since 2017. On March 3, 2025 Pritzker Private Capital (PPC), the Chicago family-direct-investing firm, signed a deal to buy Buckman. PPC is investing alongside Buckman family members and management, and the deal closed on July 1, 2025. Advisors were Evercore (company sell-side), Houlihan Lokey (for a select family shareholder) and McMillan LLP (Canadian counsel to PPC). No terms were disclosed. PPC named strategic acquisitions as a growth lever. One trade-press article said the seller was \"Peninsula Pacific Strategic Partners\". It looks AI-generated, and every primary release says Buckman was family-owned, so we disregard that claim.\n\n**Products & chemistries.** Buckman makes most of its active chemistry itself in Memphis and Cadet. Its product lines are:\n- Busan-branded biocides and microbial control agents, including organosulfur fungicides and preservatives.\n- Oxamine (EPA Green Chemistry award 2012) and Maximyze enzymes for recycled fiber/papermaking (Green Chemistry award 2004 lineage).\n- Ionene and other polymers for water treatment and papermaking.\n- Retention, drainage and strength additives, and deposit control.\n- Leather tanning and beamhouse chemicals.\n- Cooling and boiler inhibitor programs.\n- Digital dosing and monitoring. The 2017 CiDRA Chemical Management acquisition brought the ECHOWISE entrained-air measurement technology.\n\nIt operates about 6 manufacturing hubs (2025 deal release). Older company material says 10 manufacturing sites worldwide.\n\n**End markets & customers.** The largest end market is paper, board and packaging recycling mills. There, Buckman sells both process chemistry and the mills' water programs. Next come leather tanneries (a global niche where Buckman is a leading supplier), then industrial water treatment for ethanol plants, oil & gas, power/utilities and sugar, then metalworking fluids, coatings/plastics preservation and agricultural uses. In 2017 Buckman sold its eastern-Canada general water treatment book to Klenzoid (Triwater), covering cooling/boiler water for manufacturing, food & beverage, institutional and power customers. The stated aim was to focus on \"oil/gas, ethanol, utilities, paper and leather\". That tells you Buckman's water business is industrial and tied to its process verticals, not a broad commercial/institutional service route like Nalco, ChemTreat or the regional independents.\n\n**Footprint.** Headquarters, a manufacturing complex and the new $10 million Robert H. Buckman Chemical R&D Pilot Plant (opened December 2024) are at 1256 N. McLean Blvd., Memphis, TN. The second US plant is at 14664 E. Highway 47, Cadet, MO. Abroad, Buckman has operations or plants in Canada, Mexico, Belgium (Ghent), Brazil (Sumar\u00e9), South Africa, Australia, Singapore, China (Shanghai) and India. It sells in 90+ countries. In August 2025 it formed Atul-Buckman, a joint venture with Atul Ltd, to make and sell water treatment chemicals in India and Sri Lanka.\n\n**Financials.** Buckman has never published audited financials.\n- **Revenue:** Company history material from about 2020 says \"sales of more than $500 million\" with 1,500 associates. Since then there were price increases (5-9% in North America and APAC in late 2024, 5-12% in EMEA paper, a US tariff surcharge in 2025), while headcount fell to \">1,300\" at the 2025 deal. We **estimate 2024 revenue at about $600M** (range $550-700M).\n- **EBITDA:** Not disclosed. At an assumed 16% margin, typical for a biocide-heavy specialty mid-cap, it would be about **$95M**. Treat this as an estimate only.\n- **Water share:** Water treatment is roughly 25% of sales (about $150M). The US may be ~45% of that, giving **US water treatment revenue of about $68M** (range $55-90M).\n\n**M&A strategy.** Historically Buckman made few deals: Eclipse Chemical (Canada water treatment, 2001) and CiDRA Chemical Management (2017), plus the 2017 divestiture in eastern Canada. Under PPC, expect a buy-and-build approach, likely in water treatment and digital monitoring. No add-ons had been announced as of September 2026. The only post-close move found is the Atul joint venture.\n\n**Competitive position.** In paper Buckman competes with Solenis (including Diversey), Kemira and Ecolab/Nalco, and in leather with Stahl, TFL and LANXESS. In industrial water it faces Ecolab, Veolia, ChemTreat, Solenis and Kurita. Its strengths are in-house biocide chemistry and regulatory registrations, deep niche application know-how, and customer intimacy.\n\n**Risks.**\n- Structural decline in graphic paper.\n- Concentration in leather.\n- EPA/FIFRA and EU BPR biocide re-registration costs.\n- Exposure to raw material and tariff swings.\n- Sub-scale position in US water against much larger programs.\n- New private equity ownership and any leverage it brings. No credit rating was found, which points to private or club debt.\n\n**Uncertainties.** Revenue, EBITDA, the segment split and the US share are all estimates. Deal EV and financing are undisclosed.",
+ "universe_id": 7,
+ "id": "buckman",
+ "customers": [
+  {
+   "name": "Recycled paper, board and packaging mills",
+   "what": "Process chemistry and mill water programs",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Leather tanneries (global)",
+   "what": "Tanning and finishing chemistry",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Ethanol plants",
+   "what": "Industrial water treatment",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Oil & gas, power and sugar",
+   "what": "Industrial water programs",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  }
+ ],
+ "competitors": [
+  {
+   "name": "Solenis",
+   "overlap": "Paper and industrial water"
+  },
+  {
+   "name": "Kemira",
+   "overlap": "Paper chemicals"
+  },
+  {
+   "name": "Ecolab / Nalco",
+   "overlap": "Paper and industrial water"
+  },
+  {
+   "name": "Stahl",
+   "overlap": "Leather"
+  },
+  {
+   "name": "LANXESS",
+   "overlap": "Leather and biocides"
+  },
+  {
+   "name": "ChemTreat",
+   "overlap": "Industrial water"
+  },
+  {
+   "name": "Kurita",
+   "overlap": "Industrial water"
+  }
+ ],
+ "buyers": [
+  {
+   "name": "Solenis",
+   "type": "Strategic",
+   "rationale": "Paper and water overlap"
+  },
+  {
+   "name": "Kemira",
+   "type": "Strategic",
+   "rationale": "Paper chemistry scale"
+  },
+  {
+   "name": "Kurita",
+   "type": "Strategic",
+   "rationale": "US industrial water entry"
+  }
+ ],
+ "addon_ideas": [],
+ "source_of_truth": [],
+ "locked": [],
+ "status": "ready",
+ "runs": [
+  {
+   "at": "2026-09-27T00:00:00Z",
+   "kind": "Imported",
+   "summary": "Imported from WTC deep-dive batch P05A"
+  }
+ ],
+ "updated_at": "2026-09-27T00:00:00Z"
+}

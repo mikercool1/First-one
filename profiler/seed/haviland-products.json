@@ -1,0 +1,349 @@
+{
+ "name": "Haviland Products Company (division of Haviland Enterprises, Inc.)",
+ "platform_name": "Haviland Enterprises, Inc. (Haviland Products Company + Haviland Pool & Spa, incl. Baleco International and Haviland Pool & Spa Southwest / ex-Blue Excess)",
+ "website": "https://www.havilandusa.com",
+ "hq_address": "421 Ann St. N.W., Grand Rapids, MI 49504",
+ "what_it_is": "A 100% ESOP-owned West Michigan chemical blender, packager and distributor with two divisions: Haviland Pool & Spa, a branded and private-label maker of pool and spa chemicals (ProTeam, Durachlor, SpaPure and others), and Haviland Products Company (HPC), which sells commodity and specialty chemicals for water and wastewater treatment, surface finishing and plating, and cleaning, and does contract manufacturing.",
+ "primary_category": "Pool & spa chemicals",
+ "water_relevance": "Water is a segment (10-40%)",
+ "bluntly": "Mostly a pool and spa chemical company plus a Michigan industrial chemical blender and distributor. By estimate about half of revenue is pool and spa (excluded from water). Strict municipal and industrial water treatment is only about 15-20% of the platform, and much of that is resold commodity chemicals (bleach, chlorine gas, acids, caustic, inorganic coagulants).",
+ "owner_type": "ESOP",
+ "ultimate_parent": "Haviland Enterprises, Inc. (100% owned by its ESOP trust)",
+ "pe_sponsor": "",
+ "pe_entry_year": "",
+ "pe_entry_ev_usd_m": null,
+ "pe_entry_multiple": "",
+ "prior_owners": "Haviland family (founded 1934 by J.B. Haviland). In 1997 the family sold 46% to an ESOP and kept 54%. In late 2012 the family sold its remaining 54% to the ESOP trust, making the company 100% employee-owned.",
+ "total_revenue_usd_m": 210.0,
+ "total_revenue_year": "2025E",
+ "total_revenue_basis": "ESTIMATE anchored on two company-stated data points: FY2012 sales of $115M (Products Finishing, Feb 2013) and '$200 million in sales' in 2022 (PoolPro, 10-year ESOP anniversary, Nov 2022). That is roughly a 5.7% CAGR over 2012-22, lifted by the 2020-22 pool boom and chlorine and trichlor price inflation. From 2023-25 pool chemical pricing normalized (trichlor deflation) while the industrial side and capital spending grew (a $7M lab). So 2025 is held roughly flat to slightly up, at about $210M (plausible range $190-235M). Cross-check: 300+ employees x ~$0.7M/employee, consistent with a blender/packager/distributor model. Thomasnet band $100-249.9M.",
+ "us_revenue_usd_m": 205.0,
+ "total_ebitda_usd_m": 21.0,
+ "ebitda_margin_pct": 10.0,
+ "ebitda_year": "2025E",
+ "ebitda_basis": "Estimate - no disclosure; ESOP, no public debt or rating. Blended margin of about 10% ($210M x 10% = $21M; range $16-27M). Assumes pool branded and private-label blending/tableting at ~11-13% EBITDA in a normal year, commodity chemical distribution (water commodities, acids and alkalis) at ~6-8%, and specialty surface-finishing/plating and contract manufacturing at ~10-14%. No EBITDA history is available. The prior pass estimated $22-2xM on $220M, which is essentially unchanged.",
+ "revenue_by_business": [
+  {
+   "business": "Haviland Pool & Spa (ProTeam, Durachlor, SpaPure, Clear Result, Caribbean Blue, Nature's Care, Salt Support, Stain Drop; private label; Baleco International, North Bend OH; Haviland Pool & Spa Southwest, Chandler AZ)",
+   "category": "Pool & spa",
+   "revenue_usd_m": 105.0,
+   "pct": 50.0,
+   "how_derived": "Estimate. Pool is the more visible division: '8 house brands', 'one of the largest manufacturers of pool and spa chemicals', and both acquisitions (Baleco, Blue Excess) and 2 of 4 named production sites are pool. Set at ~50% of the $210M estimate (plausible 45-60%)."
+  },
+  {
+   "business": "HPC water & wastewater treatment: municipal (bleach, chlorine gas, fluoridation, inorganic coagulants, pH chemicals, phosphorus removal, dewatering polymer)",
+   "category": "Water treatment - municipal",
+   "revenue_usd_m": 22.0,
+   "pct": 10.5,
+   "how_derived": "Estimate. HPC water treatment is set at ~35% of HPC's ~$105M = ~$37M, split ~60/40 municipal vs industrial because the wastewater page leads with 'Municipal & Public Utilities' and the commodity line (bleach, chlorine gas, fluoride, coagulants) is municipal-weighted."
+  },
+  {
+   "business": "HPC water & wastewater treatment: industrial (industrial wastewater: metal precipitants, paint detack, demulsifiers, defoamers, flocculants, odor control; corrosion inhibitors; treatability and lab services)",
+   "category": "Water treatment - industrial/commercial",
+   "revenue_usd_m": 15.0,
+   "pct": 7.1,
+   "how_derived": "Estimate: ~40% of the ~$37M HPC water treatment estimate. Customers include food processors, surface finishers/metal treaters, environmental services and oil & gas."
+  },
+  {
+   "business": "HPC surface finishing / plating & anodizing chemistry (cleaners, electroless nickel, plating solutions)",
+   "category": "Specialty / intermediate (non-water)",
+   "revenue_usd_m": 21.0,
+   "pct": 10.0,
+   "how_derived": "Estimate: ~20% of HPC. Thomasnet calls Haviland 'a leader in cleaning, plating and anodizing chemistry', and HPC exhibits at electroless nickel events."
+  },
+  {
+   "business": "HPC cleaning chemicals and contract manufacturing / toll blending & packaging",
+   "category": "Cleaning, hygiene & sanitation",
+   "revenue_usd_m": 26.0,
+   "pct": 12.4,
+   "how_derived": "Estimate: ~25% of HPC. Contract manufacturing is one of three stated core markets for the new lab. Cleaning is cited in every company description."
+  },
+  {
+   "business": "HPC commodity chemical distribution to non-water users (acids such as hydrochloric, hydrofluoric, boric, citric and ascorbic; alkalis for pharma, food, automotive and general industry)",
+   "category": "Distribution (non-water)",
+   "revenue_usd_m": 21.0,
+   "pct": 10.0,
+   "how_derived": "Estimate: ~20% of HPC. Thomasnet lists these acids and pharma/food/automotive end users. Some of this commodity flow could also serve water customers, and a split is not disclosed."
+  }
+ ],
+ "us_water_treatment_revenue_usd_m": 37.0,
+ "us_water_treatment_arithmetic": "Total $210M (est.) - Pool & Spa $105M (excluded by definition) = HPC ~$105M. HPC water/wastewater ~35% x $105M = ~$37M (municipal ~$22M + industrial ~$15M). Surface finishing ($21M), cleaning/contract manufacturing ($26M) and non-water commodity distribution ($21M) are excluded. Essentially all sales are US (Michigan/Midwest industrial; national pool). So US water treatment = ~$37M (range ~$25-50M). This compares with the prior $70M, which included pool.",
+ "end_markets_total_platform": {
+  "Municipal drinking water": 6,
+  "Municipal wastewater": 5,
+  "Power generation": 0,
+  "Oil & gas / refining": 1,
+  "Chemicals & petrochem": 2,
+  "Pulp & paper": 0,
+  "Food & beverage": 6,
+  "Mining & metals": 0,
+  "Primary metals/steel": 0,
+  "Commercial HVAC / buildings": 1,
+  "Healthcare & institutional": 2,
+  "Data centers": 0,
+  "Pharma/life sciences": 3,
+  "Microelectronics/semis": 0,
+  "Manufacturing (general industrial)": 18,
+  "Pools & spa": 50,
+  "Agriculture & farm": 1,
+  "Consumer / retail": 5,
+  "Other": 0
+ },
+ "employees_total": 300,
+ "employees_basis": "Company-stated '300+ Employee-Owners' (havilandusa.com/about; PoolMagazine 90th anniversary 2024). The same About page also says '200+ employees' in another block, and PoolPro (2024) says 'more than 250'. For history, the company had 220 employees in Feb 2013. The prior 350 was too high.",
+ "us_sites_count": 6,
+ "key_sites": [
+  {
+   "type": "HQ",
+   "address": "421 Ann St. N.W.",
+   "city": "Grand Rapids",
+   "state": "MI"
+  },
+  {
+   "type": "Plant",
+   "address": "Ann St. N.W. campus (multiple buildings; blending, packaging, oxidizer/pool warehousing; new $7M 11,000 sq ft lab, 2025)",
+   "city": "Grand Rapids",
+   "state": "MI"
+  },
+  {
+   "type": "Plant",
+   "address": "Address not found (production/warehousing)",
+   "city": "Kalamazoo",
+   "state": "MI"
+  },
+  {
+   "type": "Plant",
+   "address": "Baleco International, 100,000 sq ft facility (street address not found)",
+   "city": "North Bend",
+   "state": "OH"
+  },
+  {
+   "type": "Plant",
+   "address": "Haviland Pool & Spa Southwest (ex-Blue Excess) blending/tableting (street address not found)",
+   "city": "Chandler",
+   "state": "AZ"
+  }
+ ],
+ "chemistries": [
+  {
+   "product_line": "Pool & spa sanitizers, balancers, borate programs, liquid stabilizer (CYA), stain/scale, enzymes, tablets",
+   "made_or_resold": "Blended, tableted and packaged in-house from purchased actives (trichlor, cal-hypo, CYA, borates are bought in); private label for national pool chains",
+   "brands": "ProTeam, ProTeam Spa, SpaPure, Durachlor, Clear Result, Caribbean Blue, Nature's Care, Salt Support, Stain Drop; Baleco: Aquamate, Maintain Pool Pro"
+  },
+  {
+   "product_line": "Water/wastewater commodities: liquid bleach and chlorine gas, fluoridation, inorganic coagulants/metal salts, acids and alkalis, oxidizers and reducers (dechlorination, Cr6+ reduction)",
+   "made_or_resold": "Mostly resold/repackaged and delivered (distribution); bleach and chlorine gas are not believed to be made in-house",
+   "brands": "Haviland Products (no known brands)"
+  },
+  {
+   "product_line": "Water/wastewater specialties: flocculants, coagulants, demulsifiers, defoamers, odor control, paint detackification, metal precipitants, specialty corrosion inhibitors; treatability, phosphorus removal and polymer testing services",
+   "made_or_resold": "Mix of in-house blends and resold polymers",
+   "brands": "Not disclosed"
+  },
+  {
+   "product_line": "Surface finishing: cleaners, plating, electroless nickel, anodizing chemistry",
+   "made_or_resold": "Formulated in-house",
+   "brands": "Haviland Products"
+  },
+  {
+   "product_line": "Cleaning chemicals and contract manufacturing (custom blending, packaging; made hand sanitizer in 2020)",
+   "made_or_resold": "Made in-house (toll/contract)",
+   "brands": "Customer brands"
+  },
+  {
+   "product_line": "Commodity acids/alkalis (hydrochloric, hydrofluoric, boric, citric, ascorbic acids etc.)",
+   "made_or_resold": "Resold/repackaged",
+   "brands": "n/a"
+  }
+ ],
+ "acquisitions": [
+  {
+   "date": "2017-01-31",
+   "target": "Baleco International (North Bend, OH)",
+   "universe_id": 740,
+   "what_it_does": "Pool & spa chemical manufacturer and private labeler (Aquamate, Maintain Pool Pro), about 60 years old, 100,000 sq ft facility. All employees retained.",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.havilandpool.com/news/detail/haviland-acquires-baleco-international"
+  },
+  {
+   "date": "2019-08/11",
+   "target": "Blue Excess (Chandler, AZ), renamed Haviland Pool & Spa Southwest",
+   "universe_id": null,
+   "what_it_does": "Contract chemical blending, tableting and packaging for regional and national pool & spa customers. Founded 2013 by Blaine Mills.",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.aquamagazine.com/news/community-news/article/15122047/haviland-pool-and-spa-acquires-arizona-company"
+  }
+ ],
+ "addon_corrections": "Baleco International (id 740) is correctly owned by Haviland (acquired Jan 31 2017, not Feb; 'A Haviland Company'). But it is a POOL & SPA chemical maker, so its us_water_rev_usd_m should be 0, not 5, under the strict definition. Reclassify it as Pool & spa. Missing add-on: Blue Excess (Chandler AZ, 2019), also pool (contract blending/tableting). No water treatment acquisitions were found. Note: 'Haviland Contoured Plastics' (acquired by Plastiflex) and Haviland porcelain (Bernardaud) are unrelated companies with the same name.",
+ "confidence": "Low",
+ "what_changed_vs_prior": "Primary category changed from water to Pool & spa chemicals. US water revenue cut from $70M to ~$37M because pool & spa is now excluded under the strict definition (the prior figure included pool). Total revenue rebased to ~$210M 2025E on two company-stated anchors ($115M FY2012; $200M 2022), up from the $150M headcount estimate. Employees cut from 350 to 300 (company-stated 300+). Baleco acquisition date corrected to 2017-01-31 and reclassified as pool (water rev 0). Blue Excess 2019 added. 100% ESOP since late 2012 confirmed (partial ESOP since 1997).",
+ "open_questions": "Actual pool vs HPC revenue split (no disclosure). How much of HPC's water line is resold bleach and chlorine gas vs specialty programs. Whether Haviland makes any hypochlorite itself. Street addresses of the Kalamazoo, North Bend and Chandler sites and the identity of the 6th location. Post-2022 revenue trend after pool chemical deflation. ESOP repurchase obligation and debt load.",
+ "evidence": [
+  {
+   "metric": "total_revenue",
+   "value": "$200M sales",
+   "year": "2022",
+   "source_type": "Trade press (company interview)",
+   "url": "https://poolpromag.com/haviland-credits-employee-owned-business-model-for-success/",
+   "quote": "Haviland Enterprises ... on track to reach $200 million in sales (10 years as 100% ESOP, Nov 30 2022)"
+  },
+  {
+   "metric": "total_revenue",
+   "value": "$115M sales; 220 employees",
+   "year": "FY2012",
+   "source_type": "Trade press (company announcement)",
+   "url": "https://www.pfonline.com/articles/haviland-announces-100-employee-ownership",
+   "quote": "220 employees ... sales of $115 million (fiscal 2012); family sold remaining 54% stake to the ESOP trust"
+  },
+  {
+   "metric": "employees",
+   "value": "300+ employee-owners; 6 manufacturing locations; 620,000 sq ft; 184 million lbs shipped annually",
+   "year": "2024-25",
+   "source_type": "Company website",
+   "url": "https://www.havilandusa.com/about",
+   "quote": "300+ Employee-Owners ... 6 manufacturing locations ... 620,000 total square feet ... 184 million lbs. shipped annually"
+  },
+  {
+   "metric": "sites",
+   "value": "HQ Grand Rapids; production/warehousing in Kalamazoo MI, North Bend OH, Chandler AZ; 6 locations",
+   "year": "2024",
+   "source_type": "Trade press",
+   "url": "https://www.poolmagazine.com/equipment-supplies/haviland-enterprises-inc-celebrates-90-years-of-chemistry/",
+   "quote": "6 production and warehousing locations across the United States"
+  },
+  {
+   "metric": "sites",
+   "value": "Revenue band $100-249.9M; 200-499 employees; Grand Rapids, Kalamazoo, North Bend, Chandler",
+   "year": "n/a",
+   "source_type": "Directory (Thomasnet)",
+   "url": "https://www.thomasnet.com/company/haviland-enterprises-inc-171310/profile",
+   "quote": "a leader in cleaning, plating and anodizing chemistry"
+  },
+  {
+   "metric": "deal",
+   "value": "Baleco International acquired",
+   "year": "2017",
+   "source_type": "Company press release",
+   "url": "https://www.havilandpool.com/news/detail/haviland-acquires-baleco-international",
+   "quote": "Baleco International manufactures pool water treatment products, including Aquamate and Maintain Pool Pro"
+  },
+  {
+   "metric": "deal",
+   "value": "Blue Excess acquired, renamed Haviland Pool & Spa Southwest",
+   "year": "2019",
+   "source_type": "Trade press",
+   "url": "https://www.aquamagazine.com/news/community-news/article/15122047/haviland-pool-and-spa-acquires-arizona-company",
+   "quote": "This acquisition aligns with our strategy to expand Haviland's capabilities as well as our geographic locations."
+  },
+  {
+   "metric": "segment",
+   "value": "Wastewater treatment products and markets (municipal, industrial, F&B, surface finishing, environmental, O&G, ag)",
+   "year": "2025",
+   "source_type": "Company website",
+   "url": "https://www.havilandusa.com/products/wastewater-treatment",
+   "quote": "For over 85 years, we have partnered with municipal and industrial customers to deliver reliable treatment programs"
+  },
+  {
+   "metric": "ownership",
+   "value": "100% ESOP since 2012; partial since 1997",
+   "year": "2024",
+   "source_type": "Trade press",
+   "url": "https://poolpromag.com/the-heart-of-haviland/",
+   "quote": "Became 100% employee-owned in 2012 when the Haviland family sold remaining shares"
+  },
+  {
+   "metric": "segment",
+   "value": "$7M 11,000 sq ft lab supporting water treatment, surface finishing and contract manufacturing",
+   "year": "2024",
+   "source_type": "Trade press",
+   "url": "https://finishingandcoating.com/index.php/new-technology/1915-haviland-enterprises-announces-new-7-million-west-michigan-flagship-laboratory",
+   "quote": "product development and pilot formulations across three core markets: water treatment, surface finishing, and contract manufacturing"
+  }
+ ],
+ "profile_md": "## Haviland Enterprises, Inc. (Haviland Products Company / Haviland Pool & Spa)\n\n**Bottom line:** Haviland is a well-run, 90-year-old, 100% employee-owned Michigan chemical blender, packager and distributor. It is *not* primarily a water treatment company. By our estimate about half of its roughly $210M revenue is pool & spa chemicals, which are excluded from the strict water definition. Another third is surface finishing, cleaning/contract manufacturing and general commodity chemical distribution. Strict municipal plus industrial water/wastewater treatment is about $37M (~18%), and it is weighted toward resold commodities (bleach, chlorine gas, acids, caustic, coagulants) delivered in the Great Lakes region.\n\n### Business overview\nHaviland Enterprises is the holding company for two divisions:\n- **Haviland Pool & Spa.** A national branded and private-label pool and spa chemical maker. It sells through distributors and dealers under eight house brands (ProTeam with borate technology, SpaPure, Durachlor, Clear Result, Caribbean Blue, Nature's Care, Salt Support, Stain Drop) and private-labels for national pool chains.\n- **Haviland Products Company (HPC).** A regional industrial chemical business covering water and wastewater treatment, surface finishing/plating and anodizing chemistry, cleaning chemicals, commodity distribution, contract manufacturing and lab services.\n\nThe company ships about 184 million lbs a year from six production and warehousing locations totaling about 620,000 sq ft.\n\n### History and ownership\n- **1934:** Founded in Grand Rapids by chemist J.B. Haviland, originally doing coatings, finishes and R&D for the furniture and auto industries.\n- **1968:** Entered pool chemicals with the Durachlor line.\n- **1997:** Began an ESOP (46% employees / 54% family).\n- **Late 2012:** The Haviland family sold its remaining 54% to the ESOP trust, making the company 100% employee-owned. FY2012 sales were then $115M with 220 employees.\n- **Leadership:** Meg Post became President (2021) and CEO (2022).\n\nThere is no private equity involvement. Any sale would require an ESOP trustee process and a fairness opinion, so Haviland is a harder, slower target than a founder-owned company.\n\n### Products and chemistries\n**Pool & spa** is a formulation, blending, tableting and packaging business built on purchased actives (trichlor, cal-hypo, cyanuric acid, borates, clarifiers, enzymes, stain and scale products). Recent investments moved tableting in-house, and the company markets a liquid stabilizer. \n\n**HPC's water line** has two parts:\n- **Commodities:** acids and alkalis, oxidizers and reducers, inorganic coagulants, liquid bleach and chlorine gas, fluoridation, corrosion inhibitors.\n- **Specialties:** flocculants, coagulants, demulsifiers, defoamers, odor control, paint detackification, metal precipitants.\n\nHPC also sells services: treatability studies, phosphorus-removal optimization, dewatering polymer testing, and nutrient and metals analysis.\n\nWe found no evidence that Haviland manufactures chlor-alkali or bleach. Bleach and chlorine gas appear to be purchased and redistributed, and cooling/boiler programs are not a visible focus. Surface finishing (cleaners, plating and electroless nickel chemistry) and contract manufacturing are formulated in-house. A new $7M, 11,000 sq ft flagship lab (announced 2024, completion 2025) targets water treatment, surface finishing and contract manufacturing, which signals where management wants HPC to grow.\n\n### End markets and customers\nOn our estimates, the total platform splits roughly as follows:\n- **~50% pool & spa:** residential and commercial, via distributors, dealers and private label.\n- **~18% general manufacturing:** automotive and metal finishing, plating and anodizing.\n- **~11% municipal drinking water and wastewater:** Michigan and Great Lakes utilities.\n- **~6% food & beverage.**\n- **Remaining ~15%:** pharma, consumer/contract-packaged products, institutional, chemicals and minor oil & gas and agriculture.\n\nThe water business is regional because commodity freight economics limit delivery radius. Pool is national, sold through the major distribution channel.\n\n### Footprint\n- **HQ and main campus:** 421 Ann St. NW, Grand Rapids, MI (multiple buildings for blending, packaging and oxidizer warehousing, plus the new lab).\n- **Production/warehousing:** Kalamazoo, MI.\n- **Baleco International:** North Bend, OH, a 100,000 sq ft pool chemical plant.\n- **Haviland Pool & Spa Southwest:** Chandler, AZ (ex-Blue Excess), blending and tableting.\n\nThe company states six locations in total. The Grand Rapids site had oxidizer-reaction incidents in 2014-15, and EPA settled an EPCRA case in 2020. These are typical storage and compliance issues for pool-oxidizer handlers.\n\n### Financials\n| Metric | Value | Basis |\n|---|---|---|\n| Revenue FY2012 | $115M | Reported (Products Finishing, 2013) |\n| Revenue 2022 | ~$200M | Company-stated milestone (PoolPro) |\n| Revenue 2025E | ~$210M (range $190-235M) | Estimate: pool deflation offset by industrial growth |\n| EBITDA 2025E | ~$21M (~10% margin, range $16-27M) | Estimate: blended margins |\n| US strict water treatment | ~$37M (~18%) | Estimate: ~35% of HPC's ~$105M |\n| Employees | 300+ | Company-stated |\n\nThe prior pass counted pool inside water ($70M). That is corrected here.\n\n### M&A strategy\nBoth known acquisitions are **pool**:\n- **Baleco International** (North Bend, OH), January 2017: Aquamate and Maintain Pool Pro brands, private label.\n- **Blue Excess** (Chandler, AZ), 2019: contract blending and tableting, now Haviland Pool & Spa Southwest. It gave Haviland a Sun Belt production point.\n\nNo water treatment acquisitions were found. The ESOP structure and repurchase obligations likely limit large deals, so M&A has been small, bolt-on and geographic.\n\n### Competitive position\n- **In pool,** Haviland is a mid-sized independent branded and private-label formulator. It competes with Innovative Water Care (Sigura), BioLab/KIK, N. Jonas, Orenda, Natural Chemistry and private-label packagers. Its borate-based ProTeam line gives it some brand differentiation.\n- **In water,** HPC is a Great Lakes commodity-plus-service supplier. It competes with Hawkins, Univar, Brenntag, Alexander Chemical/Carus/Kemira for commodity supply, and with regional treaters for specialties. Its edges are local logistics, a broad catalog, lab support and long municipal relationships.\n\n### Risks\n- Pool chemical pricing volatility, especially trichlor and cal-hypo from Chinese imports, and weather-driven seasonality.\n- Commodity pass-through margins on water chemicals.\n- Oxidizer storage safety incidents.\n- ESOP repurchase liability.\n- Customer concentration in pool distribution.\n- Exposure to Michigan automotive and metal-finishing cycles.\n\n### What is uncertain\nThere is no disclosed revenue since 2022 and no EBITDA, segment split or site-level data. The pool vs HPC split (we assume ~50/50) is the key swing factor. If pool were 60%, strict water would fall to about $30M. If HPC were larger and more water-weighted, it could approach $50M. Street addresses for Kalamazoo, North Bend and Chandler, and the identity of the sixth site, are unconfirmed.",
+ "universe_id": 128,
+ "id": "haviland-products",
+ "customers": [
+  {
+   "name": "Pool & spa distributors and dealers",
+   "what": "ProTeam, private label pool chemicals",
+   "share_pct": 50,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Automotive and metal finishers",
+   "what": "Plating and anodizing chemicals",
+   "share_pct": 18,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Michigan / Great Lakes utilities",
+   "what": "Commodity water chemicals",
+   "share_pct": 11,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Food & beverage processors",
+   "what": "Sanitation and process chemicals",
+   "share_pct": 6,
+   "source": "Analyst view (from deep-dive text)"
+  }
+ ],
+ "competitors": [
+  {
+   "name": "Innovative Water Care (Sigura)",
+   "overlap": "Pool"
+  },
+  {
+   "name": "BioLab / KIK",
+   "overlap": "Pool"
+  },
+  {
+   "name": "N. Jonas",
+   "overlap": "Pool"
+  },
+  {
+   "name": "Hawkins",
+   "overlap": "Water commodities"
+  },
+  {
+   "name": "Univar",
+   "overlap": "Distribution"
+  },
+  {
+   "name": "Brenntag",
+   "overlap": "Distribution"
+  }
+ ],
+ "buyers": [
+  {
+   "name": "Sigura",
+   "type": "Strategic",
+   "rationale": "Pool brand and private label"
+  },
+  {
+   "name": "KIK Consumer Products",
+   "type": "Strategic",
+   "rationale": "Pool chemicals"
+  },
+  {
+   "name": "Hawkins",
+   "type": "Strategic",
+   "rationale": "Great Lakes water chemicals"
+  }
+ ],
+ "addon_ideas": [],
+ "source_of_truth": [],
+ "locked": [],
+ "status": "ready",
+ "runs": [
+  {
+   "at": "2026-09-27T00:00:00Z",
+   "kind": "Imported",
+   "summary": "Imported from WTC deep-dive batch P05B"
+  }
+ ],
+ "updated_at": "2026-09-27T00:00:00Z"
+}

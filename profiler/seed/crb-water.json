@@ -1,0 +1,399 @@
+{
+ "name": "CRB Water (formerly Chemtron RiverBend; Chemtron Supply LLC)",
+ "platform_name": "CRB Water (Chemtron Supply LLC d/b/a CRB Water), an AEA Investors SBPE portfolio company",
+ "website": "https://www.crbwater.com",
+ "hq_address": "3500 Harry S Truman Blvd, St. Charles, MO 63301",
+ "what_it_is": "A PE-backed, service-led industrial and commercial water treatment company. It runs cooling, boiler, closed-loop and pretreatment chemical programs, Legionella/water-safety programs, and a biological wastewater business (RiverBend Labs: treatability lab, bioaugmentation and anaerobic-digestion support). Since 2024 it has been rolling up regional water treaters in the Midwest and Southeast.",
+ "primary_category": "Core water treatment (industrial/commercial programs & service)",
+ "water_relevance": "Pure-play water (>75% water treatment)",
+ "bluntly": "A genuine pure-play industrial/commercial water treater (Nalco/ChemTreat-style service model at small scale). The only non-chemical piece is a modest equipment/controls line (Design Controls, feed systems, MIOX on-site generation).",
+ "owner_type": "PE-owned",
+ "ultimate_parent": "AEA Investors (AEA Small Business Private Equity / 'Enterprise' group), with significant management and employee rollover",
+ "pe_sponsor": "AEA Investors Small Business Private Equity (SBPE); HarveyCEO (Harvey & Company) originated the deal with an operating executive (Randy Azzarello, now CEO & Executive Chairman)",
+ "pe_entry_year": "2023 (closed March 3, 2023)",
+ "pe_entry_ev_usd_m": null,
+ "pe_entry_multiple": "Not disclosed",
+ "prior_owners": "Employee-owned via an ESOP before 2023 (company 'Our Story' page). Chemtron was founded in 1987 and RiverBend Labs in 1997; the two merged formally as Chemtron RiverBend in 2018.",
+ "total_revenue_usd_m": 70.0,
+ "total_revenue_year": "2025E (estimate)",
+ "total_revenue_basis": "ESTIMATE. No revenue has been disclosed. Method: (a) SignalHire vendor profile gives 200-500 employees and an estimated $50-100M revenue. (b) The company says it 'employs hundreds of water treatment professionals, chemists, biochemists, and field engineers' after 5 add-ons. (c) ~230 employees x ~$300k revenue/employee (service-heavy treater benchmark $250-400k) = ~$70M. Plausible range is $50-100M. The legacy Chemtron RiverBend at AEA entry (2023) was probably ~$35-50M, and the add-ons add roughly $20-30M (Southeastern Labs ~$6M, Browne ~$4M, Precision ~$3.6M from prior universe estimates, plus Design Controls, Premier Water and organic growth).",
+ "us_revenue_usd_m": 68.0,
+ "total_ebitda_usd_m": 11.0,
+ "ebitda_margin_pct": 15.7,
+ "ebitda_year": "2025E",
+ "ebitda_basis": "Estimate: ~15-16% EBITDA margin (typical for a service-led industrial water treater of this size, 14-20% range) x $70M estimated revenue = ~$11M. No rating-agency, credit or deal-implied data found. AEA SBPE targets lower-middle-market companies, which fits a single-digit-to-low-teens $M EBITDA at entry.",
+ "revenue_by_business": [
+  {
+   "business": "Industrial & commercial water treatment programs (cooling, boiler, closed-loop, pretreatment chemicals and service; Legionella/water safety): legacy Chemtron plus Precision Chemical, Browne Labs and Southeastern Labs",
+   "category": "Water treatment - industrial/commercial",
+   "revenue_usd_m": 49.0,
+   "pct": 70.0,
+   "how_derived": "Estimate. This is the core service line. Four of the six acquired or legacy businesses are chemical treaters, and the website lists water treatment as its first service category."
+  },
+  {
+   "business": "Biological wastewater treatment (RiverBend Labs: treatability studies, bioaugmentation/biological products, anaerobic digestion and biogas support, groundwater remediation)",
+   "category": "Water treatment - industrial/commercial",
+   "revenue_usd_m": 12.6,
+   "pct": 18.0,
+   "how_derived": "Estimate. RiverBend is a named division ('one of the largest treatability labs in the country'). The website's biogas metrics (11.1 bcf biogas, 1.77bn lb COD converted) point to a material industrial-wastewater business, assumed at ~18%."
+  },
+  {
+   "business": "Equipment & automation (Design Controls chemical feed / ChemDacs data-acquisition systems, controllers, pumps, MIOX on-site generation, high-purity equipment)",
+   "category": "Media, membranes & equipment",
+   "revenue_usd_m": 5.6,
+   "pct": 8.0,
+   "how_derived": "Estimate. Design Controls (acquired 2024) plus equipment pass-through, assumed at ~8%."
+  },
+  {
+   "business": "Laboratory/analytical services and private-label manufacturing for other treaters (Browne Labs private label; lab testing)",
+   "category": "Water treatment - industrial/commercial",
+   "revenue_usd_m": 2.8,
+   "pct": 4.0,
+   "how_derived": "Estimate. Browne Labs advertises private-label manufacturing for other water treaters, and CRB lists lab & analytical services as a service line. Assumed at ~4%."
+  }
+ ],
+ "us_water_treatment_revenue_usd_m": 63.0,
+ "us_water_treatment_arithmetic": "Total $70.0M (est.) - equipment & automation $5.6M = $64.4M water treatment chemicals/services. Less ~2% non-US (the company says it serves 'North America', but all identified sites are in the US) ~$1.3M = ~$63M. Rounded: US water treatment revenue ~$63M (estimate; range ~$45-90M).",
+ "end_markets_total_platform": {
+  "Municipal drinking water": 0,
+  "Municipal wastewater": 3,
+  "Power generation": 5,
+  "Oil & gas / refining": 4,
+  "Chemicals & petrochem": 8,
+  "Pulp & paper": 6,
+  "Food & beverage": 22,
+  "Mining & metals": 1,
+  "Primary metals/steel": 2,
+  "Commercial HVAC / buildings": 14,
+  "Healthcare & institutional": 10,
+  "Data centers": 2,
+  "Pharma/life sciences": 4,
+  "Microelectronics/semis": 0,
+  "Manufacturing (general industrial)": 14,
+  "Pools & spa": 0,
+  "Agriculture & farm": 0,
+  "Consumer / retail": 0,
+  "Other": 5
+ },
+ "employees_total": 230,
+ "employees_basis": "ESTIMATE. The company states only that it 'employs hundreds' (Nov 2025 press release). SignalHire gives a 200-500 band. Craft.co's '5 staff' is a stale single-entity record. The earlier '~35 employees ESOP' profile describes legacy Chemtron alone before the 2023 AEA deal and the 2024-25 add-ons, and is no longer valid for the platform.",
+ "us_sites_count": 8,
+ "key_sites": [
+  {
+   "type": "HQ",
+   "address": "3500 Harry S Truman Blvd",
+   "city": "St. Charles",
+   "state": "MO"
+  },
+  {
+   "type": "Blending",
+   "address": "Southern Indiana facility (Precision Chemical; blending + in-house lab)",
+   "city": "Boonville",
+   "state": "IN"
+  },
+  {
+   "type": "Branch",
+   "address": "Central Indiana facility (Precision Chemical warehouse)",
+   "city": "Lawrence",
+   "state": "IN"
+  },
+  {
+   "type": "Branch",
+   "address": "Ohio facility (Precision Chemical warehouse)",
+   "city": "Columbus",
+   "state": "OH"
+  },
+  {
+   "type": "Blending",
+   "address": "2001 Crutchfield St (Browne Labs; formulation, private label, onsite lab)",
+   "city": "Chattanooga",
+   "state": "TN"
+  },
+  {
+   "type": "Branch",
+   "address": "P.O. Box 10189 (Southeastern Laboratories)",
+   "city": "Goldsboro",
+   "state": "NC"
+  },
+  {
+   "type": "Branch",
+   "address": "6762 Bourgeois Rd (Design Controls; likely the acquired entity, not confirmed)",
+   "city": "Houston",
+   "state": "TX"
+  },
+  {
+   "type": "Branch",
+   "address": "4726 Park Road (Premier Water; likely the acquired entity, not confirmed)",
+   "city": "Charlotte",
+   "state": "NC"
+  }
+ ],
+ "chemistries": [
+  {
+   "product_line": "Cooling tower inhibitors (scale/corrosion), including 'EnviroTrac' green inhibitors",
+   "made_or_resold": "Blended in-house (St. Charles, Boonville IN, Chattanooga TN) from purchased actives",
+   "brands": "EnviroTrac"
+  },
+  {
+   "product_line": "Boiler water treatment (oxygen scavengers, amines, internal treatment), hot-water/closed-loop inhibitors",
+   "made_or_resold": "Blended in-house",
+   "brands": ""
+  },
+  {
+   "product_line": "Biocides, Legionella prevention and secondary disinfection",
+   "made_or_resold": "Mostly resold/blended biocides; MIOX on-site hypochlorite/mixed-oxidant generators resold",
+   "brands": "MIOX (third-party on-site generation)"
+  },
+  {
+   "product_line": "Plant-based sustainable treatment",
+   "made_or_resold": "Resold/licensed (ProMoss offered by Browne Labs and Southeastern Labs)",
+   "brands": "ProMoss"
+  },
+  {
+   "product_line": "Polymers and coagulants for pretreatment and wastewater",
+   "made_or_resold": "Mostly resold/blended",
+   "brands": ""
+  },
+  {
+   "product_line": "Biological products for wastewater (bioaugmentation cultures, nutrients, anaerobic digester optimization, odor, filamentous control)",
+   "made_or_resold": "Formulated/custom-blended by RiverBend Labs after treatability studies",
+   "brands": "RiverBend Labs"
+  },
+  {
+   "product_line": "Chemical feed and data acquisition systems, controllers, probes, pumps",
+   "made_or_resold": "Assembled (Design Controls ChemDacs) plus resale of Grundfos, Milton Roy, HACH, etc.",
+   "brands": "ChemDacs"
+  }
+ ],
+ "acquisitions": [
+  {
+   "date": "2018",
+   "target": "Merger of Chemtron (1987) and RiverBend Labs (1997) into Chemtron RiverBend",
+   "universe_id": null,
+   "what_it_does": "Combination of the chemical treater and the biological wastewater lab (pre-PE, ESOP era)",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.crbwater.com/about/our-story"
+  },
+  {
+   "date": "2024",
+   "target": "Design Controls",
+   "universe_id": null,
+   "what_it_does": "Automation and high-purity equipment; chemical feed and data-acquisition systems (ChemDacs). Likely Design Controls of Houston, TX (not confirmed).",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.crbwater.com/about/our-story"
+  },
+  {
+   "date": "2024",
+   "target": "Premier Water",
+   "universe_id": null,
+   "what_it_does": "Southeast regional expansion. Possibly Premier Water, Charlotte NC (water/wastewater manufacturer's rep for NC/SC), not confirmed.",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.crbwater.com/about/our-story"
+  },
+  {
+   "date": "2024",
+   "target": "Browne Labs (Browne Laboratories, Inc.)",
+   "universe_id": 687,
+   "what_it_does": "Chattanooga TN industrial water treater since the 1970s: custom formulations, private-label manufacturing for other treaters, lab, monitoring; textile, healthcare, pulp & paper, auto, F&B",
+   "revenue_usd_m": 4.0,
+   "value_usd_m": null,
+   "source_url": "https://www.brownelabs.com/"
+  },
+  {
+   "date": "2024",
+   "target": "Precision Chemical LLC",
+   "universe_id": 329,
+   "what_it_does": "Water treater founded 2002 in Southern Indiana. Three warehouses (Boonville IN with blending + lab, Lawrence IN, Columbus OH) serving IN/IL/KY/OH/MO; power, pharma, auto, food/dairy, HVAC",
+   "revenue_usd_m": 3.6,
+   "value_usd_m": null,
+   "source_url": "https://precisionchem.com/about/"
+  },
+  {
+   "date": "2025",
+   "target": "Southeastern Laboratories, Inc. (SEL)",
+   "universe_id": 91,
+   "what_it_does": "Goldsboro NC industrial water treater founded 1973: boiler/cooling/wastewater programs, ProMoss plant-based line; >90% of its specialists are AWT Certified Water Technologists",
+   "revenue_usd_m": 6.0,
+   "value_usd_m": null,
+   "source_url": "https://selaboratories.com/"
+  }
+ ],
+ "addon_corrections": "All three listed add-ons are correct. Browne Labs (687) and Precision Chemical (329) were acquired in 2024, and Southeastern Laboratories (91) joined in 2025. All should roll into the platform, and SEL should be switched to in_owner_figure = Y, since the estimate above includes it. MISSING: Design Controls (2024, automation/high-purity equipment, likely Houston TX) and Premier Water (2024, Southeast). Add them to the universe as add-ons if they are in scope (Design Controls is equipment, so it is probably out of the chemicals universe). Legacy RiverBend Labs is part of the platform, not a separate company.",
+ "confidence": "Medium",
+ "what_changed_vs_prior": "Resolved the ownership conflict. The ESOP/~35-employee profile described legacy Chemtron before AEA. The ESOP was the prior owner, and AEA SBPE acquired the company on March 3, 2023, with management/employee rollover (AEA press release; company 'Our Story' says it 'operated as an employee-owned ESOP' before AEA). The ~$10M revenue ESOP-era figure is obsolete. Revenue estimate lowered slightly from $75M to $70M (range $50-100M), and US water treatment is now ~$63M strict (excludes equipment) versus $70M before. Added the first EBITDA estimate (~$11M, labelled as an estimate). Added two missing add-ons (Design Controls, Premier Water), the 2018 Chemtron/RiverBend merger, the Nov 2025 rebrand to CRB Water, and site addresses.",
+ "open_questions": "Actual revenue/EBITDA (no credit docs found; the debt is likely a private unitranche). Exact identities and locations of Premier Water and Design Controls. RiverBend Labs lab location. Whether CRB has any Canadian revenue. Precise headcount. Whether more add-ons followed in 2026 (none found as of Sept 2026). Entry EV/multiple.",
+ "evidence": [
+  {
+   "metric": "ownership",
+   "value": "AEA SBPE closed acquisition of Chemtron RiverBend with significant management and employee rollover",
+   "year": "2023",
+   "source_type": "PE sponsor press release",
+   "url": "https://www.aeainvestors.com/aea-sbpe-partners-with-chemtron-riverbend/",
+   "quote": "closed an acquisition of Chemtron RiverBend ... significant rollover investment from the Company's management team and employee base"
+  },
+  {
+   "metric": "ownership",
+   "value": "Prior owner: ESOP",
+   "year": "pre-2023",
+   "source_type": "Company website",
+   "url": "https://www.crbwater.com/about/our-story",
+   "quote": "The company operated as an employee-owned ESOP ... AEA Investors acquired Chemtron Riverbend in 2023"
+  },
+  {
+   "metric": "deal",
+   "value": "Add-ons: Design Controls, Premier Water, Browne Labs, Precision Chemical (2024); Southeastern Laboratories (2025)",
+   "year": "2024-2025",
+   "source_type": "Company website",
+   "url": "https://www.crbwater.com/about/our-story",
+   "quote": "Design Controls (2024) \u2013 Automation and high-purity equipment; Premier Water (2024) \u2013 Southeast regional expansion; Browne Labs (2024); Precision Chemical (2024) \u2013 Midwest coverage; Southeastern Laboratories (2025)"
+  },
+  {
+   "metric": "employees",
+   "value": "hundreds",
+   "year": "2025",
+   "source_type": "Press release (PR Newswire, Nov 18 2025)",
+   "url": "https://www.prnewswire.com/news-releases/crb-water-launches-new-national-brand-following-multi-company-integration-and-dynamic-strategic-growth-302617578.html",
+   "quote": "employs hundreds of water treatment professionals, chemists, biochemists, and field engineers"
+  },
+  {
+   "metric": "total_revenue",
+   "value": "$50-100M (vendor estimate); 200-500 employees",
+   "year": "2025/26",
+   "source_type": "Data vendor (SignalHire) - last resort",
+   "url": "https://www.signalhire.com/companies/chemtron-corp",
+   "quote": "Employee Count: 200-500 employees; Revenue: Estimated $50M-$100M annually"
+  },
+  {
+   "metric": "sites",
+   "value": "HQ 3500 Harry S Truman Blvd, St. Charles MO 63301",
+   "year": "2026",
+   "source_type": "Data vendor",
+   "url": "https://www.signalhire.com/companies/chemtron-corp",
+   "quote": "3500 Harry S Truman Blvd, St. Charles, Missouri, 63301"
+  },
+  {
+   "metric": "sites",
+   "value": "Precision Chemical: Boonville IN, Lawrence IN, Columbus OH; blending and lab at Boonville",
+   "year": "2026",
+   "source_type": "Company website (subsidiary)",
+   "url": "https://precisionchem.com/about/",
+   "quote": "operates three warehouses where it manufactures and distributes water treatment products"
+  },
+  {
+   "metric": "sites",
+   "value": "Browne Labs, 2001 Crutchfield St, Chattanooga TN 37406",
+   "year": "2026",
+   "source_type": "Company website (subsidiary)",
+   "url": "https://www.brownelabs.com/",
+   "quote": "Private label manufacturing for other water treaters"
+  },
+  {
+   "metric": "segment",
+   "value": "Two divisions: Chemtron (point-of-entry water treatment, basic wastewater) and RiverBend Labs (wastewater lab, treatability, biochemical solutions)",
+   "year": "2023",
+   "source_type": "PE sponsor press release",
+   "url": "https://www.aeainvestors.com/aea-sbpe-partners-with-chemtron-riverbend/",
+   "quote": "serving food & beverage, commercial & industrial, healthcare, and chemicals sectors"
+  },
+  {
+   "metric": "deal",
+   "value": "HarveyCEO paired an operating executive with a NY-based PE firm for a water treatment services platform",
+   "year": "2023",
+   "source_type": "Advisor case study",
+   "url": "https://harveyllc.com/ceo-investment/chemtron-riverbend/",
+   "quote": "a partnership between a route-based service industry veteran and a New-York-based private equity firm to pursue platform investments within the Water Treatment Services industry"
+  }
+ ],
+ "profile_md": "## CRB Water (formerly Chemtron RiverBend)\n\n**Bottom line:** A PE-backed, pure-play industrial and commercial water treatment service platform headquartered in St. Charles, MO (St. Louis metro). AEA Investors' Small Business Private Equity group bought it from its ESOP in March 2023, and it has since made five add-ons. Estimated 2025 revenue is ~$70M (range $50-100M) and EBITDA ~$11M. Both are estimates, since nothing has been disclosed. About 90% is US water treatment chemicals and services.\n\n### Business overview\nCRB Water sells and services chemical water-treatment programs for industrial and commercial facilities: cooling towers, boilers, closed loops and pretreatment, plus Legionella/water-safety and secondary-disinfection programs. What sets it apart is a second leg in **biological wastewater treatment** through RiverBend Labs. That business runs treatability studies, custom bioaugmentation and nutrient blends, anaerobic-digester optimization, filamentous and odor control, and groundwater remediation. The company claims its customers' digesters have produced 11.1 bcf of biogas and converted 1.77bn lb of COD to energy. A smaller equipment and automation line (chemical feed systems, controllers, MIOX on-site generation, high-purity equipment via Design Controls) and lab/analytical services round out the offer. AEA describes the positioning as 'at the nexus of the industrial water, chemicals and business services sectors'.\n\n### History and ownership\n- **1987:** Chemtron founded as an industrial specialty water treatment company.\n- **1997:** RiverBend Labs launched for biological wastewater and anaerobic digestion.\n- **2018:** The two formally merged as Chemtron RiverBend.\n- **Pre-2023:** Employee-owned through an ESOP. This explains the earlier '35-employee ESOP treater' profile in our research: it described legacy Chemtron before the sale and is now obsolete.\n- **March 3, 2023:** AEA SBPE closed its acquisition, with 'significant rollover investment from the Company's management team and employee base'. Harvey & Company's HarveyCEO program originated the deal by pairing a route-based-services executive with AEA. That executive, Randy Azzarello, is now CEO & Executive Chairman, and Tony Metzner is CFO. AEA board members are Baron Carlson, Timothy Whelan and Blake Liebling.\n- **Entry terms:** Entry EV and multiple were not disclosed.\n- **November 2025:** The company rebranded nationally as **CRB Water**. The legal entity is Chemtron Supply LLC.\n\n### Products and chemistries\nCRB is a formulator and blender, not a primary chemical producer. It buys actives (phosphonates, polymers, azoles, amines, oxygen scavengers, biocides) and blends programs in-house:\n- **Blending sites:** St. Charles, Boonville IN (Precision Chemical, with lab) and Chattanooga TN (Browne Labs, which also private-labels for other treaters).\n- **Brands:** EnviroTrac inhibitors and custom-formulated RiverBend biological products.\n- **Resold third-party lines:** ProMoss plant-based treatment and MIOX on-site hypochlorite/mixed-oxidant generation.\n- **Equipment:** Design Controls' ChemDacs feed and data-acquisition systems, plus third-party pumps and analyzers.\n\n### End markets and customers\nThe company lists 12 served industries. Food & beverage is the anchor, and it is also where RiverBend's anaerobic-digester work is concentrated (breweries, dairies, meat and food processing wastewater). The other served markets are:\n- commercial & institutional buildings\n- healthcare\n- manufacturing and automotive\n- hydrocarbon & chemical processing\n- power & energy\n- biogas/biofuels\n- pulp & paper\n- pharma\n- data centers\n- mining\n\nEstimated mix: F&B ~22%, commercial HVAC ~14%, general manufacturing ~14%, healthcare/institutional ~10%, chemicals ~8%, pulp & paper ~6%, power ~5%, with the rest spread across the other markets. There is no pool, agriculture or consumer exposure, and almost no municipal business. Customers are mostly mid-size plants and facilities served by route-based sales and service reps. The company cites 23+ year average rep tenure and 'the lowest rep turnover rate in the industry'.\n\n### Footprint\n- **HQ and legacy operations:** 3500 Harry S Truman Blvd, St. Charles MO.\n- **Midwest:** Precision Chemical sites in Boonville IN, Lawrence IN and Columbus OH (IN/IL/KY/OH/MO coverage).\n- **Southeast:** Browne Labs in Chattanooga TN; Southeastern Laboratories in Goldsboro NC (founded 1973); Premier Water, likely Charlotte NC.\n- **Texas:** Design Controls, likely Houston TX.\n\nThat gives roughly eight identified US sites. RiverBend Labs' lab location was not confirmed. The company says it serves North America, but no non-US sites were found.\n\n### Financials\nNo revenue, EBITDA or debt figures are public, and no rating-agency coverage or syndicated loan was found, which suggests private credit or unitranche financing. The company states only that it 'employs hundreds'. A vendor profile (SignalHire) gives 200-500 employees and $50-100M revenue.\n\n- **Revenue method:** ~230 employees x ~$300k/employee (service-treater benchmark) = **~$70M**.\n- **Rough build-up check:** legacy Chemtron RiverBend at entry ~$35-50M, plus acquired treaters (SEL ~$6M, Browne ~$4M, Precision ~$3.6M from prior universe estimates, plus Premier Water and Design Controls), plus organic growth.\n- **EBITDA:** a 15-16% margin gives **~$11M**.\n- **Estimated revenue mix:**\n  - Industrial/commercial chemical programs: 70%\n  - Biological wastewater: 18%\n  - Equipment/automation: 8%\n  - Lab/private label: 4%\n- **Strict US water treatment revenue:** ~$63M, which excludes equipment and a small non-US share.\n\n### M&A strategy\nThis is a classic lower-middle-market water-treatment roll-up. AEA and the HarveyCEO operator are buying founder- or family-owned regional treaters, typically $3-10M revenue, to build route density:\n- **2024:** Precision Chemical (Midwest), Browne Labs (Southeast, with private-label manufacturing), Premier Water (Southeast) and Design Controls (automation and high-purity equipment).\n- **2025:** Southeastern Laboratories (NC).\n\nAll were folded into one brand in November 2025, a sign of a shift toward integration and a platform story for eventual exit. The company calls itself 'the fastest-growing water treatment company in the U.S.' More tuck-ins in the Southeast, Midwest and Texas are likely.\n\n### Competitive position\nCRB competes with Veolia (ex-Suez/GE WTS), Ecolab/Nalco, ChemTreat (Danaher) and Solenis at larger accounts, and with other PE roll-ups (Chardon Labs, Guardian/Barclay-type platforms, ChemREADY, Kurita America's regional treaters) and many independents in the mid-market. Its differentiators:\n- the biological wastewater and anaerobic-digestion expertise in RiverBend Labs, which few mid-market treaters have\n- in-house labs and a private-label blending capability\n- long-tenured reps\n\nIts scale is still small next to the majors, and it is sub-scale in purchasing actives.\n\n### Risks\n- Integration risk across five acquired cultures and ERP systems.\n- Key-rep dependence: customer relationships follow reps.\n- Exposure to industrial activity in food processing and manufacturing.\n- Raw-material pass-through lag.\n- Leverage from a PE roll-up.\n- Competition from majors' service models and digital monitoring.\n\n### What is uncertain\n- All financials are estimates.\n- Exact headcount.\n- The identities and locations of 'Premier Water' and 'Design Controls'. The Charlotte NC manufacturer's rep and Houston TX ChemDacs maker are the likely matches, but neither is confirmed.\n- RiverBend's lab site.\n- Entry valuation.\n- Whether further 2026 add-ons have closed.",
+ "universe_id": 404,
+ "id": "crb-water",
+ "customers": [
+  {
+   "name": "Breweries, dairies and meat processors",
+   "what": "Wastewater and anaerobic digester programs",
+   "share_pct": 22,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Commercial & institutional buildings",
+   "what": "HVAC water treatment",
+   "share_pct": 14,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "General manufacturers",
+   "what": "Cooling/boiler programs",
+   "share_pct": 14,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Healthcare facilities",
+   "what": "Water management",
+   "share_pct": 10,
+   "source": "Analyst view (from deep-dive text)"
+  }
+ ],
+ "competitors": [
+  {
+   "name": "Veolia",
+   "overlap": "Large accounts"
+  },
+  {
+   "name": "Ecolab / Nalco",
+   "overlap": "Large accounts"
+  },
+  {
+   "name": "ChemTreat",
+   "overlap": "Industrial"
+  },
+  {
+   "name": "Solenis",
+   "overlap": "Industrial"
+  },
+  {
+   "name": "Chardon Labs",
+   "overlap": "PE roll-up"
+  },
+  {
+   "name": "Sylmar Group",
+   "overlap": "Regional roll-up"
+  }
+ ],
+ "buyers": [
+  {
+   "name": "Kurita America",
+   "type": "Strategic",
+   "rationale": "US regional service density"
+  },
+  {
+   "name": "Veolia",
+   "type": "Strategic",
+   "rationale": "Mid-market service"
+  },
+  {
+   "name": "Solenis",
+   "type": "Strategic",
+   "rationale": "Service route expansion"
+  },
+  {
+   "name": "Larger PE sponsor",
+   "type": "Financial",
+   "rationale": "Secondary buyout of integrated platform"
+  }
+ ],
+ "addon_ideas": [],
+ "source_of_truth": [],
+ "locked": [],
+ "status": "ready",
+ "runs": [
+  {
+   "at": "2026-09-27T00:00:00Z",
+   "kind": "Imported",
+   "summary": "Imported from WTC deep-dive batch P05B"
+  }
+ ],
+ "updated_at": "2026-09-27T00:00:00Z"
+}

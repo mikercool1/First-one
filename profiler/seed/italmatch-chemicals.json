@@ -1,0 +1,483 @@
+{
+ "name": "Italmatch Chemicals (Dequest)",
+ "platform_name": "Italmatch Chemicals S.p.A. group (Genoa, Italy); US arm Italmatch USA Corp. (incl. Compass Chemical, BWA Water Additives US, Water Science Technologies, Elco/Detrex, Polartech)",
+ "website": "https://www.italmatch.com",
+ "hq_address": "Group HQ: Via P. Chiesa 7/13, Genoa, Italy. US: sales office 900 Circle 75 Parkway, Suite 650, Atlanta, GA 30339 (earlier US address in Tucker, GA was the legacy BWA/Italmatch USA office)",
+ "what_it_is": "A Bain Capital-owned Italian maker of phosphorus-based and other specialty additives. About half its revenue is the Advanced Water Solutions unit (phosphonates such as Dequest, polymers, biocides and antiscalants sold mainly to water-treatment formulators, desalination plants and oilfield operators). The other half is lubricant additives, flame retardants/plastic additives and personal-care ingredients.",
+ "primary_category": "Specialty / intermediate chemicals (water is a minor outlet)",
+ "water_relevance": "Water is a segment (10-40%)",
+ "bluntly": "An upstream phosphorus/specialty additives maker, not a water-treatment service company. Only ~28% of group revenue is true water treatment (phosphonates/polymers sold mostly to formulators such as the Ecolab/Veolia/ChemTreat tier). About 15% is oilfield production chemicals, and about half is lubricant additives, flame retardants and personal care.",
+ "owner_type": "PE-owned",
+ "ultimate_parent": "Italmatch Chemicals S.p.A. (Bain Capital Private Equity majority; Dussur <20%; management). In Sept-Oct 2025 Dorf Ketal (India) was reported in exclusive talks to buy it for ~$1.6bn, and S&P put the ratings on CreditWatch Positive. Closing was not confirmed in this research.",
+ "pe_sponsor": "Bain Capital Private Equity (majority, 2018); Dussur (Saudi Industrial Investments Co.) minority <20% (Dec 2022, with a EUR100m capital increase)",
+ "pe_entry_year": "2018",
+ "pe_entry_ev_usd_m": 826,
+ "pe_entry_multiple": "~10x 2018E EBITDA (EV ~EUR700m on ~EUR70m EBITDA, per BeBeez); USD at ~1.18 EUR/USD (2018)",
+ "prior_owners": "Founded 1997 (Genoa). Mandarin Capital Partners and the Malacalza family, then Ardian (2014-2018, entry EV ~EUR220m, management held 12%), then Bain Capital (2018-). Dorf Ketal was in exclusive talks as of Oct 2025, outcome unconfirmed.",
+ "total_revenue_usd_m": 742,
+ "total_revenue_year": "2024",
+ "total_revenue_basis": "Reported: FY2024 revenue EUR686m (Italmatch FY2024 results release), converted at the 2024 average EUR/USD of 1.082. LTM figure cited Jan 2025: EUR695m. Peak LTM Sep-2022: EUR858m. FY2025 results were not found (the company site blocked fetches).",
+ "us_revenue_usd_m": 220,
+ "total_ebitda_usd_m": 145,
+ "ebitda_margin_pct": 19.5,
+ "ebitda_year": "2024",
+ "ebitda_basis": "Reported: FY2024 adjusted EBITDA EUR134m (up from EUR115m in 2023), = $145m at 1.082. History: ~EUR70m 2018E at Bain entry (deal-implied, 10x on EUR700m); 9M2022 EUR128.7m (18.8% margin); 9M2023 EUR82.1m (15.8%); EUR140m LTM cited at the Jan 2025 sale exploration (net debt EUR582m). A EUR1.5bn EV implies ~10.7x; the reported $1.6bn Dorf Ketal price implies ~10-11x.",
+ "revenue_by_business": [
+  {
+   "business": "Advanced Water Solutions - water treatment (phosphonates/Dequest, polymers, BWA Belclene/Bellasol antiscalants & dispersants, biocides for cooling, boiler, RO/desal, industrial and some municipal water)",
+   "category": "Water treatment - industrial/commercial",
+   "revenue_usd_m": 207,
+   "pct": 27.9,
+   "how_derived": "Estimate. AWS was 48.1% of 9M2023 revenue (EUR249.5m of EUR519.0m, ITC SpA interim report); that share applied to 2024 gives $357m. Water treatment is taken as ~58% of AWS, net of the oilfield and detergent/other phosphonate outlets below."
+  },
+  {
+   "business": "Advanced Water Solutions - oil & gas production chemicals (scale/hydrate/corrosion inhibitors; Water Science Technologies US blending; Aubin Group UK services)",
+   "category": "Oilfield / production chemicals",
+   "revenue_usd_m": 110,
+   "pct": 14.8,
+   "how_derived": "Estimate: ~31% of AWS. Based on WST (~$75m revenue at its 2019 acquisition per the Italmatch 25th-anniversary history, mainly US oil & gas) plus the North Sea oilfield/Aubin business."
+  },
+  {
+   "business": "Advanced Water Solutions - detergent, cleaning and other phosphonate uses",
+   "category": "Cleaning, hygiene & sanitation",
+   "revenue_usd_m": 40,
+   "pct": 5.4,
+   "how_derived": "Estimate: ~11% of AWS (phosphonates for household/I&I detergents, textiles, other)."
+  },
+  {
+   "business": "Lubricant Performance Additives (engine and industrial lubricant additives, metalworking fluid packages; Elco/Detrex Cleveland, Polartech Bedford Park)",
+   "category": "Specialty / intermediate (non-water)",
+   "revenue_usd_m": 222,
+   "pct": 29.9,
+   "how_derived": "Estimate: 9M2023 share of 29.9% (EUR155.0m/EUR519.0m) applied to 2024 revenue."
+  },
+  {
+   "business": "Flame Retardants & Plastic Additives (phosphorus/halogen-free flame retardants, plastic additives)",
+   "category": "Specialty / intermediate (non-water)",
+   "revenue_usd_m": 82,
+   "pct": 11.1,
+   "how_derived": "Estimate: 9M2023 share of 11.1% (EUR57.8m/EUR519.0m) applied to 2024 revenue."
+  },
+  {
+   "business": "Performance Products & Personal Care (personal-care ingredients, phosphorus chlorides/intermediates, performance additives)",
+   "category": "Specialty / intermediate (non-water)",
+   "revenue_usd_m": 81,
+   "pct": 10.9,
+   "how_derived": "Estimate: 9M2023 share of 10.9% (EUR56.8m/EUR519.0m) applied to 2024 revenue."
+  }
+ ],
+ "us_water_treatment_revenue_usd_m": 60,
+ "us_water_treatment_arithmetic": "Estimate. (1) US revenue: ~30% of the $742m group = ~$220m. North America has 6 of the 19 plants. Prior research put US at 30-35%, and no disclosure was found. (2) US AWS share: ~$140m (US-heavy mix: WST Birmingham ~$75m at 2019 acquisition, Compass Mableton GA plant, BWA US sales). (3) Less US oilfield chemicals ~$70m (WST blending plus the Midland TX, Miles City MT and Jane Lew WV oilfield warehouses/blending). (4) Less detergent/other ~$10m. Result: ~$60m US water treatment (range $45-80m). This is ingredient revenue sold largely to formulators, so there is double-count risk against formulator platforms. The US LPA/lubricant business (Cleveland, Ashtabula, Bedford Park) is excluded.",
+ "end_markets_total_platform": {
+  "Municipal drinking water": 2,
+  "Municipal wastewater": 1,
+  "Power generation": 5,
+  "Oil & gas / refining": 19,
+  "Chemicals & petrochem": 9,
+  "Pulp & paper": 2,
+  "Food & beverage": 2,
+  "Mining & metals": 3,
+  "Primary metals/steel": 1,
+  "Commercial HVAC / buildings": 5,
+  "Healthcare & institutional": 1,
+  "Data centers": 1,
+  "Pharma/life sciences": 0,
+  "Microelectronics/semis": 0,
+  "Manufacturing (general industrial)": 15,
+  "Pools & spa": 0,
+  "Agriculture & farm": 0,
+  "Consumer / retail": 14,
+  "Other": 20
+ },
+ "employees_total": 1100,
+ "employees_basis": "Company/sponsor-stated: 'approximately 1,100 workers' (Bain Capital/Dussur release, Dec 2022). PitchBook still shows 1,100 in 2026. Post-Aubin headcount may be higher; not verified.",
+ "us_sites_count": 9,
+ "key_sites": [
+  {
+   "type": "HQ",
+   "address": "900 Circle 75 Parkway, Suite 650 (sales office; US lead office, formerly Tucker, GA)",
+   "city": "Atlanta",
+   "state": "GA"
+  },
+  {
+   "type": "Plant",
+   "address": "1610 Buckner Road SE (manufacturing plant + applications lab; legacy Compass Chemical)",
+   "city": "Mableton",
+   "state": "GA"
+  },
+  {
+   "type": "Plant",
+   "address": "1701 Vanderbilt Road (manufacturing/blending plant + applications lab; Water Science Technologies)",
+   "city": "Birmingham",
+   "state": "AL"
+  },
+  {
+   "type": "Plant",
+   "address": "1000 Belt Line Street (manufacturing plant + R&D lab; legacy Elco/Detrex lubricant additives)",
+   "city": "Cleveland",
+   "state": "OH"
+  },
+  {
+   "type": "Plant",
+   "address": "1100 State Road (manufacturing plant; legacy Elco/Detrex)",
+   "city": "Ashtabula",
+   "state": "OH"
+  },
+  {
+   "type": "Plant",
+   "address": "7201 West 65th Street (manufacturing plant + applications lab; Polartech metalworking)",
+   "city": "Bedford Park",
+   "state": "IL"
+  },
+  {
+   "type": "Blending",
+   "address": "533 Industrial Park Road (blending plant, warehouse; oilfield)",
+   "city": "Jane Lew",
+   "state": "WV"
+  },
+  {
+   "type": "Branch",
+   "address": "1122 S FM 1788 (warehouse & logistics; Permian oilfield)",
+   "city": "Midland",
+   "state": "TX"
+  },
+  {
+   "type": "Branch",
+   "address": "1148 US Highway 12 (warehouse & logistics; Bakken/Rockies oilfield)",
+   "city": "Miles City",
+   "state": "MT"
+  }
+ ],
+ "chemistries": [
+  {
+   "product_line": "Phosphonates (HEDP, ATMP, DTPMP, PBTC etc.) - scale & corrosion inhibitors, chelants",
+   "made_or_resold": "Made in-house (Europe, China, US Mableton GA; Jiayou China phosphonate assets)",
+   "brands": "Dequest (ex-Monsanto/Solutia/Thermphos), Compass products"
+  },
+  {
+   "product_line": "Water-treatment polymers, antiscalants, dispersants, biocides (maleic/acrylic, phosphinocarboxylic, THPS)",
+   "made_or_resold": "Made in-house (BWA Water Additives, UK/US; GRS Italy water-soluble polymers)",
+   "brands": "Belclene, Belcor, Bellacide, Belsperse, Flocon (RO antiscalant), Bellasol"
+  },
+  {
+   "product_line": "Oilfield production chemicals (scale/hydrate/corrosion inhibitors, blended packages, services)",
+   "made_or_resold": "Actives made; US blends at Birmingham AL and Jane Lew WV; some raw materials resold/blended",
+   "brands": "Water Science Technologies (WST), Aubin Group"
+  },
+  {
+   "product_line": "Lubricant performance additives (antiwear, EP, friction modifiers, metalworking packages)",
+   "made_or_resold": "Made in-house (Cleveland & Ashtabula OH; Bedford Park IL; Europe)",
+   "brands": "Elco, Polartech, Italmatch LPA"
+  },
+  {
+   "product_line": "Flame retardants & plastic additives (phosphorus-based, halogen-free)",
+   "made_or_resold": "Made in-house (Europe/Asia)",
+   "brands": "Phoslite and others"
+  },
+  {
+   "product_line": "Personal-care & performance products; phosphorus chlorides/intermediates",
+   "made_or_resold": "Made in-house",
+   "brands": "Italmatch PPA"
+  },
+  {
+   "product_line": "Metal-selective resins (precious/heavy-metal recovery from water)",
+   "made_or_resold": "Made (Magpie Polymers, France)",
+   "brands": "Magpie"
+  }
+ ],
+ "acquisitions": [
+  {
+   "date": "2013",
+   "target": "Dequest phosphonates business of Thermphos International (bankrupt)",
+   "universe_id": null,
+   "what_it_does": "Phosphonate water-treatment additives (ex-Monsanto brand); plants in Newport UK, Louvain-la-Neuve BE, Frankfurt DE; ~100 staff",
+   "revenue_usd_m": 105,
+   "value_usd_m": null,
+   "source_url": "https://www.italmatch.com/magazine/italmatch-25th-anniversary-entry-into-water-treatment-and-usa-campaign-2013-2018/"
+  },
+  {
+   "date": "2014",
+   "target": "GRS Chemical Technologies",
+   "universe_id": null,
+   "what_it_does": "Water-soluble polymers, Qualiano (Naples), Italy",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.italmatch.com/magazine/italmatch-25th-anniversary-entry-into-water-treatment-and-usa-campaign-2013-2018/"
+  },
+  {
+   "date": "2016",
+   "target": "Solvay phosphorus-based chemicals activity (Brussels)",
+   "universe_id": null,
+   "what_it_does": "Phosphorus-derivative additives (company history says water treatment additives)",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.italmatch.com/magazine/italmatch-25th-anniversary-entry-into-water-treatment-and-usa-campaign-2013-2018/"
+  },
+  {
+   "date": "2016-06",
+   "target": "Compass Chemical International",
+   "universe_id": 631,
+   "what_it_does": "US phosphonates & water treatment additives producer (plant at Mableton/Smyrna GA); former Italmatch competitor in North America",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.italmatch.com/magazine/italmatch-25th-anniversary-entry-into-water-treatment-and-usa-campaign-2013-2018/"
+  },
+  {
+   "date": "2016",
+   "target": "Sudamfos do Brasil",
+   "universe_id": null,
+   "what_it_does": "Phosphonate distribution/marketing, Brazil",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.italmatch.com/magazine/italmatch-25th-anniversary-entry-into-water-treatment-and-usa-campaign-2013-2018/"
+  },
+  {
+   "date": "2016",
+   "target": "Detrex Corporation (Elco Corp.)",
+   "universe_id": null,
+   "what_it_does": "Lubricant additives (Cleveland OH) and hydrochloric acid/other (Ashtabula OH). Not water.",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.italmatch.com/magazine/italmatch-25th-anniversary-entry-into-water-treatment-and-usa-campaign-2013-2018/"
+  },
+  {
+   "date": "2017",
+   "target": "Magpie Polymers (France)",
+   "universe_id": null,
+   "what_it_does": "Selective resins for precious/heavy metal recovery from water",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.italmatch.com/media/press-release/italmatch-chemicals-acquires-magpie-polymers-english-version/"
+  },
+  {
+   "date": "2018",
+   "target": "Polartech (from Afton Chemical/NewMarket)",
+   "universe_id": null,
+   "what_it_does": "Metalworking fluid additives; Bedford Park IL and Manchester UK. Not water.",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.italmatch.com/magazine/italmatch-25th-anniversary-entry-into-water-treatment-and-usa-campaign-2013-2018/"
+  },
+  {
+   "date": "2018",
+   "target": "Jiayou Chemical phosphonate business (China)",
+   "universe_id": null,
+   "what_it_does": "Phosphonate water additives production",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.italmatch.com/magazine/italmatch-25th-anniversary-entry-into-water-treatment-and-usa-campaign-2013-2018/"
+  },
+  {
+   "date": "2019-Q1",
+   "target": "BWA Water Additives",
+   "universe_id": 12,
+   "what_it_does": "Water treatment polymers, antiscalants, biocides (Belclene/Flocon/Bellacide); Manchester UK with US office in Tucker/Atlanta GA",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.italmatch.com/magazine/italmatch-25th-anniversary-entry-into-water-treatment-and-usa-campaign-2013-2018/"
+  },
+  {
+   "date": "2019-09",
+   "target": "Water Science Technologies (WST)",
+   "universe_id": null,
+   "what_it_does": "Birmingham AL blender/chemical solutions provider to North American oil & gas and industrial water treatment",
+   "revenue_usd_m": 75,
+   "value_usd_m": null,
+   "source_url": "https://www.prnewswire.com/news-releases/italmatch-chemicals-group-acquires-water-science-technologies-wst-300926494.html"
+  },
+  {
+   "date": "2022",
+   "target": "Aubin Group (UK)",
+   "universe_id": null,
+   "what_it_does": "Oil & gas well services/chemicals and offshore wind technologies, Aberdeen/Middle East",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.italmatch.com/magazine/italmatch-25th-anniversary-entry-into-water-treatment-and-usa-campaign-2013-2018/"
+  },
+  {
+   "date": "n/a",
+   "target": "RecoPhos project technology",
+   "universe_id": null,
+   "what_it_does": "Phosphorus recovery from sewage sludge ash (technology/IP purchase)",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.italmatch.com/media/press-release/italmatch-chemicals-group-acquires-the-recophos-project-technology/"
+  }
+ ],
+ "addon_corrections": "Compass Chemical (631) is a correct add-on: a 2016 US phosphonate maker whose plant at Mableton GA is now Italmatch's. BWA Water Additives (12) is also correct (2019) but is UK-headquartered. Its US revenue of $45m looks too high: combined with Compass's $28m it gives $73m, above our ~$60m estimate for all US water treatment. Suggest BWA US ~$25m and Compass ~$25m, both inside the owner figure. MISSING: Water Science Technologies (Birmingham AL, 2019, ~$75m revenue at acquisition, mostly oilfield), which should be added as an add-on but tagged mostly oilfield. Not-water add-ons that are not needed in the universe: Elco/Detrex (Cleveland/Ashtabula OH lubricant additives) and Polartech (Bedford Park IL). No evidence was found that Italmatch acquired Aquapharm (India), 'Reunion' or 'SCL'. 'Italmatch SC, LLC' is only a US legal entity at the Cleveland/Bedford Park sites, not an acquisition. Magpie Polymers was a 2017 acquisition/investment (resins), not a US water add-on.",
+ "confidence": "Medium",
+ "what_changed_vs_prior": "Total revenue ($742m) and EBITDA ($145m) are confirmed as reported FY2024 figures. Several items are added: the Bain entry EV (~EUR700m, ~10x), the 2022 Dussur stake, and the sale process (Jan 2025 exploration at EUR1.5bn EV; Sept-Oct 2025 Dorf Ketal exclusive talks at ~$1.6bn; S&P CreditWatch Positive). The segment split now comes from the bond-issuer interim report: AWS is 48% of group, not ~30%. However, AWS includes oilfield and detergent uses, so true water treatment is ~28%. US water treatment is cut slightly, from $70m to ~$60m (estimate). US sites were added (9) with addresses. WST is added as a missing add-on.",
+ "open_questions": "Did the Dorf Ketal acquisition sign and close (late 2025/2026)? If it did, the ultimate parent becomes Dorf Ketal Chemicals (India), which owns a large oilfield/refinery chemicals business in the US (Houston). FY2025 revenue/EBITDA were not retrieved because italmatch.com blocked fetches. Also unresolved: the exact AWS split between water, oil & gas and detergents; the US revenue share; and current headcount after Aubin.",
+ "evidence": [
+  {
+   "metric": "total_revenue",
+   "value": "EUR686m",
+   "year": "2024",
+   "source_type": "Company press release",
+   "url": "https://www.italmatch.com/media/news/italmatch-presents-fy-2024-results/",
+   "quote": "Revenues reached \u20ac686 million"
+  },
+  {
+   "metric": "ebitda",
+   "value": "EUR134m adjusted",
+   "year": "2024",
+   "source_type": "Company press release",
+   "url": "https://www.italmatch.com/media/news/italmatch-presents-fy-2024-results/",
+   "quote": "Adjusted EBITDA rose by 17%, from \u20ac115 million to \u20ac134 million"
+  },
+  {
+   "metric": "segment",
+   "value": "AWS EUR249.5m; LPA EUR155.0m; FPA EUR57.8m; PPA EUR56.8m; total EUR519.0m",
+   "year": "9M2023",
+   "source_type": "Bond issuer interim financial report",
+   "url": "https://bebeez.it/wp-content/uploads/2024/01/itc-spa-interim-financial-report-3q2023.pdf",
+   "quote": "Advanced Water Solutions (AWS) 249.5 ... Total 519.0"
+  },
+  {
+   "metric": "ebitda",
+   "value": "Adj. EBITDA EUR82.1m (15.8%) vs EUR128.7m (18.8%); EUR800m senior secured notes due 2028",
+   "year": "9M2023",
+   "source_type": "Bond issuer interim financial report",
+   "url": "https://bebeez.it/wp-content/uploads/2024/01/itc-spa-interim-financial-report-3q2023.pdf",
+   "quote": "Adjusted EBITDA: \u20ac82.1M (15.8% margin) vs \u20ac128.7M (18.8% margin)"
+  },
+  {
+   "metric": "deal",
+   "value": "Sale explored at EUR1.5bn EV; sales EUR695m, adj. EBITDA EUR140m, net debt EUR582m",
+   "year": "2025-01",
+   "source_type": "Trade press (BeBeez citing Bloomberg)",
+   "url": "https://bebeez.eu/2025/01/27/italys-private-equity-weekly-roundup-news-from-italmatch-chemicals-bain-capital-sparkle-tim-mef-retelit-asterion-industrial-partners-enibioch4in-enilive-eni-and-more/",
+   "quote": "Bain Capital is exploring options for Italmatch Chemicals on the ground of an enterprise value of 1.5 billion euros"
+  },
+  {
+   "metric": "deal",
+   "value": "Dorf Ketal exclusive talks, ~$1.6bn",
+   "year": "2025-10",
+   "source_type": "Trade press",
+   "url": "https://www.constructionworld.in/policy-updates-and-economic-news/dorf-ketal-in-talks-to-acquire-italy---s-italmatch-for--1.6-billion/79821",
+   "quote": "Advanced negotiations; exclusive discussions"
+  },
+  {
+   "metric": "deal",
+   "value": "S&P ratings on CreditWatch Positive",
+   "year": "2025",
+   "source_type": "Rating agency",
+   "url": "https://disclosure.spglobal.com/ratings/en/regulatory/article/-/view/type/HTML/id/2939575",
+   "quote": "Italmatch Ratings Put On CreditWatch Positive On ..."
+  },
+  {
+   "metric": "ownership",
+   "value": "Bain entry EV ~EUR700m, ~10x 2018E EBITDA; seller Ardian (2014, ~EUR220m)",
+   "year": "2018",
+   "source_type": "Trade press",
+   "url": "https://bebeez.eu/2018/07/04/bain-capital-takes-control-of-italmatch-chemicals/",
+   "quote": "about 220 million euros"
+  },
+  {
+   "metric": "employees",
+   "value": "~1,100; 19 plants incl. 5 in USA; LTM revenue ~EUR858m",
+   "year": "2022",
+   "source_type": "PE sponsor press release",
+   "url": "https://www.baincapital.com/news/dussur-acquires-stake-italmatch-chemicals",
+   "quote": "approximately 1,100 workers"
+  },
+  {
+   "metric": "sites",
+   "value": "9 US locations (Ashtabula OH, Atlanta GA, Bedford Park IL, Birmingham AL, Cleveland OH, Jane Lew WV, Mableton GA, Midland TX, Miles City MT)",
+   "year": "2026",
+   "source_type": "Company website",
+   "url": "https://www.italmatch.com/contacts/",
+   "quote": "Mableton, GA - Applicative laboratory, Manufacturing plant at 1610 Buckner Road SE"
+  },
+  {
+   "metric": "deal",
+   "value": "WST acquisition, Birmingham AL, oil & gas and industrial water blender",
+   "year": "2019",
+   "source_type": "Press release",
+   "url": "https://www.prnewswire.com/news-releases/italmatch-chemicals-group-acquires-water-science-technologies-wst-300926494.html",
+   "quote": "further strengthens Italmatch Chemicals leadership in the North American oil and gas market"
+  }
+ ],
+ "profile_md": "## Italmatch Chemicals (Dequest / BWA / Compass): investor profile\n\n**Bottom line:** Italmatch is a ~$740m-revenue, ~$145m-EBITDA global specialty-additives manufacturer. It is one of the world's largest phosphonate producers and the owner of the Dequest and BWA water-additive brands. It is **not** a water-treatment service company: it sells active ingredients (phosphonates, polymers, biocides, antiscalants) mostly to the formulators and service companies that are the core of our universe. Roughly **28% of group revenue is true water treatment**. Another ~15% is oilfield production chemicals, ~5% is detergent/other phosphonate uses, and about half is lubricant additives, flame retardants and personal-care ingredients. We estimate US water-treatment revenue at about **$60m**.\n\n### Business overview\nThe group reports four business units:\n- **Advanced Water Solutions (AWS):** 48% of 9M2023 revenue (EUR249.5m of EUR519.0m).\n- **Lubricant Performance Additives (LPA):** 30%.\n- **Flame Retardants & Plastic Additives (FPA):** 11%.\n- **Performance Products & Personal Care (PPA):** 11%.\n\nAWS sells scale and corrosion inhibitors, dispersants, RO/desalination antiscalants and biocides for cooling, boiler, membrane and process water. Its customers are global water-treatment formulators, thermal and membrane desalination plants and detergent makers. AWS also supplies scale, hydrate and corrosion inhibitors to oil & gas producers. Oilfield work is a large part of AWS, especially in North America (Water Science Technologies) and the North Sea (Aubin).\n\n### History and ownership\n- **1997:** Founded in Genoa.\n- **Pre-2014:** Owned by Mandarin Capital Partners and the Malacalza family.\n- **2014-2018:** Ardian (entry EV ~EUR220m).\n- **2018:** Bain Capital Private Equity took control at an EV of ~EUR700m, about 10x expected 2018 EBITDA of ~EUR70m (BeBeez).\n- **Dec 2022:** Saudi Arabia's Dussur bought a stake below 20%, alongside a EUR100m capital increase. At that time the group had ~1,100 employees, 19 plants and LTM revenue of ~EUR858m.\n- **Financing:** EUR800m of senior secured notes due 2028 (fixed and floating; S&P/Moody's single-B area, B3/B cited by CreditSights).\n- **Jan 2025:** Bloomberg reported that Bain was exploring a sale at ~EUR1.5bn EV, on LTM sales of EUR695m, adjusted EBITDA of EUR140m and net debt of EUR582m.\n- **Sept-Oct 2025:** India's **Dorf Ketal** was reported in exclusive talks to buy Italmatch for ~**$1.6bn**, with CEO Sergio Iorio rolling over. S&P placed the ratings on CreditWatch Positive. **We could not confirm signing or closing.** This is the single most important open question for the ultimate-parent field.\n\n### Products and chemistries\nIt is vertically integrated in phosphorus chemistry:\n- **Phosphonates** (HEDP, ATMP, DTPMP, PBTC) under the ex-Monsanto **Dequest** brand, bought out of the Thermphos bankruptcy in 2013 (~EUR80m of business, plants in the UK, Belgium and Germany).\n- **Maleic/acrylic and phosphinocarboxylic polymers and THPS-type biocides** from **BWA Water Additives** (acquired 2019: Belclene, Flocon, Bellacide).\n- **Water-soluble polymers** from GRS (Italy, 2014).\n- **Selective metal-recovery resins** from Magpie Polymers (France, 2017).\n\nNon-water lines include lubricant additives (Elco/Detrex in Cleveland and Ashtabula OH, 2016; Polartech metalworking additives in Bedford Park IL, 2018), phosphorus-based halogen-free flame retardants, and personal-care ingredients. Almost everything is made in-house; oilfield packages are blended in the US.\n\n### End markets\nTotal-platform estimate:\n- Oil & gas/refining: ~19%\n- Other, mostly automotive and industrial lubricants: ~20%\n- Manufacturing, including metalworking and E&E plastics: ~15%\n- Consumer, including personal care and detergents: ~14%\n- Chemicals/plastics compounding: ~9%\n- Water-treatment verticals: ~28% in total, spread across power, HVAC, mining, pulp & paper, food & beverage, municipal and others.\n\nThere is no pool or agriculture exposure. Water demand is indirect: Italmatch's customers are the Ecolab/Veolia/Kurita/ChemTreat/regional-formulator tier and desalination EPCs. That makes it a **supplier to our universe more than a competitor**, and US water revenue here overlaps with formulator revenue counted elsewhere.\n\n### US footprint\nThere are nine US locations:\n- **Atlanta GA:** sales office and US lead office (the earlier Tucker GA address belonged to legacy BWA/Italmatch USA).\n- **Mableton GA:** phosphonate plant and lab (ex-Compass Chemical).\n- **Birmingham AL:** blending plant and lab (ex-WST).\n- **Cleveland OH and Ashtabula OH:** lubricant additives and other (ex-Elco/Detrex).\n- **Bedford Park IL:** metalworking additives (ex-Polartech).\n- **Jane Lew WV:** blending/warehouse.\n- **Midland TX and Miles City MT:** oilfield warehouses.\n\nOnly Mableton, part of Birmingham, and the Atlanta office are water-treatment assets. The WV/TX/MT sites are oilfield logistics.\n\n### Financials\n- **FY2024 (reported):** revenue EUR686m (~$742m at 1.082), adjusted EBITDA EUR134m (~$145m, 19.5% margin), up from EUR115m in 2023.\n- **Earlier years:** revenue peaked at ~EUR858m LTM in 2022 on inflation pass-through. EBITDA fell in 2023 on destocking (9M margin 15.8% vs 18.8%) and has since recovered.\n- **Valuation:** the EUR1.5bn to $1.6bn price talk implies ~10-11x EBITDA.\n- **Water share:** applying the 9M2023 unit mix to 2024 gives AWS ~$357m, of which ~$207m is water treatment, ~$110m oilfield and ~$40m detergent/other (all estimates).\n- **US water treatment (estimate):** US revenue ~30% (~$220m), of which AWS is ~$140m. Less ~$70m oilfield and ~$10m other leaves **~$60m** (range $45-80m).\n- **FY2025 results** were not retrievable (the company site blocked fetches).\n\n### M&A strategy\nA serial acquirer built around phosphorus chemistry:\n- Water: Dequest 2013, GRS 2014, Solvay phosphorus activity 2016, **Compass Chemical** 2016, Sudamfos 2016, Magpie 2017, Jiayou phosphonates 2018, **BWA** 2019.\n- Oilfield: **WST** 2019 (~$75m revenue at acquisition), Aubin 2022.\n- Lubricants: Detrex/Elco 2016, Polartech 2018.\n- Also RecoPhos phosphorus-recovery technology and minority investments such as Eco Inhibitors.\n\nIn our universe, Compass (631) and BWA (12) are correctly rolled up. WST is missing and should be added, tagged mostly oilfield. We found no evidence of acquisitions named Aquapharm, Reunion or SCL; \"Italmatch SC, LLC\" is only a US legal entity.\n\n### Competitive position\nItalmatch is one of the global top-3 phosphonate producers, alongside Chinese producers and Zschimmer & Schwarz/Aquapharm. BWA brings a strong position in desalination antiscalants and specialty polymers. In US phosphonates it competes with Chinese imports, Kemira, SNF/Dow acrylics and Nouryon in chelants. Its moat is backward integration into phosphorus chlorides plus long-standing brands, though phosphonates are partly commoditised by Chinese capacity.\n\n### Risks\n- Chinese phosphonate price competition and anti-dumping dynamics.\n- Oil & gas cyclicality in the US AWS business.\n- Customer destocking, as seen in 2023.\n- Leverage (~4x net debt/EBITDA) and change-of-control effects under a Dorf Ketal deal.\n- Heavy reliance on a small number of global formulators.\n\n### What is uncertain\nThe status of the Dorf Ketal transaction, FY2025 figures, the exact AWS split between water, oilfield and detergent, the US revenue share, and current headcount. All segment-level and US figures here are estimates derived as shown.",
+ "universe_id": 641,
+ "id": "italmatch-chemicals",
+ "customers": [
+  {
+   "name": "Ecolab",
+   "what": "Phosphonates, antiscalants",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Veolia",
+   "what": "Phosphonates, antiscalants",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Kurita",
+   "what": "Water treatment actives",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "ChemTreat",
+   "what": "Phosphonates",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Desalination EPCs",
+   "what": "BWA antiscalants",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Lubricant makers",
+   "what": "Additives",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  }
+ ],
+ "competitors": [
+  {
+   "name": "Zschimmer & Schwarz / Aquapharm",
+   "overlap": "Phosphonates"
+  },
+  {
+   "name": "Chinese phosphonate producers",
+   "overlap": "Price competition"
+  },
+  {
+   "name": "Kemira",
+   "overlap": "Water chemicals"
+  },
+  {
+   "name": "Nouryon",
+   "overlap": "Chelants"
+  },
+  {
+   "name": "SNF",
+   "overlap": "Polymers"
+  }
+ ],
+ "buyers": [
+  {
+   "name": "Dorf Ketal",
+   "type": "Strategic",
+   "rationale": "Reported transaction"
+  }
+ ],
+ "addon_ideas": [],
+ "source_of_truth": [],
+ "locked": [],
+ "status": "ready",
+ "runs": [
+  {
+   "at": "2026-09-27T00:00:00Z",
+   "kind": "Imported",
+   "summary": "Imported from WTC deep-dive batch P05B"
+  }
+ ],
+ "updated_at": "2026-09-27T00:00:00Z"
+}

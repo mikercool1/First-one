@@ -1,0 +1,484 @@
+{
+ "name": "Carmeuse Americas (Carmeuse Lime & Stone)",
+ "platform_name": "Carmeuse Group (Carmeuse Holding SA / Carmeuse SA, Belgium)",
+ "website": "https://www.carmeuse.com",
+ "hq_address": "11 Stanwix St., Pittsburgh, PA 15222 (Carmeuse Americas); Group HQ Louvain-la-Neuve, Belgium",
+ "what_it_is": "Quarry-integrated producer of quicklime, hydrated lime, lime kiln dust and limestone (plus cement/concrete in Chile since 2025); largest US/NA lime producer, sells lime to steel, FGD, chemicals, construction, and some municipal/industrial water treatment.",
+ "primary_category": "Lime & minerals",
+ "water_relevance": "Water is minor (<10%)",
+ "bluntly": "A lime and limestone miner and calciner that mostly serves steel, power FGD, industry and construction. Water treatment is a single-digit share, estimated at ~$65M of US revenue (~2% of the platform).",
+ "owner_type": "Family/founder-owned",
+ "ultimate_parent": "Carmeuse Group SA (Collinet family control; Cobepa ~20% minority since 2005)",
+ "pe_sponsor": "None controlling (Cobepa, a Belgian family-backed investment company, holds a ~20% minority stake since Aug 2005)",
+ "pe_entry_year": "2005 (Cobepa minority)",
+ "pe_entry_ev_usd_m": null,
+ "pe_entry_multiple": "",
+ "prior_owners": "Always Collinet family controlled since 1860; US assets assembled from Marblehead Lime, Dravo-heritage plants, Oglebay Norton (O-N Minerals), Rockwell Lime, etc.",
+ "total_revenue_usd_m": 2825,
+ "total_revenue_year": "2025",
+ "total_revenue_basis": "Reported: group turnover \u20ac2.5bn (Carmeuse Sustainability Insights 2026 report), converted at ~1.13 USD/EUR (2025 avg). May include a partial or pro forma year of Cementos B\u00edo B\u00edo (closed Sept 2025). 2024 was ~\u20ac2.0bn.",
+ "us_revenue_usd_m": 1000,
+ "total_ebitda_usd_m": 620,
+ "ebitda_margin_pct": 22,
+ "ebitda_year": "2025",
+ "ebitda_basis": "Estimate: not disclosed and no rating reports found. Assumes a ~22% margin on $2.8bn, in line with lime/cement peers (typically 20-35%). Low confidence.",
+ "revenue_by_business": [
+  {
+   "business": "Carmeuse Americas \u2013 North America lime & limestone: US (lime, stone, Mintek soil-stabilization reagents)",
+   "category": "Other",
+   "revenue_usd_m": 935,
+   "pct": 33.1,
+   "how_derived": "Estimate. NA ~$1.15bn: ~$900m in 2008 (Bus-Ex), ~40-45% of the ~\u20ac2.0bn pre-CBB group. US ~$1.0bn minus the US water slice and Systems."
+  },
+  {
+   "business": "US lime sold for water/wastewater treatment (municipal + industrial)",
+   "category": "Water treatment - municipal",
+   "revenue_usd_m": 65,
+   "pct": 2.3,
+   "how_derived": "Estimate: ~$1.0bn US \u00d7 ~80% lime \u00d7 ~8% water share of lime demand (USGS ranks water treatment a minor lime use)."
+  },
+  {
+   "business": "Carmeuse Systems / Storage & Transfer Technologies (lime slakers, silos, chemical feed systems)",
+   "category": "Media, membranes & equipment",
+   "revenue_usd_m": 30,
+   "pct": 1.1,
+   "how_derived": "Estimate; small ex-STT Enviro business (TSX-V microcap when acquired in 2017). Not disclosed."
+  },
+  {
+   "business": "Carmeuse Canada (Ontario lime & stone)",
+   "category": "Other",
+   "revenue_usd_m": 120,
+   "pct": 4.2,
+   "how_derived": "Estimate: ~10-12% of NA revenue (3 lime plants + quarry of 28 NA facilities)."
+  },
+  {
+   "business": "Latin America: Cementos B\u00edo B\u00edo (Chile/Peru cement, concrete, lime; ~$400m annualized), Brazil, Colombia",
+   "category": "Other",
+   "revenue_usd_m": 300,
+   "pct": 10.6,
+   "how_derived": "Estimate: CBB ~$400m/yr (Carmeuse PR) for part/pro forma of 2025, plus Brazil and Colombia lime."
+  },
+  {
+   "business": "Europe, Middle East, Africa, Asia lime & limestone (incl. water-use lime)",
+   "category": "Other",
+   "revenue_usd_m": 1375,
+   "pct": 48.7,
+   "how_derived": "Residual: $2,825m total minus the rows above."
+  }
+ ],
+ "us_water_treatment_revenue_usd_m": 65,
+ "us_water_treatment_arithmetic": "Carmeuse Americas NA revenue est. ~$1.15bn \u00d7 ~88% US = ~$1.0bn US. \u00d7 ~80% lime (the rest is limestone/aggregates, logistics, Systems) = ~$800m US lime. \u00d7 ~8% sold into drinking-water softening/pH, wastewater/biosolids, and industrial/mining effluent neutralization = ~$65m. Excludes Carmeuse Systems equipment and FGD. Prior was $80m; lowered because part of US revenue is non-lime stone and logistics.",
+ "end_markets_total_platform": {
+  "Municipal drinking water": 3,
+  "Municipal wastewater": 3,
+  "Power generation": 12,
+  "Oil & gas / refining": 1,
+  "Chemicals & petrochem": 10,
+  "Pulp & paper": 3,
+  "Food & beverage": 2,
+  "Mining & metals": 6,
+  "Primary metals/steel": 30,
+  "Commercial HVAC / buildings": 0,
+  "Healthcare & institutional": 0,
+  "Data centers": 0,
+  "Pharma/life sciences": 0,
+  "Microelectronics/semis": 0,
+  "Manufacturing (general industrial)": 3,
+  "Pools & spa": 0,
+  "Agriculture & farm": 3,
+  "Consumer / retail": 0,
+  "Other": 24
+ },
+ "employees_total": 6300,
+ "employees_basis": "Company-stated: 6,300 group employees (Sustainability Insights 2026). Carmeuse Americas 'over 2,500 employees' (br.carmeuse.com); North America 'over 2,000 employees' (Indiana DVA employer page citing Carmeuse). Earlier ~5,300 group (2024 report).",
+ "us_sites_count": 24,
+ "key_sites": [
+  {
+   "type": "HQ",
+   "address": "11 Stanwix St.",
+   "city": "Pittsburgh",
+   "state": "PA"
+  },
+  {
+   "type": "Plant",
+   "address": "599 Hwy. 31 South (Saginaw/Longview lime plant)",
+   "city": "Saginaw",
+   "state": "AL"
+  },
+  {
+   "type": "Plant",
+   "address": "7444 State Hwy. 25 South (Calera/Montevallo lime plant)",
+   "city": "Calera",
+   "state": "AL"
+  },
+  {
+   "type": "Plant",
+   "address": "9043 Hwy. 154 (Black River lime plant)",
+   "city": "Butler",
+   "state": "KY"
+  },
+  {
+   "type": "Plant",
+   "address": "9222 Springdale Rd. (Maysville lime plant)",
+   "city": "Maysville",
+   "state": "KY"
+  },
+  {
+   "type": "Plant",
+   "address": "12797 Scenic Hwy. (Pelican lime plant)",
+   "city": "Baton Rouge",
+   "state": "LA"
+  },
+  {
+   "type": "Plant",
+   "address": "25 Marion Ave. (River Rouge/Detroit lime plant)",
+   "city": "River Rouge",
+   "state": "MI"
+  },
+  {
+   "type": "Plant",
+   "address": "15 Williams St. (Grand River lime plant)",
+   "city": "Grand River",
+   "state": "OH"
+  },
+  {
+   "type": "Plant",
+   "address": "100 Meeker St. (Huron lime plant)",
+   "city": "Huron",
+   "state": "OH"
+  },
+  {
+   "type": "Plant",
+   "address": "1967 West County Rd. 42 (Maple Grove lime plant)",
+   "city": "Bettsville",
+   "state": "OH"
+  },
+  {
+   "type": "Plant",
+   "address": "3964 CR 41 (Millersville lime plant)",
+   "city": "Millersville",
+   "state": "OH"
+  },
+  {
+   "type": "Plant",
+   "address": "3 Clear Spring Rd. (Annville lime plant)",
+   "city": "Annville",
+   "state": "PA"
+  },
+  {
+   "type": "Plant",
+   "address": "486 Clinch Valley Rd. (Luttrell lime plant)",
+   "city": "Luttrell",
+   "state": "TN"
+  },
+  {
+   "type": "Plant",
+   "address": "508 Quarry Ln. (Winchester lime plant)",
+   "city": "Clear Brook",
+   "state": "VA"
+  },
+  {
+   "type": "Plant",
+   "address": "1696 Oranda Rd. (Strasburg lime plant, ex-O-N Minerals)",
+   "city": "Strasburg",
+   "state": "VA"
+  },
+  {
+   "type": "Plant",
+   "address": "4110 Rockwood Rd. (Rockwell lime plant)",
+   "city": "Manitowoc",
+   "state": "WI"
+  },
+  {
+   "type": "Plant",
+   "address": "North Clark Rd. at Lake Michigan (Buffington lime plant)",
+   "city": "Gary",
+   "state": "IN"
+  },
+  {
+   "type": "Plant",
+   "address": "Calcite limestone quarry (ex-Oglebay Norton / O-N Minerals; address not verified)",
+   "city": "Rogers City",
+   "state": "MI"
+  },
+  {
+   "type": "Branch",
+   "address": "Omni Materials HQ + 13 storage/transload terminals (South & Midwest), acquired Dec 2025 via Mintek Resources",
+   "city": "Maysville",
+   "state": "KY"
+  }
+ ],
+ "chemistries": [
+  {
+   "product_line": "High-calcium & dolomitic quicklime (steel flux, FGD, water softening, chemicals)",
+   "made_or_resold": "Made (own kilns and quarries)",
+   "brands": "Carmeuse"
+  },
+  {
+   "product_line": "Hydrated lime (water/wastewater pH, softening, biosolids; dry scrubbing; asphalt)",
+   "made_or_resold": "Made",
+   "brands": "Carmeuse"
+  },
+  {
+   "product_line": "Lime kiln dust, quicklime, cement for soil stabilization + logistics",
+   "made_or_resold": "Made / partly resold (cement)",
+   "brands": "Mintek Resources; Omni Materials"
+  },
+  {
+   "product_line": "Chemical-grade and pulverized limestone (FGD, glass, ag), aggregates",
+   "made_or_resold": "Made (owned quarries)",
+   "brands": "Carmeuse; ex-O-N Minerals"
+  },
+  {
+   "product_line": "Lime slakers, silos, chemical feed / pollutant neutralization systems",
+   "made_or_resold": "Made (equipment)",
+   "brands": "Carmeuse Systems (ex-STT Enviro, ZMI Portec, Stanco, Semco)"
+  },
+  {
+   "product_line": "Cement and ready-mix concrete (Chile/Peru)",
+   "made_or_resold": "Made",
+   "brands": "Cementos B\u00edo B\u00edo"
+  }
+ ],
+ "acquisitions": [
+  {
+   "date": "1990s",
+   "target": "Six North American lime/limestone companies (14 locations, Great Lakes and Ontario), incl. Marblehead Lime and Dravo-heritage plants",
+   "universe_id": null,
+   "what_it_does": "Lime and limestone production",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.bus-ex.com/article/carmeuse-group"
+  },
+  {
+   "date": "2008-02",
+   "target": "Oglebay Norton Co. (O-N Minerals)",
+   "universe_id": null,
+   "what_it_does": "Limestone and lime producer (13 eastern and Great Lakes locations)",
+   "revenue_usd_m": null,
+   "value_usd_m": 520,
+   "source_url": "https://en.wikipedia.org/wiki/Oglebay_Norton_Corporation"
+  },
+  {
+   "date": "2017-03 (announced)",
+   "target": "STT Enviro Corp (Storage & Transfer Technologies), renamed Carmeuse Systems in 2024",
+   "universe_id": null,
+   "what_it_does": "Lime slaking, chemical make-up/neutralization systems, bolted storage tanks for industrial and municipal customers",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.globenewswire.com/news-release/2017/03/27/1308035/0/en/Carmeuse-Lime-Canada-Limited-Agrees-to-Make-Offer-to-Acquire-STT-Enviro-Corp.html"
+  },
+  {
+   "date": "2017-2020",
+   "target": "Cal Arco Iris; \u00d3xidos Brasil (Brazil)",
+   "universe_id": null,
+   "what_it_does": "Lime producers, Brazil",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://br.carmeuse.com/br-en/our-story"
+  },
+  {
+   "date": "2025-09-11",
+   "target": "Cementos B\u00edo B\u00edo S.A. (97.1%)",
+   "universe_id": null,
+   "what_it_does": "Chilean cement (4 plants Chile, 1 Peru), lime (2 Chile, 1 Argentina), 27 concrete plants; 960 employees",
+   "revenue_usd_m": 400,
+   "value_usd_m": 505,
+   "source_url": "https://www.carmeuse.com/eu-en/newsroom/global/carmeuse-group-announces-acquisition-controlling-stake-cementos-bio-bio-sa"
+  },
+  {
+   "date": "2025-12-03",
+   "target": "Omni Materials (via Mintek Resources)",
+   "universe_id": null,
+   "what_it_does": "LKD/quicklime/cement supply and logistics for soil stabilization; 13 storage/transload sites, Maysville KY",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.pitandquarry.com/carmeuse-subsidiary-acquires-omni-materials/"
+  },
+  {
+   "date": "2026-09-14",
+   "target": "Caleras San Juan (controlling stake)",
+   "universe_id": null,
+   "what_it_does": "Argentine lime producer, >0.75 Mtpa",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.globalcement.com/news/21237-carmeuse-acquires-stake-in-argentinian-lime-producer-caleras-san-juan"
+  }
+ ],
+ "addon_corrections": "No add-ons in the universe. Missing (none are US water chemical companies): Oglebay Norton/O-N Minerals (2008, $520m), STT Enviro/Carmeuse Systems (2017; lime feed equipment for water plants), Omni Materials (2025), Cementos B\u00edo B\u00edo (2025), Caleras San Juan (2026). Rockwell Lime (Manitowoc WI) is a Carmeuse plant per USGS; acquisition date not verified.",
+ "confidence": "Low",
+ "what_changed_vs_prior": "Confirmed group turnover \u20ac2.5bn (2025, company sustainability report) and 6,300 employees. Corrected 'Americas ~40%': no split is published, and Americas now includes CBB Chile. NA employees revised from ~1,800 to 'over 2,000' (NA) / 'over 2,500' (Americas) per company statements. US water lowered from $80m to ~$65m after carving out limestone/logistics revenue. Added EBITDA estimate (~$620m, 22%) and a Cobepa ~20% minority holder. Added 2025-26 acquisitions (CBB, Omni, Caleras San Juan) and 16 US lime plants from USGS.",
+ "open_questions": "Regional revenue split and EBITDA (not public; Belgian NBB filings of Carmeuse SA/Holding might disclose them). Whether \u20ac2.5bn is pro forma for CBB. Actual water share of Carmeuse NA lime sales. Current status of the Pelican (LA) and Alabama plants listed by USGS in 2022. Carmeuse Systems revenue.",
+ "evidence": [
+  {
+   "metric": "total_revenue",
+   "value": "\u20ac2.5bn turnover",
+   "year": "2025",
+   "source_type": "Company sustainability report",
+   "url": "https://www.carmeuse.com/na-en/sustainability-report-2026",
+   "quote": "Turnover: \u20ac2.5 billion; 38 million tonnes of lime and stone; 6,300 employees; 114 operational sites"
+  },
+  {
+   "metric": "total_revenue",
+   "value": "~\u20ac2bn turnover, ~5,300 employees, 59 plants/55 quarries",
+   "year": "2024/2025",
+   "source_type": "Company press release",
+   "url": "https://www.carmeuse.com/eu-en/newsroom/global/carmeuse-group-announces-acquisition-controlling-stake-cementos-bio-bio-sa",
+   "quote": "Carmeuse ... consolidated turnover of approximately EUR 2 billion"
+  },
+  {
+   "metric": "deal",
+   "value": "CBB 97.1%, ~$400m revenue, 960 employees",
+   "year": "2025",
+   "source_type": "Company press release",
+   "url": "https://www.carmeuse.com/eu-en/newsroom/global/carmeuse-group-announces-acquisition-controlling-stake-cementos-bio-bio-sa",
+   "quote": "finalized on September 11, 2025"
+  },
+  {
+   "metric": "deal",
+   "value": "$505m offer for CBB",
+   "year": "2025",
+   "source_type": "Press",
+   "url": "https://www.brusselstimes.com/1694383/walloon-group-carmeuse-lines-up-e500-million-acquisition-in-chile",
+   "quote": "turnover nearing \u20ac2 billion"
+  },
+  {
+   "metric": "segment",
+   "value": "NA revenue ~$900m post Oglebay Norton",
+   "year": "2008",
+   "source_type": "Trade press",
+   "url": "https://www.bus-ex.com/article/carmeuse-group",
+   "quote": "increased Carmeuse North America's annual revenue to approximately $900 million; steel largest customer sector, power plants second"
+  },
+  {
+   "metric": "deal",
+   "value": "Oglebay Norton $520m ($36/share)",
+   "year": "2008",
+   "source_type": "Wikipedia",
+   "url": "https://en.wikipedia.org/wiki/Oglebay_Norton_Corporation",
+   "quote": "$36 per share, totaling $520 million"
+  },
+  {
+   "metric": "employees",
+   "value": "over 2,000 employees; 28 manufacturing facilities in USA and Canada",
+   "year": "n.d.",
+   "source_type": "Employer profile (company text)",
+   "url": "https://www.in.gov/dva/find-a-job/carmeuse-lime-and-stone",
+   "quote": "over 2,000 employees ... 28 manufacturing facilities in the USA and Canada"
+  },
+  {
+   "metric": "employees",
+   "value": "Carmeuse Americas over 2,500 employees, 30+ facilities",
+   "year": "n.d.",
+   "source_type": "Company website",
+   "url": "https://br.carmeuse.com/br-en/our-story",
+   "quote": "Over 2,500 employees; more than 30 production facilities"
+  },
+  {
+   "metric": "ownership",
+   "value": "Cobepa 20% minority since Aug 2005",
+   "year": "2005",
+   "source_type": "Investor portfolio page",
+   "url": "https://www.cobepa.com/en/Investments/Carmeuse",
+   "quote": "20% ... 08/2005"
+  },
+  {
+   "metric": "sites",
+   "value": "16 US lime plants",
+   "year": "2022",
+   "source_type": "USGS lime directory",
+   "url": "https://d9-wret.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/files/dir-2022-lime.pdf",
+   "quote": "At yearend 2022, 73 lime plants were operating in the United States"
+  },
+  {
+   "metric": "deal",
+   "value": "Omni Materials acquired by Mintek Resources",
+   "year": "2025",
+   "source_type": "Trade press",
+   "url": "https://www.pitandquarry.com/carmeuse-subsidiary-acquires-omni-materials/",
+   "quote": "13 storage and transload facilities across the South and Midwest"
+  },
+  {
+   "metric": "ebitda",
+   "value": "~$620m (estimate)",
+   "year": "2025",
+   "source_type": "Estimate",
+   "url": "",
+   "quote": "Not disclosed; 22% assumed margin on $2.8bn"
+  },
+  {
+   "metric": "us_water",
+   "value": "~$65m (estimate)",
+   "year": "2025",
+   "source_type": "Estimate",
+   "url": "",
+   "quote": "$1.0bn US \u00d7 80% lime \u00d7 8% water"
+  }
+ ],
+ "profile_md": "## Carmeuse Americas (Carmeuse Group) \u2014 investor profile\n\n**Overview.** Carmeuse Americas, headquartered in Pittsburgh, is the North and South American arm of Carmeuse Group, a privately held Belgian lime, limestone and (since 2025) cement group controlled by the Collinet family, with Cobepa holding a ~20% minority stake since 2005. In North America Carmeuse describes itself as the largest producer of lime and limestone products, running \"28 manufacturing facilities in the USA and Canada\" with \"over 2,000 employees\". Carmeuse Americas as a whole (including Brazil, Colombia and new Chilean/Argentine assets) cites \"over 2,500 employees\" and 30+ production facilities. **Plainly, this is a lime and minerals company, not a water treatment chemicals company.** Lime is a real municipal water/wastewater reagent (softening, pH adjustment, coagulation aid, biosolids stabilization, acid-mine and industrial wastewater neutralization), but for Carmeuse water is a small outlet. Steel fluxing, flue-gas desulfurization, chemicals and industrial uses, and construction are much larger.\n\n**History and ownership.** Carmeuse was founded in Li\u00e8ge in 1860 and is headquartered in Louvain-la-Neuve. It entered North America in 1992 and bought six limestone/lime companies with 14 locations around the Great Lakes during the 1990s (Marblehead, Dravo-heritage plants and others). The defining US deal was the 2008 take-private of Oglebay Norton (O-N Minerals) for about $520m ($36/share), which added 13 eastern and Great Lakes locations, including the Rogers City (Calcite) quarry and the Strasburg VA plant. It lifted North American revenue to roughly $900m (Bus-Ex, 2008). Later North American add-ons were in services and equipment: STT Enviro Corp in 2017 (lime slaking and chemical make-up systems, rebranded Carmeuse Systems in 2024) and, through the soil-stabilization reagents subsidiary Mintek Resources, Omni Materials in December 2025 (13 LKD/quicklime/cement transload terminals). The group's recent large deals are in Latin America: 97.1% of Chile's Cementos B\u00edo B\u00edo (closed September 2025, ~$505m offer, ~$400m revenue, 960 staff) and a controlling stake in Argentina's Caleras San Juan (September 2026).\n\n**Products and chemistries.** Everything is made in-house from owned quarries. The range covers high-calcium and dolomitic quicklime, hydrated lime, lime kiln dust, pulverized limestone for FGD, chemical-grade and aggregate limestone, and (via CBB) cement and ready-mix concrete. Water-relevant products are quicklime and hydrated lime for drinking-water softening and pH/alkalinity control, wastewater and biosolids treatment, and industrial and mining effluent neutralization. Carmeuse Systems (US: Storage & Transfer Technologies) sells lime slakers, silos and chemical feed systems to municipal and industrial water plants. That is an equipment business, excluded from chemical revenue.\n\n**End markets.** The North American plants cluster around the Great Lakes and Ohio Valley steel belt, so steel is the largest customer sector and utility FGD is second (Bus-Ex). Other outlets are chemicals and industry (PCC, glass, pulp and paper, sugar), construction and soil stabilization (Mintek), mining, agriculture and water treatment. USGS consistently ranks water treatment as a minor outlet behind steel, chemical and industrial uses, FGD and construction.\n\n**Footprint.** USGS's 2022 lime directory lists 16 Carmeuse US lime plants: Saginaw and Calera AL; Black River (Butler) and Maysville KY; Pelican (Baton Rouge) LA; River Rouge MI; Grand River, Huron, Maple Grove (Bettsville) and Millersville OH; Annville PA; Luttrell TN; Winchester (Clear Brook) and Strasburg VA; Manitowoc WI; and Buffington (Gary) IN. On top of these are limestone quarries such as Rogers City MI, the Canadian plants (Dundas, Beachville and Blind River ON) and the Omni and Mintek terminal network.\n\n**Financials.** Group turnover is \u20ac2.5bn in the 2026 Sustainability Insights report (2025 basis), up from ~\u20ac2.0bn (2024 report and the CBB announcement) and \u20ac1.8bn in 2022. That is about $2.8bn at 1.13 USD/EUR, and it includes at least a partial year of CBB. No regional split is published. We estimate Carmeuse Americas' North American revenue at about $1.15bn: ~$900m in 2008, grown with pricing and roughly 40-45% of pre-CBB group sales. US revenue is about $1.0bn (Canada ~10-12% of plants). EBITDA is not disclosed. We estimate ~$620m at a 22% margin, since lime peers run 20-35% or more. That figure is a placeholder, not sourced. **US water treatment revenue is estimated at ~$65m**: ~$1.0bn US \u00d7 ~80% lime (vs. stone, logistics and systems) \u00d7 ~8% water share of lime demand. That is roughly 2% of the platform.\n\n**M&A strategy.** Carmeuse runs a family-controlled buy-and-build in lime and adjacent calcium chemistry. In North America it bolts on downstream services (feed systems, soil-stabilization logistics). Growth capital has recently gone to Latin America (Brazil 2017-2020, Chile 2025, Argentina 2026), vertical integration into cement, and decarbonization (a net-zero lime plant design).\n\n**Competitive position.** Carmeuse is one of the \"big three\" US lime producers alongside Lhoist North America and Graymont, followed by Mississippi Lime and US Lime & Minerals. Lime is regional (costly to haul), quarry-backed and permit-constrained, which gives incumbents durable pricing. In water specifically, Carmeuse competes as a commodity reagent supplier to municipal softening and wastewater plants, often through bids.\n\n**Risks.** Steel exposure (blast furnace to EAF shift lowers flux lime per ton), coal-plant retirements shrinking FGD demand, CO2 intensity (lime calcination is process-emission heavy; 11.2 Mt CO2 group-wide in 2025), energy costs, and leverage after the CBB and CSJ deals.\n\n**Uncertainties.** There is no public regional revenue, EBITDA or product mix. The water share is an estimate from USGS end-use patterns. The \u20ac2.5bn may be pro forma for CBB. The US plant list comes from USGS 2022 and may have changed (idlings and sales).\n",
+ "universe_id": 746,
+ "id": "carmeuse-americas",
+ "customers": [
+  {
+   "name": "Integrated steel mills (Great Lakes / Ohio Valley)",
+   "what": "Flux lime",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Utility FGD operators",
+   "what": "Lime for scrubbers",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "PCC, glass and pulp & paper producers",
+   "what": "Quicklime and hydrated lime",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Municipal softening and wastewater plants",
+   "what": "Lime reagent via bids",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  }
+ ],
+ "competitors": [
+  {
+   "name": "Lhoist North America",
+   "overlap": "Lime"
+  },
+  {
+   "name": "Graymont",
+   "overlap": "Lime"
+  },
+  {
+   "name": "Mississippi Lime",
+   "overlap": "Lime"
+  },
+  {
+   "name": "US Lime & Minerals",
+   "overlap": "Lime"
+  }
+ ],
+ "buyers": [
+  {
+   "name": "Not a realistic target",
+   "type": "Other",
+   "rationale": "Family-controlled; Cobepa holds a minority"
+  }
+ ],
+ "addon_ideas": [],
+ "source_of_truth": [],
+ "locked": [],
+ "status": "ready",
+ "runs": [
+  {
+   "at": "2026-09-27T00:00:00Z",
+   "kind": "Imported",
+   "summary": "Imported from WTC deep-dive batch P05A"
+  }
+ ],
+ "updated_at": "2026-09-27T00:00:00Z"
+}

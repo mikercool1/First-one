@@ -1,0 +1,1032 @@
+<title>Profiler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif&display=swap">
+<style>
+/* Layout: sticky top bar with four views; profile = header, KPI strip, fact bar, tabbed body. */
+:root{
+  --bg:#f2f4f5; --surface:#ffffff; --sunk:#e9edef; --ink:#0f1b24; --ink-2:#4b5b67; --ink-3:#7b8994;
+  --line:#dbe1e5; --accent:#0d6b6b; --accent-ink:#ffffff; --accent-soft:#dcefee; --warn:#9a5b00; --warn-soft:#fbecd2;
+  --bad:#b3261e; --good:#1c7c3c;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --s7:#4a3aa7; --s8:#e34948; --s0:#a3adb4;
+  --f-display:"Instrument Serif", Georgia, "Times New Roman", serif;
+  --f-body:"Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --f-mono:"Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1317; --surface:#141c22; --sunk:#1b252c; --ink:#e5ecf0; --ink-2:#9dadb8; --ink-3:#6f808c;
+  --line:#26323b; --accent:#58b8b3; --accent-ink:#06201f; --accent-soft:#16312f; --warn:#e0a54a; --warn-soft:#33270f;
+  --bad:#ef7b73; --good:#5cc27f;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767; --s0:#56636c;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1317; --surface:#141c22; --sunk:#1b252c; --ink:#e5ecf0; --ink-2:#9dadb8; --ink-3:#6f808c;
+  --line:#26323b; --accent:#58b8b3; --accent-ink:#06201f; --accent-soft:#16312f; --warn:#e0a54a; --warn-soft:#33270f;
+  --bad:#ef7b73; --good:#5cc27f;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767; --s0:#56636c;
+  color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{font:14px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding-inline:16px;display:flex;align-items:center;gap:20px;min-height:56px;flex-wrap:wrap}
+.brand{font:400 26px/1 var(--f-display);letter-spacing:-.01em;display:flex;align-items:baseline;gap:8px;text-decoration:none;color:var(--ink)}
+.brand small{font:500 10px/1 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.nav{display:flex;gap:2px;flex-wrap:wrap}
+.nav a{padding:7px 12px;border-radius:999px;color:var(--ink-2);text-decoration:none;font-weight:500}
+.nav a:hover{color:var(--ink);background:var(--sunk)}
+.nav a[aria-current="page"]{background:var(--ink);color:var(--bg)}
+.live{margin-left:auto;font-size:12px;color:var(--ink-3);display:flex;align-items:center;gap:6px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ink-3)}
+.dot.on{background:var(--good)}
+.dot.off{background:var(--bad)}
+
+main{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:28px 80px}
+h1,h2,h3,h4{margin:0;text-wrap:balance}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.page-h{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.page-h h1{font:400 44px/1.02 var(--f-display);letter-spacing:-.01em}
+.page-h p{margin:6px 0 0;color:var(--ink-2);max-width:62ch}
+.muted{color:var(--ink-2)}
+.faint{color:var(--ink-3)}
+
+.btn{border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:8px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--ink-2)}
+.btn.ghost:hover{background:var(--sunk);color:var(--ink)}
+.btn.danger{color:var(--bad)}
+.btn[disabled]{opacity:.5;cursor:default}
+.btn.sm{padding:4px 10px;font-size:12px}
+
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:3px 9px;border-radius:999px;background:var(--sunk);color:var(--ink-2);white-space:nowrap}
+.pill.accent{background:var(--accent-soft);color:var(--accent)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.lock{background:var(--warn-soft);color:var(--warn);border:0;padding:2px 8px}
+.pill.lock:hover{text-decoration:line-through}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+
+/* toolbar */
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.bar .grow{flex:1 1 240px;min-width:0}
+.search{width:100%}
+
+/* tables */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);background:var(--surface);white-space:nowrap}
+th.sortable{cursor:pointer}
+th.sortable:hover{color:var(--ink)}
+td.r,th.r{text-align:right}
+td.num{white-space:nowrap}
+tbody tr.link{cursor:pointer}
+tbody tr.link:hover td{background:var(--sunk)}
+.cname{font-weight:600}
+.cname small{display:block;font-weight:400;color:var(--ink-3);font-size:12px;max-width:44ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td .x{opacity:0;border:0;background:none;color:var(--ink-3);padding:0 4px;font-size:16px;line-height:1}
+tr:hover td .x,td .x:focus{opacity:1}
+td .x:hover{color:var(--bad)}
+
+/* editable */
+[contenteditable]{border-radius:4px;outline:none;transition:background .12s}
+[contenteditable]:hover{background:var(--sunk)}
+[contenteditable]:focus{background:var(--surface);box-shadow:0 0 0 2px var(--accent)}
+[contenteditable]:empty::before{content:attr(data-ph);color:var(--ink-3)}
+td[contenteditable]{min-width:60px}
+
+/* profile */
+.crumb{font-size:13px;color:var(--ink-3);margin-bottom:10px}
+.crumb a{color:var(--ink-2);text-decoration:none}
+.crumb a:hover{color:var(--ink)}
+.ph{display:flex;gap:20px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px}
+.ph-main{min-width:0;flex:1 1 420px}
+.ph h1{font:400 52px/1 var(--f-display);letter-spacing:-.015em;display:inline-block;padding:0 4px;margin-left:-4px}
+.ph .sub{color:var(--ink-2);margin-top:6px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.ph-act{display:flex;gap:8px;flex-wrap:wrap}
+
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.kpi{padding:14px 16px;border-left:1px solid var(--line);min-width:0}
+.kpi:first-child{border-left:0}
+.kpi .lab{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.kpi .val{font:500 26px/1.2 var(--f-mono);font-variant-numeric:tabular-nums;margin-top:6px;display:flex;align-items:baseline;gap:3px}
+.kpi .val .u{font-size:13px;color:var(--ink-3)}
+.kpi .val [contenteditable]{padding:0 3px}
+.kpi .note{font-size:12px;color:var(--ink-3);margin-top:2px}
+@media (max-width:760px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi{border-left:0;border-top:1px solid var(--line)}.kpi:nth-child(-n+2){border-top:0}.kpi:nth-child(even){border-left:1px solid var(--line)}.ph h1{font-size:40px}.page-h h1{font-size:36px}}
+
+.facts{margin-top:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px;border:1px dashed var(--line);border-radius:var(--r)}
+.facts input{flex:1 1 280px;min-width:0}
+.facts .lab{font-size:12px;font-weight:600;color:var(--ink-2);padding-inline:4px}
+
+.run{margin-top:14px;padding:12px 14px;border-radius:var(--r);background:var(--accent-soft);color:var(--ink);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.run.err{background:var(--warn-soft)}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--accent);border-right-color:transparent;animation:sp 0.8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:26px 0 20px;overflow-x:auto;scrollbar-width:none}
+.tabs a{padding:10px 12px;color:var(--ink-2);text-decoration:none;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs a:hover{color:var(--ink)}
+.tabs a[aria-current="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.tabs .n{font:500 11px var(--f-mono);color:var(--ink-3);margin-left:4px}
+
+.sec{margin-bottom:28px}
+.sec-h{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.sec-h h2{font-size:15px;font-weight:600}
+.sec-h .sp{flex:1}
+.lede{font-size:17px;line-height:1.5;max-width:70ch;padding:2px 4px;margin-left:-4px}
+.take{margin-top:12px;padding:12px 14px;border-left:3px solid var(--accent);background:var(--surface);border-radius:0 8px 8px 0;max-width:78ch}
+.take .eyebrow{margin-bottom:4px}
+
+.pies{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:900px){.pies{grid-template-columns:minmax(0,1fr)}}
+.pie{padding:16px;min-width:0}
+.pie h3{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;gap:8px;align-items:center;justify-content:space-between}
+.pie-body{display:flex;gap:16px;align-items:center}
+.pie svg{flex:0 0 132px;width:132px;height:132px}
+.legend{list-style:none;margin:0;padding:0;flex:1;min-width:0;display:grid;gap:5px}
+.legend li{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:12px;border-radius:4px;padding:1px 3px}
+.legend li.hl{background:var(--sunk)}
+.legend .sw{width:10px;height:10px;border-radius:3px}
+.legend .lb{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-2)}
+.legend .pv{font-family:var(--f-mono);color:var(--ink)}
+.pie .empty{color:var(--ink-3);font-size:13px;padding:30px 0;text-align:center}
+@media (max-width:420px){.pie-body{flex-direction:column;align-items:stretch}.pie svg{align-self:center}}
+path.sl{cursor:default;transition:opacity .12s}
+svg:hover path.sl{opacity:.55}
+svg path.sl:hover{opacity:1}
+
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media (max-width:800px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.kv{display:grid;grid-template-columns:150px minmax(0,1fr);gap:6px 14px;padding:14px 16px}
+.kv dt{color:var(--ink-3);font-size:12px;padding-top:2px}
+.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.kv dd [contenteditable]{display:block;padding:0 4px;margin-left:-4px}
+.md{max-width:74ch;color:var(--ink);padding:4px 0}
+.md h3{font-size:16px;margin:18px 0 6px}
+.md h4{font-size:14px;margin:14px 0 4px}
+.md p{margin:0 0 10px}
+.md ul{margin:0 0 10px;padding-left:20px}
+.md li{margin-bottom:3px}
+.basis{font-size:12px;color:var(--ink-3);max-width:80ch}
+.basis b{color:var(--ink-2);font-weight:600}
+
+/* empty profile */
+.empty-hero{padding:40px 28px;text-align:left;max-width:720px}
+.empty-hero h2{font:400 30px/1.15 var(--f-display);margin-bottom:8px}
+.empty-hero textarea{width:100%;min-height:110px;margin:14px 0 12px;resize:vertical}
+
+/* home */
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin-bottom:22px}
+.stat .v{font:500 28px/1.1 var(--f-mono)}
+.stat .l{font-size:12px;color:var(--ink-3)}
+.add{display:flex;gap:8px;flex-wrap:wrap}
+.add input{min-width:0;flex:1 1 220px}
+
+/* targets */
+.split{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.split{grid-template-columns:minmax(0,1fr)}}
+.tlist{max-height:70vh;overflow:auto;padding:4px}
+.tlist button{display:flex;width:100%;text-align:left;border:0;background:none;padding:9px 10px;border-radius:8px;gap:8px;align-items:center;justify-content:space-between}
+.tlist button:hover{background:var(--sunk)}
+.tlist button[aria-current="true"]{background:var(--ink);color:var(--bg)}
+.tlist button[aria-current="true"] .faint{color:inherit;opacity:.7}
+.tlist .t-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.detail{padding:20px}
+.detail h2.tt{font:400 32px/1.1 var(--f-display);margin-bottom:4px}
+.links{display:grid;gap:8px;margin-top:14px}
+.lnk{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:start;padding:10px 12px;border:1px solid var(--line);border-radius:8px}
+.lnk .who{font-weight:600}
+.lnk .who a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+.lnk .who a:hover{border-color:var(--ink)}
+.kind{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.k-acq{background:var(--accent-soft);color:var(--accent)}
+.k-idea{background:var(--warn-soft);color:var(--warn)}
+.k-buyer{background:var(--sunk);color:var(--ink-2)}
+
+/* bars */
+.bars{display:grid;gap:4px;padding:10px}
+.brow{display:grid;grid-template-columns:28px minmax(120px,260px) minmax(0,1fr) 90px;gap:12px;align-items:center;padding:6px 8px;border-radius:8px;cursor:pointer}
+.brow:hover{background:var(--sunk)}
+.brow .rk{font:500 12px var(--f-mono);color:var(--ink-3)}
+.brow .nm{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track{height:14px;background:var(--sunk);border-radius:4px;overflow:hidden}
+.fill{height:100%;background:var(--accent);border-radius:0 4px 4px 0}
+.brow .v{text-align:right;font-family:var(--f-mono)}
+@media (max-width:600px){.brow{grid-template-columns:22px minmax(0,1fr) 70px}.brow .track{grid-column:2/4}}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:7px 12px;font-weight:500;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+.note-box{padding:14px 16px;font-size:13px;color:var(--ink-2)}
+.fact-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.fact-list li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.fact-list .when{font-size:11px;color:var(--ink-3)}
+
+#tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:6px;max-width:280px;line-height:1.35}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:13px;font-weight:500}
+.skeleton{padding:60px 0;color:var(--ink-3)}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="#companies">Profiler <small>Company repository</small></a>
+    <nav class="nav" id="nav">
+      <a href="#companies" data-v="companies">Companies</a>
+      <a href="#targets" data-v="targets">Targets</a>
+      <a href="#precedents" data-v="precedents">Precedents</a>
+      <a href="#endmarkets" data-v="endmarkets">End markets</a>
+    </nav>
+    <div class="live" id="live"><span class="dot"></span><span>Connecting</span></div>
+  </div>
+</header>
+<main id="app"><div class="skeleton">Loading the repository…</div></main>
+<div id="tip" hidden></div>
+<div id="toast" hidden></div>
+
+<script>
+(() => {
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const app = $("#app");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const num = v => (v === null || v === undefined || v === "" || isNaN(+v)) ? null : +v;
+const clone = o => JSON.parse(JSON.stringify(o ?? null));
+const slugify = s => String(s).toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/[\s_]+/g, "-").replace(/-+/g, "-").slice(0, 60) || ("co-" + Date.now());
+const norm = s => String(s || "").toLowerCase().replace(/\(.*?\)/g, "").replace(/\b(inc|llc|ltd|co|corp|corporation|company|group|the|holdings?)\b\.?/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+const now = () => new Date().toISOString();
+
+const END_MARKETS = ["Municipal drinking water","Municipal wastewater","Power generation","Oil & gas / refining","Chemicals & petrochem","Pulp & paper","Food & beverage","Mining & metals","Primary metals/steel","Commercial HVAC / buildings","Healthcare & institutional","Data centers","Pharma/life sciences","Microelectronics/semis","Manufacturing (general industrial)","Pools & spa","Agriculture & farm","Consumer / retail","Other"];
+
+function fmtM(v) {
+  v = num(v); if (v === null) return "—";
+  const a = Math.abs(v);
+  if (a >= 1000) return "$" + (v / 1000).toFixed(a >= 10000 ? 0 : 1) + "B";
+  if (a >= 100) return "$" + Math.round(v) + "M";
+  return "$" + v.toFixed(1).replace(/\.0$/, "") + "M";
+}
+const fmtPct = v => num(v) === null ? "—" : (+v).toFixed(+v < 10 && +v % 1 ? 1 : 0) + "%";
+const fmtInt = v => num(v) === null ? "" : (+v).toLocaleString("en-US", { maximumFractionDigits: 1 });
+const fmtDate = iso => { try { return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }); } catch { return ""; } };
+const yearOf = s => { const m = String(s || "").match(/(19|20)\d{2}/); return m ? +m[0] : 0; };
+
+/* ---------- state ---------- */
+let db = null, sample = null;
+const companies = new Map();
+let loaded = false, dbState = "connecting", writable = true;
+const runs = {};                       // id -> {phase, ctl, error}
+const ui = { sort: "total_revenue_usd_m", dir: -1, q: "", tq: "", tsel: null, pq: "", psort: "year", pdir: -1, em: "Municipal drinking water", emMode: "pct", editMd: false, confirmDel: false };
+let pendingRender = false, pendingFocus = null;
+
+function route() {
+  const h = (location.hash || "#companies").slice(1);
+  if (h.startsWith("c.")) { const [, id, tab] = h.split("."); return { view: "company", id, tab: tab || "overview" }; }
+  if (["companies", "targets", "precedents", "endmarkets"].includes(h)) return { view: h };
+  return { view: "companies" };
+}
+
+/* ---------- toast & tooltip ---------- */
+let toastT;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
+const tip = $("#tip");
+document.addEventListener("mousemove", e => {
+  const el = e.target.closest?.("[data-tip]");
+  if (!el) { tip.hidden = true; document.querySelectorAll(".legend li.hl").forEach(n => n.classList.remove("hl")); return; }
+  tip.textContent = el.dataset.tip; tip.hidden = false;
+  const x = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8), y = Math.min(e.clientY + 14, innerHeight - tip.offsetHeight - 8);
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+  if (el.dataset.li) { const li = document.getElementById(el.dataset.li); document.querySelectorAll(".legend li.hl").forEach(n => n !== li && n.classList.remove("hl")); li?.classList.add("hl"); }
+});
+
+/* ---------- live status ---------- */
+function setLive() {
+  const el = $("#live");
+  const map = {
+    connecting: ["", "Connecting"],
+    live: ["on", `Saved · ${companies.size} ${companies.size === 1 ? "company" : "companies"}`],
+    readonly: ["on", `View only · ${companies.size} companies`],
+    off: ["off", "Not connected"],
+  };
+  const [cls, txt] = map[dbState] || map.off;
+  el.innerHTML = `<span class="dot ${cls}"></span><span>${esc(txt)}</span>`;
+}
+
+/* ---------- derived data ---------- */
+const list = () => [...companies.values()];
+function segments(c) {
+  return (c.revenue_by_business || []).map(s => ({ label: s.business, value: num(s.revenue_usd_m) ?? (num(s.pct) !== null && num(c.total_revenue_usd_m) ? s.pct * c.total_revenue_usd_m / 100 : null), pct: num(s.pct) })).filter(s => s.label);
+}
+function products(c) {
+  if ((c.revenue_by_product || []).length) return c.revenue_by_product.map(p => ({ label: p.product, value: num(p.revenue_usd_m), pct: num(p.pct) })).filter(p => p.label);
+  const g = {};
+  for (const s of c.revenue_by_business || []) { const k = s.category || "Other"; g[k] = (g[k] || 0) + (num(s.revenue_usd_m) || 0); }
+  return Object.entries(g).map(([label, value]) => ({ label, value, pct: null }));
+}
+function endMarkets(c) {
+  const rev = num(c.total_revenue_usd_m);
+  return Object.entries(c.end_markets_total_platform || {}).map(([label, p]) => ({ label, pct: num(p), value: rev !== null && num(p) !== null ? rev * p / 100 : null })).filter(e => e.pct);
+}
+function topEM(c) { const e = endMarkets(c).sort((a, b) => b.pct - a.pct)[0]; return e ? e.label : ""; }
+function margin(c) { const r = num(c.total_revenue_usd_m), e = num(c.total_ebitda_usd_m); return num(c.ebitda_margin_pct) ?? (r && e !== null ? e / r * 100 : null); }
+function findCompanyByName(name) {
+  const n = norm(name); if (!n) return null;
+  for (const c of companies.values()) { if (norm(c.name) === n || norm(c.platform_name) === n) return c; }
+  for (const c of companies.values()) { const cn = norm(c.name); if (cn && cn.length > 4 && (n.startsWith(cn + " ") || n === cn)) return c; }
+  return null;
+}
+
+function allDeals() {
+  const out = [];
+  for (const c of list()) {
+    for (const a of c.acquisitions || []) {
+      if (!a || !a.target) continue;
+      out.push({ date: a.date || "", year: yearOf(a.date), target: a.target, acquirer: c.name, acquirerId: c.id, what: a.what_it_does || "", rev: num(a.revenue_usd_m), value: num(a.value_usd_m), url: a.source_url || "" });
+    }
+    if (num(c.pe_entry_ev_usd_m) && c.pe_sponsor) {
+      out.push({ date: c.pe_entry_year || "", year: yearOf(c.pe_entry_year), target: c.name, targetId: c.id, acquirer: String(c.pe_sponsor).split(/[;(]/)[0].trim(), what: "Sponsor entry" + (c.pe_entry_multiple && !/not disclosed|n\/a/i.test(c.pe_entry_multiple) ? " · " + c.pe_entry_multiple : ""), rev: null, value: num(c.pe_entry_ev_usd_m), url: "" });
+    }
+  }
+  return out;
+}
+
+function allTargets() {
+  const map = new Map();
+  const add = (name, link) => {
+    const key = norm(name) || name.toLowerCase();
+    if (!map.has(key)) map.set(key, { key, name, links: [] });
+    map.get(key).links.push(link);
+  };
+  for (const c of list()) {
+    for (const a of c.acquisitions || []) if (a?.target) add(a.target, { kind: "acq", platform: c.name, platformId: c.id, date: a.date, what: a.what_it_does, rev: num(a.revenue_usd_m), value: num(a.value_usd_m) });
+    for (const i of c.addon_ideas || []) if (i?.target) add(i.target, { kind: "idea", platform: c.name, platformId: c.id, what: i.rationale, rev: num(i.est_revenue_usd_m) });
+    for (const b of c.buyers || []) if (b?.name && !/not a realistic/i.test(b.name)) add(c.name, { kind: "buyer", platform: b.name, platformId: findCompanyByName(b.name)?.id, what: b.rationale, btype: b.type });
+  }
+  for (const t of map.values()) t.company = findCompanyByName(t.name);
+  return [...map.values()];
+}
+
+function overlap(a, b) {
+  const ea = a.end_markets_total_platform || {}, eb = b.end_markets_total_platform || {};
+  let s = 0; for (const k in ea) if (eb[k]) s += Math.min(+ea[k] || 0, +eb[k] || 0);
+  return s;
+}
+
+/* ---------- donut ---------- */
+const SLOTS = 8;
+function donut(id, title, items, opts = {}) {
+  let rows = items.filter(i => (num(i.value) ?? num(i.pct) ?? 0) > 0);
+  const key = rows.some(r => num(r.value) !== null) && !opts.pctOnly ? "value" : "pct";
+  rows = rows.map(r => ({ ...r, w: num(r[key]) || 0 })).sort((a, b) => b.w - a.w);
+  if (rows.length > SLOTS) {
+    const keep = rows.slice(0, SLOTS - 1), rest = rows.slice(SLOTS - 1);
+    keep.push({ label: `Other (${rest.length})`, w: rest.reduce((s, r) => s + r.w, 0), value: rest.reduce((s, r) => s + (num(r.value) || 0), 0), other: true });
+    rows = keep;
+  }
+  const total = rows.reduce((s, r) => s + r.w, 0);
+  const lock = opts.locked ? `<span class="pill lock" title="You edited this">Your edit</span>` : "";
+  if (!total) return `<div class="panel pie"><h3>${esc(title)} ${lock}</h3><div class="empty">No split yet</div></div>`;
+  const R = 64, r0 = 42, C = 66;
+  let a0 = -Math.PI / 2, paths = "";
+  rows.forEach((r, i) => {
+    const frac = r.w / total, a1 = a0 + frac * Math.PI * 2;
+    const col = r.other ? "var(--s0)" : `var(--s${i + 1})`;
+    const pctTxt = (frac * 100).toFixed(frac < .1 ? 1 : 0) + "%";
+    const tipTxt = `${r.label}: ${pctTxt}${num(r.value) !== null && key === "value" ? " · " + fmtM(r.value) : (opts.rev ? " · " + fmtM(frac * opts.rev) : "")}`;
+    if (frac >= 0.9999) {
+      paths += `<circle cx="${C}" cy="${C}" r="${(R + r0) / 2}" fill="none" stroke="${col}" stroke-width="${R - r0}" data-tip="${esc(tipTxt)}" data-li="${id}-${i}"></circle>`;
+    } else {
+      const p = (a, rad) => [C + rad * Math.cos(a), C + rad * Math.sin(a)].map(n => n.toFixed(2)).join(" ");
+      const large = a1 - a0 > Math.PI ? 1 : 0;
+      paths += `<path class="sl" d="M ${p(a0, R)} A ${R} ${R} 0 ${large} 1 ${p(a1, R)} L ${p(a1, r0)} A ${r0} ${r0} 0 ${large} 0 ${p(a0, r0)} Z" fill="${col}" stroke="var(--surface)" stroke-width="2" stroke-linejoin="round" data-tip="${esc(tipTxt)}" data-li="${id}-${i}"></path>`;
+    }
+    r.pctTxt = pctTxt; r.col = col; a0 = a1;
+  });
+  const center = opts.center ? `<text x="${C}" y="${C - 2}" text-anchor="middle" font-family="var(--f-mono)" font-size="15" font-weight="500" fill="var(--ink)">${esc(opts.center)}</text><text x="${C}" y="${C + 14}" text-anchor="middle" font-size="9" letter-spacing="1" fill="var(--ink-3)">${esc(opts.centerSub || "")}</text>` : "";
+  const legend = rows.map((r, i) => `<li id="${id}-${i}" data-tip="${esc(r.label)}"><span class="sw" style="background:${r.col}"></span><span class="lb">${esc(r.label)}</span><span class="pv">${r.pctTxt}</span></li>`).join("");
+  return `<div class="panel pie"><h3>${esc(title)} ${lock}</h3><div class="pie-body"><svg viewBox="0 0 132 132" role="img" aria-label="${esc(title)} breakdown">${paths}${center}</svg><ul class="legend">${legend}</ul></div></div>`;
+}
+
+/* ---------- markdown (small) ---------- */
+function md(src) {
+  const lines = String(src || "").split("\n"); let out = "", inList = false;
+  const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*])\*(?!\s)(.+?)\*/g, "$1<em>$2</em>");
+  for (let l of lines) {
+    const t = l.trim();
+    if (/^[-*] |^\d+\. /.test(t)) { if (!inList) { out += "<ul>"; inList = true; } out += `<li>${inline(t.replace(/^[-*] |^\d+\. /, ""))}</li>`; continue; }
+    if (inList) { out += "</ul>"; inList = false; }
+    if (!t) continue;
+    if (t.startsWith("### ")) out += `<h4>${inline(t.slice(4))}</h4>`;
+    else if (t.startsWith("## ")) out += `<h3>${inline(t.slice(3))}</h3>`;
+    else if (t.startsWith("# ")) out += `<h3>${inline(t.slice(2))}</h3>`;
+    else out += `<p>${inline(t)}</p>`;
+  }
+  if (inList) out += "</ul>";
+  return out;
+}
+
+/* ---------- editable helpers ---------- */
+function ed(f, v, t = "text", ph = "Add", tag = "span", cls = "") {
+  const shown = t === "num" ? fmtInt(v) : (v ?? "");
+  return `<${tag} class="${cls}" contenteditable="${writable ? "plaintext-only" : "false"}" spellcheck="false" data-f="${f}" data-t="${t}" data-ph="${esc(ph)}">${esc(shown)}</${tag}>`;
+}
+const lockPill = (c, f) => (c.locked || []).includes(f) ? `<button class="pill lock" data-act="unlock" data-f="${f}" title="You edited this. Deep dives keep it. Click to let Claude update it again.">Your edit</button>` : "";
+
+function editTable(c, f, cols, rows, opts = {}) {
+  const head = cols.map(k => `<th class="${k.t === "num" ? "r" : ""}" style="${k.w ? "width:" + k.w : ""}">${esc(k.label)}</th>`).join("") + "<th style='width:28px'></th>";
+  const body = rows.length ? rows.map((r, i) => `<tr>${cols.map(k => {
+    if (k.link && r[k.k]) return `<td><a href="${esc(r[k.k])}" target="_blank" rel="noopener">${esc(String(r[k.k]).replace(/^https?:\/\/(www\.)?/, "").slice(0, 38))}</a></td>`;
+    if (k.ro) return `<td class="${k.t === "num" ? "r num" : ""}">${k.fmt ? k.fmt(r) : esc(r[k.k] ?? "")}</td>`;
+    const v = r[k.k]; const shown = k.t === "num" ? fmtInt(v) : (v ?? "");
+    return `<td class="${k.t === "num" ? "r num" : ""}" contenteditable="${writable ? "plaintext-only" : "false"}" spellcheck="false" data-f="${f}" data-r="${i}" data-k="${k.k}" data-t="${k.t || "text"}" data-ph="${k.t === "num" ? "–" : ""}">${esc(shown)}</td>`;
+  }).join("")}<td>${writable ? `<button class="x" data-act="delrow" data-f="${f}" data-r="${i}" aria-label="Delete row">×</button>` : ""}</td></tr>`).join("")
+    : `<tr><td colspan="${cols.length + 1}" class="faint">${esc(opts.empty || "Nothing here yet.")}</td></tr>`;
+  const foot = opts.footer ? `<tfoot><tr>${opts.footer}</tr></tfoot>` : "";
+  return `<div class="tw"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody>${foot}</table></div>`;
+}
+function secHead(c, f, title, extra = "") {
+  return `<div class="sec-h"><h2>${esc(title)}</h2>${lockPill(c, f)}<span class="sp"></span>${extra}${writable && f ? `<button class="btn sm ghost" data-act="addrow" data-f="${f}">+ Add row</button>` : ""}</div>`;
+}
+
+// Table fields and their columns
+const EM_FIELD = "end_markets_total_platform";
+function tableRows(c, f) {
+  if (f === EM_FIELD) return Object.entries(c[EM_FIELD] || {}).map(([name, pct]) => ({ name, pct }));
+  return clone(c[f] || []);
+}
+function rowsToValue(f, rows) {
+  if (f === EM_FIELD) { const o = {}; for (const r of rows) { const n = String(r.name || "").trim(); if (n) o[n] = num(r.pct) ?? 0; } return o; }
+  return rows;
+}
+const BLANK = {
+  customers: { name: "", what: "", share_pct: null, source: "You" },
+  competitors: { name: "", overlap: "" },
+  buyers: { name: "", type: "Strategic", rationale: "" },
+  addon_ideas: { target: "", rationale: "", est_revenue_usd_m: null, location: "" },
+  acquisitions: { date: "", target: "", what_it_does: "", revenue_usd_m: null, value_usd_m: null, source_url: "" },
+  chemistries: { product_line: "", made_or_resold: "", brands: "" },
+  revenue_by_business: { business: "", category: "", revenue_usd_m: null, pct: null },
+  revenue_by_product: { product: "", revenue_usd_m: null, pct: null },
+  [EM_FIELD]: { name: "New end market", pct: 0 },
+  key_sites: { type: "", address: "", city: "", state: "" },
+};
+
+/* ---------- saving ---------- */
+async function save(id, patch, lockFields = []) {
+  const c = companies.get(id); if (!c || !db) return;
+  const locked = new Set(c.locked || []);
+  lockFields.forEach(f => locked.add(f));
+  const full = { ...patch, locked: [...locked], updated_at: now() };
+  // optimistic
+  Object.assign(c, full);
+  try { await db.doc("companies/" + id).update(full); toast("Saved"); }
+  catch (e) { handleWriteError(e); }
+}
+function handleWriteError(e) {
+  if (e?.code === "not_granted" || e?.code === "revoked") { writable = false; dbState = "readonly"; setLive(); toast("You can view this repository but not edit it."); render(); return; }
+  if (e?.code === "quota_exceeded") { toast("The repository is full. Delete a company to make room."); return; }
+  toast("Couldn't save. Check your connection and try again.");
+}
+
+function parseCell(t, raw) {
+  if (t === "num") { const s = raw.replace(/[$,%\s]/g, "").replace(/[mM]$/, ""); if (!s) return null; const n = parseFloat(s); return isNaN(n) ? null : n; }
+  return raw;
+}
+
+async function commit(el) {
+  const r = route(); if (r.view !== "company") return;
+  const c = companies.get(r.id); if (!c) return;
+  const f = el.dataset.f, t = el.dataset.t, raw = el.innerText.replace(/ /g, " ").trim();
+  const val = parseCell(t, raw);
+  if (el.dataset.r !== undefined) {
+    const rows = tableRows(c, f), i = +el.dataset.r, k = el.dataset.k;
+    if (!rows[i]) return;
+    const old = rows[i][k];
+    if (String(old ?? "") === String(val ?? "")) return;
+    rows[i][k] = val;
+    const patch = { [f]: rowsToValue(f, rows) };
+    if (f === "revenue_by_business" && k === "revenue_usd_m") recalcPct(rows, c, patch, f);
+    if (f === "revenue_by_product" && k === "revenue_usd_m") recalcPct(rows, c, patch, f);
+    await save(c.id, patch, [f]);
+  } else {
+    const old = c[f];
+    if (String(old ?? "") === String(val ?? "") || (t === "num" && num(old) === val)) return;
+    if (f === "name" && !String(val).trim()) { el.textContent = c.name; return; }
+    const patch = { [f]: val };
+    const locks = [f];
+    if ((f === "total_revenue_usd_m" || f === "total_ebitda_usd_m") && !(c.locked || []).includes("ebitda_margin_pct")) {
+      const rv = f === "total_revenue_usd_m" ? val : num(c.total_revenue_usd_m), eb = f === "total_ebitda_usd_m" ? val : num(c.total_ebitda_usd_m);
+      if (rv && eb !== null) patch.ebitda_margin_pct = +(eb / rv * 100).toFixed(1);
+    }
+    await save(c.id, patch, locks);
+  }
+}
+function recalcPct(rows, c, patch, f) {
+  const tot = rows.reduce((s, r) => s + (num(r.revenue_usd_m) || 0), 0);
+  if (tot) rows.forEach(r => { if (num(r.revenue_usd_m) !== null) r.pct = +(r.revenue_usd_m / tot * 100).toFixed(1); });
+  patch[f] = rows;
+}
+
+app.addEventListener("focusout", e => {
+  const el = e.target;
+  if (el?.isContentEditable && el.dataset.f) commit(el).finally(() => { if (pendingRender && !isEditing()) { pendingRender = false; render(); } });
+});
+app.addEventListener("keydown", e => {
+  const el = e.target;
+  if (el?.isContentEditable && e.key === "Enter" && !e.shiftKey && el.tagName !== "DIV") { e.preventDefault(); el.blur(); }
+  if (el?.isContentEditable && e.key === "Escape") { el.blur(); }
+});
+app.addEventListener("paste", e => {
+  const el = e.target;
+  if (!el?.isContentEditable) return;
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData("text/plain");
+  document.execCommand("insertText", false, text);
+});
+const isEditing = () => { const a = document.activeElement; return !!(a && app.contains(a) && (a.isContentEditable || a.tagName === "TEXTAREA" || (a.tagName === "INPUT" && a.value))); };
+
+/* ---------- deep dive ---------- */
+const CORE_KEYS = ["platform_name","website","hq_address","what_it_is","bluntly","primary_category","water_relevance","owner_type","ultimate_parent","pe_sponsor","pe_entry_year","pe_entry_ev_usd_m","prior_owners","total_revenue_usd_m","total_revenue_year","total_revenue_basis","total_ebitda_usd_m","ebitda_year","ebitda_basis","ebitda_margin_pct","us_water_treatment_revenue_usd_m","us_water_treatment_arithmetic","employees_total","revenue_by_business","revenue_by_product",EM_FIELD,"chemistries","confidence","open_questions","profile_md"];
+const MKT_KEYS = ["customers","competitors","buyers","addon_ideas","acquisitions"];
+
+function contextFor(c) {
+  const rec = {};
+  for (const k of [...CORE_KEYS, ...MKT_KEYS, "name", "key_sites"]) if (c[k] !== undefined && c[k] !== null && c[k] !== "") rec[k] = c[k];
+  if (rec.profile_md) rec.profile_md = String(rec.profile_md).slice(0, 5000);
+  const locked = (c.locked || []).filter(k => k !== "name");
+  const truth = locked.map(k => `- ${k}: ${JSON.stringify(c[k])}`).join("\n");
+  const notes = (c.source_of_truth || []).map(n => `- ${n.text}`).join("\n");
+  return { rec: JSON.stringify(rec).slice(0, 60000), truth, notes, locked };
+}
+function header(c, ctx, pass) {
+  return `You are a buy-side M&A analyst building the "${c.name}" entry in Profiler, a private company database used for deal work (revenue, EBITDA, segment and end-market mix, customers, competitors, deals, buyers). The team's focus is the US water treatment chemicals universe, but profile the whole company.
+
+Work from what you know. You cannot browse. When a figure is not disclosed, estimate it and say how in the matching *_basis field. Never invent source URLs; leave them "" unless you are sure.
+
+${ctx.truth ? `GROUND TRUTH. The user entered these values. Keep them exactly and make every other number consistent with them (for example, scale segments and end-market dollars to a user-entered revenue):\n${ctx.truth}\n` : ""}${ctx.notes ? `USER FACTS. Also ground truth. Use them to re-derive the other stats and to learn more:\n${ctx.notes}\n` : ""}
+CURRENT RECORD (may be empty or stale; improve on it, keep what is right):
+${ctx.rec}
+
+This is pass ${pass} of 2.`;
+}
+function promptCore(c, ctx) {
+  return header(c, ctx, 1) + `
+Reply with ONLY one JSON object, no prose, with exactly these keys:
+{"platform_name":"","website":"","hq_address":"","what_it_is":"1-2 sentences","bluntly":"2-3 plain-spoken sentences on what this business really is","primary_category":"","water_relevance":"Water-heavy (40-75%) | Water is a segment (10-40%) | Water is minor (<10%) | Pure-play water (>75%)","owner_type":"PE-owned | Public | Family/founder-owned | ESOP | Subsidiary | Other","ultimate_parent":"","pe_sponsor":"","pe_entry_year":"","pe_entry_ev_usd_m":null,"total_revenue_usd_m":0,"total_revenue_year":"","total_revenue_basis":"","total_ebitda_usd_m":0,"ebitda_year":"","ebitda_basis":"","us_water_treatment_revenue_usd_m":null,"us_water_treatment_arithmetic":"","employees_total":0,
+"revenue_by_business":[{"business":"","category":"","revenue_usd_m":0,"pct":0}],
+"revenue_by_product":[{"product":"","revenue_usd_m":0,"pct":0}],
+"end_markets_total_platform":{"<end market>":0},
+"chemistries":[{"product_line":"","made_or_resold":"","brands":""}],
+"confidence":"High | Medium | Low","open_questions":"","profile_md":"Markdown investor profile, 250-400 words, ## headings","change_summary":"One sentence: what changed versus the current record"}
+Rules: revenue_by_business has 3-8 segments whose revenue sums to total revenue. revenue_by_product has 3-8 product lines. End-market percentages sum to 100; use these names where they fit: ${END_MARKETS.join(", ")}. chemistries lists up to 8 top products. All money in USD millions.`;
+}
+function promptMkt(c, ctx) {
+  return header(c, ctx, 2) + `
+Reply with ONLY one JSON object, no prose, with exactly these keys:
+{"customers":[{"name":"","what":"what they buy","share_pct":null,"source":"basis in a few words"}],
+"competitors":[{"name":"","overlap":"where they compete"}],
+"buyers":[{"name":"","type":"Strategic | Financial | Other","rationale":""}],
+"addon_ideas":[{"target":"","rationale":"","est_revenue_usd_m":null,"location":""}],
+"acquisitions":[{"date":"YYYY or YYYY-MM","target":"","what_it_does":"","revenue_usd_m":null,"value_usd_m":null,"source_url":""}],
+"change_summary":"One sentence: what changed versus the current record"}
+Rules: up to 10 top customers (named accounts where known, otherwise customer groups), up to 10 competitors, up to 8 potential buyers of this company, up to 8 real, named add-on acquisition ideas for this company, and every acquisition you know of, newest first (keep the current record's deals and correct them).`;
+}
+
+async function deepDive(id) {
+  const c = companies.get(id); if (!c || !sample || runs[id]?.phase) return;
+  const ctl = new AbortController();
+  runs[id] = { phase: "Researching financials, mix, customers and deals", ctl };
+  render();
+  await save(id, { status: c.status === "empty" ? "researching" : (c.status || "ready") });
+  const ctx = contextFor(c);
+  try {
+    const [core, mkt] = await Promise.all([
+      sample.json(promptCore(c, ctx), { modelTier: "complex", signal: ctl.signal, cache: false }),
+      sample.json(promptMkt(c, ctx), { modelTier: "complex", signal: ctl.signal, cache: false }),
+    ]);
+    const cur = companies.get(id) || c;
+    const locked = new Set(cur.locked || []);
+    const patch = {};
+    for (const [src, keys] of [[core, CORE_KEYS], [mkt, MKT_KEYS]]) {
+      if (!src || typeof src !== "object") continue;
+      for (const k of keys) if (src[k] !== undefined && !locked.has(k)) patch[k] = src[k];
+    }
+    const rv = num(locked.has("total_revenue_usd_m") ? cur.total_revenue_usd_m : patch.total_revenue_usd_m ?? cur.total_revenue_usd_m);
+    const eb = num(locked.has("total_ebitda_usd_m") ? cur.total_ebitda_usd_m : patch.total_ebitda_usd_m ?? cur.total_ebitda_usd_m);
+    if (!locked.has("ebitda_margin_pct") && rv && eb !== null) patch.ebitda_margin_pct = +(eb / rv * 100).toFixed(1);
+    const summary = [core?.change_summary, mkt?.change_summary].filter(Boolean).join(" ");
+    const hadFacts = locked.size > 0 || (cur.source_of_truth || []).length > 0;
+    patch.what_changed_vs_prior = summary || cur.what_changed_vs_prior || "";
+    patch.runs = [...(cur.runs || []), { at: now(), kind: hadFacts ? "Re-run with your facts" : "Deep dive", summary: summary || "Profile refreshed." }].slice(-30);
+    patch.status = "ready";
+    delete runs[id];
+    await save(id, patch);
+    toast("Profile updated");
+  } catch (e) {
+    const code = e?.code;
+    if (code === "cancelled") { delete runs[id]; await save(id, { status: companies.get(id)?.status === "researching" ? (companies.get(id).runs?.length ? "ready" : "empty") : companies.get(id)?.status }); render(); return; }
+    const msg = {
+      not_granted: "Claude isn't allowed to run from this page. Allow it when asked, then try again.",
+      sampling_disabled: "Claude isn't available on this account.",
+      rate_limited: "You've hit a usage limit. Try again in a few minutes.",
+      invalid_json: "Claude's answer came back incomplete. Try again.",
+      prompt_too_large: "This profile is too large to send in one run. Trim the notes and try again.",
+      refused: "Claude declined this request. Rephrase your facts and try again.",
+    }[code] || "The deep dive didn't finish. Try again.";
+    if (code === "not_granted" || code === "sampling_disabled") sample = null;
+    runs[id] = { error: msg };
+    const cc = companies.get(id);
+    if (cc?.status === "researching") await save(id, { status: cc.runs?.length ? "ready" : "empty" });
+    render();
+  }
+}
+
+/* ---------- views ---------- */
+function viewCompanies() {
+  const q = ui.q.toLowerCase();
+  let rows = list().filter(c => !q || [c.name, c.platform_name, c.primary_category, c.owner_type, c.pe_sponsor, c.hq_address].join(" ").toLowerCase().includes(q));
+  const k = ui.sort, d = ui.dir;
+  rows.sort((a, b) => {
+    let va = k === "margin" ? margin(a) : a[k], vb = k === "margin" ? margin(b) : b[k];
+    if (k === "name") return d * String(va || "").localeCompare(String(vb || ""));
+    if (k === "updated_at") return d * String(va || "").localeCompare(String(vb || ""));
+    return d * ((num(va) ?? -Infinity) - (num(vb) ?? -Infinity));
+  });
+  const all = list();
+  const totRev = all.reduce((s, c) => s + (num(c.total_revenue_usd_m) || 0), 0);
+  const nDeals = all.reduce((s, c) => s + (c.acquisitions || []).length, 0);
+  const th = (key, label, cls = "") => `<th class="sortable ${cls}" data-sort="${key}" aria-sort="${ui.sort === key ? (ui.dir > 0 ? "ascending" : "descending") : "none"}">${label}${ui.sort === key ? (ui.dir > 0 ? " ↑" : " ↓") : ""}</th>`;
+  const body = rows.length ? rows.map(c => {
+    const st = c.status === "empty" ? `<span class="pill">Empty</span>` : c.status === "researching" || runs[c.id]?.phase ? `<span class="pill accent">Researching</span>` : "";
+    return `<tr class="link" data-open="${esc(c.id)}"><td class="cname">${esc(c.name)} ${st}<small>${esc(c.primary_category || c.what_it_is || "")}</small></td><td>${esc(c.owner_type || "")}</td><td class="r num">${fmtM(c.total_revenue_usd_m)}</td><td class="r num">${fmtM(c.total_ebitda_usd_m)}</td><td class="r num">${fmtPct(margin(c))}</td><td class="r num">${fmtM(c.us_water_treatment_revenue_usd_m)}</td><td class="muted">${esc(topEM(c))}</td><td class="faint">${c.updated_at ? fmtDate(c.updated_at) : ""}</td></tr>`;
+  }).join("") : `<tr><td colspan="8" class="faint" style="padding:28px 12px">${all.length ? "No companies match that search." : "No companies yet. Add one above and run a deep dive."}</td></tr>`;
+  return `
+  <div class="page-h"><div><div class="eyebrow">Repository</div><h1>Companies</h1><p>Every profile saves here. Open one to see its revenue, EBITDA, mix, customers, deals and buyers. Type over any value to correct it.</p></div>
+    ${writable && db ? `<form class="add" id="addForm"><input id="addName" placeholder="Company name" autocomplete="off" aria-label="New company name"><button class="btn primary" type="submit">Add company</button></form>` : ""}</div>
+  <div class="stats">
+    <div class="stat"><div class="v">${all.length}</div><div class="l">Profiles</div></div>
+    <div class="stat"><div class="v">${fmtM(totRev)}</div><div class="l">Combined revenue</div></div>
+    <div class="stat"><div class="v">${nDeals}</div><div class="l">Deals logged</div></div>
+    <div class="stat"><div class="v">${allTargets().length}</div><div class="l">Targets tracked</div></div>
+  </div>
+  <div class="bar"><div class="grow"><input class="search" id="q" type="search" placeholder="Search by name, category, owner, sponsor or HQ" value="${esc(ui.q)}" aria-label="Search companies"></div></div>
+  <div class="tw"><table><thead><tr>${th("name", "Company")}${th("owner_type", "Owner")}${th("total_revenue_usd_m", "Revenue", "r")}${th("total_ebitda_usd_m", "EBITDA", "r")}${th("margin", "Margin", "r")}${th("us_water_treatment_revenue_usd_m", "US water rev", "r")}<th>Top end market</th>${th("updated_at", "Updated")}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+const TABS = [["overview", "Overview"], ["mix", "Mix"], ["customers", "Customers"], ["products", "Products"], ["competitors", "Competitors"], ["acquisitions", "Acquisitions"], ["buyers", "Buyers"], ["addons", "Add-ons"], ["sources", "Sources"]];
+function viewCompany(id, tab) {
+  const c = companies.get(id);
+  if (!c) return `<div class="crumb"><a href="#companies">Companies</a></div><div class="panel empty-hero"><h2>No profile called “${esc(id)}”</h2><p class="muted">It may have been deleted. Go back to Companies to add it again.</p></div>`;
+  const run = runs[id];
+  const canRun = !!sample && writable && db;
+  const hasFacts = (c.locked || []).filter(k => k !== "name").length || (c.source_of_truth || []).length;
+  const runBtn = canRun ? `<button class="btn ${hasFacts ? "primary" : ""}" data-act="dive" ${run?.phase ? "disabled" : ""}>${hasFacts ? "Re-run with my facts" : "Refresh deep dive"}</button>` : "";
+  const runBox = run?.phase ? `<div class="run" role="status"><span class="spin"></span><span><b>Deep dive running.</b> ${esc(run.phase)}. This usually takes one to three minutes. Your edits stay as they are.</span><span class="sp" style="flex:1"></span><button class="btn sm" data-act="stop">Stop</button></div>`
+    : run?.error ? `<div class="run err" role="alert"><span>${esc(run.error)}</span><span style="flex:1"></span><button class="btn sm" data-act="dismiss">Dismiss</button></div>` : "";
+
+  if (c.status === "empty" || c.status === "researching" && !(c.runs || []).length) {
+    return `<div class="crumb"><a href="#companies">Companies</a> / ${esc(c.name)}</div>
+    <div class="ph"><div class="ph-main"><h1>${ed("name", c.name, "text", "Company name")}</h1><div class="sub">No profile yet</div></div><div class="ph-act">${delBtn()}</div></div>
+    ${runBox}
+    <div class="panel empty-hero">
+      <div class="eyebrow">First run</div>
+      <h2>Build this profile with a deep dive</h2>
+      <p class="muted">Claude drafts revenue, EBITDA, segment, product and end-market splits, top customers, competitors, past deals, add-on ideas and likely buyers. Everything saves here, and you can type over any of it afterwards.</p>
+      <label class="eyebrow" for="seedFacts">What you already know (optional)</label>
+      <textarea id="seedFacts" placeholder="e.g. Revenue was $140M in 2025 per the CIM. Largest customer is Veolia at ~15%. Owned by XYZ Capital since 2022."></textarea>
+      ${canRun ? `<button class="btn primary" data-act="firstdive" ${run?.phase ? "disabled" : ""}>Run deep dive</button>` : `<p class="faint">Deep dives need Claude, which isn't available in this view. You can still fill the profile in by hand from the tabs once it has data, or ask Claude in chat to research it into Profiler.</p>${writable && db ? `<button class="btn" data-act="manual">Fill in by hand</button>` : ""}`}
+      <p class="faint" style="font-size:12px;margin-top:14px">Claude works from its own knowledge in the page and can't browse. For a web-sourced dive, ask Claude in chat to research this company into Profiler.</p>
+    </div>`;
+  }
+
+  const counts = { customers: (c.customers || []).length, products: (c.chemistries || []).length, competitors: (c.competitors || []).length, acquisitions: (c.acquisitions || []).length, buyers: (c.buyers || []).length, addons: (c.addon_ideas || []).length, sources: (c.evidence || []).length + (c.source_of_truth || []).length };
+  const tabs = TABS.map(([k, l]) => `<a href="#c.${esc(id)}.${k}" aria-current="${tab === k}">${l}${counts[k] ? `<span class="n">${counts[k]}</span>` : ""}</a>`).join("");
+  const m = margin(c);
+  const chips = [c.owner_type && `<span class="pill">${esc(c.owner_type)}</span>`, c.primary_category && `<span class="pill">${esc(c.primary_category)}</span>`, c.water_relevance && `<span class="pill accent">${esc(c.water_relevance)}</span>`, c.confidence && `<span class="pill ${c.confidence === "Low" ? "warn" : ""}">${esc(c.confidence)} confidence</span>`, c.website && `<a class="pill" href="${esc(/^https?:/.test(c.website) ? c.website : "https://" + c.website)}" target="_blank" rel="noopener">${esc(String(c.website).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))} ↗</a>`].filter(Boolean).join("");
+  const kpi = (f, lab, note, pre = "$", unit = "M") => `<div class="kpi"><div class="lab">${lab} ${lockPill(c, f)}</div><div class="val">${pre ? `<span class="u">${pre}</span>` : ""}${ed(f, c[f], "num", "–")}${unit ? `<span class="u">${unit}</span>` : ""}</div><div class="note">${esc(note || "")}</div></div>`;
+  const hdr = `
+  <div class="crumb"><a href="#companies">Companies</a> / ${esc(c.name)}</div>
+  <div class="ph">
+    <div class="ph-main"><h1>${ed("name", c.name, "text", "Company name")}</h1>
+      <div class="sub">${esc([c.platform_name && c.platform_name !== c.name ? c.platform_name : "", c.hq_address].filter(Boolean).join(" · "))}</div>
+      <div class="chips">${chips}</div></div>
+    <div class="ph-act">${runBtn}${delBtn()}</div>
+  </div>
+  <div class="kpis">
+    ${kpi("total_revenue_usd_m", "Revenue", c.total_revenue_year)}
+    ${kpi("total_ebitda_usd_m", "EBITDA", c.ebitda_year)}
+    <div class="kpi"><div class="lab">Margin ${lockPill(c, "ebitda_margin_pct")}</div><div class="val">${ed("ebitda_margin_pct", num(c.ebitda_margin_pct) ?? (m !== null ? +m.toFixed(1) : null), "num", "–")}<span class="u">%</span></div><div class="note">EBITDA / revenue</div></div>
+    ${kpi("us_water_treatment_revenue_usd_m", "US water rev", "Strict water treatment")}
+    ${kpi("employees_total", "Employees", "", "", "")}
+  </div>
+  ${writable && db ? `<form class="facts" id="factForm"><span class="lab">Add a fact</span><input id="factText" placeholder="What do you know that the profile gets wrong or misses? e.g. 2025 EBITDA was $24M per lender deck" autocomplete="off" aria-label="Add a fact"><button class="btn" type="submit">Save fact</button></form>` : ""}
+  ${runBox}
+  <nav class="tabs" aria-label="Profile sections">${tabs}</nav>`;
+  return hdr + tabBody(c, tab);
+}
+function delBtn() {
+  if (!writable || !db) return "";
+  return ui.confirmDel ? `<button class="btn danger" data-act="del">Confirm delete</button><button class="btn ghost" data-act="nodel">Keep</button>` : `<button class="btn ghost" data-act="askdel">Delete</button>`;
+}
+
+function tabBody(c, tab) {
+  const rev = num(c.total_revenue_usd_m);
+  if (tab === "overview") {
+    const em = endMarkets(c);
+    return `
+    <div class="sec pies">
+      ${donut("pe", "By end market", em.map(e => ({ label: e.label, pct: e.pct })), { pctOnly: true, rev, locked: (c.locked || []).includes(EM_FIELD), center: fmtM(rev), centerSub: "REVENUE" })}
+      ${donut("ps", "By segment", segments(c), { locked: (c.locked || []).includes("revenue_by_business") })}
+      ${donut("pp", "By product", products(c), { locked: (c.locked || []).includes("revenue_by_product") })}
+    </div>
+    <div class="sec">${ed("what_it_is", c.what_it_is, "text", "One or two sentences on what this company is", "div", "lede")}
+      <div class="take"><div class="eyebrow">Bluntly ${lockPill(c, "bluntly")}</div>${ed("bluntly", c.bluntly, "text", "Plain-spoken take on the business", "div")}</div></div>
+    <div class="sec grid2">
+      <div class="panel"><div class="kv">
+        <dt>Owner type</dt><dd>${ed("owner_type", c.owner_type, "text", "e.g. PE-owned")}</dd>
+        <dt>Ultimate parent</dt><dd>${ed("ultimate_parent", c.ultimate_parent)}</dd>
+        <dt>Sponsor</dt><dd>${ed("pe_sponsor", c.pe_sponsor)}</dd>
+        <dt>Entry year</dt><dd>${ed("pe_entry_year", c.pe_entry_year)}</dd>
+        <dt>Entry EV ($M)</dt><dd>${ed("pe_entry_ev_usd_m", c.pe_entry_ev_usd_m, "num", "–")}</dd>
+        <dt>Prior owners</dt><dd>${ed("prior_owners", c.prior_owners)}</dd>
+      </div></div>
+      <div class="panel"><div class="kv">
+        <dt>HQ</dt><dd>${ed("hq_address", c.hq_address)}</dd>
+        <dt>Website</dt><dd>${ed("website", c.website)}</dd>
+        <dt>Category</dt><dd>${ed("primary_category", c.primary_category)}</dd>
+        <dt>Water relevance</dt><dd>${ed("water_relevance", c.water_relevance)}</dd>
+        <dt>Confidence</dt><dd>${ed("confidence", c.confidence, "text", "High, Medium or Low")}</dd>
+        <dt>US sites</dt><dd>${ed("us_sites_count", c.us_sites_count, "num", "–")}</dd>
+      </div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-h"><h2>Profile</h2>${lockPill(c, "profile_md")}<span class="sp"></span>${writable && db ? `<button class="btn sm ghost" data-act="editmd">${ui.editMd ? "Done" : "Edit text"}</button>` : ""}</div>
+      ${ui.editMd ? `<textarea id="mdEdit" style="width:100%;min-height:420px;font-family:var(--f-mono);font-size:13px">${esc(c.profile_md || "")}</textarea><div style="margin-top:8px"><button class="btn primary" data-act="savemd">Save profile text</button></div>` : `<div class="md">${md(c.profile_md) || `<p class="faint">No write-up yet. Run a deep dive or click Edit text.</p>`}</div>`}
+    </div>
+    <div class="sec basis">
+      ${c.total_revenue_basis ? `<p><b>Revenue basis.</b> ${esc(c.total_revenue_basis)}</p>` : ""}
+      ${c.ebitda_basis ? `<p><b>EBITDA basis.</b> ${esc(c.ebitda_basis)}</p>` : ""}
+      ${c.us_water_treatment_arithmetic ? `<p><b>US water revenue math.</b> ${esc(c.us_water_treatment_arithmetic)}</p>` : ""}
+    </div>`;
+  }
+  if (tab === "mix") {
+    const segs = tableRows(c, "revenue_by_business"), prods = tableRows(c, "revenue_by_product"), ems = tableRows(c, EM_FIELD).sort((a, b) => (b.pct || 0) - (a.pct || 0));
+    const segSum = segs.reduce((s, r) => s + (num(r.revenue_usd_m) || 0), 0), emSum = ems.reduce((s, r) => s + (num(r.pct) || 0), 0);
+    return `
+    <p class="muted" style="margin-top:-6px">Edit any number and the pie charts on Overview update. Edited tables are kept as you set them on the next deep dive.</p>
+    <div class="sec">${secHead(c, "revenue_by_business", "Segments", `<span class="faint num" style="font-size:12px">Sum ${fmtM(segSum)}${rev ? " of " + fmtM(rev) : ""}</span>`)}
+    ${editTable(c, "revenue_by_business", [{ k: "business", label: "Segment" }, { k: "category", label: "Category", w: "220px" }, { k: "revenue_usd_m", label: "$M", t: "num", w: "90px" }, { k: "pct", label: "%", t: "num", w: "70px" }], segs)}</div>
+    <div class="sec">${secHead(c, "revenue_by_product", "Products", !prods.length ? `<span class="faint" style="font-size:12px">Empty: the product pie groups segments by category until this is filled</span>` : "")}
+    ${editTable(c, "revenue_by_product", [{ k: "product", label: "Product line" }, { k: "revenue_usd_m", label: "$M", t: "num", w: "90px" }, { k: "pct", label: "%", t: "num", w: "70px" }], prods)}</div>
+    <div class="sec">${secHead(c, EM_FIELD, "End markets", `<span class="faint num" style="font-size:12px">Sum ${fmtPct(emSum)}</span>`)}
+    ${editTable(c, EM_FIELD, [{ k: "name", label: "End market" }, { k: "pct", label: "% of revenue", t: "num", w: "120px" }, { k: "_d", label: "$M", t: "num", ro: true, w: "90px", fmt: r => rev !== null && num(r.pct) ? fmtM(rev * r.pct / 100) : "—" }], ems)}</div>`;
+  }
+  if (tab === "customers") return `<div class="sec">${secHead(c, "customers", "Top customers")}${editTable(c, "customers", [{ k: "name", label: "Customer" }, { k: "what", label: "What they buy" }, { k: "share_pct", label: "% of rev", t: "num", w: "90px" }, { k: "source", label: "Basis", w: "200px" }], tableRows(c, "customers"), { empty: "No customers yet. Add the ones you know, then re-run to fill in the rest." })}</div>`;
+  if (tab === "products") return `<div class="sec">${secHead(c, "chemistries", "Top products")}${editTable(c, "chemistries", [{ k: "product_line", label: "Product line" }, { k: "made_or_resold", label: "Made or resold", w: "260px" }, { k: "brands", label: "Brands", w: "220px" }], tableRows(c, "chemistries"))}</div>`;
+  if (tab === "competitors") return `<div class="sec">${secHead(c, "competitors", "Top competitors")}${editTable(c, "competitors", [{ k: "name", label: "Competitor", w: "280px" }, { k: "overlap", label: "Where they compete" }], tableRows(c, "competitors"))}</div>`;
+  if (tab === "acquisitions") {
+    const orig = tableRows(c, "acquisitions");
+    const html = editTable(c, "acquisitions", [{ k: "date", label: "Date", w: "120px" }, { k: "target", label: "Target", w: "220px" }, { k: "what_it_does", label: "What it does" }, { k: "revenue_usd_m", label: "Rev $M", t: "num", w: "80px" }, { k: "value_usd_m", label: "Value $M", t: "num", w: "90px" }, { k: "source_url", label: "Source", link: true, w: "160px" }], orig, { empty: "No deals logged. Add one and it appears on Targets and Precedents." });
+    return `<div class="sec">${secHead(c, "acquisitions", "Recent acquisitions")}<p class="muted" style="margin:-4px 0 10px;font-size:13px">Every deal here also shows up on Targets and Precedents.</p>${html}</div>
+    ${c.addon_corrections ? `<div class="sec basis"><p><b>Notes on the deal list.</b> ${esc(c.addon_corrections)}</p></div>` : ""}`;
+  }
+  if (tab === "buyers") return `<div class="sec">${secHead(c, "buyers", "Potential buyers")}${editTable(c, "buyers", [{ k: "name", label: "Buyer", w: "240px" }, { k: "type", label: "Type", w: "120px" }, { k: "rationale", label: "Why they'd buy" }], tableRows(c, "buyers"))}</div>`;
+  if (tab === "addons") return `<div class="sec">${secHead(c, "addon_ideas", "Add-on ideas")}<p class="muted" style="margin:-4px 0 10px;font-size:13px">Companies ${esc(c.name)} could buy. Each one appears on Targets, linked back here.</p>${editTable(c, "addon_ideas", [{ k: "target", label: "Target", w: "240px" }, { k: "rationale", label: "Why it fits" }, { k: "est_revenue_usd_m", label: "Est rev $M", t: "num", w: "100px" }, { k: "location", label: "Location", w: "150px" }], tableRows(c, "addon_ideas"), { empty: "No add-on ideas yet. Add some, or re-run the deep dive to have Claude suggest them." })}</div>`;
+  if (tab === "sources") {
+    const facts = (c.source_of_truth || []).map((f, i) => `<li><div>${esc(f.text)}<div class="when">${fmtDate(f.at)}</div></div>${writable && db ? `<button class="x" style="opacity:1" data-act="delfact" data-r="${i}" aria-label="Remove fact">×</button>` : ""}</li>`).join("");
+    const locked = (c.locked || []).filter(k => k !== "name");
+    const hist = [...(c.runs || [])].reverse().map(r => `<tr><td class="faint" style="white-space:nowrap">${fmtDate(r.at)}</td><td style="white-space:nowrap">${esc(r.kind)}</td><td>${esc(r.summary)}</td></tr>`).join("");
+    const ev = (c.evidence || []).map(e => `<tr><td>${esc(e.metric)}</td><td>${esc(e.value)}</td><td class="num">${esc(e.year)}</td><td>${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.source_type || "Link")}</a>` : esc(e.source_type)}</td><td class="muted" style="font-size:12px">${e.quote ? "“" + esc(e.quote) + "”" : ""}</td></tr>`).join("");
+    return `
+    <div class="sec grid2">
+      <div><div class="sec-h"><h2>Your facts</h2></div>
+        ${facts ? `<ul class="fact-list">${facts}</ul>` : `<p class="faint">No facts added yet. Use “Add a fact” above. Deep dives treat your facts as the source of truth.</p>`}</div>
+      <div><div class="sec-h"><h2>Fields you edited</h2></div>
+        ${locked.length ? `<div class="chips" style="margin-top:0">${locked.map(f => `<button class="pill lock" data-act="unlock" data-f="${esc(f)}" title="Click to let Claude update it again">${esc(f.replace(/_/g, " "))}</button>`).join("")}</div><p class="faint" style="font-size:12px">Deep dives keep these as you set them. Click one to release it.</p>` : `<p class="faint">None. Type over any value in the profile and it's kept on re-runs.</p>`}</div>
+    </div>
+    ${c.open_questions ? `<div class="sec"><div class="sec-h"><h2>Open questions</h2></div><p class="muted" style="max-width:80ch">${esc(c.open_questions)}</p></div>` : ""}
+    <div class="sec"><div class="sec-h"><h2>Run history</h2></div><div class="tw"><table><thead><tr><th>Date</th><th>Run</th><th>What changed</th></tr></thead><tbody>${hist || `<tr><td colspan="3" class="faint">No runs yet.</td></tr>`}</tbody></table></div></div>
+    <div class="sec"><div class="sec-h"><h2>Evidence</h2></div><div class="tw"><table><thead><tr><th>Metric</th><th>Value</th><th>Year</th><th>Source</th><th>Quote</th></tr></thead><tbody>${ev || `<tr><td colspan="5" class="faint">No sourced evidence on file.</td></tr>`}</tbody></table></div></div>
+    <div class="sec">${secHead(c, "key_sites", "Sites")}${editTable(c, "key_sites", [{ k: "type", label: "Type", w: "100px" }, { k: "address", label: "Address" }, { k: "city", label: "City", w: "180px" }, { k: "state", label: "State", w: "70px" }], tableRows(c, "key_sites"))}</div>`;
+  }
+  return "";
+}
+
+function viewTargets() {
+  const q = ui.tq.toLowerCase();
+  const ts = allTargets().filter(t => !q || t.name.toLowerCase().includes(q) || t.links.some(l => String(l.platform).toLowerCase().includes(q) || String(l.what || "").toLowerCase().includes(q)))
+    .sort((a, b) => b.links.length - a.links.length || a.name.localeCompare(b.name));
+  if (!ts.find(t => t.key === ui.tsel)) ui.tsel = ts[0]?.key || null;
+  const sel = ts.find(t => t.key === ui.tsel);
+  const listHtml = ts.length ? ts.map(t => {
+    const kinds = new Set(t.links.map(l => l.kind));
+    return `<button data-tsel="${esc(t.key)}" aria-current="${t.key === ui.tsel}"><span class="t-n">${esc(t.name)}</span><span class="faint" style="font-size:12px;white-space:nowrap">${kinds.has("acq") ? "Acquired" : kinds.has("idea") ? "Idea" : "Has buyers"}</span></button>`;
+  }).join("") : `<p class="faint" style="padding:12px">No targets match.</p>`;
+  let detail = `<div class="detail faint">Pick a target on the left.</div>`;
+  if (sel) {
+    const K = { acq: ["k-acq", "Acquired by"], idea: ["k-idea", "Add-on idea for"], buyer: ["k-buyer", "Potential buyer"] };
+    const links = sel.links.map(l => `<div class="lnk"><span class="kind ${K[l.kind][0]}">${K[l.kind][1]}</span><div style="min-width:0"><div class="who">${l.platformId ? `<a href="#c.${esc(l.platformId)}.${l.kind === "idea" ? "addons" : l.kind === "acq" ? "acquisitions" : "overview"}">${esc(l.platform)}</a>` : esc(l.platform)}${l.btype ? ` <span class="faint" style="font-weight:400">· ${esc(l.btype)}</span>` : ""}</div><div class="muted" style="font-size:13px">${esc(l.what || "")}</div></div><div class="num faint" style="font-size:12px;text-align:right">${esc(l.date || "")}${l.rev !== null && l.rev !== undefined ? `<br>${fmtM(l.rev)} rev` : ""}${l.value ? `<br>${fmtM(l.value)} value` : ""}</div></div>`).join("");
+    let fit = "";
+    if (sel.company) {
+      const ranked = list().filter(p => p.id !== sel.company.id).map(p => ({ p, s: overlap(sel.company, p) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, 6);
+      fit = ranked.length ? `<div class="sec-h" style="margin-top:22px"><h2>Best-fit homes in Profiler</h2><span class="faint" style="font-size:12px">Ranked by shared end-market exposure</span></div>
+      <div class="panel bars" style="padding:6px">${ranked.map((x, i) => `<div class="brow" data-open="${esc(x.p.id)}" data-tip="${esc(x.p.name)}: ${x.s.toFixed(0)}% end-market overlap"><span class="rk">${i + 1}</span><span class="nm">${esc(x.p.name)}</span><div class="track"><div class="fill" style="width:${Math.min(100, x.s)}%"></div></div><span class="v">${x.s.toFixed(0)}%</span></div>`).join("")}</div>` : "";
+    }
+    detail = `<div class="panel detail"><div class="eyebrow">Target</div><h2 class="tt">${sel.company ? `<a href="#c.${esc(sel.company.id)}" style="color:inherit;text-decoration:none">${esc(sel.name)}</a>` : esc(sel.name)}</h2>
+      <div class="muted">${sel.company ? `Profiled · ${fmtM(sel.company.total_revenue_usd_m)} revenue · ${esc(sel.company.owner_type || "")}` : `Not profiled yet`}${!sel.company && writable && db ? ` · <button class="btn sm ghost" data-act="profile-target" data-name="${esc(sel.name)}">Create profile</button>` : ""}</div>
+      <div class="links">${links}</div>${fit}</div>`;
+  }
+  return `<div class="page-h"><div><div class="eyebrow">Reverse search</div><h1>Targets</h1><p>Every company that shows up in a profile as a past deal, an add-on idea, or a company with named buyers. Search a target to see which platforms bought it, want it, or could buy it.</p></div></div>
+  <div class="bar"><div class="grow"><input class="search" id="tq" type="search" placeholder="Search a target, a platform, or a keyword like Legionella" value="${esc(ui.tq)}" aria-label="Search targets"></div><span class="faint">${ts.length} targets</span></div>
+  <div class="split"><div class="panel tlist">${listHtml}</div>${detail}</div>`;
+}
+
+function viewPrecedents() {
+  const q = ui.pq.toLowerCase();
+  let ds = allDeals().filter(d => !q || [d.target, d.acquirer, d.what, d.date].join(" ").toLowerCase().includes(q));
+  const k = ui.psort, dir = ui.pdir;
+  ds.sort((a, b) => {
+    if (k === "year") return dir * ((a.year || 0) - (b.year || 0)) || dir * String(a.date).localeCompare(String(b.date));
+    if (k === "mult") { const ma = a.value && a.rev ? a.value / a.rev : -1, mb = b.value && b.rev ? b.value / b.rev : -1; return dir * (ma - mb); }
+    if (k === "value" || k === "rev") return dir * ((a[k] ?? -1) - (b[k] ?? -1));
+    return dir * String(a[k] || "").localeCompare(String(b[k] || ""));
+  });
+  const th = (key, label, cls = "") => `<th class="sortable ${cls}" data-psort="${key}" aria-sort="${ui.psort === key ? (ui.pdir > 0 ? "ascending" : "descending") : "none"}">${label}${ui.psort === key ? (ui.pdir > 0 ? " ↑" : " ↓") : ""}</th>`;
+  const withVal = ds.filter(d => d.value && d.rev);
+  const med = arr => { if (!arr.length) return null; const s = [...arr].sort((a, b) => a - b); const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+  const medMult = med(withVal.map(d => d.value / d.rev));
+  const rows = ds.map(d => {
+    const tgt = d.targetId || findCompanyByName(d.target)?.id;
+    return `<tr><td class="num" style="white-space:nowrap">${esc(d.date)}</td><td class="cname">${tgt ? `<a href="#c.${esc(tgt)}">${esc(d.target)}</a>` : esc(d.target)}</td><td>${d.acquirerId ? `<a href="#c.${esc(d.acquirerId)}.acquisitions">${esc(d.acquirer)}</a>` : esc(d.acquirer)}</td><td class="muted" style="font-size:13px;min-width:240px">${esc(d.what)}</td><td class="r num">${d.rev !== null ? fmtM(d.rev) : "—"}</td><td class="r num">${d.value ? fmtM(d.value) : "—"}</td><td class="r num">${d.value && d.rev ? (d.value / d.rev).toFixed(1) + "x" : "—"}</td><td>${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener">Source</a>` : ""}</td></tr>`;
+  }).join("");
+  return `<div class="page-h"><div><div class="eyebrow">Deal log</div><h1>Precedents</h1><p>Every acquisition from every profile, plus sponsor entries with a known EV. Add a deal on a company's Acquisitions tab and it lands here.</p></div></div>
+  <div class="stats"><div class="stat"><div class="v">${ds.length}</div><div class="l">Deals</div></div><div class="stat"><div class="v">${ds.filter(d => d.value).length}</div><div class="l">With disclosed value</div></div><div class="stat"><div class="v">${medMult !== null ? medMult.toFixed(1) + "x" : "—"}</div><div class="l">Median EV / revenue</div></div></div>
+  <div class="bar"><div class="grow"><input class="search" id="pq" type="search" placeholder="Search target, acquirer, year or description" value="${esc(ui.pq)}" aria-label="Search precedents"></div></div>
+  <div class="tw"><table><thead><tr>${th("year", "Date")}${th("target", "Target")}${th("acquirer", "Acquirer")}<th>What it does</th>${th("rev", "Target rev", "r")}${th("value", "Value", "r")}${th("mult", "EV / Rev", "r")}<th>Source</th></tr></thead><tbody>${rows || `<tr><td colspan="8" class="faint">No deals match.</td></tr>`}</tbody></table></div>`;
+}
+
+function viewEndMarkets() {
+  const names = new Set(END_MARKETS);
+  list().forEach(c => Object.keys(c[EM_FIELD] || {}).forEach(k => names.add(k)));
+  const opts = [...names].map(n => `<option ${n === ui.em ? "selected" : ""}>${esc(n)}</option>`).join("");
+  const rows = list().map(c => { const p = num((c[EM_FIELD] || {})[ui.em]) || 0; const rev = num(c.total_revenue_usd_m); return { c, p, d: rev !== null ? rev * p / 100 : null }; }).filter(r => r.p > 0);
+  const key = ui.emMode === "pct" ? "p" : "d";
+  rows.sort((a, b) => (b[key] ?? -1) - (a[key] ?? -1));
+  const max = Math.max(...rows.map(r => r[key] || 0), 1);
+  const total = rows.reduce((s, r) => s + (r.d || 0), 0);
+  const bars = rows.length ? rows.map((r, i) => `<div class="brow" data-open="${esc(r.c.id)}" data-tip="${esc(r.c.name)}: ${fmtPct(r.p)} of revenue · ${fmtM(r.d)}"><span class="rk">${i + 1}</span><span class="nm">${esc(r.c.name)}</span><div class="track"><div class="fill" style="width:${((r[key] || 0) / max * 100).toFixed(1)}%"></div></div><span class="v">${key === "p" ? fmtPct(r.p) : fmtM(r.d)}</span></div>`).join("")
+    : `<p class="faint" style="padding:16px">No profiled company has exposure to ${esc(ui.em)} yet.</p>`;
+  return `<div class="page-h"><div><div class="eyebrow">Exposure screen</div><h1>End markets</h1><p>Pick an end market to rank every profiled company by how much of its revenue comes from it, as a share or in dollars.</p></div></div>
+  <div class="bar"><select id="em" aria-label="End market" style="min-width:260px">${opts}</select>
+    <div class="seg" role="group" aria-label="Rank by"><button data-em="pct" aria-pressed="${ui.emMode === "pct"}">% of revenue</button><button data-em="usd" aria-pressed="${ui.emMode === "usd"}">$ revenue</button></div>
+    <span class="faint">${rows.length} companies · ${fmtM(total)} combined exposure</span></div>
+  <div class="panel bars">${bars}</div>`;
+}
+
+/* ---------- render ---------- */
+function render() {
+  if (isEditing()) { pendingRender = true; return; }
+  const r = route();
+  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", (a.dataset.v === r.view || (r.view === "company" && a.dataset.v === "companies")) ? "page" : "false"));
+  setLive();
+  if (!loaded) {
+    if (dbState === "off") app.innerHTML = `<div class="panel empty-hero"><h2>The repository isn't connected</h2><p class="muted">Profiler keeps its profiles in a shared database that only loads when this page is opened in Claude while signed in. Open it from your Claude artifacts to see and edit profiles.</p></div>`;
+    return;
+  }
+  const y = scrollY;
+  let html = "";
+  if (r.view === "company") html = viewCompany(r.id, r.tab);
+  else if (r.view === "targets") html = viewTargets();
+  else if (r.view === "precedents") html = viewPrecedents();
+  else if (r.view === "endmarkets") html = viewEndMarkets();
+  else html = viewCompanies();
+  const active = document.activeElement?.id, selS = document.activeElement?.selectionStart;
+  app.innerHTML = html;
+  if (active && ["q", "tq", "pq"].includes(active)) { const el = document.getElementById(active); el?.focus(); try { el.setSelectionRange(selS, selS); } catch {} }
+  if (pendingFocus) { const el = app.querySelector(pendingFocus); pendingFocus = null; el?.focus(); }
+  window.scrollTo(0, y);
+}
+
+/* ---------- events ---------- */
+let lastRouteKey = "";
+addEventListener("hashchange", () => {
+  const r = route(), k = r.view + (r.id || "");
+  if (k !== lastRouteKey) { ui.confirmDel = false; ui.editMd = false; window.scrollTo(0, 0); }
+  lastRouteKey = k;
+  render();
+});
+
+app.addEventListener("input", e => {
+  const id = e.target.id;
+  if (id === "q") { ui.q = e.target.value; render(); }
+  if (id === "tq") { ui.tq = e.target.value; ui.tsel = null; render(); }
+  if (id === "pq") { ui.pq = e.target.value; render(); }
+});
+app.addEventListener("change", e => { if (e.target.id === "em") { ui.em = e.target.value; render(); } });
+
+app.addEventListener("submit", async e => {
+  e.preventDefault();
+  if (e.target.id === "addForm") {
+    const name = $("#addName").value.trim(); if (!name) return;
+    const existing = findCompanyByName(name);
+    if (existing) { location.hash = "c." + existing.id; return; }
+    await createCompany(name);
+  }
+  if (e.target.id === "factForm") {
+    const inp = $("#factText"), text = inp.value.trim(); if (!text) return;
+    const c = companies.get(route().id); if (!c) return;
+    inp.value = "";
+    await save(c.id, { source_of_truth: [...(c.source_of_truth || []), { text, at: now() }] });
+    render();
+  }
+});
+
+async function createCompany(name, facts = "") {
+  let id = slugify(name); let n = 2; while (companies.has(id)) id = slugify(name) + "-" + n++;
+  const doc = { name, status: "empty", created_at: now(), updated_at: now(), locked: [], source_of_truth: facts ? [{ text: facts, at: now() }] : [], runs: [] };
+  try { await db.doc("companies/" + id).set(doc); companies.set(id, { id, ...doc }); location.hash = "c." + id; }
+  catch (e) { handleWriteError(e); }
+}
+
+app.addEventListener("click", async e => {
+  const t = e.target;
+  const sortTh = t.closest("[data-sort]");
+  if (sortTh) { const k = sortTh.dataset.sort; if (ui.sort === k) ui.dir *= -1; else { ui.sort = k; ui.dir = k === "name" ? 1 : -1; } render(); return; }
+  const psTh = t.closest("[data-psort]");
+  if (psTh) { const k = psTh.dataset.psort; if (ui.psort === k) ui.pdir *= -1; else { ui.psort = k; ui.pdir = ["target", "acquirer"].includes(k) ? 1 : -1; } render(); return; }
+  const ts = t.closest("[data-tsel]"); if (ts) { ui.tsel = ts.dataset.tsel; render(); return; }
+  const em = t.closest("[data-em]"); if (em) { ui.emMode = em.dataset.em; render(); return; }
+  if (t.closest("a")) return;
+  const open = t.closest("[data-open]"); if (open && !t.closest("[contenteditable]")) { location.hash = "c." + open.dataset.open; return; }
+  const btn = t.closest("[data-act]"); if (!btn) return;
+  const act = btn.dataset.act, r = route(), c = companies.get(r.id);
+  if (act === "profile-target") { await createCompany(btn.dataset.name); return; }
+  if (!c) return;
+  if (act === "dive") deepDive(c.id);
+  if (act === "firstdive") {
+    const f = $("#seedFacts")?.value.trim();
+    if (f) await save(c.id, { source_of_truth: [...(c.source_of_truth || []), { text: f, at: now() }] });
+    deepDive(c.id);
+  }
+  if (act === "manual") { await save(c.id, { status: "ready" }); render(); }
+  if (act === "stop") runs[c.id]?.ctl?.abort();
+  if (act === "dismiss") { delete runs[c.id]; render(); }
+  if (act === "askdel") { ui.confirmDel = true; render(); }
+  if (act === "nodel") { ui.confirmDel = false; render(); }
+  if (act === "del") {
+    try { await db.doc("companies/" + c.id).delete(); companies.delete(c.id); ui.confirmDel = false; toast(`Deleted ${c.name}`); location.hash = "companies"; }
+    catch (err) { handleWriteError(err); }
+  }
+  if (act === "unlock") { await save(c.id, { locked: (c.locked || []).filter(f => f !== btn.dataset.f) }); c.locked = (c.locked || []).filter(f => f !== btn.dataset.f); render(); }
+  if (act === "addrow") {
+    const f = btn.dataset.f, rows = tableRows(c, f); rows.push(clone(BLANK[f] || {}));
+    const firstKey = f === EM_FIELD ? "name" : Object.keys(BLANK[f] || { x: 1 })[0];
+    pendingFocus = `[data-f="${f}"][data-r="${rows.length - 1}"][data-k="${firstKey}"]`;
+    await save(c.id, { [f]: rowsToValue(f, rows) }, [f]); render();
+  }
+  if (act === "delrow") {
+    const f = btn.dataset.f, rows = tableRows(c, f); rows.splice(+btn.dataset.r, 1);
+    await save(c.id, { [f]: rowsToValue(f, rows) }, [f]); render();
+  }
+  if (act === "delfact") { const s = [...(c.source_of_truth || [])]; s.splice(+btn.dataset.r, 1); await save(c.id, { source_of_truth: s }); render(); }
+  if (act === "editmd") { ui.editMd = !ui.editMd; render(); }
+  if (act === "savemd") { const v = $("#mdEdit").value; ui.editMd = false; await save(c.id, { profile_md: v }, ["profile_md"]); render(); }
+});
+
+/* ---------- boot ---------- */
+render();
+(async () => {
+  if (!window.claude?.use) { dbState = "off"; render(); return; }
+  const [d, s] = await Promise.all([window.claude.use("db").catch(() => null), window.claude.use("sample").catch(() => null)]);
+  db = d; sample = s;
+  if (!db) { dbState = "off"; render(); return; }
+  try {
+    const u = await window.claude.use("user").catch(() => null);
+    if (u?.can) { const w = await u.can("data.write"); if (w === false) { writable = false; } }
+  } catch {}
+  dbState = writable ? "live" : "readonly";
+  db.collection("companies").limit(1000).onSnapshot(snap => {
+    companies.clear();
+    snap.docs.forEach(doc => companies.set(doc.id, { id: doc.id, ...doc.data() }));
+    loaded = true;
+    render();
+  }, err => {
+    if (err?.code === "revoked" || err?.code === "not_granted") { dbState = "off"; }
+    render();
+  });
+})();
+})();
+</script>

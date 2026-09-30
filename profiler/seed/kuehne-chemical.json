@@ -1,0 +1,391 @@
+{
+ "name": "Kuehne Chemical Co.",
+ "platform_name": "Kuehne Chemical Company, Inc. (d/b/a Kuehne Company)",
+ "website": "https://www.kuehnecompany.com",
+ "hq_address": "86 N. Hackensack Avenue, Kearny (South Kearny), NJ 07032",
+ "what_it_is": "Family-owned regional chlor-alkali producer that electrolyzes brine and converts the chlorine on site into high-strength sodium hypochlorite, sold mainly to Northeast/Mid-Atlantic municipal water and wastewater utilities; also sells co-product caustic soda, hydrochloric acid, potassium hydroxide and hydrogen.",
+ "primary_category": "Bleach / hypochlorite producer",
+ "water_relevance": "Water-heavy (40-75%)",
+ "bluntly": "A bleach maker, but a municipal-disinfection one. An estimated ~75% of revenue is hypochlorite, of which ~80% goes to water/wastewater utilities; the rest is commodity caustic, HCl, KOH and hydrogen. Strict water treatment is about 65% of revenue (estimate). It sells no coagulants, polymers, inhibitors or service.",
+ "owner_type": "Family/founder-owned",
+ "ultimate_parent": "Kuehne Chemical Company, Inc. (Kuehne family, 3rd generation; described as 'private, woman-owned enterprise' in 2025 company presentation)",
+ "pe_sponsor": "",
+ "pe_entry_year": "",
+ "pe_entry_ev_usd_m": null,
+ "pe_entry_multiple": "",
+ "prior_owners": "None; family-owned since founding by Carl Kuehne in 1919 (Newark, NJ). Presidents: Peter Kuehne Sr. (1960-2003), Don Nicolai (2003-2022), Zach Kuehne (2022-); Bill Paulin Co-President, Administration & Finance.",
+ "total_revenue_usd_m": 100.0,
+ "total_revenue_year": "2025E",
+ "total_revenue_basis": "Estimate. No disclosure exists. Method: company-endorsed headcount of more than 150 (Buzzfile: ~200 across locations) x ~$550-650k revenue/employee for an integrated small chlor-alkali producer gives ~$85-125M, midpoint ~$100M. Cross-checks: Buzzfile vendor figure $82.7M, which likely predates the 2021-25 hypochlorite price rise (winning bids went from ~$0.75/gal at Fairfax Water in 2018-19 to $1.61-2.05/gal at Westchester County in 2025); Kona Equity $70.7M; Growjo $37.5M, rejected because its 78-employee count is too low. Range $80-130M.",
+ "us_revenue_usd_m": 100.0,
+ "total_ebitda_usd_m": 15.0,
+ "ebitda_margin_pct": 15.0,
+ "ebitda_year": "2025E",
+ "ebitda_basis": "Estimate - applies a 15% margin (range 10-20%) to ~$100M estimated revenue. The margin assumes a captive-chlorine integrated membrane chlor-alkali producer with municipal contract pricing, reduced by power-cost exposure and co-product caustic pricing. No reported, credit or deal data.",
+ "revenue_by_business": [
+  {
+   "business": "Sodium hypochlorite to municipal drinking-water and wastewater utilities",
+   "category": "Water treatment - municipal",
+   "revenue_usd_m": 60.0,
+   "pct": 60.0,
+   "how_derived": "Estimate: hypochlorite ~75% of revenue (the core product, the company's stated primary use) x ~80% municipal share (company: 'used primarily in water and waste water treatment'; bid awards from Fairfax VA to MA)"
+  },
+  {
+   "business": "Sodium hypochlorite to industrial, institutional, healthcare, cleaning, textile, pool and distributor customers",
+   "category": "Bleach / hypochlorite",
+   "revenue_usd_m": 15.0,
+   "pct": 15.0,
+   "how_derived": "Estimate: the remaining ~20% of hypochlorite sales; the company product page lists healthcare disinfection, cleaning & sanitation and textile uses"
+  },
+  {
+   "business": "Caustic soda sold to water utilities for pH/alkalinity adjustment",
+   "category": "Water treatment - municipal",
+   "revenue_usd_m": 5.0,
+   "pct": 5.0,
+   "how_derived": "Estimate: caustic ~12% of revenue, ~40% of it to water customers"
+  },
+  {
+   "business": "HCl sold into water treatment (pH, regeneration)",
+   "category": "Water treatment - industrial/commercial",
+   "revenue_usd_m": 1.5,
+   "pct": 1.5,
+   "how_derived": "Estimate: HCl ~7% of revenue, ~20% of it to water treatment"
+  },
+  {
+   "business": "Caustic soda, hydrochloric acid and potassium hydroxide to general industry, chemicals, food, pharma",
+   "category": "Chlor-alkali / commodity inorganics",
+   "revenue_usd_m": 15.5,
+   "pct": 15.5,
+   "how_derived": "Estimate: caustic ~$7M + HCl ~$5.5M + KOH ~$3M non-water"
+  },
+  {
+   "business": "Hydrogen and other (by-product sales, barge/logistics)",
+   "category": "Other",
+   "revenue_usd_m": 3.0,
+   "pct": 3.0,
+   "how_derived": "Estimate: small by-product sales; much of the hydrogen is used internally as boiler fuel"
+  }
+ ],
+ "us_water_treatment_revenue_usd_m": 66.5,
+ "us_water_treatment_arithmetic": "$100M est. total (all US). Municipal hypochlorite $100M x 75% x 80% = $60.0M + caustic to utilities $100M x 12% x 40% = $4.8M (~$5.0M) + HCl to water $100M x 7% x 20% = $1.4M (~$1.5M) = ~$66.5M. Excludes non-municipal bleach ($15M: cleaning, healthcare, textile, pool/distributor), industrial caustic/HCl/KOH ($15.5M) and hydrogen/other ($3M). Water share ~66%.",
+ "end_markets_total_platform": {
+  "Municipal drinking water": 38,
+  "Municipal wastewater": 28,
+  "Power generation": 2,
+  "Oil & gas / refining": 0,
+  "Chemicals & petrochem": 5,
+  "Pulp & paper": 1,
+  "Food & beverage": 4,
+  "Mining & metals": 0,
+  "Primary metals/steel": 1,
+  "Commercial HVAC / buildings": 1,
+  "Healthcare & institutional": 3,
+  "Data centers": 0,
+  "Pharma/life sciences": 2,
+  "Microelectronics/semis": 1,
+  "Manufacturing (general industrial)": 6,
+  "Pools & spa": 3,
+  "Agriculture & farm": 0,
+  "Consumer / retail": 2,
+  "Other": 3
+ },
+ "employees_total": 150,
+ "employees_basis": "Company-endorsed release (Sen. Sweeney tour of Kearny plant) says it 'employs more than 150 people'. Buzzfile: ~50 at Kearny, 200 total. SAM.gov: <500. Growjo's 78 is too low.",
+ "us_sites_count": 3,
+ "key_sites": [
+  {
+   "type": "HQ",
+   "address": "86 N. Hackensack Avenue",
+   "city": "Kearny",
+   "state": "NJ"
+  },
+  {
+   "type": "Plant",
+   "address": "86 N. Hackensack Avenue (chlor-alkali plant built 2015; bleach; barge access on Hackensack River)",
+   "city": "Kearny",
+   "state": "NJ"
+  },
+  {
+   "type": "Plant",
+   "address": "1645 River Road (chlor-alkali 1998; brine treatment 2020; Title V permit AQM-003/00115)",
+   "city": "New Castle (Delaware City)",
+   "state": "DE"
+  },
+  {
+   "type": "Plant",
+   "address": "71 Welton Street (former New Haven Chlor-Alkali LLC, acquired 2019)",
+   "city": "New Haven",
+   "state": "CT"
+  }
+ ],
+ "chemistries": [
+  {
+   "product_line": "Sodium hypochlorite 12.5-15% (incl. concentrated low-salt grade)",
+   "made_or_resold": "Made in-house (chlor-alkali electrolysis, chlorine reacted directly into bleach)",
+   "brands": "Kuehne; EPA FIFRA-registered"
+  },
+  {
+   "product_line": "Ultra-pure low-chlorate/low-bromate hypochlorite",
+   "made_or_resold": "Made in-house",
+   "brands": "PARAGON Ultra-Pure Bleach"
+  },
+  {
+   "product_line": "Sodium hydroxide (caustic soda)",
+   "made_or_resold": "Made in-house (co-product)",
+   "brands": ""
+  },
+  {
+   "product_line": "Hydrochloric acid",
+   "made_or_resold": "Made in-house",
+   "brands": ""
+  },
+  {
+   "product_line": "Potassium hydroxide",
+   "made_or_resold": "Made in-house (KOH electrolysis)",
+   "brands": ""
+  },
+  {
+   "product_line": "Hydrogen",
+   "made_or_resold": "By-product; partly used as boiler fuel, partly marketed",
+   "brands": ""
+  }
+ ],
+ "acquisitions": [
+  {
+   "date": "1979",
+   "target": "Marzahl Chemical Company (Kearny, NJ)",
+   "universe_id": null,
+   "what_it_does": "Bleach/chemical plant; became Kuehne HQ and main plant",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.kuehnecompany.com/about/"
+  },
+  {
+   "date": "1989",
+   "target": "Chloramone Corporation (New Castle, DE)",
+   "universe_id": null,
+   "what_it_does": "Hypochlorite/chlorine chemicals site; now the New Castle chlor-alkali plant",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.kuehnecompany.com/about/"
+  },
+  {
+   "date": "2019",
+   "target": "New Haven Chlor-Alkali LLC (New Haven, CT)",
+   "universe_id": null,
+   "what_it_does": "Small GreenChlor-process hypochlorite plant (ex-H. Krevit & Co.; ~70 jobs per New Haven Independent); its minibulk distribution business was sold separately to PVS Minibulk in Nov 2019",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.kuehnecompany.com/about/"
+  }
+ ],
+ "addon_corrections": "No add-ons are listed in the universe, and that is right: no acquisitions since 2019. Missing historical deals: Marzahl Chemical (1979), Chloramone Corp (1989), New Haven Chlor-Alkali LLC (2019). If New Haven Chlor-Alkali or H. Krevit appears in the universe as a standalone company, fold it into Kuehne. Kearny Barge Company (1987) was set up by Kuehne, not bought. Linden Chemicals & Plastics (1972-78) was a former sister company, not an add-on.",
+ "confidence": "Medium",
+ "what_changed_vs_prior": "Revenue cut from $110M to ~$100M est. (same approach, now anchored on the company-endorsed 150+ headcount and bid-price evidence). US water cut from $75M to ~$66.5M, because non-municipal bleach and industrial co-products are now explicitly excluded. Employees 180 -> >150 (company-endorsed). EBITDA added as an estimate (~$15M, 15%). Plant list confirmed with addresses. History and acquisitions (1979, 1989, 2019) added. President updated to Zach Kuehne (2022). 'Woman-owned' designation noted. The prior note's Thomasnet $100-249.9M band was not verified.",
+ "open_questions": "Actual revenue/EBITDA; chlorine capacity (tpd) at Kearny and New Castle; split of municipal vs industrial bleach; whether a Maryland terminal exists (Growjo mention); how much hydrogen is sold vs self-used; the NJDEP EJ Impact Statement (dep.nj.gov, blocked) may contain capacity and throughput data.",
+ "evidence": [
+  {
+   "metric": "total_revenue",
+   "value": "$82.7M (vendor estimate)",
+   "year": "n/a",
+   "source_type": "Data vendor (Buzzfile)",
+   "url": "https://www.buzzfile.com/business/Kuehne-Chemical-Company,-Inc.-973-589-0700",
+   "quote": "generates approximately $82.7 million in annual revenues and maintains roughly 50 employees at the main facility, with 200 total across all locations"
+  },
+  {
+   "metric": "total_revenue",
+   "value": "$37.5M / 78 employees (rejected, too low)",
+   "year": "n/a",
+   "source_type": "Data vendor (Growjo)",
+   "url": "https://growjo.com/company/Kuehne_Chemical_Company",
+   "quote": "estimated annual revenue of $37.5 million and employs 78 people"
+  },
+  {
+   "metric": "total_revenue",
+   "value": "$70.7M (vendor estimate)",
+   "year": "n/a",
+   "source_type": "Data vendor (Kona Equity, search title)",
+   "url": "https://www.konaequity.com/company/kuehne-company-4393770060/",
+   "quote": "Kuehne Company - $70.7 M Revenue"
+  },
+  {
+   "metric": "segment",
+   "value": "Hypochlorite, caustic, HCl used primarily in water/wastewater; largest Mid-Atlantic hypochlorite supplier",
+   "year": "2020",
+   "source_type": "Company statement in trade publication",
+   "url": "https://digital-editions.todaymediacustom.com/stuff/files/basic-html/page37.html",
+   "quote": "Kuehne is a producer of high strength sodium hypochlorite (bleach), caustic soda and hydrochloric acid liquids used primarily in water and waste water treatment. Kuehne is by far the largest supplier of sodium hypochlorite in the Mid-Atlantic region supplying bleach to many of the municipalities from Fairfax County, VA north into Massachusetts."
+  },
+  {
+   "metric": "us_water",
+   "value": "Serves water of 36M+ people",
+   "year": "2025",
+   "source_type": "Company presentation",
+   "url": "https://www.kuehnecompany.com/content/uploads/2025/04/Kuehne-Company-Sustainability-Presentation.pdf",
+   "quote": "providing safe drinking water for over 36 million people, about 11% of the US population ... private, woman-owned enterprise"
+  },
+  {
+   "metric": "employees",
+   "value": ">150",
+   "year": "c.2021-23",
+   "source_type": "Press release (InsiderNJ)",
+   "url": "https://www.insidernj.com/press-release/sweeney-tours-kuehne-chemical-company/",
+   "quote": "Employs more than 150 people ... manufactures sodium hypochlorite for potable water and wastewater treatment facilities"
+  },
+  {
+   "metric": "sites",
+   "value": "Kearny NJ HQ; 1645 River Rd New Castle DE; 71 Welton St New Haven CT",
+   "year": "2026",
+   "source_type": "Company website",
+   "url": "https://www.kuehnecompany.com/contact/",
+   "quote": "86 N Hackensack Avenue, Kearny NJ 07032 / 1645 River Road, New Castle DE 19720 / 71 Welton Street, New Haven CT 06511"
+  },
+  {
+   "metric": "deal",
+   "value": "Acquisitions 1979 Marzahl, 1989 Chloramone, 2019 New Haven Chlor-Alkali; plants built 1998 (DE), 2015 (NJ)",
+   "year": "2026",
+   "source_type": "Company website",
+   "url": "https://www.kuehnecompany.com/about/",
+   "quote": "acquired Marzahl Chemical Company in Kearny, NJ in 1979 ... purchased Chloramone Corporation in New Castle, Delaware in 1989 ... New Haven Chlor-Alkali LLC in Connecticut was acquired in 2019"
+  },
+  {
+   "metric": "deal",
+   "value": "NHCA minibulk distribution business sold to PVS Minibulk",
+   "year": "2019-11-22",
+   "source_type": "Press release",
+   "url": "https://www.pvschemicals.com/about/news/pvs-minibulk-inc-announces-acquisition-of-certain-assets-of-new-haven-chlor-alkali-llc/",
+   "quote": "Our acquisition of NHCA's minibulk business represents an important expansion of PVS Minibulk's capabilities"
+  },
+  {
+   "metric": "ownership",
+   "value": "Zach Kuehne President since 2022 (3rd generation)",
+   "year": "2022",
+   "source_type": "Company website",
+   "url": "https://www.kuehnecompany.com/about/",
+   "quote": "Zach Kuehne, representing the third generation, became President in 2022"
+  },
+  {
+   "metric": "segment",
+   "value": "Hypochlorite price $0.7539/gal (15%) at Fairfax Water",
+   "year": "2018-19",
+   "source_type": "Municipal contract pricing",
+   "url": "https://www.fairfaxwater.org/sites/default/files/solicitations/Contract%20Pricing.pdf",
+   "quote": "Sodium Hypochlorite, 15% ... $0.7539 per gallon (Kuehne Chemical Company, Inc.)"
+  },
+  {
+   "metric": "segment",
+   "value": "Hypochlorite $1.61-2.05/gal at Westchester County",
+   "year": "2025-26",
+   "source_type": "Municipal contract award",
+   "url": "https://bps.westchestercountyny.gov/images/Sodium_Hypochlorite_12_5922.pdf",
+   "quote": "4000 gallons or more $1.61 per gallon"
+  },
+  {
+   "metric": "sites",
+   "value": "Title V permit renewal, New Castle DE",
+   "year": "2020",
+   "source_type": "State permit",
+   "url": "https://dnrec.delaware.gov/public-notices/title-v-permit-renewal-applications-kuehne-chemical-company/",
+   "quote": "1645 River Road, New Castle, Delaware ... Permit Number: AQM-003/00115 (Renewal 2)"
+  }
+ ],
+ "profile_md": "## Kuehne Chemical Company, Inc. (Kuehne Company): investor profile\n\n**Bottom line:** Kuehne is a family-owned regional chlor-alkali producer and the dominant merchant supplier of **sodium hypochlorite (bleach) to Northeast and Mid-Atlantic water utilities**. It *is* a bleach maker. Unlike Olin, KIK or Hasa, though, its bleach goes mostly to municipal drinking-water and wastewater disinfection. That makes a large share of its revenue (~65%, estimated) strict water treatment. The rest is merchant bleach for industrial, institutional, cleaning, textile and distributor uses, plus co-product caustic soda, hydrochloric acid, potassium hydroxide and hydrogen sold into general industry. No financials are disclosed, so every revenue and EBITDA figure below is an estimate.\n\n### Business overview\nKuehne runs electrolysis (chlor-alkali) plants that turn salt brine into chlorine, caustic soda and hydrogen. The chlorine is reacted straight into high-strength sodium hypochlorite on site, not shipped as gas. In the company's words: \"Kuehne is a producer of high strength sodium hypochlorite (bleach), caustic soda and hydrochloric acid liquids used primarily in water and waste water treatment... by far the largest supplier of sodium hypochlorite in the Mid-Atlantic region supplying bleach to many of the municipalities from Fairfax County, VA north into Massachusetts\" (Stuff Made and Built in Delaware, 2020). It says it supplies disinfection chemicals to a region of \"over 36 million people, about 11% of the US population\" and calls itself a critical-infrastructure provider. The plants run 24/7/365.\n\n### History and ownership\n- **1919:** Carl Kuehne starts making bleach in a Newark, NJ basement for laundry use.\n- **1960:** Peter Kuehne Sr. becomes President.\n- **1966:** The company incorporates.\n- **1972-1978:** A sister company, Linden Chemicals & Plastics (LCP), runs a chlor-alkali plant in Elizabeth, NJ. The relationship ended by 1978.\n- **Acquisitions and new assets:** Marzahl Chemical Company in Kearny, NJ (1979, now HQ and main plant); Kearny Barge Company, set up in 1987 for water transport; Chloramone Corporation in New Castle, DE (1989).\n- **New chlor-alkali plants:** New Castle (1998), Kearny (2015), and a brine treatment facility at New Castle (2020).\n- **2019:** Acquired New Haven Chlor-Alkali LLC in New Haven, CT. That was a small GreenChlor-process bleach plant formerly tied to H. Krevit & Co. Its minibulk distribution business was sold separately to PVS Minibulk in November 2019.\n- **Leadership:** Don Nicolai (company counsel since 1979) became President after Peter Kuehne Sr. died in 2003. Third-generation Zach Kuehne became President in 2022, and Bill Paulin is Co-President for administration and finance. A 2025 company presentation calls it a \"private, woman-owned enterprise.\"\n\nThere is no PE sponsor, no debt rating and no public filing.\n\n### Products and chemistries\nAll core products are **made in-house** by membrane chlor-alkali electrolysis:\n- sodium hypochlorite at 12.5-15% trade strength, with a concentrated low-salt grade and the branded **PARAGON ultra-pure bleach**, a low-chlorate/low-bromate grade aimed at drinking-water specifications\n- sodium hydroxide (caustic soda)\n- hydrochloric acid\n- potassium hydroxide\n- by-product hydrogen, which is used partly as boiler fuel and marketed for fuel/industrial use\n\nIt holds EPA pesticide (FIFRA) registrations for its hypochlorite and delivers by its own bulk trucks. The barge subsidiary moves product in the New York Harbor area. It does not sell coagulants, corrosion inhibitors, polymers or service programs, so its water exposure is disinfection plus pH adjustment only.\n\n### End markets and customers\nThe core customers are municipal water and wastewater utilities from northern Virginia to Massachusetts. Public bid records show Kuehne as the awarded hypochlorite vendor to:\n- Fairfax Water (VA): 15% hypochlorite at about $0.75/gal in 2018-19\n- Westchester County (NY): $1.61-2.05/gal tiered, extended through Dec 2026\n- Greenwich (CT)\n- various NJ, CT and Long Island water authorities\n\nThe company's own product page also lists healthcare disinfection, cleaning/sanitation and textile bleaching. Caustic soda, HCl and KOH go to water treatment for pH adjustment and also to general industrial, chemical, food and pharma users.\n\nEstimated end-market mix of the total platform:\n- ~38% municipal drinking water\n- ~28% municipal wastewater\n- the remaining third: general manufacturing, chemicals, food, healthcare/institutional, pool distributors and other\n\n### Footprint\nThree US production sites:\n1. **Kearny, NJ:** 86 N. Hackensack Ave; HQ, chlor-alkali and bleach plant on the Hackensack River, with barge access.\n2. **New Castle (Delaware City), DE:** 1645 River Road; chlor-alkali plant, Title V air permit AQM-003/00115.\n3. **New Haven, CT:** 71 Welton Street; bleach plant.\n\nTheir location close to the NY/NJ/Philadelphia/DC metro areas is a real advantage. Bleach loses strength over time, is heavy and costs a lot to haul, so short, fresh delivery routes win municipal bids.\n\n### Financials (all estimated)\n- **Revenue:** No revenue is disclosed. Data vendors vary widely: Buzzfile ~$82.7M, Kona Equity ~$70.7M, Growjo $37.5M (Growjo's 78-employee count is clearly too low). The company has said it employs \"more than 150 people\" (Sweeney tour release), and Buzzfile gives ~200 across locations. At ~$550-650k of revenue per employee for an integrated small chlor-alkali producer, and with the 2021-2025 hypochlorite price run-up (winning bids roughly doubled from ~$0.75/gal in 2018 to $1.6-2.0/gal in 2025), **total revenue is estimated at ~$100M for 2025 (range $80-130M)**.\n- **EBITDA:** Estimated at **~$15M (~15% margin; range 10-20%)**. The new membrane cells and self-supplied chlorine should support better margins than a pure bleach repackager. Power cost in PJM/ISO-NE and sales of co-product caustic at prevailing prices are the main swing factors.\n- **Water share:** Strict US water treatment revenue is estimated at **~$66M**:\n  - ~$60M of municipal hypochlorite\n  - ~$5M of caustic to utilities\n  - ~$1.5M of acid to water treatment\n\n### M&A strategy\nKuehne has grown by opportunistically buying regional bleach and chlor-alkali assets: Marzahl (1979), Chloramone (1989) and New Haven Chlor-Alkali (2019). It then reinvested heavily in its own electrolysis capacity. No acquisitions since 2019 were found. It is more a potential **target** than a consolidator. Logical buyers include:\n- hypochlorite/chlor-alkali strategics (Olin, OxyChem, Westlake, Hawkins, Univar/Brenntag)\n- a PE-backed municipal-chemicals platform\n- infrastructure investors that like its critical-infrastructure, municipal-contract profile\n\n### Competitive position\nIts moat is regional:\n- captive chlorine, with no need to rail chlorine gas into dense urban areas\n- hard-to-replicate hazardous-materials permits in NJ, DE and CT\n- short delivery radius to the country's densest utility corridor\n- a long record of winning bids\n\nCompetitors include Olin/K.A. Steel, Univar Solutions, Hawkins (limited in the region), PVS Chemicals, Borden & Remington, Miracle Chemical/Allied-type repackagers, and small on-site generation (OSG) systems that let utilities make their own hypochlorite.\n\n### Risks\n- The municipal bid cycle, with annual re-bids on price.\n- Electricity cost exposure.\n- Swings in the price of co-product caustic.\n- NJ environmental-justice permitting (the Kearny site required an EJ Impact Statement).\n- Safety and incident risk at urban plants.\n- Utilities shifting to on-site generation or UV/chloramine.\n- Family succession and governance.\n\n### What is uncertain\n- Actual revenue, EBITDA, capacity (tons/day chlorine), product mix and the municipal vs industrial bleach split. None of these are disclosed.\n- The employee count: \">150\" is company-endorsed, and vendors say 78-200.\n- Whether any Maryland terminal exists (Growjo mentions MD operations; not confirmed).\n- The specific trigger for the \"woman-owned\" designation.\n",
+ "universe_id": 314,
+ "id": "kuehne-chemical",
+ "customers": [
+  {
+   "name": "Fairfax Water (VA)",
+   "what": "15% sodium hypochlorite",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Westchester County (NY)",
+   "what": "Hypochlorite, extended through Dec 2026",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Greenwich (CT)",
+   "what": "Hypochlorite",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "NJ, CT and Long Island water authorities",
+   "what": "Hypochlorite, caustic",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  }
+ ],
+ "competitors": [
+  {
+   "name": "Olin / K.A. Steel",
+   "overlap": "Hypochlorite"
+  },
+  {
+   "name": "Univar Solutions",
+   "overlap": "Distribution"
+  },
+  {
+   "name": "Hawkins",
+   "overlap": "Municipal chemicals"
+  },
+  {
+   "name": "PVS Chemicals",
+   "overlap": "Bleach and acids"
+  },
+  {
+   "name": "Borden & Remington",
+   "overlap": "Regional chemicals"
+  },
+  {
+   "name": "On-site generation systems",
+   "overlap": "Utilities making their own bleach"
+  }
+ ],
+ "buyers": [
+  {
+   "name": "Olin",
+   "type": "Strategic",
+   "rationale": "Hypochlorite footprint in NE corridor"
+  },
+  {
+   "name": "OxyChem",
+   "type": "Strategic",
+   "rationale": "Chlor-alkali integration"
+  },
+  {
+   "name": "Westlake",
+   "type": "Strategic",
+   "rationale": "Chlor-alkali integration"
+  },
+  {
+   "name": "Hawkins",
+   "type": "Strategic",
+   "rationale": "Municipal chemicals expansion into Northeast"
+  },
+  {
+   "name": "Univar / Brenntag",
+   "type": "Strategic",
+   "rationale": "Distribution plus production"
+  },
+  {
+   "name": "Infrastructure investors",
+   "type": "Financial",
+   "rationale": "Critical-infrastructure municipal contracts"
+  }
+ ],
+ "addon_ideas": [],
+ "source_of_truth": [],
+ "locked": [],
+ "status": "ready",
+ "runs": [
+  {
+   "at": "2026-09-27T00:00:00Z",
+   "kind": "Imported",
+   "summary": "Imported from WTC deep-dive batch P05B"
+  }
+ ],
+ "updated_at": "2026-09-27T00:00:00Z"
+}

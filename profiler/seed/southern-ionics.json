@@ -1,0 +1,471 @@
+{
+ "name": "Southern Ionics",
+ "platform_name": "Southern Ionics Incorporated (SII)",
+ "website": "https://www.southernionics.com",
+ "hq_address": "579 Commerce Street, West Point, MS 39773",
+ "what_it_is": "A family-owned maker of liquid inorganic chemicals founded in 1980. It produces aluminum chemicals (sodium aluminate, alum, aluminum chloride, PHOS-SORB), sulfur reducing agents (sodium bisulfite, sulfite, thiosulfate), AQUA-CAT aqua ammonia and dried alumina trihydrate (ATH) at about 10 plants across the Southeast, Gulf Coast and Maryland. Water/wastewater treatment is one important outlet among several; refinery-catalyst, zeolite and TiO2 feedstocks, power-plant NOx control, pulp and ATH fillers are the others.",
+ "primary_category": "Specialty / intermediate chemicals (water is a minor outlet)",
+ "water_relevance": "Water is a segment (10-40%)",
+ "bluntly": "Mostly a merchant inorganic intermediates supplier. An estimated ~27% of revenue is water treatment (alum/aluminate coagulants, PHOS-SORB, bisulfite dechlorination). The bulk is sodium aluminate for FCC catalysts, zeolites and TiO2, aqua ammonia for SCR NOx control, and ATH.",
+ "owner_type": "Family/founder-owned",
+ "ultimate_parent": "Southern Ionics Incorporated (privately held; founder Milton O. Sundbeck Jr., Chairman & CEO)",
+ "pe_sponsor": "",
+ "pe_entry_year": "",
+ "pe_entry_ev_usd_m": null,
+ "pe_entry_multiple": "",
+ "prior_owners": "None. Founder-owned since it was established in 1980 in Mobile, AL (the founder started in his garage).",
+ "total_revenue_usd_m": 175.0,
+ "total_revenue_year": "2025E",
+ "total_revenue_basis": "ESTIMATE (no disclosure). The company states it has 350+ employees. 350 x ~$500k revenue per employee (liquid inorganic producer with commodity pass-through in aqua ammonia and ATH) gives ~$175M. Plausible range $110-240M. Vendor data points are low-quality and bracket the low end: Buzzfile ~$89.9M (with 260 employees, an old count), ZoomInfo/RocketReach $106M, and IncFact '>$500M' (not credible). Prior pass used $230M (350 x $650k). Revised down because per-employee productivity at 10 small liquid plants plus an owned truck/rail fleet is more likely $400-600k.",
+ "us_revenue_usd_m": 165.0,
+ "total_ebitda_usd_m": 25.0,
+ "ebitda_margin_pct": 14.0,
+ "ebitda_year": "2025E",
+ "ebitda_basis": "Estimate - ~14% margin on $175M estimated revenue. This is the midpoint of the 10-18% range for merchant liquid inorganics (alum/aluminate/bisulfite), blended down for pass-through aqua ammonia and ATH resale and up for specialty catalyst-grade aluminate and PHOS-SORB. No credit docs, rating reports or deal disclosures exist (the company has no PE or public debt).",
+ "revenue_by_business": [
+  {
+   "business": "Aluminum coagulants & nutrient removal for municipal water/wastewater (alum, sodium aluminate, PHOS-SORB, FLUOR-SORB; NSF 60)",
+   "category": "Water treatment - municipal",
+   "revenue_usd_m": 20.0,
+   "pct": 11.4,
+   "how_derived": "Estimate: aluminum chemistries assumed ~40% of total ($70M). Of that, ~29% goes to municipal water/wastewater, based on the company's statement that it pivoted from newsprint to wastewater and on its 40+ PHOS-SORB trials."
+  },
+  {
+   "business": "Aluminum coagulants / phosphorus & fluoride removal for industrial water & wastewater",
+   "category": "Water treatment - industrial/commercial",
+   "revenue_usd_m": 8.0,
+   "pct": 4.6,
+   "how_derived": "Estimate: ~11% of the $70M aluminum-chemistry line."
+  },
+  {
+   "business": "Sodium aluminate / aluminum chemicals for catalyst (FCC), zeolite, TiO2 and pharma manufacture; high-purity alumina pilot",
+   "category": "Specialty / intermediate (non-water)",
+   "revenue_usd_m": 37.0,
+   "pct": 21.1,
+   "how_derived": "Estimate: ~53% of the aluminum line. The company calls itself the 'largest North American producer of high-quality aluminum chemicals' and lists catalyst, zeolite and TiO2 manufacture first among applications."
+  },
+  {
+   "business": "Papermakers' sodium aluminate and alum to paper mills",
+   "category": "Pulp & paper process",
+   "revenue_usd_m": 5.0,
+   "pct": 2.9,
+   "how_derived": "Estimate: ~7% of the aluminum line. The legacy newsprint market has 'contracted significantly' per the company."
+  },
+  {
+   "business": "AQUA-CAT ammonium hydroxide (19%/29%) for SCR/SNCR NOx control at power plants, refinery catalysts and chemical uses; Houston Ammonia Terminal services",
+   "category": "Chlor-alkali / commodity inorganics",
+   "revenue_usd_m": 41.0,
+   "pct": 23.4,
+   "how_derived": "Estimate: aqua ammonia assumed ~25% of total ($44M), given the dedicated ammonia terminal (50% of HAT) and multiple Gulf plants. ~93% of it goes to emissions control and industrial uses."
+  },
+  {
+   "business": "Aqua ammonia for drinking-water chloramination",
+   "category": "Water treatment - municipal",
+   "revenue_usd_m": 3.0,
+   "pct": 1.7,
+   "how_derived": "Estimate: ~7% of the aqua ammonia line."
+  },
+  {
+   "business": "Sodium bisulfite/sulfite/thiosulfate for municipal wastewater dechlorination",
+   "category": "Water treatment - municipal",
+   "revenue_usd_m": 11.0,
+   "pct": 6.3,
+   "how_derived": "Estimate: sulfur chemistries assumed ~20% of total ($35M). ~31% goes to municipal dechlorination, which the company lists first among its sulfur applications."
+  },
+  {
+   "business": "Sulfur chemistries for boiler oxygen scavenging and industrial dechlorination",
+   "category": "Water treatment - industrial/commercial",
+   "revenue_usd_m": 5.0,
+   "pct": 2.9,
+   "how_derived": "Estimate: ~14% of the sulfur line."
+  },
+  {
+   "business": "Sulfur chemistries for pulp (ClO2 destruction)",
+   "category": "Pulp & paper process",
+   "revenue_usd_m": 9.0,
+   "pct": 5.1,
+   "how_derived": "Estimate: ~26% of the sulfur line."
+  },
+  {
+   "business": "Sulfur chemistries for FGD, surfactant synthesis, food, feed, pharma (metabisulfite from 2027)",
+   "category": "Specialty / intermediate (non-water)",
+   "revenue_usd_m": 10.0,
+   "pct": 5.7,
+   "how_derived": "Estimate: ~29% of the sulfur line."
+  },
+  {
+   "business": "Alumina trihydrate (dry ATH from Lake Charles dryers; wet cake resale) for flame-retardant fillers, fiber cement, specialty alumina",
+   "category": "Specialty / intermediate (non-water)",
+   "revenue_usd_m": 21.0,
+   "pct": 12.0,
+   "how_derived": "Estimate: ~12% of total, based on the dedicated port/dryer site and the Atlantic Alumina (Gramercy) supply partnership. Part of the ATH is consumed internally as feedstock, and that part is excluded here."
+  },
+  {
+   "business": "Other: Zirconic zirconium chemicals, magnesium sulfate, soda ash resale, high-purity quartz support, misc.",
+   "category": "Other",
+   "revenue_usd_m": 5.0,
+   "pct": 2.9,
+   "how_derived": "Estimate: residual."
+  }
+ ],
+ "us_water_treatment_revenue_usd_m": 45.0,
+ "us_water_treatment_arithmetic": "Water lines (estimates): municipal aluminum coagulants/PHOS-SORB $20M + industrial aluminum coagulants $8M + aqua ammonia for chloramination $3M + bisulfite municipal dechlorination $11M + sulfur boiler/industrial water $5M = $47M (27% of $175M). x ~96% US share (all plants are US; exports/Canada minor) = ~$45M. Excludes pulp process uses, FGD, catalyst/zeolite/TiO2 aluminate, SCR aqua ammonia and ATH.",
+ "end_markets_total_platform": {
+  "Municipal drinking water": 10,
+  "Municipal wastewater": 11,
+  "Power generation": 17,
+  "Oil & gas / refining": 16,
+  "Chemicals & petrochem": 20,
+  "Pulp & paper": 8,
+  "Food & beverage": 2,
+  "Mining & metals": 2,
+  "Primary metals/steel": 1,
+  "Commercial HVAC / buildings": 0,
+  "Healthcare & institutional": 0,
+  "Data centers": 0,
+  "Pharma/life sciences": 2,
+  "Microelectronics/semis": 1,
+  "Manufacturing (general industrial)": 8,
+  "Pools & spa": 0,
+  "Agriculture & farm": 1,
+  "Consumer / retail": 0,
+  "Other": 1
+ },
+ "employees_total": 350,
+ "employees_basis": "Company-stated: 'employs more than 350 people' (southernionics.com/about, and repeated in Oct-2025 press on the Tuscaloosa expansion). Buzzfile shows 260 (older vendor figure). The 2019 divestiture of Southern Ionics Minerals (~140 employees in 2015) removed that workforce.",
+ "us_sites_count": 14,
+ "key_sites": [
+  {
+   "type": "HQ",
+   "address": "579 Commerce Street",
+   "city": "West Point",
+   "state": "MS"
+  },
+  {
+   "type": "Plant",
+   "address": "180 West Broad Street",
+   "city": "West Point",
+   "state": "MS"
+  },
+  {
+   "type": "Lab",
+   "address": "1421 Industrial Access Road (R&D; HPA pilot plant)",
+   "city": "West Point",
+   "state": "MS"
+  },
+  {
+   "type": "Lab",
+   "address": "5123 South Frontage Rd (R&D)",
+   "city": "Columbus",
+   "state": "MS"
+  },
+  {
+   "type": "Plant",
+   "address": "1724 Lumpkin Road",
+   "city": "Augusta",
+   "state": "GA"
+  },
+  {
+   "type": "Branch",
+   "address": "710 Laney Walker Blvd Ext. (office)",
+   "city": "Augusta",
+   "state": "GA"
+  },
+  {
+   "type": "Plant",
+   "address": "1250 Neosho Avenue",
+   "city": "Baton Rouge",
+   "state": "LA"
+  },
+  {
+   "type": "Plant",
+   "address": "1202 Airline Highway",
+   "city": "Baton Rouge",
+   "state": "LA"
+  },
+  {
+   "type": "Plant",
+   "address": "187 South Main Street",
+   "city": "Calhoun",
+   "state": "TN"
+  },
+  {
+   "type": "Plant",
+   "address": "1100 Viaduct Road North",
+   "city": "Chickasaw",
+   "state": "AL"
+  },
+  {
+   "type": "Plant",
+   "address": "1697 Davison Road",
+   "city": "Carlyss (Lake Charles)",
+   "state": "LA"
+  },
+  {
+   "type": "Plant",
+   "address": "150 Marine Street (port; ATH dryers)",
+   "city": "Lake Charles",
+   "state": "LA"
+  },
+  {
+   "type": "Plant",
+   "address": "12901 Bay Park Road (sulfur chemicals; Houston Ammonia Terminal area)",
+   "city": "Pasadena",
+   "state": "TX"
+  },
+  {
+   "type": "Plant",
+   "address": "5410 Reichhold Road (sulfur chemicals since 1994; $34M metabisulfite expansion)",
+   "city": "Tuscaloosa",
+   "state": "AL"
+  },
+  {
+   "type": "Plant",
+   "address": "10319 Grumbacker Lane (sulfur chemicals)",
+   "city": "Williamsport",
+   "state": "MD"
+  }
+ ],
+ "chemistries": [
+  {
+   "product_line": "Aluminum chemicals: sodium aluminate 38/43/45%, papermakers' sodium aluminate, aluminum sulfate (commercial, low-iron, technical), aluminum chloride, PHOS-SORB (P removal), FLUOR-SORB (F removal), pH-SORB, SI-LOCK",
+   "made_or_resold": "Made in-house (ATH-based production; 'seven strategically located manufacturing facilities' for aluminum chemistries); NSF 60 certified",
+   "brands": "PHOS-SORB, FLUOR-SORB, pH-SORB, SI-LOCK"
+  },
+  {
+   "product_line": "Sulfur reducing agents: sodium bisulfite 20-43%, sodium sulfite 15%, sodium thiosulfate 30/40%, SI-NOCHLOR-T2; sodium metabisulfite from 2027",
+   "made_or_resold": "Made at 4 owned plants (Pasadena TX, Tuscaloosa AL, Williamsport MD, plus one more) plus 5 partner/toll sites",
+   "brands": "SI-NOCHLOR-T2"
+  },
+  {
+   "product_line": "Ammonium hydroxide (aqua ammonia 19%/29%) for SCR/SNCR, catalysts, chloramination, chemical uses",
+   "made_or_resold": "Made (diluted/upgraded from anhydrous ammonia) incl. via 50%-owned Houston Ammonia Terminal",
+   "brands": "AQUA-CAT"
+  },
+  {
+   "product_line": "Alumina trihydrate: dry ATH and wet cake",
+   "made_or_resold": "Wet cake bought from domestic/international suppliers (incl. Atlantic Alumina, Gramercy LA) and dried in-house at Lake Charles; also resold",
+   "brands": ""
+  },
+  {
+   "product_line": "Zirconium chemicals; high-purity alumina (99.9/99.99%) for Li-ion separators (pilot since 2023); magnesium sulfate; soda ash",
+   "made_or_resold": "Zirconium and HPA made; MgSO4/soda ash likely resold",
+   "brands": "ZIRCONIC"
+  }
+ ],
+ "acquisitions": [
+  {
+   "date": "2015-06",
+   "target": "Houston Ammonia Terminal, L.P. (CF Industries' indirect 50% interest)",
+   "universe_id": null,
+   "what_it_does": "Ammonia storage terminal in Pasadena, TX supplying upgraded ammonia products to Gulf Coast markets. SII had marketed aqua ammonia from it for 13+ years; the other 50% partner was PotashCorp (now Nutrien). Added 11 employees.",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://cdispatch.com/news/business-brief-southern-ionics-inc-makes-purchase/"
+  },
+  {
+   "date": "2019-08 (DIVESTITURE, not an acquisition)",
+   "target": "Southern Ionics Minerals LLC (sold to Chemours)",
+   "universe_id": null,
+   "what_it_does": "Titanium/zircon mineral-sands mining (Offerman GA processing plant, Charlton County mine; >$100M invested by SII from 2014-15; ~140 employees in 2015). Sold to Chemours; price undisclosed.",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.chemours.com/en/news-media-center/all-news/press-releases/2019/chemours-acquires-mining-operations-of-southern-ionics-minerals"
+  }
+ ],
+ "addon_corrections": "No add-ons are listed in the universe, and none are missing among water-treatment companies. The only acquisition found is the 2015 purchase of CF Industries' 50% interest in Houston Ammonia Terminal (ammonia logistics, not water). Growth has otherwise been organic and greenfield (Tuscaloosa $34M metabisulfite expansion 2025-27; HPA pilot 2023). Note: Southern Ionics Minerals (mineral sands) was a subsidiary divested to Chemours in 2019. It is not part of the platform and should not be counted in the universe.",
+ "confidence": "Low",
+ "what_changed_vs_prior": "Total revenue revised from $230M to $175M (still an estimate: 350 x ~$500k/employee; vendor estimates of $90-106M sit below this). Water share revised from ~35% to ~27%, so US water revenue falls from $78M to ~$45M. Added a first-ever EBITDA estimate (~$25M at 14%). Added full site list with addresses (10 plants + port + 2 R&D + office), the 2015 HAT acquisition, the 2019 SIM divestiture, the Tuscaloosa $34M expansion and the HPA pilot. Ownership confirmed as founder-owned with no PE.",
+ "open_questions": "Actual revenue and EBITDA (no disclosure; D&B/credit reports could narrow this). True split between catalyst/TiO2 aluminate and water coagulants. Size of the aqua ammonia business and whether SII still holds 50% of HAT. Which plants make which aluminum products (Augusta, Baton Rouge x2, Calhoun, Chickasaw, West Point, Carlyss). Proceeds from the 2019 SIM sale. Succession: founder is still Chairman/CEO, and Joe Stevens has been President/COO since 2022, so a sale to a strategic (Chemtrade, USALCO, Kemira) or PE is possible.",
+ "evidence": [
+  {
+   "metric": "employees",
+   "value": ">350",
+   "year": "2025",
+   "source_type": "Company website",
+   "url": "https://southernionics.com/about/",
+   "quote": "now employs more than 350 people across multiple facilities throughout the United States"
+  },
+  {
+   "metric": "ownership",
+   "value": "Family-owned since 1980; founder Milton O. Sundbeck Jr. Chairman & CEO; Joseph J. Stevens III President & COO (July 2022)",
+   "year": "2022",
+   "source_type": "Company press release",
+   "url": "https://southernionics.com/southern-ionics-incorporated-announces-joseph-j-stevens-iii-as-president-and-chief-operating-officer/",
+   "quote": "family-owned chemical manufacturer... 13 facilities across Eastern and Southeastern U.S."
+  },
+  {
+   "metric": "total_revenue",
+   "value": "$89.9M (vendor estimate, 260 employees)",
+   "year": "n/a",
+   "source_type": "Buzzfile (vendor estimate)",
+   "url": "https://www.buzzfile.com/business/Southern-Ionics-Incorporated-662-494-3055",
+   "quote": "Annual Revenue: Approximately $89.9 million... Total Employees: 260"
+  },
+  {
+   "metric": "total_revenue",
+   "value": "$106M (vendor estimate)",
+   "year": "2026",
+   "source_type": "ZoomInfo / RocketReach (vendor estimate)",
+   "url": "https://www.zoominfo.com/c/southern-ionics-inc/1138657486",
+   "quote": "Revenue: $106 Million; Employees: 201-500"
+  },
+  {
+   "metric": "sites",
+   "value": "10 plants, 2 R&D, 1 port, 1 office; 4 third-party distribution points",
+   "year": "2025",
+   "source_type": "Company website",
+   "url": "https://southernionics.com/contact/",
+   "quote": "1724 Lumpkin Road, Augusta, GA... 12901 Bay Park Road, Pasadena, TX... 5410 Reichhold Road, Tuscaloosa, AL... 10319 Grumbacker Lane, Williamsport, MD"
+  },
+  {
+   "metric": "sites",
+   "value": "$34M Tuscaloosa expansion for sodium metabisulfite, 7 jobs, operational Q2 2027",
+   "year": "2025",
+   "source_type": "Trade press / company PR",
+   "url": "https://www.constructionequipmentguide.com/construction-to-begin-soon-on-34m-expansion-of-chemical-plant-in-tuscaloosa-ala/69224",
+   "quote": "Southern Ionics is committing $34 million to expand its Tuscaloosa facility"
+  },
+  {
+   "metric": "segment",
+   "value": "Sulfur chemicals uses: municipal and industrial water/wastewater, pulp and paper, chemical manufacturing, food, feed, pharma",
+   "year": "2025",
+   "source_type": "Company press release",
+   "url": "https://southernionics.com/southern-ionics-to-invest-in-its-sulfur-chemicals-production-facility-at-tuscaloosa-alabama/",
+   "quote": "There is not enough sodium metabisulfite manufacturing capacity in North America to supply the market, forcing users to rely upon imported products."
+  },
+  {
+   "metric": "segment",
+   "value": "Aluminum chemicals applications: catalyst, zeolites, TiO2 manufacture, water and wastewater treatment, pharmaceuticals",
+   "year": "2025",
+   "source_type": "Company website",
+   "url": "https://www.southernionics.com/aluminum.html",
+   "quote": "Catalyst manufacture; Zeolites manufacture; Titanium dioxide manufacture; Water and wastewater treatment; Pharmaceuticals"
+  },
+  {
+   "metric": "us_water",
+   "value": "Pivot from newsprint alum/aluminate to wastewater (PHOS-SORB, 40 trials)",
+   "year": "2025",
+   "source_type": "Company blog",
+   "url": "https://southernionics.com/embracing-progress-and-meeting-changing-customer-and-market-needs/",
+   "quote": "we can replace 2 chemicals...with one chemical...while reducing the cost to treat, often by 30 to 60%"
+  },
+  {
+   "metric": "deal",
+   "value": "Acquired CF Industries' interest in Houston Ammonia Terminal L.P.; +11 employees",
+   "year": "2015",
+   "source_type": "Local press",
+   "url": "https://cdispatch.com/news/business-brief-southern-ionics-inc-makes-purchase/",
+   "quote": "a strategic acquisition that will secure Southern Ionics' Aqua Ammonia business interests, as well as provide SII additional service revenue"
+  },
+  {
+   "metric": "deal",
+   "value": "Southern Ionics Minerals sold to Chemours (price undisclosed)",
+   "year": "2019",
+   "source_type": "Buyer press release",
+   "url": "https://www.chemours.com/en/news-media-center/all-news/press-releases/2019/chemours-acquires-mining-operations-of-southern-ionics-minerals",
+   "quote": "a wholly owned subsidiary of Southern Ionics Incorporated (SII), a privately held inorganic chemical manufacturer based in West Point, Mississippi"
+  },
+  {
+   "metric": "segment",
+   "value": "HPA pilot; 'largest North American producer of high-quality aluminum chemicals'",
+   "year": "2023",
+   "source_type": "Company press release",
+   "url": "https://southernionics.com/southern-ionics-starts-pilot-production-of-high-purity-alumina-for-lithium-ion-battery-applications/",
+   "quote": "Southern Ionics is uniquely positioned with United States based assets, production capability, and extensive knowledge of aluminum chemistry"
+  }
+ ],
+ "profile_md": "## Southern Ionics Incorporated (West Point, MS)\n\n**Bottom line:** Southern Ionics is a founder-owned merchant producer of liquid inorganic chemicals. We estimate revenue at ~$175M and EBITDA at ~$25M; both are estimates because nothing is disclosed. Water treatment is a real but minority outlet at roughly a quarter of sales, or ~$45M of US water revenue. The company is best understood as a Gulf/Southeast supplier of **aluminum, sulfur and ammonia intermediates**. Its biggest customers are refinery-catalyst, zeolite and TiO2 makers, power plants running SCR NOx control, and paper mills. Municipalities buying coagulants, phosphorus-removal products and dechlorination agents are a secondary customer base.\n\n### Business overview\nSII makes five product families:\n- **Aluminum chemistries:** sodium aluminate in several strengths, including papermakers' grade; aluminum sulfate (alum), including low-iron grades; aluminum chloride; and branded PHOS-SORB, FLUOR-SORB and pH-SORB.\n- **Sulfur chemistries:** sodium bisulfite, sulfite and thiosulfate solutions, and SI-NOCHLOR-T2.\n- **AQUA-CAT ammonium hydroxide.**\n- **Dried alumina trihydrate (ATH).**\n- **Smaller lines:** zirconium chemicals (Zirconic), and high-purity alumina since a 2023 pilot.\n\nThe company says it is the \"largest North American producer of high-quality aluminum chemicals\" and holds NSF/ANSI 60 and ISO 9001 certification. It runs its own tank-truck and rail-car fleets, which matters in a business where freight is a large share of delivered cost.\n\n### History and ownership\nMilton O. Sundbeck Jr. founded the company in 1980 in Mobile, AL, famously starting in his garage with one delivery driver. It later moved to West Point, MS. The company is privately held and family-owned, with no PE sponsor and no public debt. Sundbeck remains Chairman and CEO. Joseph J. Stevens III, a 22-year SII veteran and former chemist, became President and COO in July 2022, a sign that succession is being put in place.\n\nIn the 2010s SII diversified upstream. It invested more than $100M in **Southern Ionics Minerals**, a titanium/zircon mineral-sands mine and processing plant at Offerman, GA that opened in 2015 with ~140 employees. It sold that business to Chemours in August 2019 at an undisclosed price. The sale took SII back to a pure chemicals business, but it also means older vendor employee and revenue figures may mix in the mining operation.\n\n### Products and chemistries\n- **Aluminum chemicals:** made in-house from ATH. SII buys wet-cake ATH (including via a partnership with Atlantic Alumina at Gramercy, LA), dries it at its Lake Charles port facility, and converts it at roughly seven aluminum plants. Uses include FCC catalyst, zeolite and TiO2 manufacture, pharmaceuticals, paper sizing, and water/wastewater coagulation. PHOS-SORB is the growth product. SII describes shifting from the collapsing newsprint market to municipal and industrial phosphorus removal, where one aluminate product can replace two chemicals and cut treatment cost by 30-60%. The company cites 40 completed trials heading toward 100+ customers.\n- **Sulfur chemicals:** made at Pasadena TX, Tuscaloosa AL and Williamsport MD, plus partner sites. They are reducing agents for wastewater dechlorination, boiler oxygen scavenging, ClO2 destruction in pulp mills, flue-gas desulfurization, surfactant synthesis, food and pharma. A **$34M Tuscaloosa expansion** (construction from Q4 2025, operational Q2 2027) adds sodium metabisulfite to replace imports.\n- **AQUA-CAT aqua ammonia:** supplied mainly for SCR/SNCR NOx control at power and industrial plants, plus catalyst and chemical uses. SII bought CF Industries' interest in the Houston Ammonia Terminal in 2015 to secure supply.\n- **ATH:** also sold as a flame-retardant filler and for fiber-cement board.\n\n### End markets and customers\nOur estimated mix:\n- Chemicals/petrochem (TiO2, zeolites, synthesis): ~20%\n- Power generation (SCR ammonia, FGD): ~17%\n- Refining (FCC catalyst feedstocks, refinery NOx control): ~16%\n- Municipal drinking water and wastewater: ~21% combined\n- Pulp & paper: ~8%\n- General manufacturing: ~8%\n- Food, pharma, mining (high-purity quartz at Spruce Pine), semis and feed: the remainder\n\nThere is no pool or consumer exposure. Customers are concentrated large industrial accounts plus municipal bid business in the Southeast and Gulf.\n\n### Footprint\nThe HQ is at 579 Commerce St, West Point MS. Plants are at:\n- West Point MS\n- Augusta GA\n- Baton Rouge LA (two)\n- Calhoun TN\n- Chickasaw AL\n- Carlyss/Lake Charles LA\n- Lake Charles port (ATH dryers)\n- Pasadena TX\n- Tuscaloosa AL\n- Williamsport MD\n\nR&D sits in Columbus MS and West Point MS, with third-party distribution points in Beaumont, Houston, Tulsa and Cairo OH. The company cites 13 facilities and 350+ employees.\n\n### Financials (all estimates)\nNo revenue or EBITDA has ever been disclosed.\n- **Revenue:** we estimate ~$175M for 2025 (350 employees x ~$500k; range $110-240M). Vendor databases show $90M (Buzzfile) and $106M (ZoomInfo), which we treat as floors. Our prior pass used $230M.\n- **Revenue split (estimated):** aluminum chemicals ~40%, aqua ammonia ~25%, sulfur chemicals ~20%, ATH ~12%, other ~3%.\n- **Water revenue:** ~$47M, from municipal coagulants/PHOS-SORB, industrial coagulants, bisulfite dechlorination, boiler scavengers and chloramination ammonia. That is ~27% of total and ~$45M in the US.\n- **EBITDA:** estimated ~$25M (~14% margin). This is typical for merchant liquid inorganics, helped by specialty catalyst-grade aluminate but diluted by pass-through ammonia and ATH.\n\n### M&A strategy\nSII grows mostly organically and through greenfield builds. Its only identified acquisition is the 2015 purchase of CF Industries' indirect 50% interest in Houston Ammonia Terminal L.P. (PotashCorp/Nutrien was the other partner). Its main portfolio move was the 2019 divestiture of mineral sands to Chemours. There are no water-treatment add-ons.\n\n### Competitive position\n- **Aluminum chemicals:** SII competes with USALCO, Chemtrade (alum/PAC), Kemira, GEO Specialty Chemicals and Holland Company in coagulants, and with in-house production at catalyst majors in sodium aluminate. Its edge is catalyst-grade aluminate quality and integrated ATH logistics at Gulf ports.\n- **Sulfur chemicals:** SII competes with Calabrian, Esseco and imports, and the metabisulfite build targets import substitution.\n- **Aqua ammonia:** SII competes with Tanner Industries, Airgas and fertilizer majors.\n\n### Risks\n- Coal-plant retirements shrink SCR ammonia demand.\n- Refining and FCC catalyst cyclicality.\n- Paper-mill closures in the Southeast.\n- Customer concentration.\n- Hazmat logistics.\n- Key-person and succession risk at a founder-led company.\n\nUpside comes from phosphorus-removal regulation (PHOS-SORB), domestic metabisulfite and HPA for batteries.\n\n### What is uncertain\nAll financials are estimates, and so is the product and end-market split. It is unclear whether SII still owns its HAT stake, and how plant capacity is allocated between catalyst and water grades. A sale by the founder's family to a strategic or PE buyer is plausible but unannounced.",
+ "universe_id": 596,
+ "id": "southern-ionics",
+ "customers": [
+  {
+   "name": "FCC catalyst, zeolite and TiO2 makers",
+   "what": "Sodium aluminate",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Power plants with SCR/SNCR",
+   "what": "AQUA-CAT aqua ammonia",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Southeast paper mills",
+   "what": "Papermakers' aluminate, alum, bisulfite",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Southeast and Gulf municipal utilities",
+   "what": "Coagulants, PHOS-SORB, dechlorination",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  }
+ ],
+ "competitors": [
+  {
+   "name": "USALCO",
+   "overlap": "Aluminum coagulants"
+  },
+  {
+   "name": "Chemtrade",
+   "overlap": "Alum / PAC"
+  },
+  {
+   "name": "Kemira",
+   "overlap": "Coagulants"
+  },
+  {
+   "name": "GEO Specialty Chemicals",
+   "overlap": "Aluminum chemicals"
+  },
+  {
+   "name": "Holland Company",
+   "overlap": "Coagulants"
+  },
+  {
+   "name": "Calabrian",
+   "overlap": "Sulfur chemicals"
+  },
+  {
+   "name": "Tanner Industries",
+   "overlap": "Aqua ammonia"
+  }
+ ],
+ "buyers": [
+  {
+   "name": "Chemtrade",
+   "type": "Strategic",
+   "rationale": "Aluminum and sulfur chemical overlap"
+  },
+  {
+   "name": "USALCO",
+   "type": "Strategic",
+   "rationale": "Coagulant consolidation"
+  },
+  {
+   "name": "Kemira",
+   "type": "Strategic",
+   "rationale": "US coagulant footprint"
+  },
+  {
+   "name": "Private equity",
+   "type": "Financial",
+   "rationale": "Founder succession"
+  }
+ ],
+ "addon_ideas": [],
+ "source_of_truth": [],
+ "locked": [],
+ "status": "ready",
+ "runs": [
+  {
+   "at": "2026-09-27T00:00:00Z",
+   "kind": "Imported",
+   "summary": "Imported from WTC deep-dive batch P05B"
+  }
+ ],
+ "updated_at": "2026-09-27T00:00:00Z"
+}

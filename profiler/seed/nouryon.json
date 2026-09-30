@@ -1,0 +1,475 @@
+{
+ "name": "Nouryon",
+ "platform_name": "Nouryon (Nouryon Chemicals Holding B.V.; US: Nouryon Chemicals LLC / Nouryon USA LLC)",
+ "website": "https://www.nouryon.com",
+ "hq_address": "Radnor Corporate Center, Radnor, PA (Americas HQ, labelled 'Global HQ' on company NA locations page); historic corporate base Amsterdam, Netherlands",
+ "what_it_is": "Global specialty chemicals maker (surfactants, chelates, CMC, organic peroxides, polymer specialties, colloidal silica, microspheres, sodium chlorate/pulp-bleaching, ag micronutrients) with a small water-treatment ingredients business (Aquatreat polymers, Dissolvine chelates, Eka HP peroxide, amines).",
+ "primary_category": "Specialty / intermediate chemicals (water is a minor outlet)",
+ "water_relevance": "Water is minor (<10%)",
+ "bluntly": "A $5B specialty chemicals company. Water treatment is an estimated ~4% of sales: it supplies scale-inhibitor polymers, chelates and peroxide to formulators and distributors. It is an upstream supplier, not a water treatment service competitor.",
+ "owner_type": "PE-owned",
+ "ultimate_parent": "The Carlyle Group and GIC (joint owners)",
+ "pe_sponsor": "The Carlyle Group (lead), GIC (co-investor)",
+ "pe_entry_year": "2018",
+ "pe_entry_ev_usd_m": 11800,
+ "pe_entry_multiple": "Not disclosed in deal release (EV EUR10.1bn; USD ~11.8bn at ~1.17 USD/EUR in 2018 - FX conversion is an estimate)",
+ "prior_owners": "AkzoNobel (Specialty Chemicals division) until Oct 2018; predecessor businesses include Akzo, Nobel, Eka Chemicals, National Starch/Alco Chemical (Aquatreat, Chattanooga)",
+ "total_revenue_usd_m": 5100,
+ "total_revenue_year": "2025",
+ "total_revenue_basis": "Company-stated '~$5.1 billion in 2025' (company facts page); FY2024 reported $5.13bn",
+ "us_revenue_usd_m": null,
+ "total_ebitda_usd_m": 1160,
+ "ebitda_margin_pct": 22.5,
+ "ebitda_year": "2024",
+ "ebitda_basis": "Reported adjusted EBITDA FY2024 (press release). FY2025 not published; 2023 implied ~$1.06bn (+9.5% growth to 2024).",
+ "revenue_by_business": [
+  {
+   "business": "Consumer & Life Sciences (home & personal care surfactants/CMC/chelates, ag & food incl. ADOB, pharma/Kromasil) - excl. water ingredients",
+   "category": "Specialty / intermediate (non-water)",
+   "revenue_usd_m": 2180,
+   "pct": 42.5,
+   "how_derived": "FY2024 reported segment revenue $2.3bn less est. ~$120m water ingredients (chelates, amines)"
+  },
+  {
+   "business": "Performance Materials (organic peroxides, polymer specialties, Expancel, colloidal silica, coatings/construction additives) - excl. water ingredients",
+   "category": "Specialty / intermediate (non-water)",
+   "revenue_usd_m": 1620,
+   "pct": 31.6,
+   "how_derived": "FY2024 reported segment revenue $1.7bn less est. ~$80m water ingredients (Aquatreat polymers, Levasil). Segment allocation of water products is an assumption"
+  },
+  {
+   "business": "Resource Solutions (sodium chlorate / ClO2 generation for pulp bleaching, hydrogen peroxide, mining, oil & gas chemicals)",
+   "category": "Pulp & paper process",
+   "revenue_usd_m": 1100,
+   "pct": 21.4,
+   "how_derived": "FY2024 reported segment revenue $1.1bn (peroxide sold into water assumed within the est. water line; not separated)"
+  },
+  {
+   "business": "Water treatment ingredients (Aquatreat scale inhibitor/dispersant polymers, Dissolvine chelates, Eka HP/MicrOx peroxide, amines, Levasil) - global",
+   "category": "Water treatment - industrial/commercial",
+   "revenue_usd_m": 200,
+   "pct": 3.9,
+   "how_derived": "Estimate: ~4% of $5.1bn (prior research ~$250m; lowered for lack of evidence). Not disclosed"
+  },
+  {
+   "business": "Reconciliation (corporate/rounding)",
+   "category": "Other",
+   "revenue_usd_m": 30,
+   "pct": 0.6,
+   "how_derived": "$5.13bn total less $5.1bn segment sum"
+  }
+ ],
+ "us_water_treatment_revenue_usd_m": 70,
+ "us_water_treatment_arithmetic": "Estimate: global water ingredients ~$200m (~4% x $5.1bn) x ~35% US share (Aquatreat made in Chattanooga TN; US is the largest market for polymer scale inhibitors; Americas share of Nouryon sales not disclosed) = ~$70m. Includes only water-treatment-destined polymers/chelates/peroxide/amines; excludes pulp bleaching, detergents, ag. Prior was $80m; lowered slightly.",
+ "end_markets_total_platform": {
+  "Municipal drinking water": 1,
+  "Municipal wastewater": 1.5,
+  "Power generation": 1,
+  "Oil & gas / refining": 5,
+  "Chemicals & petrochem": 5,
+  "Pulp & paper": 15,
+  "Food & beverage": 5,
+  "Mining & metals": 3,
+  "Primary metals/steel": 0,
+  "Commercial HVAC / buildings": 1,
+  "Healthcare & institutional": 0,
+  "Data centers": 0,
+  "Pharma/life sciences": 4,
+  "Microelectronics/semis": 0,
+  "Manufacturing (general industrial)": 22,
+  "Pools & spa": 0,
+  "Agriculture & farm": 10,
+  "Consumer / retail": 25,
+  "Other": 1.5
+ },
+ "employees_total": 8200,
+ "employees_basis": "Company facts page: approximately 8,200 worldwide; FY2024 release 'more than 8,200'; 2025 sustainability report '8,000+'",
+ "us_sites_count": 18,
+ "key_sites": [
+  {
+   "type": "HQ",
+   "address": "Radnor Corporate Center",
+   "city": "Radnor",
+   "state": "PA"
+  },
+  {
+   "type": "Plant",
+   "address": "909 Mueller Avenue (Aquatreat polymers / surface chemistry)",
+   "city": "Chattanooga",
+   "state": "TN"
+  },
+  {
+   "type": "Plant",
+   "address": "",
+   "city": "Augusta",
+   "state": "GA"
+  },
+  {
+   "type": "Plant",
+   "address": "",
+   "city": "Axis (Le Moyne)",
+   "state": "AL"
+  },
+  {
+   "type": "Plant",
+   "address": "",
+   "city": "Columbus",
+   "state": "MS"
+  },
+  {
+   "type": "Plant",
+   "address": "",
+   "city": "Fort Worth",
+   "state": "TX"
+  },
+  {
+   "type": "Plant",
+   "address": "",
+   "city": "Green Bay (Howard)",
+   "state": "WI"
+  },
+  {
+   "type": "Plant",
+   "address": "",
+   "city": "Houston",
+   "state": "TX"
+  },
+  {
+   "type": "Plant",
+   "address": "",
+   "city": "La Porte",
+   "state": "TX"
+  },
+  {
+   "type": "Plant",
+   "address": "",
+   "city": "Lima",
+   "state": "OH"
+  },
+  {
+   "type": "Plant",
+   "address": "",
+   "city": "Morris",
+   "state": "IL"
+  },
+  {
+   "type": "Plant",
+   "address": "",
+   "city": "Moses Lake",
+   "state": "WA"
+  },
+  {
+   "type": "Plant",
+   "address": "",
+   "city": "Pasadena",
+   "state": "TX"
+  },
+  {
+   "type": "Plant",
+   "address": "",
+   "city": "Salisbury",
+   "state": "NC"
+  },
+  {
+   "type": "Lab",
+   "address": "Innovation center",
+   "city": "Bridgewater",
+   "state": "NJ"
+  }
+ ],
+ "chemistries": [
+  {
+   "product_line": "Synthetic polymers for water treatment (polyacrylates, copolymers, tagged polymers, metal precipitants)",
+   "made_or_resold": "Made (Chattanooga, TN)",
+   "brands": "Aquatreat (e.g. AR-4, AR-602N, AR-543, AR-888, CPA)"
+  },
+  {
+   "product_line": "Chelates (EDTA, GLDA, etc.)",
+   "made_or_resold": "Made",
+   "brands": "Dissolvine"
+  },
+  {
+   "product_line": "Hydrogen peroxide / advanced oxidation",
+   "made_or_resold": "Made",
+   "brands": "Eka HP, MicrOx (with Advanox UV)"
+  },
+  {
+   "product_line": "Fatty amines, cationic and anionic surfactants (corrosion inhibition, filming amines)",
+   "made_or_resold": "Made",
+   "brands": "Armeen, Duomeen, Ethomeen (Nouryon amine brands)"
+  },
+  {
+   "product_line": "Ethylene amines (DETA for ion-exchange resins)",
+   "made_or_resold": "Made",
+   "brands": "Nouryon ethylene amines"
+  },
+  {
+   "product_line": "Colloidal silica",
+   "made_or_resold": "Made",
+   "brands": "Levasil"
+  },
+  {
+   "product_line": "Sodium chlorate and chlorine dioxide generation technology (pulp bleaching, not water)",
+   "made_or_resold": "Made",
+   "brands": "Eka"
+  },
+  {
+   "product_line": "Non-water: surfactants, CMC, organic peroxides, metal alkyls, microspheres, micronutrients, chromatography media",
+   "made_or_resold": "Made",
+   "brands": "Expancel, Kromasil, Trigonox, Perkadox, Akucell, Bermocoll, ADOB"
+  }
+ ],
+ "acquisitions": [
+  {
+   "date": "2020-07",
+   "target": "J.M. Huber CMC business (\u00c4\u00e4nekoski, Finland)",
+   "universe_id": null,
+   "what_it_does": "Carboxymethyl cellulose; 248 employees",
+   "revenue_usd_m": 150,
+   "value_usd_m": null,
+   "source_url": "https://www.specchemonline.com/nouryon-completes-two-moves"
+  },
+  {
+   "date": "2024-01",
+   "target": "ADOB (Poland)",
+   "universe_id": null,
+   "what_it_does": "Chelated micronutrients and specialty ag solutions",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.newaginternational.com/specialty-fertilizer/nouryon-to-acquire-adob-fertilizers/"
+  },
+  {
+   "date": "n/a (c. 2020-2021)",
+   "target": "Alkoxylation plant, Jurong Island, Singapore",
+   "universe_id": null,
+   "what_it_does": "Alkoxylation capacity for ag, HPC, coatings",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://chemanager-online.com/en/companies/nouryon/"
+  },
+  {
+   "date": "2021 (divestment)",
+   "target": "Nobian spin-out (chlor-alkali, salt, energy) - DIVESTED",
+   "universe_id": null,
+   "what_it_does": "Base chemicals; remains Carlyle/GIC-owned separately",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.nouryon.com/news-and-events/news-overview/2021/nouryon-completes-spin-out-of-nobian-and-reinforces-its-strategic-focus"
+  },
+  {
+   "date": "2021 (divestment)",
+   "target": "Salt Specialties to Salins Group - DIVESTED",
+   "universe_id": null,
+   "what_it_does": "JOZO, NEZO, Suprasel, Sanal, KNZ salt brands",
+   "revenue_usd_m": null,
+   "value_usd_m": null,
+   "source_url": "https://www.coatingsworld.com/breaking-news/nouryon-agrees-to-divest-salt-specialties-business-to-salins-group/"
+  }
+ ],
+ "addon_corrections": "No add-ons listed in universe. That is correct: Nouryon has made no water-treatment acquisitions. Non-water bolt-ons: J.M. Huber CMC (2020, ~EUR135m sales), ADOB (2024), a Jurong Island alkoxylation plant. Divested: Nobian (2021 spin-out) and Salt Specialties (2021). The prior note's 'Zhejiang Tiancheng' and 'ADCO' could not be verified; the ADCO reference is likely a confusion with ADOB.",
+ "confidence": "Medium",
+ "what_changed_vs_prior": "Confirmed FY2024 revenue $5.13bn, adj. EBITDA $1.16bn (22.5%) and segment figures: C&LS $2.3bn, PM $1.7bn, RS $1.1bn. The segments are Consumer & Life Sciences / Performance Materials / Resource Solutions, not the names in the prior. Employees are ~8,200 (not 8,000). No FY2025 results release was found; 2025 EBITDA is still unknown. The IPO was filed confidentially in Feb 2025 (~$13bn valuation talk) but has not happened. A $5.8bn refinancing loan was shelved in Oct 2025. Global water estimate lowered from $250m to ~$200m and US water from $80m to ~$70m (still estimates). Flocculants and sodium chlorite are not evidenced in current Nouryon water marketing: its ClO2 franchise is pulp-bleaching chlorate and generators. Added the list of 13 US plants.",
+ "open_questions": "FY2025 adjusted EBITDA; US/Americas revenue share; actual water-treatment revenue; whether Nouryon still sells sodium chlorite or flocculants into water; status of the IPO and refinancing in 2026; which segment reports Aquatreat.",
+ "evidence": [
+  {
+   "metric": "total_revenue",
+   "value": "$5.13bn",
+   "year": "2024",
+   "source_type": "Company press release",
+   "url": "https://www.globenewswire.com/news-release/2025/03/07/3038967/0/en/Nouryon-reports-full-year-2024-results-with-adjusted-EBITDA-growing-9-5-percent-and-margins-expanding-220-basis-points-over-prior-year.html",
+   "quote": "Revenue of $5.13 billion, a 1.1 percent decrease versus 2023 (flat excluding foreign currency)"
+  },
+  {
+   "metric": "total_revenue",
+   "value": "~$5.1bn",
+   "year": "2025",
+   "source_type": "Company website",
+   "url": "https://www.nouryon.com/company/",
+   "quote": "~$5.1 billion in 2025"
+  },
+  {
+   "metric": "ebitda",
+   "value": "$1.16bn, 22.5%",
+   "year": "2024",
+   "source_type": "Company press release",
+   "url": "https://www.globenewswire.com/news-release/2025/03/07/3038967/0/en/Nouryon-reports-full-year-2024-results-with-adjusted-EBITDA-growing-9-5-percent-and-margins-expanding-220-basis-points-over-prior-year.html",
+   "quote": "Adjusted EBITDA of $1.16 billion, an increase of 9.5 percent versus 2023 ... margin of 22.5 percent"
+  },
+  {
+   "metric": "ebitda",
+   "value": "Net leverage 5.0x",
+   "year": "2024",
+   "source_type": "Company press release",
+   "url": "https://www.globenewswire.com/news-release/2025/03/07/3038967/0/en/Nouryon-reports-full-year-2024-results-with-adjusted-EBITDA-growing-9-5-percent-and-margins-expanding-220-basis-points-over-prior-year.html",
+   "quote": "Reduced net debt leverage to 5.0x from 5.7x at year-end 2023"
+  },
+  {
+   "metric": "segment",
+   "value": "C&LS $2.3bn/$517m; PM $1.7bn/$372m; RS $1.1bn/$266m",
+   "year": "2024",
+   "source_type": "Company press release",
+   "url": "https://www.globenewswire.com/news-release/2025/03/07/3038967/0/en/Nouryon-reports-full-year-2024-results-with-adjusted-EBITDA-growing-9-5-percent-and-margins-expanding-220-basis-points-over-prior-year.html",
+   "quote": "Consumer & Life Sciences revenue $2.3 billion ... Performance Materials $1.7 billion ... Resource Solutions $1.1 billion"
+  },
+  {
+   "metric": "us_water",
+   "value": "Water treatment product lines",
+   "year": "2026",
+   "source_type": "Company website",
+   "url": "https://www.nouryon.com/markets/water-treatment",
+   "quote": "Scale inhibitors, metal precipitants, tagged polymers and rheology modifiers"
+  },
+  {
+   "metric": "employees",
+   "value": "~8,200",
+   "year": "2025",
+   "source_type": "Company website",
+   "url": "https://www.nouryon.com/company/",
+   "quote": "Approximately 8,200 worldwide; 63 manufacturing sites; over 80 countries"
+  },
+  {
+   "metric": "deal",
+   "value": "EV EUR10.1bn",
+   "year": "2018",
+   "source_type": "Deal press release",
+   "url": "https://www.globenewswire.com/news-release/2018/03/27/1453309/0/en/AkzoNobel-to-sell-Specialty-Chemicals-to-The-Carlyle-Group-and-GIC-for-10-1-billion.html",
+   "quote": "AkzoNobel to sell Specialty Chemicals to The Carlyle Group and GIC for EUR10.1 billion"
+  },
+  {
+   "metric": "deal",
+   "value": "IPO filed confidentially",
+   "year": "2025",
+   "source_type": "Press",
+   "url": "https://www.bloomberg.com/news/articles/2025-02-10/carlyle-group-files-confidentially-for-nouryon-us-ipo",
+   "quote": "Carlyle Files Confidentially for US IPO of Chemical Company Nouryon"
+  },
+  {
+   "metric": "deal",
+   "value": "$5.8bn loan shelved",
+   "year": "2025",
+   "source_type": "Press",
+   "url": "https://finimize.com/content/nouryon-withdraws-58-billion-loan-as-costs-climb",
+   "quote": "refinance debt and extend maturities ... lenders have become pickier, prompting Nouryon to shelve the deal"
+  },
+  {
+   "metric": "ownership",
+   "value": "Carlyle + GIC",
+   "year": "2026",
+   "source_type": "Company website",
+   "url": "https://www.nouryon.com/company/investor-relations",
+   "quote": "privately-held, global specialty chemicals company jointly owned by private equity firm The Carlyle Group and Singapore's sovereign wealth fund, GIC"
+  },
+  {
+   "metric": "sites",
+   "value": "13 US plants + HQ, R&D, offices, warehouse",
+   "year": "2026",
+   "source_type": "Company website",
+   "url": "https://www.nouryon.com/company/locations/north-america/",
+   "quote": "Radnor, PA - Global HQ - Radnor Corporate Center; plants Augusta GA, Axis AL, Chattanooga TN, Columbus MS, Fort Worth TX, Green Bay WI, Houston TX, La Porte TX, Lima OH, Morris IL, Moses Lake WA, Pasadena TX, Salisbury NC"
+  },
+  {
+   "metric": "sites",
+   "value": "Chattanooga plant",
+   "year": "2026",
+   "source_type": "Company website",
+   "url": "https://www.nouryon.com/company/locations/Chattanooga",
+   "quote": "Nouryon Chemicals LLC, 909 Mueller Avenue, Chattanooga, TN 37406"
+  }
+ ],
+ "profile_md": "## Nouryon - investor profile\n\n**Overview.** Nouryon is a global specialty chemicals company with roughly $5.1B of sales in 2025 (company-stated) and about 8,200 employees. It has 63 manufacturing sites and sells in more than 80 countries. It is organised in three segments: Consumer & Life Sciences, Performance Materials and Resource Solutions. The Americas head office is in Radnor, PA; the company's North America locations page labels Radnor as \"Global HQ\", and the historic corporate base is Amsterdam. **Bluntly, Nouryon is not a water treatment company.** Water treatment is a small outlet for ingredients it mainly makes for other markets: scale-inhibitor and dispersant polymers (Aquatreat), chelates (Dissolvine), hydrogen peroxide (Eka HP / MicrOx), fatty amines, ethylene amines used to make ion-exchange resins, and colloidal silica. It is an **upstream supplier of actives** to formulators and service companies such as Ecolab/Nalco, Veolia, Solenis, ChemTreat and Kurita. It sells through distributors such as Brenntag, which lists Nouryon as a water treatment supplier. It does not compete in service-based water treatment programs.\n\n**History & ownership.** Nouryon was AkzoNobel's Specialty Chemicals division. The Carlyle Group and GIC bought it for an EV of EUR10.1B; the deal was announced in March 2018 and closed on 1 October 2018. It was renamed Nouryon in 2018. In 2021 the base chemicals business (chlor-alkali, salt, energy) was spun out as **Nobian**, which remains separately owned by Carlyle and GIC. The Salt Specialties business was sold to Salins in the same year. Carlyle filed confidentially for a US IPO in February 2025, with press talk of a ~$13B valuation. No IPO had happened as of September 2026. In October 2025 the company shelved a ~$5.8B dual-currency loan refinancing because lenders pushed back on price. That points to a longer PE hold and continued high leverage (5.0x net at year-end 2024).\n\n**Products & chemistries.** Main franchises:\n- Consumer & Life Sciences: surfactants, CMC and chelates for home and personal care; agriculture and food, including ADOB micronutrients; pharma and Kromasil chromatography.\n- Performance Materials: organic peroxides and polymer specialties such as metal alkyls; Expancel microspheres; colloidal silica; coatings and construction additives.\n- Resource Solutions: sodium chlorate and Eka chlorine dioxide generation technology for pulp bleaching; hydrogen peroxide; mining collectors; oilfield surfactants and amines.\n\nThe water-relevant products are mostly made in-house, for example the Chattanooga, TN plant (909 Mueller Ave). The company markets them as \"performance ingredients for water treatment\": scale inhibitors, metal precipitants, tagged polymers, oxidants and advanced oxidation (MicrOx with Advanox UV).\n\n**End markets.** The mix is estimated as follows, since the company discloses no end-market split. About a quarter is consumer (home and personal care). About 15% is pulp & paper. General industrial (coatings, polymers, construction) is roughly 20-25%. Agriculture and food together are about 15%, and pharma, oil & gas, mining and chemicals make up the rest. Direct water treatment is about 4-5%.\n\n**Footprint.** In the US, Nouryon lists the Radnor HQ, 13 plants, the Bridgewater NJ innovation centre, offices in Chicago and Katy TX, and a warehouse in Burt NY. The plants are Augusta GA, Axis/Le Moyne AL, Chattanooga TN, Columbus MS, Fort Worth TX, Green Bay/Howard WI, Houston TX, La Porte TX, Lima OH, Morris IL, Moses Lake WA, Pasadena TX and Salisbury NC.\n\n**Financials.** Reported FY2024 figures: revenue $5.13B (-1.1%; flat excluding FX); adjusted EBITDA $1.16B (+9.5%); margin 22.5% (+220bp); free cash flow $728M; net leverage 5.0x, down from 5.7x. Segments in 2024:\n- Consumer & Life Sciences: $2.3B revenue, $517M EBITDA (22.6%).\n- Performance Materials: $1.7B revenue, $372M EBITDA (21.3%).\n- Resource Solutions: $1.1B revenue, $266M EBITDA (24.3%).\n\nNo FY2025 results release was found. The company website states \"~$5.1 billion in 2025\" revenue, and 2025 EBITDA is not public. Water share is an estimate: roughly 4% of sales, or ~$200M globally, and ~$70M in the US.\n\n**M&A strategy.** Nouryon makes bolt-ons in its core specialties and has divested commodity businesses:\n- Bought J.M. Huber's CMC business (Finland; ~EUR135M sales; closed July 2020).\n- Bought ADOB, a Polish chelated micronutrients maker (closed January 2024).\n- Bought an alkoxylation plant on Jurong Island, Singapore.\n- Spun out Nobian and sold Salt Specialties in 2021.\n\nIt has made no water-treatment acquisitions, and the universe correctly lists no add-ons.\n\n**Competitive position.** In water it competes with other actives suppliers rather than service firms: Dow and BASF in polyacrylates and chelates, Italmatch in phosphonates, Solvay and Evonik in peroxide, and Kemira in polymers. Its advantages are scale, backward integration and a long-standing Aquatreat franchise sold to formulators.\n\n**Risks.** High leverage and refinancing risk (the shelved 2025 loan); cyclical exposure to pulp and industrial demand; an uncertain exit (IPO postponed); FX. For the water thesis, it is a minor, non-core ingredient business that could be sold off or ignored.\n\n**Uncertainties.** FY2025 EBITDA is unknown. The water revenue figure is an estimate, as is the US revenue split. It is unclear whether Nouryon still sells sodium chlorite into water; its chlorine dioxide franchise is mainly pulp-bleaching generator technology and chlorate.",
+ "universe_id": 9,
+ "id": "nouryon",
+ "customers": [
+  {
+   "name": "Ecolab / Nalco",
+   "what": "Aquatreat polymers, chelates",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Solenis",
+   "what": "Scale inhibitors and dispersants",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "ChemTreat",
+   "what": "Polymers and chelates",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Kurita",
+   "what": "Water treatment actives",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Brenntag",
+   "what": "Distribution of water ingredients",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  },
+  {
+   "name": "Pulp mills",
+   "what": "Sodium chlorate and ClO2 generation",
+   "share_pct": null,
+   "source": "Analyst view (from deep-dive text)"
+  }
+ ],
+ "competitors": [
+  {
+   "name": "Dow",
+   "overlap": "Polyacrylates, chelates"
+  },
+  {
+   "name": "BASF",
+   "overlap": "Polyacrylates, chelates"
+  },
+  {
+   "name": "Italmatch",
+   "overlap": "Phosphonates"
+  },
+  {
+   "name": "Solvay",
+   "overlap": "Peroxide"
+  },
+  {
+   "name": "Evonik",
+   "overlap": "Peroxide"
+  },
+  {
+   "name": "Kemira",
+   "overlap": "Polymers"
+  }
+ ],
+ "buyers": [
+  {
+   "name": "IPO",
+   "type": "Other",
+   "rationale": "Carlyle filed confidentially in Feb 2025"
+  },
+  {
+   "name": "Italmatch / Dorf Ketal",
+   "type": "Strategic",
+   "rationale": "Carve-out of water ingredients (Aquatreat)"
+  },
+  {
+   "name": "Kemira",
+   "type": "Strategic",
+   "rationale": "Water polymer carve-out"
+  }
+ ],
+ "addon_ideas": [],
+ "source_of_truth": [],
+ "locked": [],
+ "status": "ready",
+ "runs": [
+  {
+   "at": "2026-09-27T00:00:00Z",
+   "kind": "Imported",
+   "summary": "Imported from WTC deep-dive batch P05A"
+  }
+ ],
+ "updated_at": "2026-09-27T00:00:00Z"
+}
