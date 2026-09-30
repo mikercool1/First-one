@@ -1218,61 +1218,8 @@ async function enhance(id, key) {
   try {
     const res = await sample.json(sectionPrompt(c, key), { modelTier: "complex", signal: ctl.signal, cache: false });
     if (!res || typeof res !== "object") throw { code: "invalid_json" };
-    const cur = getC(id) || c;
-    const locked = new Set(cur.locked || []);
-    const patch = {}, sugg = { ...(cur.suggestions || {}) }, hist = [], conf = { ...(cur.conf || {}) };
-    const rc = res.confidence && typeof res.confidence === "object" ? res.confidence : {}, rb = res.basis && typeof res.basis === "object" ? res.basis : {};
-    let added = 0, suggested = 0, held = 0;
-    for (const f of sec.fields) {
-      if (res[f] === undefined || res[f] === null) continue;
-      let v = res[f];
-      if (f === "sectors" && Array.isArray(v)) v = v.filter(x => x && (x.sector || x.name)).map(x => ({ sector: sectorById(x.sector) && allSectors().some(z => z.id === x.sector) ? x.sector : (sectorFromName(x.sector || x.name)?.id || slugify(x.sector || x.name)), revenue_usd_m: num(x.revenue_usd_m), pct: num(x.pct), what: x.what || "" }));
-      if (f === "primary_sector") v = allSectors().some(z => z.id === v) ? v : (sectorFromName(v)?.id || slugify(v));
-      if (sec.append && Array.isArray(v)) {
-        const have = new Set((cur[f] || []).map(a => norm(a.target)));
-        const fresh = v.filter(a => a && a.target && !have.has(norm(a.target))).map(a => ({ ...a, added_by: "Claude", added_at: now() }));
-        added = fresh.length;
-        if (!fresh.length) continue;
-        v = [...fresh, ...(cur[f] || [])].sort((a, b) => dateKey(b.date) - dateKey(a.date));
-      }
-      const newL = LEVELS.includes(rc[f]) && rc[f] !== "Verified" ? rc[f] : "Medium", oldL = confOf(cur, f).level;
-      if (JSON.stringify(v) === JSON.stringify(cur[f])) { if (lvl(newL) > lvl(oldL) && oldL !== "Verified") conf[f] = { level: newL, basis: String(rb[f] || "").slice(0, 300), at: now(), by: "Claude" }; continue; }
-      if (locked.has(f)) { sugg[f] = { value: v, at: now(), section: key, level: newL, basis: rb[f] || "" }; suggested++; continue; }
-      // A weaker answer never overwrites a stronger one; it waits as a suggestion.
-      if (!sec.append && has(cur[f]) && lvl(newL) < lvl(oldL)) { sugg[f] = { value: v, at: now(), section: key, level: newL, basis: rb[f] || "" }; held++; continue; }
-      patch[f] = v;
-      conf[f] = { level: sec.append && has(cur[f]) ? oldL : newL, basis: String(rb[f] || "").slice(0, 300), at: now(), by: "Claude" };
-      hist.push({ at: now(), field: f, by: "Claude", before: short(cur[f]), after: short(v), level: newL });
-    }
-    // Derived views: the product pie comes from the catalog; the end-market mix from where each category goes.
-    if (patch.products) { patch.revenue_by_product = productRollup({ ...cur, products: patch.products }); conf.revenue_by_product = conf.products; }
-    const map = patch.product_em_map || (key === "endmarkets" ? cur.product_em_map : null);
-    if (map && !locked.has(EM_FIELD)) {
-      const em = emFromMap({ ...cur, ...patch }, map);
-      if (em && JSON.stringify(em) !== JSON.stringify(cur[EM_FIELD])) {
-        hist.push({ at: now(), field: EM_FIELD, by: "Claude", before: short(cur[EM_FIELD]), after: short(em) });
-        patch[EM_FIELD] = em; conf[EM_FIELD] = { level: minLevel(conf.product_em_map?.level || "Medium", confOf({ ...cur, conf }, "products").level === "Low" ? "Low" : "High"), basis: "Rolled up from where each product category goes, weighted by category revenue share", at: now(), by: "Profiler" };
-      }
-    }
-    const rv = num(patch.total_revenue_usd_m ?? cur.total_revenue_usd_m), eb = num(patch.total_ebitda_usd_m ?? cur.total_ebitda_usd_m);
-    if ((("total_revenue_usd_m" in patch) || ("total_ebitda_usd_m" in patch)) && !locked.has("ebitda_margin_pct") && rv && eb !== null) { patch.ebitda_margin_pct = +(eb / rv * 100).toFixed(1); conf.ebitda_margin_pct = { level: minLevel(confOf({ ...cur, conf }, "total_revenue_usd_m").level, confOf({ ...cur, conf }, "total_ebitda_usd_m").level), basis: "EBITDA / revenue", at: now(), by: "Claude" }; }
-    patch.conf = conf;
-    const note = String(res.note || "").slice(0, 300) || (Object.keys(patch).length ? "Section updated." : "No changes.");
-    const summary = sec.append ? (added ? `Added ${added} new deal${added > 1 ? "s" : ""}. ${note}` : "No new deals found.") : note;
-    const changed = Object.keys(patch).filter(f => sec.fields.includes(f));
-    // Rewording a description or a basis doesn't make other steps out of date; new facts do.
-    const material = changed.filter(f => !PROSE.has(f) && !/_basis$|_arithmetic$|_year$/.test(f));
-    let meta = { ...(cur.section_meta || {}), [key]: { at: now(), by: "Claude", note: summary, passes: ((cur.section_meta || {})[key]?.passes || 0) + 1 } };
-    if (material.length) meta = markStale(cur, [key], meta);
-    patch.section_meta = meta;
-    patch.suggestions = sugg;
-    patch.history = [...hist, ...(cur.history || [])].slice(0, 200);
-    patch.runs = [...(cur.runs || []), { at: now(), kind: "Enhanced: " + sec.label, summary: summary + (suggested ? ` ${suggested} suggestion${suggested > 1 ? "s" : ""} held for your overrides.` : "") + (held ? ` ${held} weaker answer${held > 1 ? "s" : ""} held as suggestions because the current value is better supported.` : "") }].slice(-60);
-    if (cur.status === "empty" || cur.status === "researching") patch.status = "ready";
     delete runs[runKey(id, key)];
-    if (!await save(id, patch, [], true)) throw { code: "save_failed", message: lastSaveError };
-    const deps = material.length ? (DEPS[key] || []).length : 0;
-    toast(`${sec.label}: ${sec.append ? (added ? `${added} new deal${added > 1 ? "s" : ""} added` : "no new deals") : changed.length ? "updated" : (suggested || held) ? "suggestion held for review" : "no change"}${deps && !quietCascade ? ` · ${deps} related section${deps > 1 ? "s" : ""} now out of date` : ""}`);
+    await applyResult(id, key, res);
   } catch (e) {
     delete runs[runKey(id, key)];
     if (e?.code === "cancelled") { render(); return; }
@@ -1281,6 +1228,179 @@ async function enhance(id, key) {
     render();
   }
 }
+// Merge an answer into the profile: confidence rules, derived views, stale marks. Used by Enhance and by web research.
+async function applyResult(id, key, res, src = {}) {
+  const c = getC(id), sec = c && sectionDef(c, key);
+  if (!c || !sec || !res || typeof res !== "object") return;
+  const by = src.by || "Claude", web = by === "Web research";
+  const cur = getC(id) || c;
+  const locked = new Set(cur.locked || []);
+  const patch = {}, sugg = { ...(cur.suggestions || {}) }, hist = [], conf = { ...(cur.conf || {}) };
+  const rc = res.confidence && typeof res.confidence === "object" ? res.confidence : {}, rb = res.basis && typeof res.basis === "object" ? res.basis : {};
+  let added = 0, suggested = 0, held = 0;
+  for (const f of sec.fields) {
+    if (res[f] === undefined || res[f] === null) continue;
+    let v = res[f];
+    if (f === "sectors" && Array.isArray(v)) v = v.filter(x => x && (x.sector || x.name)).map(x => ({ sector: sectorById(x.sector) && allSectors().some(z => z.id === x.sector) ? x.sector : (sectorFromName(x.sector || x.name)?.id || slugify(x.sector || x.name)), revenue_usd_m: num(x.revenue_usd_m), pct: num(x.pct), what: x.what || "" }));
+    if (f === "primary_sector") v = allSectors().some(z => z.id === v) ? v : (sectorFromName(v)?.id || slugify(v));
+    if (sec.append && Array.isArray(v)) {
+      const have = new Set((cur[f] || []).map(a => norm(a.target)));
+      const fresh = v.filter(a => a && a.target && !have.has(norm(a.target))).map(a => ({ ...a, added_by, added_at: now() }));
+      added = fresh.length;
+      if (!fresh.length) continue;
+      v = [...fresh, ...(cur[f] || [])].sort((a, b) => dateKey(b.date) - dateKey(a.date));
+    }
+    const newL = LEVELS.includes(rc[f]) && rc[f] !== "Verified" ? rc[f] : "Medium", oldL = confOf(cur, f).level;
+    if (JSON.stringify(v) === JSON.stringify(cur[f])) { if (lvl(newL) > lvl(oldL) && oldL !== "Verified") conf[f] = { level: newL, basis: String(rb[f] || "").slice(0, 300), at: now(), by }; continue; }
+    if (locked.has(f)) { sugg[f] = { value: v, at: now(), section: key, level: newL, basis: rb[f] || "" }; suggested++; continue; }
+    // A weaker answer never overwrites a stronger one; it waits as a suggestion.
+    if (!sec.append && has(cur[f]) && lvl(newL) < lvl(oldL)) { sugg[f] = { value: v, at: now(), section: key, level: newL, basis: rb[f] || "" }; held++; continue; }
+    patch[f] = v;
+    conf[f] = { level: sec.append && has(cur[f]) ? oldL : newL, basis: String(rb[f] || "").slice(0, 300), at: now(), by };
+    hist.push({ at: now(), field: f, by, before: short(cur[f]), after: short(v), level: newL });
+  }
+  // Derived views: the product pie comes from the catalog; the end-market mix from where each category goes.
+  if (patch.products) { patch.revenue_by_product = productRollup({ ...cur, products: patch.products }); conf.revenue_by_product = conf.products; }
+  const map = patch.product_em_map || (key === "endmarkets" ? cur.product_em_map : null);
+  if (map && !locked.has(EM_FIELD)) {
+    const em = emFromMap({ ...cur, ...patch }, map);
+    if (em && JSON.stringify(em) !== JSON.stringify(cur[EM_FIELD])) {
+      hist.push({ at: now(), field: EM_FIELD, by, before: short(cur[EM_FIELD]), after: short(em) });
+      patch[EM_FIELD] = em; conf[EM_FIELD] = { level: minLevel(conf.product_em_map?.level || "Medium", confOf({ ...cur, conf }, "products").level === "Low" ? "Low" : "High"), basis: "Rolled up from where each product category goes, weighted by category revenue share", at: now(), by: "Profiler" };
+    }
+  }
+  const rv = num(patch.total_revenue_usd_m ?? cur.total_revenue_usd_m), eb = num(patch.total_ebitda_usd_m ?? cur.total_ebitda_usd_m);
+  if ((("total_revenue_usd_m" in patch) || ("total_ebitda_usd_m" in patch)) && !locked.has("ebitda_margin_pct") && rv && eb !== null) { patch.ebitda_margin_pct = +(eb / rv * 100).toFixed(1); conf.ebitda_margin_pct = { level: minLevel(confOf({ ...cur, conf }, "total_revenue_usd_m").level, confOf({ ...cur, conf }, "total_ebitda_usd_m").level), basis: "EBITDA / revenue", at: now(), by }; }
+  if (web && (src.sources || []).length) {
+    const have = new Set((cur.evidence || []).map(e => e.url));
+    const ev = src.sources.filter(x => x && x.url && !have.has(x.url)).slice(0, 25).map(x => ({ metric: sec.label, value: String(x.supports || x.title || "").slice(0, 200), year: x.date || "", source_type: String(x.publisher || x.title || "Web").slice(0, 80), url: x.url, quote: String(x.quote || "").slice(0, 300), at: now(), by }));
+    if (ev.length) patch.evidence = [...ev, ...(cur.evidence || [])].slice(0, 300);
+  }
+  patch.conf = conf;
+  const note = String(res.note || "").slice(0, 300) || (Object.keys(patch).length ? "Section updated." : "No changes.");
+  const summary = sec.append ? (added ? `Added ${added} new deal${added > 1 ? "s" : ""}. ${note}` : "No new deals found.") : note;
+  const changed = Object.keys(patch).filter(f => sec.fields.includes(f));
+  // Rewording a description or a basis doesn't make other steps out of date; new facts do.
+  const material = changed.filter(f => !PROSE.has(f) && !/_basis$|_arithmetic$|_year$/.test(f));
+  let meta = { ...(cur.section_meta || {}), [key]: { at: now(), by, note: summary, passes: ((cur.section_meta || {})[key]?.passes || 0) + 1 } };
+  if (material.length) meta = markStale(cur, [key], meta);
+  patch.section_meta = meta;
+  patch.suggestions = sugg;
+  patch.history = [...hist, ...(cur.history || [])].slice(0, 200);
+  patch.runs = [...(cur.runs || []), { at: now(), kind: (web ? "Web research: " : "Enhanced: ") + sec.label, summary: summary + (suggested ? ` ${suggested} suggestion${suggested > 1 ? "s" : ""} held for your overrides.` : "") + (held ? ` ${held} weaker answer${held > 1 ? "s" : ""} held as suggestions because the current value is better supported.` : "") }].slice(-60);
+  if (cur.status === "empty" || cur.status === "researching") patch.status = "ready";
+  if (!await save(id, patch, [], true)) throw { code: "save_failed", message: lastSaveError };
+  const deps = material.length ? (DEPS[key] || []).length : 0;
+  toast(`${web ? "Web research · " : ""}${sec.label}: ${sec.append ? (added ? `${added} new deal${added > 1 ? "s" : ""} added` : "no new deals") : changed.length ? "updated" : (suggested || held) ? "suggestion held for review" : "no change"}${deps && !quietCascade ? ` · ${deps} related section${deps > 1 ? "s" : ""} now out of date` : ""}`);
+}
+/* ---------- web research: a cloud Claude session with web search ---------- */
+// The page starts a Claude Code session (via the Claude Code Remote connector) that researches the steps on the web
+// and writes one webresults/<rid>__<step> document per step. The page merges each one with the normal confidence rules.
+const ARTIFACT_URL = "https://claude.ai/artifact/KCB1rWzeMTqDnqVXoQz3eG";
+const CCR = "Claude Code Remote";
+let mcp = null, webDocs = [], researchDocs = [];
+const webApplied = new Set();
+function stepSpec(c, key) {
+  const p = sectionPrompt(c, key);
+  const cut = (a, b) => { const i = p.indexOf(a); if (i < 0) return ""; const j = b ? p.indexOf(b, i) : -1; return p.slice(i, j < 0 ? undefined : j).trim(); };
+  return [cut("PLAYBOOK FOR THIS STEP", "HOW TO REASON"), cut("CURRENT VALUE OF THIS STEP").replace(/\n\{[^\n]{4000,}/, m => m.slice(0, 4000) + " …(truncated; the full profile is summarised above)")].filter(Boolean).join("\n\n");
+}
+function webBrief(c, keys, rid) {
+  const idl = [c.what_it_is, c.hq_address, c.website].filter(Boolean).join(" · ");
+  return `You are the web research agent for Profiler, a private database of chemical companies used for buy-side M&A work. Profiler is a claude.ai artifact (${ARTIFACT_URL}) owned by the user who started this session. The user pressed "Search the web" in the app; that button exists to have you research on the web and write the results into the app's own database. Writing the webresults documents described below is the task the user asked for and is pre-authorized: do it without asking for confirmation. This session runs unattended and nobody will answer questions, so make reasonable calls and keep going.
+
+Research "${c.name}" on the web and build these profile steps, in this order: ${keys.map(k => SECTIONS[k].label).join(" > ")}.
+
+COMPANY: ${c.name}${idl ? "\nIDENTITY" + (c.identity_confirmed ? " (confirmed by the user)" : "") + ": " + idl : ""}
+Stay on this exact company. If search results point to a different company with a similar name, ignore them. If you cannot find this company at all, write the final document with status "error" and say so; don't invent anything.
+
+HOW TO RESEARCH
+- Use WebSearch and WebFetch. Go to primary sources first: the company's own website (product pages, brand pages, technical and safety data sheets, about/history pages, locations), annual reports, 10-K/20-F filings, investor presentations and earnings releases, and the owner's or private-equity sponsor's portfolio page.
+- If WebFetch can't open a site (some are blocked from the research environment), keep going with WebSearch: search "site:<company domain> <topic>" and the product and brand names you find; search results carry page text.
+- Then deal and trade sources: press releases (PR Newswire, Business Wire, GlobeNewswire), trade press for the sector, association member lists, distributor line cards, and news on acquisitions, divestitures and ownership changes.
+- Products means actual products: product categories, then brand families and lines, then named products and grades, from the company's own catalog pages where possible.
+- Build each step on what earlier steps found: M&A history defines the businesses; the product catalog defines what is sold; end markets come from where those products go; customers, competitors and buyers follow from products, end markets, size and footprint.
+- Confidence: High only when a source states it or it follows directly from sourced facts; Medium for an estimate built from sourced facts (show the math in basis); Low for a rough guess. Put the source in basis. Private-company revenue estimates from data vendors are Medium at best.
+- Where the web has nothing, fall back on what you know, rate it Low and say so. Never invent names, figures or deals.
+
+HOW TO SAVE (do this after EACH step, before starting the next)
+1. Load the ArtifactData tool once with ToolSearch ("select:ArtifactData").
+2. Write one new document: action "set", url "${ARTIFACT_URL}", collection "webresults", doc_id "${rid}__<step key>", data:
+   {"rid":"${rid}","company_id":"${c.id}","step":"<step key>","status":"done","at":"<ISO time>","result":<the step's JSON object, in the shape given for that step>,"sources":[{"title":"","publisher":"","url":"","date":"","supports":"which fields or rows this source supports","quote":"short supporting quote"}]}
+   It is a new document, so no if_version. Keep it under 200 KB; shorten long text if a write is refused.
+3. When all steps are done, write doc_id "${rid}__final" with {"rid":"${rid}","company_id":"${c.id}","step":"final","status":"done","at":"<ISO time>","summary":"2-3 sentences: what you found, what is still weak"}. Use status "error" if you couldn't do the work.
+Write ONLY these webresults documents. Don't write, update or delete any other document, and don't touch any git repository, branch or pull request. Finish when the final document is written.
+
+WHAT THE PROFILE KNOWS (grouped by confidence; Verified items were set by the user and are true)
+${knowledgeBase(c) || "Almost nothing yet beyond the name."}
+
+${keys.map((k, i) => `==================== STEP ${i + 1}: ${SECTIONS[k].label.toUpperCase()} (step key "${k}") ====================\n${stepSpec(c, k)}`).join("\n\n")}
+
+For every step, "result" must be ONE JSON object in the shape shown for that step, with "confidence", "basis" and "note" filled in.`;
+}
+const webActive = id => researchDocs.find(r => r.company_id === id && (r.status === "starting" || r.status === "running"));
+const WEBERR = {
+  server_not_connected: "The Claude Code Remote connector isn't available to this page. Check it's connected in claude.ai Settings → Connectors.",
+  not_in_manifest: "Web research isn't allowed for this page. Allow Claude Code Remote when the page asks.",
+  needs_reauth: "Reconnect Claude Code Remote in claude.ai Settings → Connectors.",
+  blocked_by_policy: "Your organization blocks starting research sessions from pages.",
+  not_granted: "This page can't start research sessions here.",
+  capability_disabled: "This page can't start research sessions here.",
+};
+async function startWeb(id, keys) {
+  const c = getC(id); if (!c || !mcp || !db || webActive(id)) return;
+  keys = keys.filter(k => SECTIONS[k]); if (!keys.length) return;
+  const rid = "r" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const ref = db.doc("research/" + rid);
+  await ref.set({ company_id: id, name: c.name, steps: keys, status: "starting", requested_at: now() });
+  toast("Starting web research…");
+  try {
+    let env = "";
+    try { const r = await mcp.callTool(CCR, "list_environments", {}); env = ((r.payload?.environments) || []).find(e => e.kind === "anthropic_cloud" && e.state === "active")?.environment_id || ""; } catch {}
+    const input = { title: `Profiler web research: ${c.name}`, prompt: webBrief(c, keys, rid), permission_mode: "auto", tags: ["profiler-web-research"], model: "claude-sonnet-5-5" };
+    if (env) input.environment_id = env;
+    let r;
+    try { r = await mcp.callTool(CCR, "create_session", input); }
+    catch (e) { if (e?.code !== "tool_error") throw e; delete input.permission_mode; delete input.model; r = await mcp.callTool(CCR, "create_session", input); }
+    const pl = r.payload || {}, sid = pl.ccr?.id || pl.id || pl.session_id || "";
+    await ref.update({ status: "running", session_id: sid, started_at: now() });
+    toast(`Web research started on ${keys.length} step${keys.length > 1 ? "s" : ""}. Results save here as each step finishes.`);
+  } catch (e) {
+    await ref.update({ status: "error", error: WEBERR[e?.code] || (e?.message ? String(e.message).slice(0, 200) : "Couldn't start web research."), at: now() }).catch(() => {});
+    toast(WEBERR[e?.code] || "Couldn't start web research. Try again.");
+  }
+}
+// Apply finished steps one at a time, in builder order, so each merge sees the one before.
+let webBusy = false;
+async function drainWeb() {
+  if (webBusy || !writable || !db) return;
+  webBusy = true;
+  try {
+    for (;;) {
+      const next = webDocs.filter(d => !d.applied && !webApplied.has(d.id) && getC(d.company_id)).sort((a, b) => String(a.rid).localeCompare(String(b.rid)) || SECTION_ORDER.indexOf(a.step) - SECTION_ORDER.indexOf(b.step))[0];
+      if (!next) break;
+      webApplied.add(next.id);
+      if (next.step === "final") {
+        const r = researchDocs.find(x => x.id === next.rid);
+        if (r) await db.doc("research/" + r.id).update({ status: next.status === "error" ? "error" : "done", summary: String(next.summary || "").slice(0, 600), error: next.status === "error" ? String(next.summary || "").slice(0, 300) : "", finished_at: now() }).catch(() => {});
+        if (next.status !== "error") { const c = getC(next.company_id); if (c) toast(`Web research on ${c.name} finished`); }
+      } else if (SECTIONS[next.step] && next.result && typeof next.result === "object") {
+        await applyResult(next.company_id, next.step, next.result, { by: "Web research", sources: Array.isArray(next.sources) ? next.sources : [] });
+      }
+      await db.doc("webresults/" + next.id).update({ applied: true, applied_at: now() }).catch(() => {});
+    }
+  } finally { webBusy = false; }
+}
+function webPanel(c) {
+  const rs = researchDocs.filter(r => r.company_id === c.id).sort((a, b) => String(b.requested_at).localeCompare(String(a.requested_at)));
+  const r = rs[0]; if (!r) return "";
+  const got = webDocs.filter(d => d.rid === r.id && d.step !== "final").map(d => d.step);
+  const link = r.session_id ? ` <a href="https://claude.ai/code/${esc(r.session_id)}" target="_blank" rel="noopener">Open the research session</a>` : "";
+  if (r.status === "starting" || r.status === "running") return `<div class="run" role="status"><span class="spin"></span><span><b>Web research running.</b> ${got.length} of ${(r.steps || []).length} steps back${got.length ? ": " + esc(got.map(k => SECTIONS[k]?.label || k).join(", ")) : ""}. It takes a few minutes per step; results save here as they arrive.${link}</span></div>`;
+  if (r.status === "error") return `<div class="run warnrun" role="alert"><span><b>Web research stopped.</b> ${esc(r.error || "")}${link}</span><span class="sp"></span><button class="btn sm ghost" data-act="webdismiss" data-r="${esc(r.id)}">Dismiss</button></div>`;
+  return "";
+}
+
 // One at a time, in dependency order, so each section reasons from what the previous ones just learned.
 let quietCascade = false;
 async function enhanceSeq(id, keys) {
@@ -1723,10 +1843,11 @@ function viewCompanies() {
 
 const TABS = [["snapshot", "Snapshot"], ["overview", "Overview"], ["mix", "Mix"], ["customers", "Customers"], ["products", "Products"], ["competitors", "Competitors"], ["acquisitions", "M&A"], ["buyers", "Buyers"], ["addons", "Add-ons"], ["sources", "Sources"]];
 const canEnhance = () => !!sample && writable && !!db;
+const canWeb = () => !!mcp && writable && !!db;
 function enhanceBtn(c, key, label = "Enhance") {
-  if (!canEnhance()) return "";
+  if (!canEnhance()) return canWeb() && SECTIONS[key] ? `<button class="btn sm" data-act="websec" data-k="${key}" ${webActive(c.id) ? "disabled" : ""}>Search the web</button>` : "";
   if (isRunning(c.id, key)) return `<span class="pill accent"><span class="spin"></span>Enhancing</span><button class="btn sm ghost" data-act="stopsec" data-k="${key}">Stop</button>`;
-  return `<button class="btn sm enh" data-act="enhance" data-k="${key}" title="Claude researches this section again and saves the result">${label}</button>`;
+  return `<button class="btn sm enh" data-act="enhance" data-k="${key}" title="Claude works on this section again from what it knows and saves the result">${label}</button>${canWeb() && SECTIONS[key] ? `<button class="btn sm" data-act="websec" data-k="${key}" ${webActive(c.id) ? "disabled" : ""} title="A Claude research session searches the web for this section and saves the result with sources">Search the web</button>` : ""}`;
 }
 function secMeta(c, key) {
   const m = (c.section_meta || {})[key];
@@ -1753,7 +1874,7 @@ function viewCompany(id, tab) {
   const queued = (queueDocs || []).filter(q => q.company_id === id && q.status !== "done");
   const runStrip = busy.length ? `<div class="run" role="status"><span class="spin"></span><span><b>Enhancing ${busy.length === 1 ? SECTIONS[busy[0]].label : busy.length + " sections"}.</b> Each section saves as soon as it finishes. Your overrides stay as they are.</span></div>` : "";
   const stl = staleSections(c), sg = strength(c);
-  const actions = `${writable && db ? `<button class="btn" data-act="queue" ${queued.length ? "disabled" : ""} title="Ask a Claude research agent with web search to update this profile">${queued.length ? "Web research queued" : "Request web research"}</button>` : ""}${delBtn()}`;
+  const actions = delBtn();
 
   if (c.status === "empty" || c.status === "researching" && !(c.runs || []).length) {
     return `<div class="crumb"><a href="#companies">Companies</a> / ${esc(c.name)}</div>
@@ -1765,8 +1886,9 @@ function viewCompany(id, tab) {
       <p class="muted">The builder works in order: overview, M&A history, products, sectors, end markets (from where the products go), segments, financials, customers, competitors, buyers and add-ons. Each step starts from everything before it and saves as it finishes. You can override any value afterwards and run any step again to go deeper.</p>
       <label class="eyebrow" for="seedFacts">What you already know (optional)</label>
       <textarea id="seedFacts" placeholder="e.g. Revenue was $140M in 2025 per the CIM. Largest customer is Veolia at ~15%. Owned by XYZ Capital since 2022."></textarea>
-      <div class="add">${canEnhance() ? `<button class="btn primary" data-act="firstdive" ${busy.length ? "disabled" : ""}>Build profile</button>` : ""}${writable && db ? `<button class="btn" data-act="queue" ${queued.length ? "disabled" : ""}>${queued.length ? "Web research queued" : "Request web research"}</button><button class="btn ghost" data-act="manual">Fill in by hand</button>` : ""}</div>
-      <p class="faint" style="font-size:12px;margin-top:14px">Enhance uses Claude's own knowledge and runs here in the page. Web research is done by a Claude agent with search, which picks up queued requests.</p>
+      <div class="add">${canEnhance() ? `<button class="btn primary" data-act="firstdive" ${busy.length ? "disabled" : ""}>Build profile</button>` : ""}${canWeb() ? `<button class="btn" data-act="webbuild" ${webActive(c.id) ? "disabled" : ""}>${webActive(c.id) ? "Researching on the web…" : "Build from the web"}</button>` : ""}${writable && db ? `<button class="btn ghost" data-act="manual">Fill in by hand</button>` : ""}</div>
+      ${webPanel(c)}
+      <p class="faint" style="font-size:12px;margin-top:14px">Build profile uses Claude's own knowledge and runs here in the page in a minute or two. Build from the web starts a Claude research session with web search that reads the company's site, filings, press releases and trade press, and saves each step here with its sources. It takes longer and uses your Claude Code usage.</p>
     </div>`;
   }
 
@@ -1819,7 +1941,8 @@ function viewBuilder(c) {
   const nx = nextStep(c), busy = SECTION_ORDER.some(k => isRunning(c.id, k)), ok = canEnhance();
   return `<div class="panel builder">
     <div class="sec-h"><h2>Profile builder</h2><span class="faint" style="font-size:12px">Builds in order; each step starts from everything before it. Click a finished step to go deeper.</span><span class="sp"></span>
-      ${ok && nx ? `<button class="btn sm primary" data-act="enhance" data-k="${nx}" ${busy ? "disabled" : ""}>Build next: ${esc(SECTIONS[nx].label)}</button>` : ""}${ok ? `<button class="btn sm" data-act="enhanceall" ${busy ? "disabled" : ""}>Build all</button>` : ""}</div>
+      ${ok && nx ? `<button class="btn sm primary" data-act="enhance" data-k="${nx}" ${busy ? "disabled" : ""}>Build next: ${esc(SECTIONS[nx].label)}</button>` : ""}${ok ? `<button class="btn sm" data-act="enhanceall" ${busy ? "disabled" : ""}>Build all</button>` : ""}${canWeb() ? `<button class="btn sm" data-act="webbuild" ${webActive(c.id) ? "disabled" : ""} title="A Claude research session with web search works through every step in order and saves each one here with its sources">${webActive(c.id) ? "Researching on the web…" : "Build all from the web"}</button>` : ""}</div>
+    ${webPanel(c)}
     ${(() => { const k = SECTION_ORDER.find(k => runs[runKey(c.id, k)]?.error); return k ? `<div class="run warnrun" role="alert"><span><b>${esc(SECTIONS[k].label)} didn't finish.</b> ${esc(runs[runKey(c.id, k)].error)}</span><span class="sp"></span><button class="btn sm ghost" data-act="dismisssec" data-k="${k}">Dismiss</button></div>` : ""; })()}
     <ol class="steps">${SECTION_ORDER.map((k, i) => { const st = stepState(c, k); return `<li><button class="step ${st.cls}" data-act="enhance" data-k="${k}" ${!ok || busy ? "disabled" : ""} title="${st.cls === "done" ? "Go deeper on " : "Build "}${esc(SECTIONS[k].label)}"><span class="sn">${st.cls === "run" ? `<span class="spin"></span>` : i + 1}</span><span class="sl">${esc(SECTIONS[k].label)}</span><span class="ss">${esc(st.text)}</span></button></li>`; }).join("")}</ol>
   </div>`;
@@ -2000,7 +2123,7 @@ function tabBody(c, tab) {
     const runsH = [...(c.runs || [])].reverse().map(r => `<tr><td class="faint" style="white-space:nowrap">${fmtDate(r.at)}</td><td style="white-space:nowrap">${esc(r.kind)}</td><td>${esc(r.summary)}</td></tr>`).join("");
     const changes = (c.history || []).slice(0, 60).map(h => `<tr><td class="faint" style="white-space:nowrap">${fmtDate(h.at)}</td><td>${esc(label(h.field))}</td><td>${esc(h.by)}</td><td class="muted" style="font-size:12px">${esc(h.before || "—")}</td><td style="font-size:12px">${esc(h.after || "—")}</td></tr>`).join("");
     const ev = (c.evidence || []).map(e => `<tr><td>${esc(e.metric)}</td><td>${esc(e.value)}</td><td class="num">${esc(e.year)}</td><td>${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.source_type || "Link")}</a>` : esc(e.source_type)}</td><td class="muted" style="font-size:12px">${e.quote ? "“" + esc(e.quote) + "”" : ""}</td></tr>`).join("");
-    const qs = (queueDocs || []).filter(q => q.company_id === c.id).map(q => `<tr><td class="faint">${fmtDate(q.requested_at)}</td><td>${esc(q.status === "done" ? "Done" : q.status === "working" ? "In progress" : "Queued")}</td><td class="muted">${esc(q.result || "")}</td></tr>`).join("");
+    const qs = researchDocs.filter(q => q.company_id === c.id).sort((a, b) => String(b.requested_at).localeCompare(String(a.requested_at))).map(q => `<tr><td class="faint">${fmtDate(q.requested_at)}</td><td>${esc({ done: "Done", running: "Running", starting: "Starting", error: "Stopped", dismissed: "Stopped" }[q.status] || q.status)}</td><td class="muted">${esc((q.steps || []).map(k => SECTIONS[k]?.label || k).join(", "))}${q.summary || q.error ? " · " + esc(q.summary || q.error) : ""}</td></tr>`).join("");
     return `
     <div class="sec grid2">
       <div><div class="sec-h"><h2>Your facts</h2></div>
@@ -2253,6 +2376,9 @@ app.addEventListener("click", async e => {
   if (!c) return;
   if (act === "enhance") enhance(c.id, btn.dataset.k);
   if (act === "enhanceall") enhanceAll(c.id);
+  if (act === "webbuild") startWeb(c.id, SECTION_ORDER.slice());
+  if (act === "websec") startWeb(c.id, [btn.dataset.k]);
+  if (act === "webdismiss") { db.doc("research/" + btn.dataset.r).update({ status: "dismissed" }).catch(() => {}); }
   if (act === "updatestale") updateStale(c.id);
   if (act === "verify") { await save(c.id, {}, [btn.dataset.f]); render(); }
   if (act === "stopsec") runs[runKey(c.id, btn.dataset.k)]?.ctl?.abort();
@@ -2330,6 +2456,9 @@ render();
     if (u?.can) { const w = await u.can("data.write"); if (w === false) { writable = false; } }
   } catch {}
   dbState = writable ? "live" : "readonly";
+  window.claude.use("mcp").then(m => { mcp = m; if (loaded) render(); }).catch(() => {});
+  db.collection("research").limit(500).onSnapshot(snap => { researchDocs = snap.docs.map(d => ({ ...d.data(), id: d.id })); if (loaded) render(); }, () => {});
+  db.collection("webresults").limit(1000).onSnapshot(snap => { webDocs = snap.docs.map(d => ({ ...d.data(), id: d.id })); drainWeb(); if (loaded) render(); }, () => {});
   db.collection("queue").limit(500).onSnapshot(snap => { queueDocs = snap.docs.map(d => ({ ...d.data(), id: d.id })); if (loaded) render(); }, () => {});
   db.collection("tam").limit(200).onSnapshot(snap => { tams = {}; snap.docs.forEach(d => tams[d.id] = d.data()); ver++; if (loaded) render(); }, () => {});
   db.doc("meta/sectors").onSnapshot(d => { customSectors = d.exists ? (d.data().custom || []) : []; ver++; if (loaded) render(); }, () => {});
@@ -2339,7 +2468,7 @@ render();
     companies.clear();
     snap.docs.forEach(doc => companies.set(doc.id, { ...doc.data(), id: doc.id }));
     loaded = true; ver++; rebuildIndex();
-    watchDetails();
+    watchDetails(); drainWeb();
     render();
   }, err => {
     if (err?.code === "revoked" || err?.code === "not_granted") { dbState = "off"; }
