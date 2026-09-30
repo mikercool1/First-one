@@ -308,6 +308,14 @@ td.cname .ib.sm{margin-right:6px}
   .grid3{grid-template-columns:repeat(3,1fr)}
   .sec{margin:10px 0}
 }
+/* campaign */
+.ragdot{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--line);vertical-align:middle}
+.ragdot.g{background:#2e9d5b}.ragdot.y{background:#e0a92e}.ragdot.r{background:#d2483f}.ragdot.r9{background:#d2483f;box-shadow:0 0 0 3px rgba(210,72,63,.28)}
+.ragdot.all{background:conic-gradient(#2e9d5b 0 33%,#e0a92e 0 66%,#d2483f 0)}
+.ragbar{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.ragchip{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:14px}
+.ragchip.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.run.ctwbar{background:var(--surface);border:1px solid var(--line);margin-top:10px}
 .run.warnrun{background:var(--warn-soft,#fbeee2)}
 .run .sp{flex:1}
 .run{margin-top:14px;padding:12px 14px;border-radius:var(--r);background:var(--accent-soft);color:var(--ink);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -517,6 +525,7 @@ tr:hover .rowx{opacity:1}
       <a href="#tam" data-v="tam">Market size</a>
       <a href="#sponsors" data-v="sponsors">PE owned</a>
       <a href="#inmarket" data-v="inmarket">In market</a>
+      <a href="#campaign" data-v="campaign">Campaign</a>
     </nav>
     <div class="gsearch" id="gsearch"><input id="gq" type="search" placeholder="Search…" autocomplete="off" aria-label="Search companies, sponsors and deals"><div id="gres" hidden></div></div>
     <div class="live" id="live"><span class="dot"></span><span>Connecting</span></div>
@@ -653,7 +662,7 @@ function route() {
   if (h.startsWith("s.")) return { view: "sponsor", id: decodeURIComponent(h.slice(2)) };
   if (h.startsWith("precedents")) { const [, forId] = h.split("~"); return { view: "precedents", forId: forId ? decodeURIComponent(forId) : "" }; }
   if (h.startsWith("sponsors")) { const [, fk, fv] = h.split("~"); return { view: "sponsors", fk: fk || "", fv: fv ? decodeURIComponent(fv) : "" }; }
-  if (["home", "sectors", "companies", "targets", "endmarkets", "tam", "inmarket"].includes(h)) return { view: h };
+  if (["home", "sectors", "companies", "targets", "endmarkets", "tam", "inmarket", "campaign"].includes(h)) return { view: h };
   return { view: "home" };
 }
 
@@ -1126,7 +1135,7 @@ app.addEventListener("paste", e => {
   const text = (e.clipboardData || window.clipboardData).getData("text/plain");
   document.execCommand("insertText", false, text);
 });
-const isEditing = () => { const a = document.activeElement; return !!(a && app.contains(a) && (a.isContentEditable || a.tagName === "TEXTAREA" || ((a.id === "addName" || a.id === "factText") && a.value) || (!!a.closest?.("#imForm, #dealForm, #spForm") && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)))); };
+const isEditing = () => { const a = document.activeElement; return !!(a && app.contains(a) && (a.isContentEditable || a.tagName === "TEXTAREA" || ((a.id === "addName" || a.id === "factText") && a.value) || (!!a.closest?.("#imForm, #dealForm, #spForm, #ctwForm") && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)))); };
 
 /* ---------- deep dive ---------- */
 /* ---------- enhance: one focused Claude run per section ---------- */
@@ -2209,7 +2218,7 @@ function viewCompany(id, tab) {
   const queued = (queueDocs || []).filter(q => q.company_id === id && q.status !== "done");
   const runStrip = busy.length ? `<div class="run" role="status"><span class="spin"></span><span><b>Enhancing ${busy.length === 1 ? SECTIONS[busy[0]].label : busy.length + " sections"}.</b> Each section saves as soon as it finishes. Your overrides stay as they are.</span></div>` : "";
   const stl = staleSections(c), sg = strength(c);
-  const actions = `<button class="btn sm ghost" data-act="print" title="Print or save a one-page tear sheet">Print</button>${writable && db && !inMarket(c) && ui.imEdit !== c.id ? `<button class="btn sm" data-act="imedit">Mark in market</button>` : ""}`;
+  const actions = `<button class="btn sm ghost" data-act="print" title="Print or save a one-page tear sheet">Print</button>${writable && db && !onCampaign(c) && ui.ctwEdit !== c.id ? `<button class="btn sm" data-act="ctwedit">Add to campaign</button>` : ""}${writable && db && !inMarket(c) && ui.imEdit !== c.id ? `<button class="btn sm" data-act="imedit">Mark in market</button>` : ""}`;
 
   if (c.status === "empty" || c.status === "researching" && !(c.runs || []).length) {
     return `<div class="crumb"><a href="#companies">Companies</a> / ${esc(c.name)}</div>
@@ -2238,6 +2247,8 @@ function viewCompany(id, tab) {
     `<a class="pill" href="#companies" data-setsector="${esc(ps)}">${esc(sectorShort(ps))}${prk ? ` · #${prk.rank} of ${prk.of}` : ""}</a>`,
     isPE(c) ? `<a class="pill pe" href="#s.${esc(spSlug(sponsorOf(c)))}">PE-owned · ${esc(sponsorOf(c))}</a>` : c.owner_type ? `<span class="pill">${esc(c.owner_type)}</span>` : "",
     inMarket(c) ? `<a class="pill accent" href="#inmarket">In market · ${esc(c.in_market.stage)}</a>` : "",
+    onCampaign(c) ? `<a class="pill" href="#campaign"><span class="ragdot ${rag(c).k}"></span> Campaign</a>` : "",
+    c.demo ? `<span class="pill warn" title="Invented company for demonstration">Demo</span>` : "",
   ].join("");
   const head = `
   <div class="crumb"><a href="#companies">Companies</a> / ${esc(c.name)}</div>
@@ -2258,6 +2269,7 @@ function viewCompany(id, tab) {
     ${kpi("employees_total", "Employees", "", "", "")}
   </div>
   <div class="valrow"><span class="eyebrow">Valuation</span><span>EV <b class="num">$${ed("ev_usd_m", c.ev_usd_m, "num", "–")}M</b> ${num(c.ev_usd_m) !== null ? confBadge(c, "ev_usd_m") : ""}</span><span>EV / EBITDA <b class="num">${ed("ev_ebitda_x", num(c.ev_ebitda_x) ?? (evEbitda(c) !== null ? +evEbitda(c).toFixed(1) : null), "num", "–")}x</b></span><span>EV / revenue <b class="num">${num(c.ev_usd_m) && num(c.total_revenue_usd_m) ? (c.ev_usd_m / c.total_revenue_usd_m).toFixed(1) + "x" : "—"}</b></span>${isPE(c) ? `<span>Sponsor entry <b class="num">${ed("pe_entry_ev_ebitda_x", num(c.pe_entry_ev_ebitda_x) ?? entryMult(c), "num", "–")}x</b>${entryYear(c) ? ` <span class="faint">(${entryYear(c)})</span>` : ""}</span>` : ""}</div>
+  ${campaignPanel(c)}
   ${inMarketPanel(c)}
   ${finHistory(c)}
   <div class="kpi-foot">${secMeta(c, "financials")}<span class="faint" style="font-size:12px">Type over any number to override it.</span><span class="sp"></span>${enhanceBtn(c, "financials", "Enhance financials")}</div>
@@ -2837,6 +2849,7 @@ function viewHome() {
     <a href="#sponsors"><b>${pe.filter(c => (holdYears(c) || 0) >= 5).length}</b><span>Held 5+ years</span></a>
   </div>
   <div class="hgrid">
+    ${card("Campaign: follow up", "#campaign", all.filter(onCampaign).sort((a, b) => (rag(b).d ?? 1e9) - (rag(a).d ?? 1e9)).slice(0, 6).map(c => coRow(c, `<span class="ragdot ${rag(c).k}"></span> ${rag(c).d === null ? "never" : rag(c).d + "d"}`, `Exit ${c.ctw.exit_timing || "?"} · fee ${c.ctw.est_fee_usd_m ? fmtM(c.ctw.est_fee_usd_m) : "—"}`)).join(""), "No companies on the campaign list yet.")}
     ${card("In market", "#inmarket", im.slice(0, 6).map(c => coRow(c, esc(c.in_market.stage.split(" /")[0]), [c.in_market.seller, c.in_market.advisor].filter(Boolean).join(" · advised by "))).join(""), "Nothing marked in market. Open a company and click “Mark in market”.")}
     ${card("Likely sellers", "#sponsors", longHolds.map(c => coRow(c, `${holdYears(c)} yrs`, `${sponsorOf(c)} since ${entryYear(c)} · EBITDA ${fmtM(c.total_ebitda_usd_m)}`)).join(""), "No PE holds of five years or more.")}
     ${card("Latest deals", "#precedents", deals.map(d => `<a class="hrow" href="#d.${esc(d.id)}"><span class="ib deal">M&amp;A</span><span><b>${esc(d.target)}</b><small>${esc([d.acquirer, String(d.date || "").slice(0, 7)].filter(Boolean).join(" · "))}</small></span><span class="num">${num(d.ev_usd_m) ? fmtM(d.ev_usd_m) : ""}</span></a>`).join(""), "No deals yet.")}
@@ -2845,6 +2858,50 @@ function viewHome() {
   <section class="hcard"><div class="hcard-h"><h2>Sectors</h2><a href="#sectors">All sectors</a></div><div class="hsecs">${secs.map(r => `<a href="#companies" data-setsector="${esc(r.x.id)}"><b>${esc(r.x.name)}</b><small>${r.n} companies${r.tam ? " · TAM " + fmtM(r.tam) : ""}</small></a>`).join("")}</div></section>
   <div class="hlinks"><a href="#precedents"><b>Precedents</b><small>Deals ranked for any company</small></a><a href="#targets"><b>Buyer finder</b><small>Who would buy a company</small></a><a href="#sponsors"><b>PE owned</b><small>By entry year and sponsor</small></a><a href="#tam"><b>Market size</b><small>TAM by sector</small></a></div>
   </div>`;
+}
+/* ---------- campaign to win ---------- */
+const onCampaign = c => !!(c.ctw && c.ctw.on);
+const daysSince = d => { const t = Date.parse(d); return isNaN(t) ? null : Math.max(0, Math.floor((Date.now() - t) / 864e5)); };
+// Green: spoke in the last 30 days. Yellow: 31-60. Red: 61-90. Red with a ring: over 90, or never logged.
+const rag = c => { const d = daysSince(c.ctw?.last_contact); return d === null ? { k: "r9", l: "No contact logged", d } : d <= 30 ? { k: "g", l: "Green", d } : d <= 60 ? { k: "y", l: "Yellow", d } : d <= 90 ? { k: "r", l: "Red", d } : { k: "r9", l: "Red (90+)", d }; };
+const EXIT_OPTS = (() => { const y = new Date().getFullYear(); const o = []; for (let i = 0; i < 4; i++) for (const h of ["H1", "H2"]) o.push(`${h} ${y + i}`); o.push("2030+", "Unknown"); return o; })();
+const todayISO = () => new Date().toISOString().slice(0, 10);
+function campaignPanel(c) {
+  const m = c.ctw || {}, editing = ui.ctwEdit === c.id, W = writable && db;
+  if (!editing) {
+    if (!onCampaign(c)) return "";
+    const g = rag(c);
+    return `<div class="run ctwbar" role="status"><span class="ragdot ${g.k}" title="${esc(g.l)}"></span><span><b>Campaign to win</b> · exit ${esc(m.exit_timing || "timing unknown")} · est. fee ${m.est_fee_usd_m ? fmtM(m.est_fee_usd_m) : "—"} · last contact ${m.last_contact ? `${esc(m.last_contact)} (${g.d} days ago)` : "never logged"}${m.contact ? " with " + esc(m.contact) : ""}${m.notes ? `<div class="faint" style="font-size:12px;margin-top:2px">${esc(m.notes)}</div>` : ""}</span><span class="sp"></span>${W ? `<button class="btn sm" data-act="ctwlog">Log contact today</button><button class="btn sm ghost" data-act="ctwedit">Edit</button>` : ""}<a class="btn sm ghost" href="#campaign">Campaign list</a></div>`;
+  }
+  return `<form class="panel imform" id="ctwForm"><div class="sec-h"><h2>Campaign to win</h2><span class="sp"></span><button type="button" class="btn sm ghost" data-act="ctwcancel">Cancel</button></div>
+    <div class="imgrid"><label>Estimated exit timing<select id="ctwExit">${EXIT_OPTS.map(o => `<option ${o === (m.exit_timing || "") ? "selected" : ""}>${o}</option>`).join("")}</select></label>
+    <label>Estimated fee ($M)<input id="ctwFee" inputmode="decimal" value="${esc(m.est_fee_usd_m ?? "")}" placeholder="e.g. 6.5"></label>
+    <label>Last contact<input id="ctwLast" type="date" value="${esc(m.last_contact || todayISO())}"></label>
+    <label>Who we spoke to<input id="ctwWho" value="${esc(m.contact || "")}" placeholder="e.g. CEO, deal partner at the sponsor"></label>
+    <label>Relationship lead<input id="ctwLead" value="${esc(m.lead || "")}" placeholder="Banker who owns it"></label>
+    <label>Next step<input id="ctwNext" value="${esc(m.next_step || "")}" placeholder="e.g. Send buyer universe by Oct 15"></label>
+    <label class="wide">Notes<input id="ctwNotes" value="${esc(m.notes || "")}" placeholder="What we know about their exit plans"></label></div>
+    <div class="add" style="margin-top:10px"><button class="btn primary" type="submit">Save</button>${onCampaign(c) ? `<button type="button" class="btn danger" data-act="ctwremove">Take off the campaign list</button>` : ""}</div></form>`;
+}
+function viewCampaign() {
+  const f = ui.ctwFilter || "";
+  const all = list().filter(onCampaign);
+  const rows = all.filter(c => !f || rag(c).k === f).sort((a, b) => (rag(b).d ?? 1e9) - (rag(a).d ?? 1e9));
+  const cnt = k => all.filter(c => rag(c).k === k).length;
+  const fees = all.reduce((t, c) => t + (num(c.ctw.est_fee_usd_m) || 0), 0);
+  const byYear = {}; for (const c of all) { const y = (String(c.ctw.exit_timing || "").match(/\d{4}/) || ["Unknown"])[0]; byYear[y] = (byYear[y] || 0) + (num(c.ctw.est_fee_usd_m) || 0); }
+  const chip = (k, lab, n) => `<button class="ragchip ${f === k ? "on" : ""}" data-ctwf="${k}"><span class="ragdot ${k || "all"}"></span>${lab} <b>${n}</b></button>`;
+  const demo = all.filter(c => c.demo).length;
+  return `<div class="page-h"><div><div class="eyebrow">Coverage</div><h1>Campaign to win</h1><p>Companies we are working to win a mandate from, with expected exit timing, estimated fee and how recently we spoke. Green: in the last 30 days. Yellow: 31-60. Red: over 60. Add a company from its profile with “Add to campaign”.</p></div></div>
+  <div class="stats"><div class="stat"><div class="v">${all.length}</div><div class="l">On the list</div></div><div class="stat"><div class="v">${fmtM(fees)}</div><div class="l">Estimated fees</div></div>${Object.entries(byYear).sort().slice(0, 4).map(([y, v]) => `<div class="stat"><div class="v">${fmtM(v)}</div><div class="l">Fees, exits ${esc(y)}</div></div>`).join("")}</div>
+  <div class="ragbar">${chip("", "All", all.length)}${chip("g", "Green · ≤30 days", cnt("g"))}${chip("y", "Yellow · 31-60", cnt("y"))}${chip("r", "Red · 61-90", cnt("r"))}${chip("r9", "Red · 90+ / never", cnt("r9"))}</div>
+  <div class="tw"><table class="ctwt"><thead><tr><th></th><th>Company</th><th>Owner</th><th>Exit</th><th class="r">Est. fee</th><th class="r">EBITDA</th><th>Last contact</th><th>Lead · next step</th><th></th></tr></thead><tbody>${rows.map(c => { const g = rag(c), m = c.ctw; return `<tr class="link" data-open="${esc(c.id)}"><td><span class="ragdot ${g.k}" title="${esc(g.l)}"></span></td><td class="cname"><span class="cn">${logoBadge(c, "sm")}<span><b>${esc(c.name)}</b>${c.demo ? ` <span class="pill">Demo</span>` : ""}<small>${esc(subIndustry(c))}</small></span></span></td><td>${isPE(c) ? `<a href="#s.${esc(spSlug(sponsorOf(c)))}">${esc(sponsorOf(c))}</a>` : esc(c.owner_type || "")}</td><td class="num">${esc(m.exit_timing || "—")}</td><td class="r num">${m.est_fee_usd_m ? fmtM(m.est_fee_usd_m) : "—"}</td><td class="r num">${fmtM(c.total_ebitda_usd_m)}</td><td><b class="num">${g.d === null ? "Never" : g.d + " days ago"}</b><small class="faint" style="display:block">${esc([m.last_contact, m.contact].filter(Boolean).join(" · "))}</small></td><td style="font-size:13px">${esc(m.lead || "")}${m.next_step ? `<small class="faint" style="display:block">${esc(m.next_step)}</small>` : ""}</td><td>${writable && db ? `<button class="btn sm ghost" data-act="ctwlogrow" data-id="${esc(c.id)}" title="Set last contact to today">Log call</button>` : ""}</td></tr>`; }).join("") || `<tr><td colspan="9" class="faint">Nobody on the list${f ? " in this group" : ""} yet. Open a company and click “Add to campaign”.</td></tr>`}</tbody></table></div>
+  ${demo && writable && db ? `<p class="faint" style="font-size:12px;margin-top:12px">${demo} demo companies are on this list. <button class="btn sm ghost" data-act="demodel">Remove all demo companies</button></p>` : ""}`;
+}
+async function logContact(id) {
+  const c = getC(id); if (!c) return;
+  await save(id, { ctw: { ...(c.ctw || {}), on: true, last_contact: todayISO() }, history: [{ at: now(), field: "ctw", by: "You", before: c.ctw?.last_contact || "", after: "Contact logged " + todayISO() }, ...(c.history || [])].slice(0, 200) }, [], true);
+  toast(`Logged contact with ${c.name} today`); render();
 }
 function viewPrecedents(forId = "") {
   const q = ui.pq.toLowerCase();
@@ -2936,6 +2993,7 @@ function render() {
   else if (r.view === "sectors") html = viewSectors();
   else if (r.view === "tam") html = viewTam();
   else if (r.view === "home") html = viewHome();
+  else if (r.view === "campaign") html = viewCampaign();
   else if (r.view === "sponsors") html = viewSponsors(r);
   else if (r.view === "deal") html = viewDeal(r.id);
   else if (r.view === "sponsor") html = viewSponsor(r.id);
@@ -3379,6 +3437,14 @@ app.addEventListener("submit", async e => {
     if (m) location.hash = "precedents~" + encodeURIComponent(m.id); else toast("No company called “" + v + "” in Profiler. Add it first, then rank its precedents.");
     return;
   }
+  if (e.target.id === "ctwForm") {
+    const c = getC(route().id); if (!c) return;
+    const g = id => $("#" + id)?.value.trim() || "";
+    document.activeElement?.blur?.();
+    const m = { ...(c.ctw || {}), on: true, exit_timing: g("ctwExit"), est_fee_usd_m: num(g("ctwFee").replace(/[$,m]/gi, "")), last_contact: g("ctwLast"), contact: g("ctwWho"), lead: g("ctwLead"), next_step: g("ctwNext"), notes: g("ctwNotes"), added_at: c.ctw?.added_at || now() };
+    ui.ctwEdit = null;
+    await save(c.id, { ctw: m }, [], true); toast("Saved to the campaign list"); render(); return;
+  }
   if (e.target.id === "imForm") {
     const c = getC(route().id); if (!c) return;
     const g = id => $("#" + id)?.value.trim() || "";
@@ -3436,6 +3502,7 @@ app.addEventListener("click", async e => {
   if (sortTh) { const k = sortTh.dataset.sort; if (ui.sort === k) ui.dir *= -1; else { ui.sort = k; ui.dir = ["name", "rank", "owner_type"].includes(k) ? 1 : -1; } render(); return; }
   const psTh = t.closest("[data-psort]");
   if (psTh) { const k = psTh.dataset.psort; if (ui.psort === k) ui.pdir *= -1; else { ui.psort = k; ui.pdir = ["target", "acquirer"].includes(k) ? 1 : -1; } render(); return; }
+  const cf = t.closest("[data-ctwf]"); if (cf) { ui.ctwFilter = cf.dataset.ctwf; render(); return; }
   const ts = t.closest("[data-tsel]"); if (ts) { ui.tsel = ts.dataset.tsel; render(); return; }
   const em = t.closest("[data-em]"); if (em) { ui.emMode = em.dataset.em; render(); return; }
   const et = t.closest("[data-emtax]"); if (et) { ui.emTax = et.dataset.emtax; render(); return; }
@@ -3445,6 +3512,8 @@ app.addEventListener("click", async e => {
   const btn = t.closest("[data-act]"); if (!btn) return;
   const act = btn.dataset.act, r = route(), c = getC(r.id);
   if (act === "profile-target") { startAdd(btn.dataset.name); return; }
+  if (act === "ctwlogrow") { await logContact(btn.dataset.id); return; }
+  if (act === "demodel") { const ds = list().filter(x => x.demo); if (!confirm(`Delete all ${ds.length} demo companies? Real companies are not touched.`)) return; for (const x of ds) { await deleteCompany(x.id); db.doc("chats/" + x.id).delete().catch(() => {}); } toast(`Removed ${ds.length} demo companies`); render(); return; }
   if (act === "newdeal") { const id = "deal-" + Date.now().toString(36); await saveDeal(id, { target: "New deal", status: "Closed", origin: ["added by hand"], edited: true }); location.hash = "d." + id; return; }
   if (r.view === "sponsor" && act === "spresearch") { researchSponsor(r.id); return; }
   if (r.view === "deal") {
@@ -3479,6 +3548,10 @@ app.addEventListener("click", async e => {
   if (act === "print") { if (r.tab !== "overview") { location.hash = "c." + c.id; setTimeout(() => window.print(), 400); } else window.print(); return; }
   if (act === "logoadd") { $("#logoFile")?.click(); return; }
   if (act === "logodel") { try { await db.doc("logos/" + c.id).delete(); logos.delete(c.id); render(); toast("Logo removed"); } catch (err) { handleWriteError(err); } return; }
+  if (act === "ctwedit") { ui.ctwEdit = c.id; render(); return; }
+  if (act === "ctwcancel") { document.activeElement?.blur?.(); ui.ctwEdit = null; render(); return; }
+  if (act === "ctwlog") { await logContact(c.id); return; }
+  if (act === "ctwremove") { ui.ctwEdit = null; await save(c.id, { ctw: { ...(c.ctw || {}), on: false } }, [], true); toast("Taken off the campaign list"); render(); return; }
   if (act === "imedit") { ui.imEdit = c.id; render(); return; }
   if (act === "imcancel") { document.activeElement?.blur?.(); ui.imEdit = null; render(); return; }
   if (act === "imremove") { ui.imEdit = null; await save(c.id, { in_market: null }, [], true); toast("Removed from In market"); render(); return; }
