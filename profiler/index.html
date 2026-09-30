@@ -235,6 +235,19 @@ a.xbtn:hover{border-color:var(--accent);box-shadow:0 2px 10px rgba(15,27,36,.08)
   .tw td[data-label]:not(:first-child)::before{content:attr(data-label);display:block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}
   .tw td:empty{display:none}
 }
+/* compact company list */
+.mlegend{display:none}
+@media (max-width:700px){.mlegend{display:grid;grid-template-columns:minmax(0,1fr) 64px 64px;gap:0 12px;padding:0 12px 4px;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}.mlegend span:not(:first-child){text-align:right}}
+table.clist td{padding-top:7px;padding-bottom:7px}
+table.clist td.cname b{font-weight:600}
+table.clist td.cname small{display:block;font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:520px}
+@media (max-width:700px){
+  .tw table.clist tr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:0 12px;align-items:center;padding:8px 12px;margin-bottom:6px}
+  .tw table.clist td.hm{display:none}
+  .tw table.clist td::before{display:none!important}
+  .tw table.clist td.cname small{max-width:100%}
+  .tw table.clist td.r{text-align:right!important;font-size:14px}
+}
 .run.warnrun{background:var(--warn-soft,#fbeee2)}
 .run .sp{flex:1}
 .run{margin-top:14px;padding:12px 14px;border-radius:var(--r);background:var(--accent-soft);color:var(--ink);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -1972,7 +1985,7 @@ function viewCompanies() {
     const ps = primarySector(c), rk = sectorRank(c, sid || ps);
     if (ui.delRow === c.id) return `<tr class="delrow"><td colspan="10"><span><b>Delete ${esc(c.name)}</b> and everything saved on it? This can't be undone.</span> <button class="btn sm dangerfill" data-act="rowdelyes" data-id="${esc(c.id)}">Delete for good</button> <button class="btn sm ghost" data-act="rowdelno">Keep it</button></td></tr>`;
     const mine = !c.imported_from ? `<span class="pill" title="Added in Profiler, not from the water index">${c.identity_confirmed ? "Added by you" : "Added, not confirmed"}</span>` : "";
-    return `<tr class="link" data-open="${esc(c.id)}"><td class="num faint">${rk?.rank ?? ""}</td><td class="cname">${esc(c.name)} ${st} ${mine}${writable && db ? `<button class="x rowx" data-act="rowdel" data-id="${esc(c.id)}" title="Delete ${esc(c.name)}" aria-label="Delete ${esc(c.name)}">×</button>` : ""}<small>${esc([c.business_model || c.primary_category, stateOf(c)].filter(Boolean).join(" · "))}</small></td><td><div class="chips" style="margin:0">${sectorChips(c, false)}</div></td><td>${esc(c.owner_type || "")}</td><td class="r num">${fmtM(sectorRev(c, sid || ps))}${sid ? "" : `<small class="faint" style="display:block;font-size:11px">${esc(sectorShort(ps))}</small>`}</td>${water ? `<td class="r num">${num(c.us_market_share_pct) ? (+c.us_market_share_pct).toFixed(1) + "%" : "—"}</td>` : ""}<td class="r num">${fmtM(c.total_revenue_usd_m)}</td><td class="r num">${fmtM(c.total_ebitda_usd_m)}</td><td class="r num">${fmtPct(margin(c))}</td><td class="r num">${fmtX(evEbitda(c))}</td><td class="muted">${esc(topEM(c))}</td></tr>`;
+    return `<tr class="link" data-open="${esc(c.id)}"><td class="num faint hm">${rk?.rank ?? ""}</td><td class="cname">${logoImg(c)}<b>${esc(c.name)}</b> ${st} ${mine}${writable && db ? `<button class="x rowx" data-act="rowdel" data-id="${esc(c.id)}" title="Delete ${esc(c.name)}" aria-label="Delete ${esc(c.name)}">×</button>` : ""}<small>${esc([isPE(c) ? "PE · " + sponsorOf(c) : c.owner_type, sid ? "" : sectorShort(ps), c.business_model || c.primary_category].filter(Boolean).join(" · "))}</small></td><td class="r num hm">${fmtM(sectorRev(c, sid || ps))}</td><td class="r num">${fmtM(c.total_revenue_usd_m)}</td><td class="r num">${fmtM(c.total_ebitda_usd_m)}</td><td class="r num hm">${fmtPct(margin(c))}</td><td class="r num hm">${fmtX(evEbitda(c))}</td></tr>`;
   }).join("") + (rows.length > shown.length ? `<tr><td colspan="9" style="text-align:center;padding:14px"><button class="btn sm" data-act="more">Show ${Math.min(150, rows.length - shown.length)} more of ${rows.length - shown.length}</button></td></tr>` : "") : `<tr><td colspan="10" class="faint" style="padding:28px 12px">${all.length ? "No companies match that search." : `No companies in ${esc(sname)} yet. Add one above, or build out the sector from the Sectors page.`}</td></tr>`;
   return `
   <div class="page-h"><div><div class="eyebrow">${esc(sname)}</div><h1>Companies</h1><p>${sid ? `Companies with a business line in ${esc(sname)}, ranked by ${water ? "US water treatment revenue" : "revenue in this sector"}.` : "Every company in Profiler, across all sectors."} Search always covers every sector. Type over any value in a profile to correct it.</p></div>
@@ -1989,7 +2002,8 @@ function viewCompanies() {
     ${water ? `<select id="fscope" aria-label="Scope"><option value="">Core and adjacent</option>${["Core", "Adjacent"].map(v => `<option ${ui.scope === v ? "selected" : ""}>${v}</option>`).join("")}</select>` : ""}
     <select id="fotype" aria-label="Owner type"><option value="">All owners</option>${["PE-backed", "Public", "Family/founder-owned", "Subsidiary of strategic", "ESOP", "Other", "Added in Profiler"].map(v => `<option ${ui.otype === v ? "selected" : ""}>${v}</option>`).join("")}</select>
     <span class="faint">${rows.length} shown</span></div>
-  <div class="tw"><table><thead><tr>${th("rank", "#")}${th("name", "Company")}<th>Sectors</th>${th("owner_type", "Owner")}${th("secrev", sid ? sectorRevLabel(sid) : "Primary sector rev", "r")}${water ? th("us_market_share_pct", "US share", "r") : ""}${th("total_revenue_usd_m", "Total rev", "r")}${th("total_ebitda_usd_m", "EBITDA", "r")}${th("margin", "Margin", "r")}${th("evx", "EV / EBITDA", "r")}<th>Top end market</th></tr></thead><tbody>${body}</tbody></table></div>`;
+  <div class="mlegend"><span>Company</span><span>Revenue</span><span>EBITDA</span></div>
+  <div class="tw"><table class="clist"><thead><tr>${th("rank", "#")}${th("name", "Company")}${th("secrev", sid ? sectorRevLabel(sid) : "Sector rev", "r")}${th("total_revenue_usd_m", "Revenue", "r")}${th("total_ebitda_usd_m", "EBITDA", "r")}${th("margin", "Margin", "r")}${th("evx", "EV / EBITDA", "r")}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
 const TABS = [["overview", "Overview"], ["products", "Products"], ["acquisitions", "M&A"], ["customers", "Customers"], ["competitors", "Competitors"], ["buyers", "Buyers"], ["addons", "Add-ons"], ["segments", "Segments"], ["mix", "Mix"], ["stats", "Peers"], ["notes", "Notes"], ["build", "Build"]];
