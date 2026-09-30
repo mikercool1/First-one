@@ -256,6 +256,31 @@ table.fh th,table.fh td{padding:7px 12px;border-bottom:1px solid var(--line);whi
 table.fh tbody th{text-align:left;font-weight:500;color:var(--ink-2);font-size:13px}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
 .person{padding:12px 14px}.person .who{font-weight:600}
+/* home */
+.home{display:flex;flex-direction:column;gap:18px}
+.hhero{padding:18px 0 4px}.hhero h1{font-size:56px;margin:0}.hhero p{color:var(--ink-2);margin:4px 0 14px}
+.hsearch{position:relative;max-width:720px}.hsearch input{width:100%;font-size:17px;padding:14px 16px;border-radius:12px}
+.hres{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(15,27,36,.16);padding:6px;max-height:70vh;overflow:auto}
+.hgrp{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);padding:8px 10px 4px}
+.hrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--ink)}
+.hrow:hover{background:var(--sunk)}
+.hrow b{font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hrow small{display:block;color:var(--ink-3);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font:600 12px var(--f-mono)}
+.lb.deal{background:var(--sunk);color:var(--ink-2);font-size:10px}
+.hrow .logo.sm{width:32px;height:32px;max-width:32px;margin:0;object-fit:contain}
+.hstats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.hstats a{display:flex;flex-direction:column;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);text-decoration:none;color:var(--ink)}
+.hstats b{font:600 28px var(--f-mono)}.hstats span{color:var(--ink-3);font-size:13px}
+.hstats a:hover,.hsecs a:hover,.hlinks a:hover{border-color:var(--accent)}
+.hgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.hcard{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:12px 12px 8px}
+.hcard-h{display:flex;align-items:baseline;justify-content:space-between;padding:0 6px 6px}.hcard-h h2{font-size:17px;margin:0}.hcard-h a{font-size:13px}
+.hsecs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:0 4px 6px}
+.hsecs a,.hlinks a{display:flex;flex-direction:column;padding:10px 12px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--ink);background:var(--bg)}
+.hsecs small,.hlinks small{color:var(--ink-3);font-size:12px}
+.hlinks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.hlinks a{background:var(--surface)}
+@media (max-width:900px){.hgrid{grid-template-columns:1fr}.hstats{grid-template-columns:repeat(3,minmax(0,1fr))}.hsecs,.hlinks{grid-template-columns:repeat(2,minmax(0,1fr))}.hhero h1{font-size:42px}}
 .run.warnrun{background:var(--warn-soft,#fbeee2)}
 .run .sp{flex:1}
 .run{margin-top:14px;padding:12px 14px;border-radius:var(--r);background:var(--accent-soft);color:var(--ink);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -453,9 +478,10 @@ tr:hover .rowx{opacity:1}
 
 <header class="top">
   <div class="top-in">
-    <a class="brand" href="#sectors">Profiler <small>Chemicals repository</small></a>
+    <a class="brand" href="#home">Profiler <small>Chemicals repository</small></a>
     <label class="secsel"><span class="sr">Sector</span><select id="secsel" aria-label="Sector"></select></label>
     <nav class="nav" id="nav">
+      <a href="#home" data-v="home">Home</a>
       <a href="#sectors" data-v="sectors">Sectors</a>
       <a href="#companies" data-v="companies">Companies</a>
       <a href="#targets" data-v="targets">Buyer finder</a>
@@ -593,14 +619,14 @@ function setSector(id) { ui.sector = id || ""; ui.limit = 150; ui.tsel = null; t
 const seeding = {};
 
 function route() {
-  const h = (location.hash || "#companies").slice(1);
+  const h = (location.hash || "#home").slice(1);
   if (h.startsWith("c.")) { const [, id, tab] = h.split("."); return { view: "company", id, tab: ({ snapshot: "overview", sources: "notes" })[tab] || tab || "overview" }; }
   if (h.startsWith("d.")) return { view: "deal", id: decodeURIComponent(h.slice(2)) };
   if (h.startsWith("s.")) return { view: "sponsor", id: decodeURIComponent(h.slice(2)) };
   if (h.startsWith("precedents")) { const [, forId] = h.split("~"); return { view: "precedents", forId: forId ? decodeURIComponent(forId) : "" }; }
   if (h.startsWith("sponsors")) { const [, fk, fv] = h.split("~"); return { view: "sponsors", fk: fk || "", fv: fv ? decodeURIComponent(fv) : "" }; }
-  if (["sectors", "companies", "targets", "endmarkets", "tam", "inmarket"].includes(h)) return { view: h };
-  return { view: "sectors" };
+  if (["home", "sectors", "companies", "targets", "endmarkets", "tam", "inmarket"].includes(h)) return { view: h };
+  return { view: "home" };
 }
 
 /* ---------- toast & tooltip ---------- */
@@ -2741,6 +2767,57 @@ function viewDeal(id) {
   </form>
   <p class="faint" style="font-size:12px;margin-top:10px">Record ${esc(d.id)} · from ${esc((d.origin || ["added here"]).join("; "))}${d.updated_at ? " · updated " + fmtDate(d.updated_at) : ""}${d.edited ? " · edited by hand (company M&A tabs won't overwrite it)" : ""}</p>`;
 }
+/* ---------- home ---------- */
+// One search box for companies, sponsors and deals.
+function searchAll(q) {
+  q = norm(q); if (q.length < 2) return null;
+  const hit = t => { const n = norm(t); return n.startsWith(q) || n.includes(" " + q) || (q.length >= 5 && n.includes(q)); };
+  const cos = list().filter(c => hit(c.name) || hit(c.platform_name)).sort((a, b) => (norm(a.name).startsWith(q) ? 0 : 1) - (norm(b.name).startsWith(q) ? 0 : 1) || (num(b.total_revenue_usd_m) || 0) - (num(a.total_revenue_usd_m) || 0)).slice(0, 6);
+  const sps = [...knownSponsors()].filter(([, n]) => hit(n)).slice(0, 4);
+  const ds = [...dealbook.values()].filter(d => hit(d.target) || hit(d.acquirer)).sort((a, b) => dateKey(b.date) - dateKey(a.date)).slice(0, 5);
+  return { cos, sps, ds };
+}
+function homeSearch() {
+  const r = searchAll(ui.hq || "");
+  const res = r ? (r.cos.length + r.sps.length + r.ds.length ? `<div class="hres">
+    ${r.cos.length ? `<div class="hgrp">Companies</div>${r.cos.map(c => `<a class="hrow" href="#c.${esc(c.id)}">${logoBadge(c)}<span><b>${esc(c.name)}</b><small>${esc([isPE(c) ? "PE · " + sponsorOf(c) : c.owner_type, sectorShort(primarySector(c))].filter(Boolean).join(" · "))}</small></span><span class="num faint">${fmtM(c.total_revenue_usd_m)}</span></a>`).join("")}` : ""}
+    ${r.sps.length ? `<div class="hgrp">Sponsors</div>${r.sps.map(([k, n]) => `<a class="hrow" href="#s.${esc(k)}"><span class="lb">${esc(initials(n))}</span><span><b>${esc(n)}</b><small>Sponsor profile</small></span></a>`).join("")}` : ""}
+    ${r.ds.length ? `<div class="hgrp">Deals</div>${r.ds.map(d => `<a class="hrow" href="#d.${esc(d.id)}"><span class="lb deal">M&amp;A</span><span><b>${esc(d.target)}</b><small>${esc([d.acquirer, String(d.date || "").slice(0, 7)].filter(Boolean).join(" · "))}</small></span><span class="num faint">${fmtM(num(d.ev_usd_m))}</span></a>`).join("")}` : ""}
+  </div>` : `<div class="hres"><div class="faint" style="padding:10px 12px">Nothing matches “${esc(ui.hq)}”.</div></div>`) : "";
+  return `<div class="hsearch"><input id="hq" class="search" type="search" placeholder="Search companies, sponsors and deals…" value="${esc(ui.hq || "")}" autocomplete="off" aria-label="Search everything">${res}</div>`;
+}
+const initials = n => String(n || "?").replace(/\(.*?\)/g, "").split(/\s+/).filter(w => /^[A-Za-z0-9]/.test(w) && !/^(inc|llc|the|of|and|&)$/i.test(w)).slice(0, 2).map(w => w[0].toUpperCase()).join("") || "?";
+const logoBadge = c => logos.get(c.id) ? `<img class="logo sm" src="${esc(logos.get(c.id))}" alt="">` : `<span class="lb">${esc(initials(c.name))}</span>`;
+function viewHome() {
+  const all = list(), pe = all.filter(isPE), im = all.filter(inMarket);
+  const deals = [...dealbook.values()].filter(d => d && d.target && yearOf(d.date)).sort((a, b) => dateKey(b.date) - dateKey(a.date)).slice(0, 8);
+  const longHolds = pe.filter(c => (holdYears(c) || 0) >= 5).sort((a, b) => (holdYears(b) || 0) - (holdYears(a) || 0) || (num(b.total_ebitda_usd_m) || 0) - (num(a.total_ebitda_usd_m) || 0)).slice(0, 8);
+  // "Recently updated" skips the bulk-import timestamp that most profiles share.
+  const stamps = new Map(); for (const c of all) stamps.set(c.updated_at, (stamps.get(c.updated_at) || 0) + 1);
+  const bulk = [...stamps].sort((a, b) => b[1] - a[1])[0]?.[0];
+  const recent = all.filter(c => c.updated_at && c.updated_at !== bulk).sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at))).slice(0, 8);
+  const secs = allSectors().map(x => ({ x, n: all.filter(c => inSector(c, x.id)).length, tam: tamValue(tams[x.id] || {}) })).filter(r => r.n).sort((a, b) => b.n - a.n).slice(0, 8);
+  const card = (title, href, rows, empty) => `<section class="hcard"><div class="hcard-h"><h2>${title}</h2>${href ? `<a href="${href}">See all</a>` : ""}</div>${rows || `<p class="faint" style="margin:6px 0">${empty}</p>`}</section>`;
+  const coRow = (c, right, sub) => `<a class="hrow" href="#c.${esc(c.id)}">${logoBadge(c)}<span><b>${esc(c.name)}</b><small>${esc(sub)}</small></span><span class="num">${right}</span></a>`;
+  return `<div class="home">
+  <div class="hhero"><h1>Profiler</h1><p>Chemical companies, deals and sponsors for M&amp;A work.</p>${homeSearch()}</div>
+  <div class="hstats">
+    <a href="#companies"><b>${all.length}</b><span>Companies</span></a>
+    <a href="#precedents"><b>${dealbook.size || allDeals().length}</b><span>Deals</span></a>
+    <a href="#sponsors"><b>${pe.length}</b><span>PE-owned</span></a>
+    <a href="#inmarket"><b>${im.length}</b><span>In market</span></a>
+    <a href="#sponsors"><b>${pe.filter(c => (holdYears(c) || 0) >= 5).length}</b><span>Held 5+ years</span></a>
+  </div>
+  <div class="hgrid">
+    ${card("In market", "#inmarket", im.slice(0, 6).map(c => coRow(c, esc(c.in_market.stage.split(" /")[0]), [c.in_market.seller, c.in_market.advisor].filter(Boolean).join(" · advised by "))).join(""), "Nothing marked in market. Open a company and click “Mark in market”.")}
+    ${card("Likely sellers", "#sponsors", longHolds.map(c => coRow(c, `${holdYears(c)} yrs`, `${sponsorOf(c)} since ${entryYear(c)} · EBITDA ${fmtM(c.total_ebitda_usd_m)}`)).join(""), "No PE holds of five years or more.")}
+    ${card("Latest deals", "#precedents", deals.map(d => `<a class="hrow" href="#d.${esc(d.id)}"><span class="lb deal">M&amp;A</span><span><b>${esc(d.target)}</b><small>${esc([d.acquirer, String(d.date || "").slice(0, 7)].filter(Boolean).join(" · "))}</small></span><span class="num">${num(d.ev_usd_m) ? fmtM(d.ev_usd_m) : ""}</span></a>`).join(""), "No deals yet.")}
+    ${card("Recently updated", "#companies", recent.map(c => coRow(c, fmtM(c.total_revenue_usd_m), `Updated ${fmtDate(c.updated_at)}`)).join(""), "No recent updates.")}
+  </div>
+  <section class="hcard"><div class="hcard-h"><h2>Sectors</h2><a href="#sectors">All sectors</a></div><div class="hsecs">${secs.map(r => `<a href="#companies" data-setsector="${esc(r.x.id)}"><b>${esc(r.x.name)}</b><small>${r.n} companies${r.tam ? " · TAM " + fmtM(r.tam) : ""}</small></a>`).join("")}</div></section>
+  <div class="hlinks"><a href="#precedents"><b>Precedents</b><small>Deals ranked for any company</small></a><a href="#targets"><b>Buyer finder</b><small>Who would buy a company</small></a><a href="#sponsors"><b>PE owned</b><small>By entry year and sponsor</small></a><a href="#tam"><b>Market size</b><small>TAM by sector</small></a></div>
+  </div>`;
+}
 function viewPrecedents(forId = "") {
   const q = ui.pq.toLowerCase();
   const sid = ui.sector, secOk = d => !sid || [d.acquirerId, d.targetId].some(x => x && companies.has(x) && inSector(companies.get(x), sid)) || (d.water && sid === "water");
@@ -2829,6 +2906,7 @@ function render() {
   else if (r.view === "endmarkets") html = viewEndMarkets();
   else if (r.view === "sectors") html = viewSectors();
   else if (r.view === "tam") html = viewTam();
+  else if (r.view === "home") html = viewHome();
   else if (r.view === "sponsors") html = viewSponsors(r);
   else if (r.view === "deal") html = viewDeal(r.id);
   else if (r.view === "sponsor") html = viewSponsor(r.id);
@@ -2836,7 +2914,7 @@ function render() {
   else html = viewCompanies();
   const active = document.activeElement?.id, selS = document.activeElement?.selectionStart;
   app.innerHTML = html;
-  if (active && ["q", "tq", "pq"].includes(active)) { const el = document.getElementById(active); el?.focus(); try { el.setSelectionRange(selS, selS); } catch {} }
+  if (active && ["q", "tq", "pq", "hq"].includes(active)) { const el = document.getElementById(active); el?.focus(); try { el.setSelectionRange(selS, selS); } catch {} }
   if (pendingFocus) { const el = app.querySelector(pendingFocus); pendingFocus = null; el?.focus(); }
   labelTables();
   window.scrollTo(0, y);
@@ -3200,6 +3278,7 @@ app.addEventListener("input", e => {
   if (id === "q") { ui.q = e.target.value; ui.limit = 150; ui.acOpen = true; ui.ac = -1; render(); }
   if (id === "tq") { ui.tq = e.target.value; ui.tsel = null; render(); }
   if (id === "pq") { ui.pq = e.target.value; render(); }
+  if (id === "hq") { ui.hq = e.target.value; render(); }
 });
 app.addEventListener("change", async e => {
   if (e.target.id === "logoFile" && e.target.files?.[0]) {
