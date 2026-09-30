@@ -43,6 +43,13 @@ Web search uses the free Parallel Search connector (claude.ai Settings → Conne
 - **Logos**: upload on a profile; stored shrunk in `logos/<company>` and shown on the Sponsor owned and In market tables.
 - **Segments tab**: a profile per reported segment (revenue, EBITDA, margin, products, end markets, competitors), built from filings through the chat or entered by hand (`segment_profiles`).
 
+## Deal book, sponsors, history, management
+
+- **Deal book** (`dealbook/s00`…`s15`, a map of deal id → record, sharded by id hash): one record per deal, merged from the water index deal log, every company's M&A tab and sponsor entries, deduplicated by target and year. Each record has status, deal type, buyer type (Strategic / PE platform / Sponsor), EV, target revenue, EBITDA, EV/EBITDA, employees, advisors, source and notes. Suspect values are flagged and left out of medians until checked. Each deal has a page (`#d.<id>`). New rows on a company's M&A tab are added automatically; deals edited by hand are never overwritten.
+- **Sponsor profiles** (`sponsors/<slug>`, page `#s.<slug>`): firm details (type, AUM, latest fund, dry powder, check size, focus, chemicals thesis, contacts), portfolio in Profiler by entry year, deals by the firm and its platforms, and a web research button.
+- **Financial history** (`fin_history` on the company): 3-5 fiscal years of revenue and EBITDA with growth, margin and CAGR on the Overview; "Find history" researches it through the chat.
+- **Management** (`management`, Management tab): leadership team and board chair with title, tenure, background and LinkedIn; "Find management team" researches it through the chat.
+
 ## Chat
 
 Every company page has a Chat button. Ask or tell it anything in plain language ("find their product brands", "did they buy anyone since 2020?", "revenue is $40M per the CIM"). It searches the web, shows what it is searching and reading as it goes, then proposes changes through a `record` tool. Code checks each change before saving: web facts must cite a page actually found in that turn, a weaker source never overwrites a stronger one, and what you tell it is saved as Verified. Each reply lists what was saved and not saved, with Undo. Conversations are kept in `chats/<company>`.
