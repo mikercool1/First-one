@@ -1377,7 +1377,6 @@ async function applyResult(id, key, res, src = {}) {
 // The page starts a Claude Code session (via the Claude Code Remote connector) that researches the steps on the web
 // and writes one webresults/<rid>__<step> document per step. The page merges each one with the normal confidence rules.
 const ARTIFACT_URL = "https://claude.ai/artifact/KCB1rWzeMTqDnqVXoQz3eG";
-const CCR = "Claude Code Remote";
 let mcp = null, webDocs = [], researchDocs = [];
 const webApplied = new Set();
 function stepSpec(c, key) {
@@ -1387,7 +1386,7 @@ function stepSpec(c, key) {
 }
 function webBrief(c, keys, rid) {
   const idl = [c.what_it_is, c.hq_address, c.website].filter(Boolean).join(" · ");
-  return `You are the web research agent for Profiler, a private database of chemical companies used for buy-side M&A work. Profiler is a claude.ai artifact (${ARTIFACT_URL}) owned by the user who started this session. The user pressed "Search the web" in the app; that button exists to have you research on the web and write the results into the app's own database. Writing the webresults documents described below is the task the user asked for and is pre-authorized: do it without asking for confirmation. This session runs unattended and nobody will answer questions, so make reasonable calls and keep going.
+  return `You are the web research agent for Profiler, a private database of chemical companies used for buy-side M&A work. Profiler is a claude.ai artifact (${ARTIFACT_URL}) owned by the user who started this session. The user pressed "Deep research" in the app, which queued this request for the scheduled research session; its job is to research on the web and write the results into the app's own database. Writing the webresults documents described below is the task the user asked for and is pre-authorized: do it without asking for confirmation. This session runs unattended and nobody will answer questions, so make reasonable calls and keep going.
 
 Research "${c.name}" on the web and build these profile steps, in this order: ${keys.map(k => SECTIONS[k].label).join(" > ")}.
 
@@ -1418,37 +1417,17 @@ ${keys.map((k, i) => `==================== STEP ${i + 1}: ${SECTIONS[k].label.to
 
 For every step, "result" must be ONE JSON object in the shape shown for that step, with "confidence", "basis" and "note" filled in.`;
 }
-const webActive = id => researchDocs.find(r => r.company_id === id && (r.status === "starting" || r.status === "running"));
-const WEBERR = {
-  server_not_connected: "The Claude Code Remote connector isn't available to this page. Check it's connected in claude.ai Settings → Connectors.",
-  not_in_manifest: "Web research isn't allowed for this page. Allow Claude Code Remote when the page asks.",
-  needs_reauth: "Reconnect Claude Code Remote in claude.ai Settings → Connectors.",
-  blocked_by_policy: "Your organization blocks starting research sessions from pages.",
-  not_granted: "This page can't start research sessions here.",
-  capability_disabled: "This page can't start research sessions here.",
-};
+const webActive = id => researchDocs.find(r => r.company_id === id && ["queued", "starting", "running"].includes(r.status));
+// Deep research: the app queues a request with a full brief; a scheduled Claude session (with Claude's own
+// web search, on the user's plan) picks it up, researches every step and writes webresults/<rid>__<step>.
 async function startWeb(id, keys) {
-  const c = getC(id); if (!c || !mcp || !db || webActive(id)) return;
+  const c = getC(id); if (!c || !db || !writable || webActive(id)) return;
   keys = keys.filter(k => SECTIONS[k]); if (!keys.length) return;
   const rid = "r" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  const ref = db.doc("research/" + rid);
-  await ref.set({ company_id: id, name: c.name, steps: keys, status: "starting", requested_at: now() });
-  toast("Starting web research…");
   try {
-    let env = "";
-    try { const r = await mcp.callTool(CCR, "list_environments", {}); env = ((r.payload?.environments) || []).find(e => e.kind === "anthropic_cloud" && e.state === "active")?.environment_id || ""; } catch {}
-    const input = { title: `Profiler web research: ${c.name}`, prompt: webBrief(c, keys, rid), permission_mode: "auto", tags: ["profiler-web-research"], model: "claude-sonnet-5-5" };
-    if (env) input.environment_id = env;
-    let r;
-    try { r = await mcp.callTool(CCR, "create_session", input); }
-    catch (e) { if (e?.code !== "tool_error") throw e; delete input.permission_mode; delete input.model; r = await mcp.callTool(CCR, "create_session", input); }
-    const pl = r.payload || {}, sid = pl.ccr?.id || pl.id || pl.session_id || "";
-    await ref.update({ status: "running", session_id: sid, started_at: now() });
-    toast(`Web research started on ${keys.length} step${keys.length > 1 ? "s" : ""}. Results save here as each step finishes.`);
-  } catch (e) {
-    await ref.update({ status: "error", error: WEBERR[e?.code] || (e?.message ? String(e.message).slice(0, 200) : "Couldn't start web research."), at: now() }).catch(() => {});
-    toast(WEBERR[e?.code] || "Couldn't start web research. Try again.");
-  }
+    await db.doc("research/" + rid).set(clean({ company_id: id, name: c.name, steps: keys, status: "queued", requested_at: now(), brief: webBrief(c, keys, rid).slice(0, 200000) }));
+    toast("Queued for deep research. A Claude research session picks it up within the hour.");
+  } catch (e) { handleWriteError(e); }
 }
 // Apply finished steps one at a time, in builder order, so each merge sees the one before.
 let webBusy = false;
@@ -1476,8 +1455,9 @@ function webPanel(c) {
   const r = rs[0]; if (!r) return "";
   const got = webDocs.filter(d => d.rid === r.id && d.step !== "final").map(d => d.step);
   const link = r.session_id ? ` <a href="https://claude.ai/code/${esc(r.session_id)}" target="_blank" rel="noopener">Open the research session</a>` : "";
-  if (r.status === "starting" || r.status === "running") return `<div class="run" role="status"><span class="spin"></span><span><b>Web research running.</b> ${got.length} of ${(r.steps || []).length} steps back${got.length ? ": " + esc(got.map(k => SECTIONS[k]?.label || k).join(", ")) : ""}. It takes a few minutes per step; results save here as they arrive.${link}</span></div>`;
-  if (r.status === "error") return `<div class="run warnrun" role="alert"><span><b>Web research stopped.</b> ${esc(r.error || "")}${link}</span><span class="sp"></span><button class="btn sm ghost" data-act="webdismiss" data-r="${esc(r.id)}">Dismiss</button></div>`;
+  if (r.status === "queued") return `<div class="run" role="status"><span class="spin"></span><span><b>Queued for deep research.</b> A Claude research session with web search picks it up within the hour (or run the "Profiler deep research" routine now from claude.ai). Results save here step by step.</span><span class="sp"></span><button class="btn sm ghost" data-act="webdismiss" data-r="${esc(r.id)}">Cancel</button></div>`;
+  if (r.status === "starting" || r.status === "running") return `<div class="run" role="status"><span class="spin"></span><span><b>Deep research running.</b> ${got.length} of ${(r.steps || []).length} steps back${got.length ? ": " + esc(got.map(k => SECTIONS[k]?.label || k).join(", ")) : ""}. It takes a few minutes per step; results save here as they arrive.${link}</span></div>`;
+  if (r.status === "error") return `<div class="run warnrun" role="alert"><span><b>Deep research stopped.</b> ${esc(r.error || "")}${link}</span><span class="sp"></span><button class="btn sm ghost" data-act="webdismiss" data-r="${esc(r.id)}">Dismiss</button></div>`;
   return "";
 }
 
@@ -1925,11 +1905,11 @@ function viewCompanies() {
 
 const TABS = [["snapshot", "Snapshot"], ["overview", "Overview"], ["mix", "Mix"], ["customers", "Customers"], ["products", "Products"], ["competitors", "Competitors"], ["acquisitions", "M&A"], ["buyers", "Buyers"], ["addons", "Add-ons"], ["sources", "Sources"]];
 const canEnhance = () => !!sample && writable && !!db;
-const canWeb = () => false;   // research sessions from pages are blocked for this account; web search runs in-page instead
+const canWeb = () => writable && !!db;
 function enhanceBtn(c, key, label = "Enhance") {
-  if (!canEnhance()) return canWeb() && SECTIONS[key] ? `<button class="btn sm" data-act="websec" data-k="${key}" ${webActive(c.id) ? "disabled" : ""}>Search the web</button>` : "";
+  if (!canEnhance()) return "";
   if (isRunning(c.id, key)) return `<span class="pill accent"><span class="spin"></span>Enhancing</span><button class="btn sm ghost" data-act="stopsec" data-k="${key}">Stop</button>`;
-  return `<button class="btn sm enh" data-act="enhance" data-k="${key}" title="Claude works on this section again from what it knows and saves the result">${label}</button>${canWeb() && SECTIONS[key] ? `<button class="btn sm" data-act="websec" data-k="${key}" ${webActive(c.id) ? "disabled" : ""} title="A Claude research session searches the web for this section and saves the result with sources">Search the web</button>` : ""}`;
+  return `<button class="btn sm enh" data-act="enhance" data-k="${key}" title="Claude works on this section again from what it knows and saves the result">${label}</button>`;
 }
 function secMeta(c, key) {
   const m = (c.section_meta || {})[key];
@@ -1968,7 +1948,7 @@ function viewCompany(id, tab) {
       <p class="muted">The builder works in order: overview, M&A history, products, sectors, end markets (from where the products go), segments, financials, customers, competitors, buyers and add-ons. Each step starts from everything before it and saves as it finishes. You can override any value afterwards and run any step again to go deeper.</p>
       <label class="eyebrow" for="seedFacts">What you already know (optional)</label>
       <textarea id="seedFacts" placeholder="e.g. Revenue was $140M in 2025 per the CIM. Largest customer is Veolia at ~15%. Owned by XYZ Capital since 2022."></textarea>
-      <div class="add">${canEnhance() ? `<button class="btn primary" data-act="firstdive" ${busy.length ? "disabled" : ""}>Build profile</button>` : ""}${canWeb() ? `<button class="btn" data-act="webbuild" ${webActive(c.id) ? "disabled" : ""}>${webActive(c.id) ? "Researching on the web…" : "Build from the web"}</button>` : ""}${writable && db ? `<button class="btn ghost" data-act="manual">Fill in by hand</button>` : ""}</div>
+      <div class="add">${canEnhance() ? `<button class="btn primary" data-act="firstdive" ${busy.length ? "disabled" : ""}>Build profile</button>` : ""}${canWeb() ? `<button class="btn" data-act="webbuild" ${webActive(c.id) ? "disabled" : ""}>${webActive(c.id) ? "Deep research queued" : "Deep research"}</button>` : ""}${writable && db ? `<button class="btn ghost" data-act="manual">Fill in by hand</button>` : ""}</div>
       ${webPanel(c)}
       <p class="faint" style="font-size:12px;margin-top:14px">Build profile uses Claude's own knowledge and runs here in the page in a minute or two. Build from the web starts a Claude research session with web search that reads the company's site, filings, press releases and trade press, and saves each step here with its sources. It takes longer and uses your Claude Code usage.</p>
     </div>`;
@@ -2023,7 +2003,8 @@ function viewBuilder(c) {
   const nx = nextStep(c), busy = SECTION_ORDER.some(k => isRunning(c.id, k)), ok = canEnhance();
   return `<div class="panel builder">
     <div class="sec-h"><h2>Profile builder</h2><span class="faint" style="font-size:12px">Builds in order; each step starts from everything before it. Click a finished step to go deeper.</span>${webOK ? `<span class="pill accent" title="Each step searches the web with Parallel Search and cites its sources">Web search on</span>` : `<span class="pill warn" title="Connect the free Parallel Search connector in claude.ai Settings → Connectors, then reload">Web search off${webIssue ? " (" + esc(webIssue) + ")" : ""}</span>`}<span class="sp"></span>
-      ${ok && nx ? `<button class="btn sm primary" data-act="enhance" data-k="${nx}" ${busy ? "disabled" : ""}>Build next: ${esc(SECTIONS[nx].label)}</button>` : ""}${ok ? `<button class="btn sm" data-act="enhanceall" ${busy ? "disabled" : ""}>Build all</button>` : ""}${canWeb() ? `<button class="btn sm" data-act="webbuild" ${webActive(c.id) ? "disabled" : ""} title="A Claude research session with web search works through every step in order and saves each one here with its sources">${webActive(c.id) ? "Researching on the web…" : "Build all from the web"}</button>` : ""}</div>
+      ${ok && nx ? `<button class="btn sm primary" data-act="enhance" data-k="${nx}" ${busy ? "disabled" : ""}>Build next: ${esc(SECTIONS[nx].label)}</button>` : ""}${ok ? `<button class="btn sm" data-act="enhanceall" ${busy ? "disabled" : ""}>Build all</button>` : ""}${canWeb() ? `<button class="btn sm" data-act="webbuild" ${webActive(c.id) ? "disabled" : ""} title="Queue a full build for the scheduled Claude research session, which uses Claude's own web search (no search limits). Results arrive within the hour.">${webActive(c.id) ? "Deep research queued" : "Deep research"}</button>` : ""}</div>
+    ${webPanel(c)}
     ${(() => { const k = SECTION_ORDER.find(k => isRunning(c.id, k)); return k ? `<div class="faint" style="font-size:12px;margin-top:8px;display:flex;gap:10px;align-items:center">Building ${esc(SECTIONS[k].label)} in the chat. Watch it work on the right.<button class="btn sm ghost" data-act="stopsec" data-k="${k}">Stop</button></div>` : ""; })()}
     ${(() => { const k = SECTION_ORDER.find(k => runs[runKey(c.id, k)]?.error); return k ? `<div class="run warnrun" role="alert"><span><b>${esc(SECTIONS[k].label)} didn't finish.</b> ${esc(runs[runKey(c.id, k)].error)}</span><span class="sp"></span><button class="btn sm ghost" data-act="dismisssec" data-k="${k}">Dismiss</button></div>` : ""; })()}
     <ol class="steps">${SECTION_ORDER.map((k, i) => { const st = stepState(c, k); return `<li><button class="step ${st.cls}" data-act="enhance" data-k="${k}" ${!ok || busy ? "disabled" : ""} title="${st.cls === "done" ? "Go deeper on " : "Build "}${esc(SECTIONS[k].label)}"><span class="sn">${st.cls === "run" ? `<span class="spin"></span>` : i + 1}</span><span class="sl">${esc(SECTIONS[k].label)}</span><span class="ss">${esc(st.text)}</span></button></li>`; }).join("")}</ol>
