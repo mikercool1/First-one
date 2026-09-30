@@ -80,6 +80,12 @@ h1,h2,h3,h4{margin:0;text-wrap:balance}
 /* toolbar */
 .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
 .bar .grow{flex:1 1 240px;min-width:0}
+.acwrap{position:relative}
+.ac{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 4px);margin:0;padding:4px;list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(15,27,36,.14)}
+.ac li{display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:8px 10px;border-radius:7px;cursor:pointer}
+.ac li:hover,.ac li[aria-selected="true"]{background:var(--sunk)}
+.ac-n{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ac-s{color:var(--ink-3);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .search{width:100%}
 
 /* tables */
@@ -297,7 +303,7 @@ const now = () => new Date().toISOString();
 
 const BUCKETS = ["Municipal","Energy & chemicals","Heavy industry","Commercial & institutional","Light industry & high-purity","Pool & spa","Agriculture & farm","Other"];
 // Heavy fields live in details/<id> and load when a profile opens; everything else sits in companies/<id>.
-const DETAIL_KEYS = new Set(["history","suggestions","what_it_is","bluntly","profile_md","total_revenue_basis","ebitda_basis","employees_basis","us_water_treatment_arithmetic","open_questions","addon_corrections","what_changed_vs_prior","evidence","key_sites","chemistries","customers","competitors","runs","prior_owners"]);
+const DETAIL_KEYS = new Set(["history","suggestions","what_it_is","bluntly","profile_md","total_revenue_basis","ebitda_basis","employees_basis","us_water_treatment_arithmetic","open_questions","addon_corrections","what_changed_vs_prior","evidence","key_sites","chemistries","customers","runs","prior_owners"]);
 const END_MARKETS = ["Municipal drinking water","Municipal wastewater","Power generation","Oil & gas / refining","Chemicals & petrochem","Pulp & paper","Food & beverage","Mining & metals","Primary metals/steel","Commercial HVAC / buildings","Healthcare & institutional","Data centers","Pharma/life sciences","Microelectronics/semis","Manufacturing (general industrial)","Pools & spa","Agriculture & farm","Consumer / retail","Other"];
 
 function fmtM(v) {
@@ -322,10 +328,10 @@ let meta = { deals: [], entities: [] };
 let queueDocs = [];
 let ver = 0; const memo = {};
 const memod = (k, f) => (memo[k] && memo[k].v === ver) ? memo[k].x : (memo[k] = { v: ver, x: f() }).x;
-let nameIndex = new Map();
+let nameIndex = new Map(), entityIndex = new Map();
 let loaded = false, dbState = "connecting", writable = true;
 const runs = {};                       // id -> {phase, ctl, error}
-const ui = { sort: "us_water_treatment_revenue_usd_m", dir: -1, q: "", scope: "", otype: "", emTax: "broad", tq: "", tsel: null, pq: "", psort: "year", pdir: -1, em: "Municipal drinking water", emMode: "pct", editMd: false, confirmDel: false };
+const ui = { ac: -1, acOpen: false, sort: "us_water_treatment_revenue_usd_m", dir: -1, q: "", scope: "", otype: "", emTax: "broad", tq: "", tsel: null, pq: "", psort: "year", pdir: -1, em: "Municipal drinking water", emMode: "pct", editMd: false, confirmDel: false };
 let pendingRender = false, pendingFocus = null;
 
 function route() {
@@ -362,11 +368,33 @@ function setLive() {
 }
 
 /* ---------- derived data ---------- */
-function getC(id) { const c = companies.get(id); return c ? { ...c, ...(details[id] || {}), id } : null; }
+function getC(id) {
+  const c = companies.get(id); if (!c) return null;
+  const d = details[id] || {}, o = { ...c };
+  for (const k of Object.keys(d)) if (DETAIL_KEYS.has(k)) o[k] = d[k];
+  o.id = id; return o;
+}
+// Name variants a company is known by: full name, name before brackets, bracketed names, parts split on "/", and a
+// distinctive first word when no other company shares it. Lets "Nalco (Ecolab)" or "Veolia" find the right profile.
+const GENERIC = new Set(["water", "aqua", "chemical", "chemicals", "chem", "industrial", "american", "national", "united", "advanced", "global", "custom", "technical", "hydro", "environmental", "international", "specialty", "applied", "integrated", "precision", "premier", "southern", "northern", "western", "eastern", "pacific", "atlantic", "midwest", "great", "green", "clear", "pure", "total", "general", "universal", "superior", "quality", "process", "engineered", "delta", "alpha", "summit", "valley", "river", "coastal"]);
+function nameVariants(n) {
+  const out = new Set(), raw = String(n || "");
+  const SUFFIX = /\s(chemicals?|chemistry|corporation|corp|company|co|inc|llc|ltd|group|holdings?|industries|international|technologies|technology|solutions|services|systems|products|enterprises|usa|us|america|north america)$/;
+  const add = x => { let k = norm(x); if (!k || k.length < 3) return; out.add(k); let core = k; while (SUFFIX.test(core)) core = core.replace(SUFFIX, ""); if (core.length >= 4) out.add(core); };
+  add(raw); add(raw.split(/[(\/|]/)[0]);
+  for (const m of raw.matchAll(/\(([^)]+)\)/g)) for (const part of m[1].split(/[;,/]| - |\bformerly\b|\bincl\.?|\ban?\b|\bcompany\b/i)) add(part);
+  for (const part of raw.split(/\s\/\s|\s-\s/)) add(part);
+  return [...out];
+}
 function rebuildIndex() {
   nameIndex = new Map();
-  for (const c of companies.values()) for (const n of [c.name, c.platform_name]) { const k = norm(n); if (k && !nameIndex.has(k)) nameIndex.set(k, c); }
-  for (const c of companies.values()) { const k = norm(String(c.name).split(/[(\/]/)[0]); if (k && !nameIndex.has(k)) nameIndex.set(k, c); }
+  const first = new Map();
+  for (const c of companies.values()) for (const n of [c.name, c.platform_name]) for (const k of nameVariants(n)) if (!nameIndex.has(k)) nameIndex.set(k, c);
+  for (const c of companies.values()) { const w = norm(c.name).split(" ")[0]; if (w) first.set(w, first.has(w) && first.get(w) !== c ? null : c); }
+  for (const [w, c] of first) if (c && w.length >= 5 && !GENERIC.has(w) && !nameIndex.has(w)) nameIndex.set(w, c);
+  // Brands and add-ons already rolled into an owner map to that owner (e.g. Sigura -> Solenis).
+  entityIndex = new Map();
+  for (const e of meta.entities || []) { const o = e.owner_id && companies.get(e.owner_id); if (o) for (const k of nameVariants(e.name)) if (!nameIndex.has(k) && !entityIndex.has(k)) entityIndex.set(k, o); }
 }
 const list = () => [...companies.values()];
 function segments(c) {
@@ -387,9 +415,42 @@ function endMarkets(c, tax) {
 }
 function topEM(c) { const e = endMarkets(c).sort((a, b) => b.pct - a.pct)[0]; return e ? e.label : ""; }
 function margin(c) { const r = num(c.total_revenue_usd_m), e = num(c.total_ebitda_usd_m); return num(c.ebitda_margin_pct) ?? (r && e !== null ? e / r * 100 : null); }
-function findCompanyByName(name) {
-  const n = norm(name); if (!n) return null;
-  return nameIndex.get(n) || nameIndex.get(norm(String(name).split(/[(\/]/)[0])) || null;
+function findCompanyByName(name, notId) {
+  if (!name) return null;
+  const key = String(name);
+  if (!memo.find || memo.find.v !== ver) memo.find = { v: ver, m: new Map() };
+  const cache = memo.find.m;
+  let hit = cache.get(key);
+  if (hit === undefined) {
+    hit = null;
+    for (const k of nameVariants(key)) { const c = nameIndex.get(k); if (c) { hit = c; break; } }
+    if (!hit && norm(key).split(" ").length <= 2) { const w = norm(key).split(" ")[0]; const c = nameIndex.get(w); if (c && norm(c.name).split(" ")[0] === w && !GENERIC.has(w)) hit = c; }
+    if (!hit) for (const k of nameVariants(key)) { const c = entityIndex.get(k); if (c) { hit = c; break; } }
+    cache.set(key, hit);
+  }
+  return hit && hit.id !== notId ? hit : null;
+}
+const stateOf = c => { const m = String(c.hq_address || "").match(/\b([A-Z]{2})\b(?:\s+\d{5})?\s*$/); return m ? m[1] : ""; };
+// Reverse links: who names this company as a competitor, and who names it as a buyer.
+function reverseLinks() {
+  return memod("reverse", () => {
+    const comp = new Map(), buyerOf = new Map();
+    const push = (m, id, v) => { if (!m.has(id)) m.set(id, []); m.get(id).push(v); };
+    for (const c of companies.values()) {
+      for (const x of c.competitors || []) { const t = findCompanyByName(x?.name, c.id); if (t) push(comp, t.id, { from: c, note: x.overlap || "" }); }
+      for (const x of c.buyers || []) { const t = findCompanyByName(x?.name, c.id); if (t) push(buyerOf, t.id, { target: c, note: x.rationale || "", fit: x.fit || "" }); }
+    }
+    return { comp, buyerOf };
+  });
+}
+// Competitors from the index: same business model, similar size, overlapping end markets.
+function likelyCompetitors(c) {
+  return memod("comps:" + c.id, () => {
+    const size = num(c.us_water_treatment_revenue_usd_m) || 0, st = stateOf(c);
+    return list().filter(p => p.id !== c.id && num(p.us_water_treatment_revenue_usd_m) && (p.business_model === c.business_model || p.primary_category === c.primary_category))
+      .map(p => { const o = overlap(c, p), r = num(p.us_water_treatment_revenue_usd_m); const sz = size ? Math.exp(-Math.abs(Math.log(r / size))) : 0.5; return { p, o, s: o * (0.4 + 0.6 * sz) * (st && stateOf(p) === st ? 1.3 : 1) }; })
+      .filter(x => x.o >= 25).sort((a, b) => b.s - a.s).slice(0, 10);
+  });
 }
 function buckets(c) {
   if (c.end_market_buckets && Object.keys(c.end_market_buckets).length) return c.end_market_buckets;
@@ -608,10 +669,19 @@ function recalcPct(rows, c, patch, f) {
 
 app.addEventListener("focusout", e => {
   const el = e.target;
+  if (el.id === "q" && ui.acOpen) setTimeout(() => { if (document.activeElement?.id !== "q" && ui.acOpen) { ui.acOpen = false; render(); } }, 150);
   if (el?.isContentEditable && el.dataset.f) commit(el).finally(() => setTimeout(() => { if (pendingRender && !isEditing()) { pendingRender = false; render(); } }, 30));
 });
 app.addEventListener("keydown", e => {
   const el = e.target;
+  if (el.id === "q" && ui.acOpen && ui.q) {
+    const ms = acMatches();
+    if (e.key === "ArrowDown" && ms.length) { e.preventDefault(); ui.ac = Math.min(ms.length - 1, ui.ac + 1); render(); return; }
+    if (e.key === "ArrowUp" && ms.length) { e.preventDefault(); ui.ac = Math.max(-1, ui.ac - 1); render(); return; }
+    if (e.key === "Enter" && ms.length && ui.ac >= 0) { e.preventDefault(); const id = ms[ui.ac].c.id; ui.acOpen = false; location.hash = "c." + id; return; }
+    if (e.key === "Enter") { e.preventDefault(); ui.acOpen = false; render(); return; }
+    if (e.key === "Escape") { ui.acOpen = false; render(); return; }
+  }
   if (el?.isContentEditable && e.key === "Enter" && !e.shiftKey && el.tagName !== "DIV") { e.preventDefault(); el.blur(); }
   if (el?.isContentEditable && e.key === "Escape") { el.blur(); }
 });
@@ -677,6 +747,7 @@ function sectionPrompt(c, key) {
   const current = {}; for (const f of sec.fields) if (c[f] !== undefined) current[f] = c[f];
   let cands = "";
   if (key === "buyers") cands = likelyBuyers(c).slice(0, 12).map(b => `- ${b.p.name} (${b.p.owner_type || ""}${b.p.pe_sponsor ? ", backed by " + b.p.pe_sponsor : ""}; ${fmtM(b.p.us_water_treatment_revenue_usd_m)} US water revenue; ${b.o.toFixed(0)}% end-market overlap; ${b.n} deals)`).join("\n");
+  if (key === "competitors") cands = likelyCompetitors(c).map(b => `- ${b.p.name} (${b.p.business_model || ""}; ${fmtM(b.p.us_water_treatment_revenue_usd_m)} US water revenue; ${stateOf(b.p)}; ${b.o.toFixed(0)}% end-market overlap)`).join("\n");
   if (key === "addons") cands = likelyAddons(c).slice(0, 15).map(b => `- ${b.name} (${b.what || ""}; ${fmtM(b.rev)} US water revenue${b.state ? "; " + b.state : ""}; ${b.o.toFixed(0)}% end-market overlap)`).join("\n");
   return `You are a buy-side M&A analyst updating one section of the "${c.name}" profile in Profiler, a private database of US water treatment chemical companies used for deal work.
 
@@ -690,7 +761,7 @@ ${JSON.stringify(current).slice(0, 40000)}
 ${cands ? `\nCANDIDATES FROM THE PROFILER INDEX:\n${cands}\n` : ""}
 Reply with ONLY one JSON object in this shape, plus a "note" key with one sentence on what you changed:
 ${sec.shape}
-Rules: ${sec.rules}`;
+Rules: ${sec.rules}${cands ? " When you mean a company from the candidate list, use its name exactly as written there so Profiler can link the two profiles." : ""}`;
 }
 
 const runKey = (id, key) => id + ":" + key;
@@ -793,22 +864,62 @@ function likelySponsors(c) {
 }
 function likelyAddons(c) {
   return memod("addons:" + c.id, () => {
-    const size = num(c.us_water_treatment_revenue_usd_m) || 0;
+    const size = num(c.us_water_treatment_revenue_usd_m) || 0, st = stateOf(c);
     const owned = new Set((c.acquisitions || []).map(a => norm(a.target)));
-    const cands = [];
-    for (const p of list()) {
-      if (p.id === c.id || owned.has(norm(p.name))) continue;
-      const r = num(p.us_water_treatment_revenue_usd_m) || 0;
-      if (!r || r > Math.max(size * 0.5, 1)) continue;
-      if (p.owner_type === "Public" || p.owner_type === "Subsidiary of strategic") continue;
-      const o = overlap(c, p); if (o < 30) continue;
-      cands.push({ name: p.name, id: p.id, what: p.primary_category, rev: r, state: (p.hq_address || "").split(",").pop().trim(), o, s: o * Math.log10(1 + r) });
-    }
+    const pool = list().filter(p => p.id !== c.id && !owned.has(norm(p.name)) && num(p.us_water_treatment_revenue_usd_m) && p.owner_type !== "Public" && p.owner_type !== "Subsidiary of strategic");
+    const pick = (maxRev, minO) => pool.map(p => {
+      const r = num(p.us_water_treatment_revenue_usd_m); if (r > maxRev) return null;
+      const o = overlap(c, p); if (o < minO) return null;
+      const same = st && stateOf(p) === st;
+      return { name: p.name, id: p.id, what: p.primary_category, rev: r, state: stateOf(p), o, s: o * Math.log10(2 + r) * (same ? 1.25 : 1) };
+    }).filter(Boolean);
+    let cands = pick(Math.max(size * 0.5, 2), 30);
+    if (cands.length < 8) cands = pick(Math.max(size, 3), 15);   // small companies: merger-of-equals and tuck-ins
     return cands.sort((a, b) => b.s - a.s).slice(0, 15);
   });
 }
+// The full add-on list: saved ideas, companies that name this one as a buyer, then index matches.
+function addonList(c) {
+  const out = [], seen = new Set();
+  const add = x => { const k = norm(x.name); if (!k || seen.has(k)) return; seen.add(k); out.push(x); };
+  (c.addon_ideas || []).forEach((a, i) => add({ name: a.target, id: findCompanyByName(a.target, c.id)?.id, why: a.rationale, rev: num(a.est_revenue_usd_m), state: a.location, src: "saved", i }));
+  for (const r of reverseLinks().buyerOf.get(c.id) || []) add({ name: r.target.name, id: r.target.id, why: `${r.target.name}'s profile lists ${c.name} as a potential buyer${r.note ? ": " + r.note : ""}`, rev: num(r.target.us_water_treatment_revenue_usd_m), state: stateOf(r.target), src: "buyer" });
+  for (const b of likelyAddons(c)) add({ name: b.name, id: b.id, why: `${b.o.toFixed(0)}% end-market overlap · ${b.what || ""}`, rev: b.rev, state: b.state, src: "index" });
+  return out;
+}
 
 /* ---------- views ---------- */
+// Search autofill: companies whose name, parent, sponsor or rolled-in brands match what's typed.
+function acMatches() {
+  const lo = x => String(x || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const q = lo(ui.q); if (!q) return [];
+  const out = [], seen = new Set();
+  const cut = x => { x = String(x || "").trim(); return x.length > 60 ? x.slice(0, 57) + "…" : x; };
+  for (const c of list()) {
+    const n = lo(c.name);
+    let score = 0, why = "";
+    if (n.startsWith(q)) score = 100;
+    else if (n.split(" ").some(w => w.startsWith(q))) score = 80;
+    else if (n.includes(q)) score = 60;
+    else if (lo(c.platform_name).includes(q)) { score = 45; why = cut(c.platform_name); }
+    else if (lo(c.pe_sponsor).includes(q)) { score = 40; why = "Sponsor: " + cut(String(c.pe_sponsor).split(/[;(]/)[0]); }
+    else if (lo(c.rolled_in).includes(q)) { score = 35; why = "Owns " + cut((String(c.rolled_in).split(";").find(x => lo(x).includes(q)) || "").replace(/\(.*?\)/g, "")); }
+    if (score) { out.push({ c, score: score + Math.min(20, Math.log10(1 + (num(c.us_water_treatment_revenue_usd_m) || 0)) * 6), why }); seen.add(c.id); }
+  }
+  for (const e of meta.entities || []) {
+    if (!e.owner_id || !companies.has(e.owner_id) || !lo(e.name).includes(q)) continue;
+    const c = companies.get(e.owner_id);
+    out.push({ c, score: (lo(e.name).startsWith(q) ? 70 : 30), why: `${cut(e.name)} is part of ${c.name}` });
+  }
+  const best = new Map();
+  for (const m of out) if (!best.has(m.c.id) || best.get(m.c.id).score < m.score) best.set(m.c.id, m);
+  return [...best.values()].sort((a, b) => b.score - a.score).slice(0, 8);
+}
+function autofill() {
+  if (!ui.acOpen || !ui.q) return "";
+  const ms = acMatches(); if (!ms.length) return "";
+  return `<ul class="ac" id="acList" role="listbox">${ms.map((m, i) => `<li role="option" id="ac-${i}" aria-selected="${i === ui.ac}" data-open="${esc(m.c.id)}"><span class="ac-n">${esc(m.c.name)}</span><span class="ac-s">${esc(m.why || [m.c.business_model, stateOf(m.c)].filter(Boolean).join(" · "))}</span><span class="num faint">${fmtM(m.c.us_water_treatment_revenue_usd_m)}</span></li>`).join("")}</ul>`;
+}
 function viewCompanies() {
   const q = ui.q.toLowerCase();
   let rows = list().filter(c => (!ui.scope || c.scope === ui.scope) && (!ui.otype || (ui.otype === "PE-backed" ? c.pe_backed || c.owner_type === "PE-owned" : c.owner_type === ui.otype))
@@ -840,7 +951,7 @@ function viewCompanies() {
     <div class="stat"><div class="v">${nDeals}</div><div class="l">Deals logged</div></div>
     <div class="stat"><div class="v">${allTargets().length}</div><div class="l">Targets tracked</div></div>
   </div>
-  <div class="bar"><div class="grow"><input class="search" id="q" type="search" placeholder="Search by name, category, owner, sponsor, HQ or rolled-in company" value="${esc(ui.q)}" aria-label="Search companies"></div>
+  <div class="bar"><div class="grow acwrap"><input class="search" id="q" type="search" placeholder="Search by name, category, owner, sponsor, HQ or rolled-in company" value="${esc(ui.q)}" aria-label="Search companies" role="combobox" aria-autocomplete="list" aria-expanded="${ui.acOpen && !!ui.q}" aria-controls="acList" autocomplete="off">${autofill()}</div>
     <select id="fscope" aria-label="Scope"><option value="">Core and adjacent</option>${["Core", "Adjacent"].map(v => `<option ${ui.scope === v ? "selected" : ""}>${v}</option>`).join("")}</select>
     <select id="fotype" aria-label="Owner type"><option value="">All owners</option>${["PE-backed", "Public", "Family/founder-owned", "Subsidiary of strategic", "ESOP", "Other"].map(v => `<option ${ui.otype === v ? "selected" : ""}>${v}</option>`).join("")}</select>
     <span class="faint">${rows.length} shown</span></div>
@@ -894,7 +1005,7 @@ function viewCompany(id, tab) {
     </div>`;
   }
 
-  const counts = { customers: (c.customers || []).length, products: (c.chemistries || []).length, competitors: (c.competitors || []).length, acquisitions: (c.acquisitions || []).length, buyers: (c.buyers || []).length, addons: (c.addon_ideas || []).length, sources: (c.evidence || []).length + (c.source_of_truth || []).length };
+  const counts = { customers: (c.customers || []).length, products: (c.chemistries || []).length, competitors: (c.competitors || []).length, acquisitions: (c.acquisitions || []).length, buyers: (c.buyers || []).length, addons: addonList(c).length, sources: (c.evidence || []).length + (c.source_of_truth || []).length };
   const tabs = TABS.map(([k, l]) => `<a href="#c.${esc(id)}.${k}" aria-current="${tab === k}">${l}${counts[k] ? `<span class="n">${counts[k]}</span>` : ""}</a>`).join("");
   const m = margin(c);
   const chips = [c.rank && `<span class="pill accent">#${c.rank} in US water${num(c.us_market_share_pct) ? " · " + (+c.us_market_share_pct).toFixed(1) + "% share" : ""}</span>`, c.owner_type && `<span class="pill">${esc(c.owner_type)}</span>`, c.business_model && `<span class="pill">${esc(c.business_model)}</span>`, c.primary_category && `<span class="pill">${esc(c.primary_category)}</span>`, c.confidence && `<span class="pill ${c.confidence === "Low" ? "warn" : ""}">${esc(c.confidence)} confidence</span>`, c.website && `<a class="pill" href="${esc(/^https?:/.test(c.website) ? c.website : "https://" + c.website)}" target="_blank" rel="noopener">${esc(String(c.website).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))} ↗</a>`].filter(Boolean).join("");
@@ -977,6 +1088,13 @@ function viewSnapshot(c) {
   </div>`;
 }
 
+function mapCell(name, selfId) {
+  if (!name) return "";
+  const m = findCompanyByName(name, selfId);
+  if (m) return `<a href="#c.${esc(m.id)}">${esc(m.name)}</a>`;
+  return `<span class="faint">Not in Profiler</span>${writable && db ? ` <button class="btn sm ghost" data-act="profile-target" data-name="${esc(name)}">Create</button>` : ""}`;
+}
+const SRC = { saved: ["k-acq", "Saved"], buyer: ["k-idea", "Named buyer"], index: ["k-buyer", "Index match"] };
 function tabBody(c, tab) {
   const rev = num(c.total_revenue_usd_m);
   if (tab === "snapshot") return viewSnapshot(c);
@@ -1035,7 +1153,15 @@ function tabBody(c, tab) {
   const E = what => `Nothing here yet. Hit Enhance and Claude fills in ${what}, or add rows yourself.`;
   if (tab === "customers") return `<div class="sec">${secHead(c, "customers", "Top customers", "", "customers")}${editTable(c, "customers", [{ k: "name", label: "Customer" }, { k: "what", label: "What they buy" }, { k: "share_pct", label: "% of rev", t: "num", w: "90px" }, { k: "source", label: "Basis", w: "200px" }], tableRows(c, "customers"), { empty: E("the top customers") })}</div>`;
   if (tab === "products") return `<div class="sec">${secHead(c, "chemistries", "Top products", "", "products", ["chemistries"])}${editTable(c, "chemistries", [{ k: "product_line", label: "Product line" }, { k: "made_or_resold", label: "Made or resold", w: "260px" }, { k: "brands", label: "Brands", w: "220px" }], tableRows(c, "chemistries"), { empty: E("the top products") })}</div>`;
-  if (tab === "competitors") return `<div class="sec">${secHead(c, "competitors", "Top competitors", "", "competitors")}${editTable(c, "competitors", [{ k: "name", label: "Competitor", w: "280px" }, { k: "overlap", label: "Where they compete" }], tableRows(c, "competitors"), { empty: E("the closest competitors") })}</div>`;
+  if (tab === "competitors") {
+    const rev = reverseLinks().comp.get(c.id) || [], named = new Set((c.competitors || []).map(x => findCompanyByName(x.name, c.id)?.id).filter(Boolean));
+    const lc = likelyCompetitors(c).filter(x => !named.has(x.p.id));
+    return `<div class="sec">${secHead(c, "competitors", "Top competitors", "", "competitors")}${editTable(c, "competitors", [{ k: "name", label: "Competitor", w: "240px" }, { k: "_m", label: "In Profiler", ro: true, w: "220px", fmt: r => mapCell(r.name, c.id) }, { k: "overlap", label: "Where they compete" }], tableRows(c, "competitors"), { empty: E("the closest competitors") })}</div>
+    <div class="sec"><div class="sec-h"><h2>Named as a competitor by</h2><span class="faint" style="font-size:12px">Profiles that list ${esc(c.name)} among their competitors</span></div>
+      ${rev.length ? `<div class="tw"><table><thead><tr><th>Company</th><th class="r">US water rev</th><th>Where they compete</th></tr></thead><tbody>${rev.map(r => `<tr class="link" data-open="${esc(r.from.id)}"><td class="cname">${esc(r.from.name)}</td><td class="r num">${fmtM(r.from.us_water_treatment_revenue_usd_m)}</td><td class="muted">${esc(r.note)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="faint">No other profile names ${esc(c.name)} as a competitor yet. This fills in as competitor lists are enhanced.</p>`}</div>
+    <div class="sec"><div class="sec-h"><h2>Likely competitors from the index</h2><span class="faint" style="font-size:12px">Same business model or category, similar size and end markets, same state ranked higher</span></div>
+      <div class="tw"><table><thead><tr><th>Company</th><th class="r">US water rev</th><th class="r">Overlap</th><th>State</th><th></th></tr></thead><tbody>${lc.map(x => `<tr><td class="cname"><a href="#c.${esc(x.p.id)}">${esc(x.p.name)}</a><small>${esc(x.p.business_model || "")}</small></td><td class="r num">${fmtM(x.p.us_water_treatment_revenue_usd_m)}</td><td class="r num">${x.o.toFixed(0)}%</td><td class="muted">${esc(stateOf(x.p))}</td><td>${writable && db ? `<button class="btn sm ghost" data-act="savecomp" data-id="${esc(x.p.id)}">Save</button>` : ""}</td></tr>`).join("") || `<tr><td colspan="5" class="faint">No close match in the index.</td></tr>`}</tbody></table></div></div>`;
+  }
   if (tab === "acquisitions") {
     const html = editTable(c, "acquisitions", [{ k: "date", label: "Date", w: "120px" }, { k: "target", label: "Target", w: "220px" }, { k: "what_it_does", label: "What it does" }, { k: "revenue_usd_m", label: "Rev $M", t: "num", w: "80px" }, { k: "value_usd_m", label: "Value $M", t: "num", w: "90px" }, { k: "source_url", label: "Source", link: true, w: "160px" }], tableRows(c, "acquisitions"), { empty: "No deals logged. Hit Enhance to search for deals, or add one yourself." });
     return `<div class="sec">${secHead(c, "acquisitions", "M&A history", "", "deals")}<p class="muted" style="margin:-4px 0 10px;font-size:13px">Enhance looks for deals that aren't listed yet and adds them. Every deal here also shows up on Targets and Precedents.</p>${html}</div>
@@ -1044,16 +1170,20 @@ function tabBody(c, tab) {
   }
   if (tab === "buyers") {
     const lb = likelyBuyers(c), sp = likelySponsors(c), saved = new Set((c.buyers || []).map(b => norm(b.name)));
-    return `<div class="sec">${secHead(c, "buyers", "Top buyers", "", "buyers")}${editTable(c, "buyers", [{ k: "name", label: "Buyer", w: "240px" }, { k: "type", label: "Type", w: "110px" }, { k: "fit", label: "Fit", w: "80px" }, { k: "rationale", label: "Why they'd buy" }], tableRows(c, "buyers"), { empty: "No buyer list saved yet. Hit Enhance and Claude ranks the best buyers, or save the likely buyers below." })}</div>
+    return `<div class="sec">${secHead(c, "buyers", "Top buyers", "", "buyers")}${editTable(c, "buyers", [{ k: "name", label: "Buyer", w: "200px" }, { k: "_m", label: "In Profiler", ro: true, w: "200px", fmt: r => mapCell(r.name, c.id) }, { k: "type", label: "Type", w: "110px" }, { k: "fit", label: "Fit", w: "70px" }, { k: "rationale", label: "Why they'd buy" }], tableRows(c, "buyers"), { empty: "No buyer list saved yet. Hit Enhance and Claude ranks the best buyers, or save the likely buyers below." })}
+      <p class="faint" style="font-size:12px;margin-top:8px">Every buyer that has a profile automatically lists ${esc(c.name)} on its Add-ons tab.</p></div>
     <div class="sec"><div class="sec-h"><h2>Likely buyers from the index</h2><span class="faint" style="font-size:12px">Bigger companies in Profiler with the most similar end markets, weighted toward active acquirers</span><span class="sp"></span>${writable && db && lb.length ? `<button class="btn sm ghost" data-act="savebuyers">Save top 5</button>` : ""}</div>
       <div class="tw"><table><thead><tr><th>Company</th><th>Type</th><th class="r">US water rev</th><th class="r">Overlap</th><th class="r">Deals</th><th></th></tr></thead><tbody>${lb.map((b, i) => `<tr><td class="cname"><a href="#c.${esc(b.p.id)}">${esc(b.p.name)}</a><small>${esc(b.p.primary_category || "")}</small></td><td class="muted">${b.p.pe_backed || b.p.owner_type === "PE-owned" ? "PE platform" : "Strategic"}</td><td class="r num">${fmtM(b.p.us_water_treatment_revenue_usd_m)}</td><td class="r num">${b.o.toFixed(0)}%</td><td class="r num">${b.n}</td><td>${writable && db && !saved.has(norm(b.p.name)) ? `<button class="btn sm ghost" data-act="savebuyer" data-r="${i}">Save</button>` : saved.has(norm(b.p.name)) ? `<span class="faint" style="font-size:12px">Saved</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="6" class="faint">No larger company in the index shares enough of its end markets.</td></tr>`}</tbody></table></div>
       ${sp.length ? `<p class="basis" style="margin-top:10px"><b>Sponsors to call.</b> ${sp.map(s => `${esc(s.name)} (owns <a href="#c.${esc(s.via.id)}">${esc(s.via.name)}</a>)`).join(" · ")}</p>` : ""}</div>`;
   }
   if (tab === "addons") {
-    const la = likelyAddons(c), saved = new Set((c.addon_ideas || []).map(b => norm(b.target)));
-    return `<div class="sec">${secHead(c, "addon_ideas", "Add-on ideas", "", "addons")}<p class="muted" style="margin:-4px 0 10px;font-size:13px">Companies ${esc(c.name)} could buy. Each one appears on Targets, linked back here.</p>${editTable(c, "addon_ideas", [{ k: "target", label: "Target", w: "240px" }, { k: "rationale", label: "Why it fits" }, { k: "est_revenue_usd_m", label: "Est rev $M", t: "num", w: "100px" }, { k: "location", label: "Location", w: "150px" }], tableRows(c, "addon_ideas"), { empty: "No add-on ideas saved yet. Hit Enhance, or save candidates from the index below." })}</div>
-    <div class="sec"><div class="sec-h"><h2>Candidates from the index</h2><span class="faint" style="font-size:12px">Smaller private companies with similar end markets, not yet owned by ${esc(c.name)}</span></div>
-      <div class="tw"><table><thead><tr><th>Company</th><th class="r">US water rev</th><th class="r">Overlap</th><th>State</th><th></th></tr></thead><tbody>${la.map((b, i) => `<tr><td class="cname"><a href="#c.${esc(b.id)}">${esc(b.name)}</a><small>${esc(b.what || "")}</small></td><td class="r num">${fmtM(b.rev)}</td><td class="r num">${b.o.toFixed(0)}%</td><td class="muted">${esc(b.state)}</td><td>${writable && db && !saved.has(norm(b.name)) ? `<button class="btn sm ghost" data-act="saveaddon" data-r="${i}">Save</button>` : saved.has(norm(b.name)) ? `<span class="faint" style="font-size:12px">Saved</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="5" class="faint">No smaller private company in the index shares enough of its end markets.</td></tr>`}</tbody></table></div></div>`;
+    const al = addonList(c);
+    const rows = al.map((x, j) => `<tr><td class="cname">${x.id ? `<a href="#c.${esc(x.id)}">${esc(x.name)}</a>` : esc(x.name)}</td><td><span class="kind ${SRC[x.src][0]}">${SRC[x.src][1]}</span></td><td class="muted" style="font-size:13px">${esc(x.why || "")}</td><td class="r num">${x.rev !== null && x.rev !== undefined ? fmtM(x.rev) : "—"}</td><td class="muted">${esc(x.state || "")}</td><td>${x.src === "saved" ? (writable && db ? `<button class="x" style="opacity:1" data-act="delrow" data-f="addon_ideas" data-r="${x.i}" aria-label="Remove">×</button>` : "") : writable && db ? `<button class="btn sm ghost" data-act="saveaddonx" data-j="${j}">Save</button>` : ""}</td></tr>`).join("");
+    const nb = al.filter(x => x.src === "buyer").length;
+    return `<div class="sec">${secHead(c, "", "Add-on list", `<span class="faint" style="font-size:12px">${al.length} targets${nb ? ` · ${nb} from buyer links` : ""}</span>${writable && db ? `<button class="btn sm ghost" data-act="addrow" data-f="addon_ideas">Add target</button>` : ""}`, "addons", ["addon_ideas"])}
+      <p class="muted" style="margin:-4px 0 10px;font-size:13px">Companies ${esc(c.name)} could buy. <b>Saved</b> are yours or Claude's. <b>Named buyer</b> means another profile lists ${esc(c.name)} as its potential buyer. <b>Index match</b> is a smaller private company with similar end markets. Every entry also shows on Targets.</p>
+      <div class="tw"><table><thead><tr><th style="width:240px">Target</th><th style="width:120px">Source</th><th>Why it fits</th><th class="r" style="width:90px">US water rev</th><th style="width:70px">State</th><th style="width:60px"></th></tr></thead><tbody>${rows || `<tr><td colspan="6" class="faint">No add-on targets found. Hit Enhance and Claude suggests some.</td></tr>`}</tbody></table></div></div>
+    ${(c.addon_ideas || []).length ? `<div class="sec"><div class="sec-h"><h2>Edit saved add-ons</h2></div>${editTable(c, "addon_ideas", [{ k: "target", label: "Target", w: "240px" }, { k: "rationale", label: "Why it fits" }, { k: "est_revenue_usd_m", label: "Est rev $M", t: "num", w: "100px" }, { k: "location", label: "Location", w: "150px" }], tableRows(c, "addon_ideas"))}</div>` : ""}`;
   }
   if (tab === "sources") {
     const facts = (c.source_of_truth || []).map((f, i) => `<li><div>${esc(f.text)}<div class="when">${fmtDate(f.at)}</div></div>${writable && db ? `<button class="x" style="opacity:1" data-act="delfact" data-r="${i}" aria-label="Remove fact">×</button>` : ""}</li>`).join("");
@@ -1198,7 +1328,7 @@ addEventListener("hashchange", () => {
 
 app.addEventListener("input", e => {
   const id = e.target.id;
-  if (id === "q") { ui.q = e.target.value; ui.limit = 150; render(); }
+  if (id === "q") { ui.q = e.target.value; ui.limit = 150; ui.acOpen = true; ui.ac = -1; render(); }
   if (id === "tq") { ui.tq = e.target.value; ui.tsel = null; render(); }
   if (id === "pq") { ui.pq = e.target.value; render(); }
 });
@@ -1277,9 +1407,13 @@ app.addEventListener("click", async e => {
     const add = pick.filter(b => b && !have.has(norm(b.p.name))).map(b => ({ name: b.p.name, type: b.p.pe_backed || b.p.owner_type === "PE-owned" ? "PE platform" : "Strategic", fit: b.o >= 70 ? "High" : b.o >= 45 ? "Medium" : "Low", rationale: `${b.o.toFixed(0)}% end-market overlap; ${b.n} deals; ${fmtM(b.p.us_water_treatment_revenue_usd_m)} US water revenue` }));
     if (add.length) { await save(c.id, { buyers: [...(c.buyers || []), ...add] }, ["buyers"]); render(); }
   }
-  if (act === "saveaddon") {
-    const b = likelyAddons(c)[+btn.dataset.r];
-    if (b) { await save(c.id, { addon_ideas: [...(c.addon_ideas || []), { target: b.name, rationale: `${b.o.toFixed(0)}% end-market overlap; ${b.what || ""}`, est_revenue_usd_m: b.rev, location: b.state }] }, ["addon_ideas"]); render(); }
+  if (act === "saveaddonx") {
+    const x = addonList(c)[+btn.dataset.j];
+    if (x && x.src !== "saved") { await save(c.id, { addon_ideas: [...(c.addon_ideas || []), { target: x.name, rationale: x.why, est_revenue_usd_m: x.rev ?? null, location: x.state || "" }] }, ["addon_ideas"]); render(); }
+  }
+  if (act === "savecomp") {
+    const p = companies.get(btn.dataset.id);
+    if (p) { await save(c.id, { competitors: [...(c.competitors || []), { name: p.name, overlap: `${overlap(c, p).toFixed(0)}% end-market overlap; ${p.business_model || ""}` }] }, ["competitors"]); render(); }
   }
   if (act === "manual") { await save(c.id, { status: "ready" }); render(); }
   if (act === "askdel") { ui.confirmDel = true; render(); }
@@ -1327,7 +1461,7 @@ render();
   dbState = writable ? "live" : "readonly";
   db.collection("queue").limit(500).onSnapshot(snap => { queueDocs = snap.docs.map(d => ({ ...d.data(), id: d.id })); if (loaded) render(); }, () => {});
   db.doc("meta/deals").onSnapshot(d => { meta.deals = d.exists ? (d.data().deals || []) : []; ver++; if (loaded) render(); }, () => {});
-  db.doc("meta/entities").onSnapshot(d => { meta.entities = d.exists ? (d.data().entities || []) : []; ver++; if (loaded) render(); }, () => {});
+  db.doc("meta/entities").onSnapshot(d => { meta.entities = d.exists ? (d.data().entities || []) : []; ver++; rebuildIndex(); if (loaded) render(); }, () => {});
   db.collection("companies").limit(1000).onSnapshot(snap => {
     companies.clear();
     snap.docs.forEach(doc => companies.set(doc.id, { ...doc.data(), id: doc.id }));

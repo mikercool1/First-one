@@ -11,7 +11,7 @@ OUT = os.path.join(os.path.dirname(__file__), "out")
 SEED = os.path.join(os.path.dirname(__file__), "..", "seed")
 DETAIL_KEYS = {"what_it_is", "bluntly", "profile_md", "total_revenue_basis", "ebitda_basis", "employees_basis",
                "us_water_treatment_arithmetic", "open_questions", "addon_corrections", "what_changed_vs_prior",
-               "evidence", "key_sites", "chemistries", "customers", "competitors", "runs", "prior_owners"}
+               "evidence", "key_sites", "chemistries", "customers", "runs", "prior_owners"}
 BUCKETS = ["Municipal", "Energy & chemicals", "Heavy industry", "Commercial & institutional",
            "Light industry & high-purity", "Pool & spa", "Agriculture & farm", "Other"]
 DETAILED = {"Municipal drinking water": "Municipal drinking water", "Municipal wastewater": "Municipal wastewater",
