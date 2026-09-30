@@ -371,7 +371,7 @@ const now = () => new Date().toISOString();
 
 const BUCKETS = ["Municipal","Energy & chemicals","Heavy industry","Commercial & institutional","Light industry & high-purity","Pool & spa","Agriculture & farm","Other"];
 // Heavy fields live in details/<id> and load when a profile opens; everything else sits in companies/<id>.
-const DETAIL_KEYS = new Set(["products","product_em_map","history","suggestions","what_it_is","bluntly","profile_md","total_revenue_basis","ebitda_basis","employees_basis","us_water_treatment_arithmetic","open_questions","addon_corrections","what_changed_vs_prior","evidence","key_sites","chemistries","customers","runs","prior_owners"]);
+const DETAIL_KEYS = new Set(["dossier","products","product_em_map","history","suggestions","what_it_is","bluntly","profile_md","total_revenue_basis","ebitda_basis","employees_basis","us_water_treatment_arithmetic","open_questions","addon_corrections","what_changed_vs_prior","evidence","key_sites","chemistries","customers","runs","prior_owners"]);
 const END_MARKETS = ["Municipal drinking water","Municipal wastewater","Power generation","Oil & gas / refining","Chemicals & petrochem","Pulp & paper","Food & beverage","Mining & metals","Primary metals/steel","Commercial HVAC / buildings","Healthcare & institutional","Data centers","Pharma/life sciences","Microelectronics/semis","Manufacturing (general industrial)","Pools & spa","Agriculture & farm","Consumer / retail","Other"];
 
 /* ---------- sectors ---------- */
@@ -1250,29 +1250,133 @@ function webTools(rk, signal) {
   ];
 }
 
-async function enhance(id, key) {
-  const c = getC(id); const sec = c && sectionDef(c, key);
-  if (!c || !sec || !sample || isRunning(id, key)) return;
-  const ctl = new AbortController();
-  runs[runKey(id, key)] = { ctl };
-  render();
-  try {
-    const web = webOK && await webSetup();
-    const rk = runKey(id, key);
-    if (web && runs[rk]) { runs[rk].msg = "Researching on the web"; render(); }
-    if (web) { const lim = await sample.limits().catch(() => null); if (lim && !lim.tools) webOK = false; }
-    const res = await sample.json(sectionPrompt(c, key, { web: web && webOK }), web && webOK ? { modelTier: "complex", signal: ctl.signal, tools: webTools(rk, ctl.signal) } : { modelTier: "complex", signal: ctl.signal, cache: false });
-    if (!res || typeof res !== "object") throw { code: "invalid_json" };
-    delete runs[rk];
-    await applyResult(id, key, res, web && webOK ? { by: "Claude + web", web: true, sources: Array.isArray(res.sources) ? res.sources : [] } : {});
-  } catch (e) {
-    delete runs[runKey(id, key)];
-    if (e?.code === "cancelled") { render(); return; }
-    if (e?.code === "not_granted" || e?.code === "sampling_disabled") sample = null;
-    runs[runKey(id, key)] = { error: ERRMSG[e?.code] ? ERRMSG[e.code] + (e.code === "save_failed" && e.message ? " (" + e.message + ")" : "") : `${sec.label} didn't finish${e?.code || e?.message ? " (" + String(e.code || e.message).slice(0, 80) + ")" : ""}. Try again.` }; console.warn("enhance", key, e);
-    render();
+/* ---------- research: the page runs the web searches itself, in parallel, then Claude writes from them ---------- */
+const DOSSIER_DAYS = 14;
+const domainOf = u => String(u || "").replace(/^https?:\/\//, "").replace(/^www\./, "").split(/[/?#]/)[0].toLowerCase();
+async function webCall(tool, input, signal) {
+  try { const r = await mcp.callTool(WEBSRV, tool, { ...input, session_id: WEB_SID, model_name: "claude" }, { signal }); return Array.isArray(r.payload?.results) ? r.payload.results : []; }
+  catch (e) {
+    if (e?.code === "cancelled") throw e;
+    const m = String(e?.message || "");
+    if (["server_not_connected", "not_in_manifest", "needs_reauth", "blocked_by_policy"].includes(e?.code)) { webOK = false; webIssue = e.code; }
+    else if (/rate.?limit/i.test(m)) webIssue = "free search limit reached; try again in a while";
+    console.warn("web", tool, e); return [];
   }
 }
+// Build (or reuse) the research file for a company: ~5 searches and page reads, run at once.
+async function research(id, signal, force = false) {
+  const c = getC(id); if (!c || !webOK || !mcp) return null;
+  const have = c.dossier;
+  if (!force && have?.items?.length && (Date.now() - new Date(have.at).getTime()) < DOSSIER_DAYS * 864e5) return have;
+  await webSetup();
+  const n = c.name, where = c.hq_address ? ` (${String(c.hq_address).slice(0, 60)})` : "", dom = domainOf(c.website);
+  const S = (objective, qs) => webCall("web_search", { objective, search_queries: qs.filter(Boolean).slice(0, 3) }, signal).then(r => r.map(x => ({ ...x, topic: objective })));
+  const jobs = [
+    S(`What ${n}${where} is: its business, history, headquarters and ownership (parent company or private equity owner)`, [`${n}`, `${n} company history`, `${n} owned by`]),
+    S(`Products, product lines and brand names sold by ${n}`, [`${n} products`, `${n} product line brands`, dom ? `site:${dom} products` : `${n} catalog`]),
+    S(`Acquisitions made by ${n}, and any sale of ${n}, with dates and buyers`, [`${n} acquires`, `${n} acquired by`, `${n} acquisition`]),
+    S(`${n} revenue, employee count, customers, industries served and main competitors`, [`${n} revenue employees`, `${n} industries served customers`, `${n} competitors`]),
+  ];
+  const found = (await Promise.all(jobs)).flat();
+  // Read the company's own pages: its homepage plus any product pages the searches surfaced.
+  const own = [...new Set(found.map(x => x.url).filter(u => dom && domainOf(u) === dom))].slice(0, 3);
+  const urls = [...new Set([dom ? "https://" + dom : null, ...own].filter(Boolean))].slice(0, 4);
+  if (urls.length) found.push(...(await webCall("web_fetch", { urls, objective: `Products, brands, product categories, markets served, history and ownership of ${n}`.slice(0, 200) }, signal)).map(x => ({ ...x, topic: "Company website" })));
+  const byUrl = new Map();
+  for (const x of found) {
+    if (!x?.url) continue;
+    const t = (x.excerpts || []).join("\n").trim(); if (!t) continue;
+    const cur = byUrl.get(x.url);
+    if (cur) { if (!cur.text.includes(t.slice(0, 80))) cur.text = (cur.text + "\n" + t).slice(0, 3000); }
+    else byUrl.set(x.url, { title: String(x.title || domainOf(x.url)).slice(0, 160), url: x.url, date: x.publish_date || "", text: t.slice(0, 3000) });
+  }
+  let items = [...byUrl.values()];
+  // Company's own site first, then the rest; keep the file a manageable size.
+  items.sort((a, b) => (domainOf(b.url) === dom) - (domainOf(a.url) === dom));
+  let total = 0; items = items.filter(x => (total += x.text.length) < 60000);
+  if (!items.length) return have?.items?.length ? have : null;
+  const dossier = { at: now(), items };
+  await save(id, { dossier }, [], true);
+  return dossier;
+}
+const dossierText = d => (d?.items || []).map((x, i) => `[S${i + 1}] ${x.title} — ${x.url}${x.date ? " (" + x.date + ")" : ""}\n${x.text}`).join("\n\n");
+
+// Steps are written in waves: the foundation first, then the rest in two parallel calls that build on it.
+const WAVES = [["overview", "deals", "products"], ["sectors", "endmarkets", "segments", "financials"], ["customers", "competitors", "buyers", "addons"]];
+function buildPrompt(c, keys, dossier) {
+  const idl = [c.what_it_is, c.hq_address, c.website, c.ultimate_parent && "owned by " + c.ultimate_parent].filter(Boolean).join(" · ");
+  const sname = sectorById(primarySector(c))?.name || primarySector(c);
+  return `You are a senior buy-side M&A analyst building the "${c.name}" profile in Profiler, a private database of chemical companies. Its primary sector is ${sname}.
+COMPANY${c.identity_confirmed ? " (identity confirmed by the user)" : ""}: ${c.name}${idl ? " — " + idl : ""}
+Stay on this exact company; ignore sources about a different company with a similar name.
+
+${dossier ? `WEB RESEARCH (gathered just now; cite as [S1], [S2] …)
+${dossierText(dossier)}
+
+HOW TO USE THE RESEARCH
+- Build from the sources first. Products means real products: categories, brand families and named products or grades exactly as the sources name them.
+- A value is High only if a source states it; cite it in basis like "[S3] company site". Estimates built from sourced facts are Medium, with the math. Anything from memory alone is Low and says so.
+- Never invent names, figures or deals. If the sources and your knowledge don't cover something, leave it empty.` : `You cannot browse; work from what you know. If you don't know this company, return empty values rated Low rather than inventing anything.`}
+
+WHAT THE PROFILE ALREADY KNOWS (Verified items were set by the user and are true)
+${knowledgeBase(c) || "Only the name."}
+
+BUILD THESE STEPS: ${keys.map(k => SECTIONS[k].label).join(", ")}. They build on each other in this order.
+
+${keys.map(k => `==== STEP "${k}": ${SECTIONS[k].label.toUpperCase()} ====\n${stepSpec(c, k)}`).join("\n\n")}
+
+Reply with ONLY one JSON object: {${keys.map(k => `"${k}": {<that step's object, in the shape given for it, with its "confidence", "basis" and "note">}`).join(", ")}${dossier ? `, "sources_used": {"<step key>": ["S1", "S4"]}` : ""}}
+Be concise: short text fields, no more than 25 rows in any list.`;
+}
+function setRun(id, keys, patch) { for (const k of keys) { const rk = runKey(id, k); if (runs[rk]) Object.assign(runs[rk], patch); } render(); }
+// Research once, then write the requested steps wave by wave. One Stop button stops all of it.
+async function buildSteps(id, keys) {
+  const c0 = getC(id); if (!c0 || !sample) return;
+  keys = SECTION_ORDER.filter(k => keys.includes(k) && !isRunning(id, k)); if (!keys.length) return;
+  const ctl = new AbortController();
+  for (const k of keys) runs[runKey(id, k)] = { ctl, msg: webOK ? "Researching the web…" : "Waiting…" };
+  render();
+  quietCascade = true; seqDone.clear();
+  try {
+    const dossier = webOK ? await research(id, ctl.signal) : null;
+    if (ctl.signal.aborted) throw { code: "cancelled" };
+    if (webOK && !dossier) setRun(id, keys, { msg: "No web results; writing from what Claude knows…" });
+    const waves = WAVES.map(w => w.filter(k => keys.includes(k))).filter(w => w.length);
+    // Wave 1 alone (everything else depends on it); later waves in parallel.
+    const groups = waves.length && waves[0].some(k => WAVES[0].includes(k)) ? [[waves[0]], waves.slice(1)] : [waves];
+    for (const g of groups) {
+      if (!g.length) continue;
+      if (ctl.signal.aborted) break;
+      for (const w of g) setRun(id, w, { msg: "Writing…" });
+      const c = getC(id);
+      const answers = await Promise.all(g.map(w => sample.json(buildPrompt(c, w, dossier), { modelTier: "complex", signal: ctl.signal, cache: false }).then(r => [w, r], e => [w, null, e])));
+      if (ctl.signal.aborted) break;
+      for (const [w, r, e] of answers) {
+        for (const k of w) {
+          const rk = runKey(id, k);
+          const res = r && typeof r === "object" ? r[k] : null;
+          if (!res || typeof res !== "object") { delete runs[rk]; if (e?.code === "cancelled") continue; runs[rk] = { error: ERRMSG[e?.code] || `${SECTIONS[k].label} didn't come back${e?.code ? " (" + e.code + ")" : ""}. Try again.` }; if (e?.code === "not_granted" || e?.code === "sampling_disabled") sample = null; continue; }
+          const used = new Set(((r.sources_used || {})[k] || []).map(x => String(x).replace(/\D/g, "")));
+          const cites = String(JSON.stringify(res.basis || "")).match(/S(\d+)/g) || []; cites.forEach(x => used.add(x.slice(1)));
+          const sources = dossier ? [...used].map(i => dossier.items[+i - 1]).filter(Boolean).map(x => ({ title: x.title, url: x.url, date: x.date, supports: SECTIONS[k].label, quote: x.text.slice(0, 200) })) : [];
+          delete runs[rk];
+          try { await applyResult(id, k, res, dossier ? { by: "Claude + web", web: true, sources } : {}); seqDone.add(k); }
+          catch (err) { console.warn("apply", k, err); runs[rk] = { error: ERRMSG[err?.code] ? ERRMSG[err.code] + (err.message ? " (" + err.message + ")" : "") : `${SECTIONS[k].label} didn't save. Try again.` }; }
+        }
+        render();
+      }
+    }
+  } catch (e) {
+    for (const k of keys) { const rk = runKey(id, k); if (runs[rk]?.ctl) delete runs[rk]; }
+    if (e?.code !== "cancelled") toast("The build stopped. Try again.");
+  } finally {
+    for (const k of keys) { const rk = runKey(id, k); if (runs[rk]?.ctl) delete runs[rk]; }
+    quietCascade = false; seqDone.clear(); render();
+  }
+  const c = getC(id); if (c) toast(`Profile strength now ${strength(c).pct}%`);
+}
+const enhance = (id, key) => buildSteps(id, [key]);
+
 // Merge an answer into the profile: confidence rules, derived views, stale marks. Used by Enhance and by web research.
 async function applyResult(id, key, res, src = {}) {
   const c = getC(id), sec = c && sectionDef(c, key);
@@ -1290,7 +1394,7 @@ async function applyResult(id, key, res, src = {}) {
     if (f === "primary_sector") v = allSectors().some(z => z.id === v) ? v : (sectorFromName(v)?.id || slugify(v));
     if (sec.append && Array.isArray(v)) {
       const have = new Set((cur[f] || []).map(a => norm(a.target)));
-      const fresh = v.filter(a => a && a.target && !have.has(norm(a.target))).map(a => ({ ...a, added_by, added_at: now() }));
+      const fresh = v.filter(a => a && a.target && !have.has(norm(a.target))).map(a => ({ ...a, added_by: by, added_at: now() }));
       added = fresh.length;
       if (!fresh.length) continue;
       v = [...fresh, ...(cur[f] || [])].sort((a, b) => dateKey(b.date) - dateKey(a.date));
@@ -1454,8 +1558,8 @@ async function enhanceSeq(id, keys) {
   finally { quietCascade = false; seqDone.clear(); }
   const c = getC(id); if (c) toast(`Profile strength now ${strength(c).pct}%`);
 }
-const enhanceAll = id => enhanceSeq(id, SECTION_ORDER.slice());
-const updateStale = id => { const c = getC(id); if (c) enhanceSeq(id, staleSections(c)); };
+const enhanceAll = id => buildSteps(id, SECTION_ORDER.slice());
+const updateStale = id => { const c = getC(id); if (c) buildSteps(id, staleSections(c)); };
 function short(v) {
   if (v === null || v === undefined) return "";
   if (typeof v === "number") return String(v);
@@ -1988,7 +2092,7 @@ function viewBuilder(c) {
   return `<div class="panel builder">
     <div class="sec-h"><h2>Profile builder</h2><span class="faint" style="font-size:12px">Builds in order; each step starts from everything before it. Click a finished step to go deeper.</span>${webOK ? `<span class="pill accent" title="Each step searches the web with Parallel Search and cites its sources">Web search on</span>` : `<span class="pill warn" title="Connect the free Parallel Search connector in claude.ai Settings → Connectors, then reload">Web search off${webIssue ? " (" + esc(webIssue) + ")" : ""}</span>`}<span class="sp"></span>
       ${ok && nx ? `<button class="btn sm primary" data-act="enhance" data-k="${nx}" ${busy ? "disabled" : ""}>Build next: ${esc(SECTIONS[nx].label)}</button>` : ""}${ok ? `<button class="btn sm" data-act="enhanceall" ${busy ? "disabled" : ""}>Build all</button>` : ""}${canWeb() ? `<button class="btn sm" data-act="webbuild" ${webActive(c.id) ? "disabled" : ""} title="A Claude research session with web search works through every step in order and saves each one here with its sources">${webActive(c.id) ? "Researching on the web…" : "Build all from the web"}</button>` : ""}</div>
-    ${webPanel(c)}
+    ${(() => { const k = SECTION_ORDER.find(k => isRunning(c.id, k)); const d = c.dossier; return `<div class="faint" style="font-size:12px;margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">${d?.items?.length ? `Web research: ${d.items.length} sources, ${fmtDate(d.at)}` : webOK ? "No web research yet; the next build runs it first" : ""}${webOK && ok && !busy && d?.items?.length ? `<button class="btn sm ghost" data-act="reresearch">Refresh research</button>` : ""}${k ? `<button class="btn sm ghost" data-act="stopsec" data-k="${k}">Stop</button>` : ""}</div>`; })()}
     ${(() => { const k = SECTION_ORDER.find(k => runs[runKey(c.id, k)]?.error); return k ? `<div class="run warnrun" role="alert"><span><b>${esc(SECTIONS[k].label)} didn't finish.</b> ${esc(runs[runKey(c.id, k)].error)}</span><span class="sp"></span><button class="btn sm ghost" data-act="dismisssec" data-k="${k}">Dismiss</button></div>` : ""; })()}
     <ol class="steps">${SECTION_ORDER.map((k, i) => { const st = stepState(c, k); return `<li><button class="step ${st.cls}" data-act="enhance" data-k="${k}" ${!ok || busy ? "disabled" : ""} title="${st.cls === "done" ? "Go deeper on " : "Build "}${esc(SECTIONS[k].label)}"><span class="sn">${st.cls === "run" ? `<span class="spin"></span>` : i + 1}</span><span class="sl">${esc(SECTIONS[k].label)}</span><span class="ss">${esc(st.text)}</span></button></li>`; }).join("")}</ol>
   </div>`;
@@ -2422,12 +2526,13 @@ app.addEventListener("click", async e => {
   if (!c) return;
   if (act === "enhance") enhance(c.id, btn.dataset.k);
   if (act === "enhanceall") enhanceAll(c.id);
+  if (act === "reresearch") { const ctl = new AbortController(); toast("Refreshing web research…"); research(c.id, ctl.signal, true).then(d => toast(d ? `Research refreshed: ${d.items.length} sources. Build again to use it.` : "No new web results.")); }
   if (act === "webbuild") startWeb(c.id, SECTION_ORDER.slice());
   if (act === "websec") startWeb(c.id, [btn.dataset.k]);
   if (act === "webdismiss") { db.doc("research/" + btn.dataset.r).update({ status: "dismissed" }).catch(() => {}); }
   if (act === "updatestale") updateStale(c.id);
   if (act === "verify") { await save(c.id, {}, [btn.dataset.f]); render(); }
-  if (act === "stopsec") runs[runKey(c.id, btn.dataset.k)]?.ctl?.abort();
+  if (act === "stopsec") { const ctl = runs[runKey(c.id, btn.dataset.k)]?.ctl; ctl?.abort(); for (const k of SECTION_ORDER) if (runs[runKey(c.id, k)]?.ctl === ctl) delete runs[runKey(c.id, k)]; render(); }
   if (act === "dismisssec") { delete runs[runKey(c.id, btn.dataset.k)]; render(); }
   if (act === "firstdive") {
     const f = $("#seedFacts")?.value.trim();

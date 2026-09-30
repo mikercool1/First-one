@@ -33,7 +33,7 @@ Each step has its own detailed playbook (goal, what to cover, method, depth, che
 
 ## Web research
 
-With the free Parallel Search connector connected in claude.ai (Settings → Connectors), every builder step searches the web from inside the page: Claude gets search_web and read_page tools, researches the company's own site, filings, press releases and trade press, and returns sources with its answer. Sources go on the Sources tab; the builder panel shows "Web search on" and what it is searching. Without the connector, steps run on Claude's own knowledge. It all runs on your Claude plan.
+With the free Parallel Search connector connected in claude.ai (Settings → Connectors), a build first runs the web research itself: about five searches in parallel (identity and ownership, products and brands, M&A, size/customers/competitors) plus a read of the company's own pages. The results are saved on the profile as a research file (`dossier`, reused for 14 days; "Refresh research" re-runs it). Claude then writes the steps from that file in waves: overview, M&A and products first, then the other eight steps in two parallel calls. Each value cites its source ([S1]…), and cited sources go on the Sources tab. Without the connector, steps run on Claude's own knowledge. It all runs on your Claude plan.
 
 ## How profiles learn
 
