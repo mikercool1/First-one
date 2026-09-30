@@ -1276,8 +1276,28 @@ function webTools(rk, signal) {
 
 /* ---------- research: the page runs the web searches itself, in parallel, then Claude writes from them ---------- */
 const domainOf = u => String(u || "").replace(/^https?:\/\//, "").replace(/^www\./, "").split(/[/?#]/)[0].toLowerCase();
+// Search results are kept for a week and shared across the app, so asking again costs no searches.
+const WEB_CACHE_DAYS = 7, webMem = new Map();
+function webKey(tool, input) {
+  const k = tool + "|" + (tool === "web_search" ? [...(input.search_queries || [])].map(x => norm(x)).sort().join("|") : [...(input.urls || [])].sort().join("|") + "|" + norm(input.objective || ""));
+  let h = 5381; for (let i = 0; i < k.length; i++) h = (h * 33 + k.charCodeAt(i)) >>> 0;
+  return "w" + h.toString(36) + k.length.toString(36);
+}
 async function webCall(tool, input, signal) {
-  try { const r = await mcp.callTool(WEBSRV, tool, { ...input, session_id: WEB_SID, model_name: "claude" }, { signal }); return Array.isArray(r.payload?.results) ? r.payload.results : []; }
+  const key = webKey(tool, input);
+  if (webMem.has(key)) { const r = webMem.get(key).slice(); r.cached = true; return r; }
+  if (db) {
+    try {
+      const d = await db.doc("webcache/" + key).get();
+      if (d.exists && (Date.now() - new Date(d.data().at).getTime()) < WEB_CACHE_DAYS * 864e5) { const r = d.data().results || []; webMem.set(key, r); const out = r.slice(); out.cached = true; return out; }
+    } catch {}
+  }
+  try {
+    const r = await mcp.callTool(WEBSRV, tool, { ...input, session_id: WEB_SID, model_name: "claude" }, { signal });
+    const rs = Array.isArray(r.payload?.results) ? r.payload.results.slice(0, 10).map(x => ({ url: x.url, title: String(x.title || "").slice(0, 200), publish_date: x.publish_date || "", excerpts: [(x.excerpts || []).join("\n").slice(0, 3000)] })) : [];
+    if (rs.length) { webMem.set(key, rs); if (db && writable) db.doc("webcache/" + key).set({ tool, q: clip(input.search_queries || input.urls || [], 400), at: now(), results: rs }).catch(() => {}); }
+    return rs;
+  }
   catch (e) {
     if (e?.code === "cancelled") throw e;
     const m = String(e?.message || "");
@@ -2387,6 +2407,7 @@ const CHAT_RULES = `You are the research assistant inside Profiler, a buy-side M
 
 HOW TO WORK
 - Before each tool call, write one short line saying what you're checking and why (the user sees your thinking). After results, say in a line what you found.
+- Web searches are rationed: use as few as you need (usually 1-3 per turn), put 2-3 queries in one search_web call rather than several calls, and don't search again for what this conversation or the profile already shows.
 - Search first for anything factual you weren't told. Use 2-3 short queries per search_web call. Prefer the company's own site, filings, press releases, deal announcements and trade press. Read a page only when excerpts aren't enough (e.g. a full product list).
 - Then call record ONCE with every change worth saving: what the user asked for, plus solid new facts you found. Don't call record if nothing should change.
 - Finally answer briefly in plain language, with source links, and say what you saved.
@@ -2407,7 +2428,7 @@ function chatTools(c, seen, msg) {
   const tools = [];
   if (webOK) tools.push(
     { name: "search_web", description: "Search the web. Returns up to 8 results with title, URL, date and excerpts that usually answer directly.", inputSchema: { type: "object", properties: { objective: { type: "string" }, queries: { type: "array", items: { type: "string" }, description: "2-3 keyword queries, 3-6 words each" } }, required: ["objective", "queries"] },
-      execute: async (i, ctx) => { const qs = [].concat(i.queries || []).map(String).filter(Boolean).slice(0, 3); act("Searching: " + (qs.join(" · ") || i.objective)); const rs = await webCall("web_search", { objective: String(i.objective || qs[0] || "").slice(0, 300), search_queries: qs.length ? qs : [String(i.objective).slice(0, 60)] }, ctx.signal); act(rs.length ? `Found ${rs.length} results` : "No results (or the free search limit is reached)"); return clip(slim(rs), 14000); } },
+      execute: async (i, ctx) => { const qs = [].concat(i.queries || []).map(String).filter(Boolean).slice(0, 3); act("Searching: " + (qs.join(" · ") || i.objective)); const rs = await webCall("web_search", { objective: String(i.objective || qs[0] || "").slice(0, 300), search_queries: qs.length ? qs : [String(i.objective).slice(0, 60)] }, ctx.signal); act(rs.length ? `Found ${rs.length} results${rs.cached ? " (saved earlier, no search used)" : ""}` : "No results (or the free search limit is reached)"); return clip(slim(rs), 14000); } },
     { name: "read_pages", description: "Read up to 3 web pages and return the parts relevant to the objective.", inputSchema: { type: "object", properties: { urls: { type: "array", items: { type: "string" } }, objective: { type: "string" } }, required: ["urls"] },
       execute: async (i, ctx) => { const us = [].concat(i.urls || []).map(String).filter(u => /^https?:\/\//.test(u)).slice(0, 3); if (!us.length) throw new Error("Give full http(s) URLs."); act("Reading: " + us.map(u => domainOf(u) + u.replace(/^https?:\/\/[^/]+/, "").slice(0, 30)).join(", ")); const rs = await webCall("web_fetch", { urls: us, objective: String(i.objective || "").slice(0, 200) || null }, ctx.signal); return clip(slim(rs), 14000); } });
   tools.push({ name: "record", description: "Save changes to this company's profile. Call once per turn with every change. Returns what was saved and what was refused and why.",
