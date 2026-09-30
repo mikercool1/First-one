@@ -2493,10 +2493,17 @@ async function chatSend(id, text, opts = {}) {
 // Builder buttons run through the chat: a detailed brief per step, researched the way a conversation would.
 function stepBrief(c, key) {
   const sec = SECTIONS[key], pass = ((c.section_meta || {})[key]?.passes || 0) + 1;
-  return `STEP BRIEF: ${sec.label.toUpperCase()}${pass > 1 ? ` (pass ${pass}: go deeper than what's there)` : ""}
-Research this step specifically. Run several targeted searches (the company's own pages first), follow leads from what you find, and read pages where excerpts aren't enough. Build on what the profile and this conversation already established: the deals define the businesses, the businesses define the products, the products define where they sell.
+  const gaps = sectionDef(c, key).fields.filter(f => !PROSE.has(f) && !/_basis$|_arithmetic$/.test(f) && (!has(c[f]) || confOf(c, f).level === "Low")).map(f => `${label(f)} (${has(c[f]) ? "Low confidence" : "missing"})`);
+  const onFile = (c.evidence || []).filter(e => e.url).slice(0, 30).map(e => `- ${e.metric || ""}: ${e.url}`).join("\n");
+  return `STEP BRIEF: ${sec.label.toUpperCase()}${pass > 1 ? ` (pass ${pass})` : ""}
+${pass > 1 ? `THIS IS A REBUILD. Start from what the profile already has (below) and add to it; don't start over. Keep everything that is still right. Change a value only when new evidence is stronger, and say what changed and why.
+` : ""}Research this step specifically. Build on what the profile and this conversation already established: the deals define the businesses, the businesses define the products, the products define where they sell.
+${gaps.length ? `GAPS TO CLOSE FIRST: ${gaps.join("; ")}.
+` : ""}${onFile ? `SOURCES ALREADY ON FILE (don't re-find these; look for new ones, e.g. trade press, distributor listings, filings, job posts, press releases, customer case studies):
+${onFile}
+` : ""}TRIANGULATE: combine what's known with what you find to firm up estimates, e.g. revenue from headcount × revenue per employee for this kind of business, plant count and capacity, deal values and multiples, number of brands or SKUs, customer and distributor counts. Show the math in basis and rate it Medium unless a source states the number.
 ${stepSpec(c, key).replace("Reply with ONLY one JSON object in this shape:", "STEP OBJECT SHAPE (for set_step):")}
-Save with record: row actions (add_row / update_row) for list items where they fit, and set_step with step "${key}" and the full step object for everything else in this step. Then summarise what you found in a few lines with links.`;
+Save with record: add_row / update_row for list items (existing rows you don't mention are kept), and set_step with step "${key}" for the rest of this step. Lists in set_step also merge into what's there. Then summarise in a few lines what's new, with links.`;
 }
 async function chatSteps(id, keys) {
   const c0 = getC(id); if (!c0 || !sample || cst(id).busy) return;
@@ -2586,6 +2593,22 @@ async function applyChat(id, actions, seen) {
   if (!ok) return { saved: [], rejected: ["Couldn't save: " + (lastSaveError || "database error")] };
   return { saved, rejected, undo: { id, before } };
 }
+// Reruns build on the profile: catalog-type lists merge (matching rows update, new rows add, rows not mentioned
+// stay). Mix splits that must add to 100% (segments, sectors, where products go) are replaced as a whole.
+const MERGE_KEYS = { products: r => norm(r.category) + "|" + norm(r.line), customers: r => norm(r.name), competitors: r => norm(r.name), buyers: r => norm(r.name), addon_ideas: r => norm(r.target) };
+function mergeLists(c, v) {
+  for (const [f, key] of Object.entries(MERGE_KEYS)) {
+    if (!Array.isArray(v[f])) continue;
+    const base = clean(f === "products" ? catalog(c) : (c[f] || [])), out = base.slice(), idx = new Map(base.map((r, i) => [key(r), i]));
+    for (const r of v[f]) {
+      if (!r || typeof r !== "object") continue;
+      const k = key(r), keep = Object.fromEntries(Object.entries(r).filter(([, x]) => x !== null && x !== "" && !(Array.isArray(x) && !x.length)));
+      if (idx.has(k)) out[idx.get(k)] = { ...out[idx.get(k)], ...keep }; else { idx.set(k, out.length); out.push(keep); }
+    }
+    v[f] = out;
+  }
+  return v;
+}
 // A whole builder step proposed in chat: same checks, then merged by the normal rules (weaker never beats stronger).
 async function applySteps(id, acts, seen, msg) {
   const saved = [], rejected = [], before = {};
@@ -2595,7 +2618,7 @@ async function applySteps(id, acts, seen, msg) {
     const src = ["web", "user", "knowledge"].includes(a.source) ? a.source : "knowledge";
     const urls = [].concat(a.source_urls || []).map(String).filter(u => seen.has(u));
     if (src === "web" && !urls.length) { rejected.push(`${sec.label}: no source page found this turn`); continue; }
-    const v = clean(a.value);
+    const v = mergeLists(c, clean(a.value));
     if (src === "knowledge") v.confidence = Object.fromEntries(sec.fields.map(f => [f, "Low"]));
     for (const f of [...sec.fields, "conf", "section_meta", "suggestions", "history", "evidence", "runs", "revenue_by_product", EM_FIELD, "ebitda_margin_pct", "status"]) if (!(f in before)) before[f] = c[f] === undefined ? null : clean(c[f]);
     try {
