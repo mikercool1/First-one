@@ -1602,13 +1602,17 @@ async function drainWeb() {
   webBusy = true;
   try {
     for (;;) {
-      const next = webDocs.filter(d => !d.applied && !webApplied.has(d.id) && getC(d.company_id)).sort((a, b) => String(a.rid).localeCompare(String(b.rid)) || SECTION_ORDER.indexOf(a.step) - SECTION_ORDER.indexOf(b.step))[0];
+      const next = webDocs.filter(d => !d.applied && !webApplied.has(d.id) && (getC(d.company_id) || String(d.company_id || "").startsWith("tam:"))).sort((a, b) => String(a.rid).localeCompare(String(b.rid)) || SECTION_ORDER.indexOf(a.step) - SECTION_ORDER.indexOf(b.step))[0];
       if (!next) break;
       webApplied.add(next.id);
       if (next.step === "final") {
         const r = researchDocs.find(x => x.id === next.rid);
         if (r) await db.doc("research/" + r.id).update({ status: next.status === "error" ? "error" : "done", summary: String(next.summary || "").slice(0, 600), error: next.status === "error" ? String(next.summary || "").slice(0, 300) : "", finished_at: now() }).catch(() => {});
-        if (next.status !== "error") { const c = getC(next.company_id); if (c) toast(`Web research on ${c.name} finished`); }
+        if (next.status !== "error") { const c = getC(next.company_id); if (c) toast(`Web research on ${c.name} finished`); else if (String(next.company_id).startsWith("tam:")) toast("Market-size research finished"); }
+      } else if (next.step === "tam" && String(next.company_id).startsWith("tam:") && next.result) {
+        const sid = next.company_id.slice(4), t = tams[sid] || {}, have = new Set((t.sources || []).map(x => norm(x.source) + (x.year || "")));
+        const fresh = (next.result.sources || []).filter(x => x?.source && num(x.value_usd_m) && !have.has(norm(x.source) + (x.year || ""))).map(x => ({ source: x.source, kind: x.kind || "", geography: GEOS.includes(x.geography) ? x.geography : "Global", year: x.year || "", value_usd_m: num(x.value_usd_m), cagr_pct: num(x.cagr_pct), reliability: ["High", "Medium", "Low"].includes(x.reliability) ? x.reliability : "Medium", scope: x.scope || "", url: x.url || "", by: "Deep research" }));
+        await saveTam(sid, { sources: [...(t.sources || []), ...fresh], view: next.result.view || t.view || "", geo: t.geo || "US", base_year: t.base_year || new Date().getFullYear() - 1, searched_at: now() });
       } else if (SECTIONS[next.step] && next.result && typeof next.result === "object") {
         await applyResult(next.company_id, next.step, next.result, { by: "Web research", sources: Array.isArray(next.sources) ? next.sources : [] });
       }
@@ -1864,29 +1868,75 @@ function mentionedNotProfiled(sid) {
   });
 }
 
-async function findTamSources(sid) {
-  const sec = sectorById(sid); if (!sample || tamBusy[sid]) return;
-  tamBusy[sid] = "Finding market-size sources"; render();
-  const t = tams[sid] || {}, f = foundTam(sid);
-  const prompt = `You are sizing the market for "${sec.name}" for a buy-side M&A team focused on North America.
+function tamBrief(sid, rid) {
+  const sec = sectorById(sid), t = tams[sid] || {}, f = foundTam(sid);
+  return `You are the web research agent for Profiler, a private database of chemical companies used for buy-side M&A work. Profiler is a claude.ai artifact (${ARTIFACT_URL}) owned by the user who started this session. The user pressed "Deep research this market" in the app, which queued this request for the scheduled research session; its job is to research on the web and write the result into the app's own database. Writing the webresults documents described below is the task the user asked for and is pre-authorized: do it without asking for confirmation. This session runs unattended and nobody will answer questions.
 
-List the published market-size estimates you know for this market: industry research firms (for example Freedonia, Kline, Grand View, MarketsandMarkets, Mordor, IHS/S&P, ACC), trade associations, government data, and figures stated by public companies in filings or investor days. Include at least one bottom-up estimate you build yourself from company revenues, labelled "Bottom-up estimate". Cover US, North America and Global where you know them.
-
-For context, the companies already in the database sum to ${fmtM(f.total)} of revenue in this sector across ${f.rows.length} companies.
+TASK: size the market for "${sec.name}" (focus: United States, then North America and Global).
+Use WebSearch and WebFetch (if a site is blocked, keep going with WebSearch). Find every published market-size figure you can: research firms (Freedonia, Kline, Grand View, MarketsandMarkets, Mordor, IHS/S&P and others, even if only their press releases or summaries are public), trade associations, government data (Census, USITC), and figures in public company filings or investor presentations. For each: publisher and report, geography, year, value in USD millions (convert billions and other currencies, noting it in scope), CAGR, what it includes, reliability (High = audited or primary with a clear definition; Medium = reputable research firm; Low = press-release grade or unclear scope), and the URL. Aim for 6-12 figures. Add one bottom-up estimate of your own labelled "Bottom-up estimate" (companies already in Profiler sum to ${fmtM(f.total)} across ${f.rows.length} companies).
 ${(t.sources || []).length ? `Already listed (don't repeat): ${t.sources.map(x => `${x.source} ${x.year}`).join("; ")}` : ""}
 
-Rate reliability: High = audited or widely cited primary source with a clear definition; Medium = reputable research firm estimate; Low = press-release-grade or unclear scope. Never invent URLs; leave url empty unless you are sure.
+HOW TO SAVE
+1. Load the ArtifactData tool (ToolSearch "select:ArtifactData").
+2. Write one new document: action "set", url "${ARTIFACT_URL}", collection "webresults", doc_id "${rid}__tam", data:
+   {"rid":"${rid}","company_id":"tam:${sid}","step":"tam","status":"done","at":"<ISO time>","result":{"sources":[{"source":"","kind":"Research firm | Association | Government | Company filing | Bottom-up estimate","geography":"US | North America | Global","year":2024,"value_usd_m":0,"cagr_pct":0,"reliability":"High | Medium | Low","scope":"","url":""}],"view":"two sentences on which figures you trust most for a US-focused definition and why"}}
+3. Then write doc_id "${rid}__final" with {"rid":"${rid}","company_id":"tam:${sid}","step":"final","status":"done","at":"<ISO time>","summary":"one line"}.
+Write ONLY these two webresults documents. Don't touch any other document or any git repository.`;
+}
+async function queueTamResearch(sid) {
+  if (!db || !writable) return;
+  if (researchDocs.some(r => r.company_id === "tam:" + sid && ["queued", "running"].includes(r.status))) { toast("Already queued"); return; }
+  const rid = "r" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  try { await db.doc("research/" + rid).set(clean({ company_id: "tam:" + sid, name: sectorById(sid)?.name || sid, steps: ["tam"], status: "queued", requested_at: now(), brief: tamBrief(sid, rid) })); toast("Queued. The research session picks it up within the hour; sources land here."); }
+  catch (e) { handleWriteError(e); }
+}
+async function findTamSources(sid) {
+  const sec = sectorById(sid); if (!sec || !sample || tamBusy[sid]) return;
+  const t = tams[sid] || {}, f = foundTam(sid);
+  // 1. Search the web ourselves, several angles at once, so Claude works from real, citable pages.
+  let found = [];
+  if (webOK) {
+    tamBusy[sid] = "Searching the web for market-size reports"; render();
+    await webSetup();
+    const n = sec.name, S = (objective, qs) => webCall("web_search", { objective, search_queries: qs }, null);
+    const res = await Promise.all([
+      S(`Size of the US ${n} market in dollars, with year and growth rate`, [`US ${n} market size`, `${n} market size United States billion`, `North America ${n} market`]),
+      S(`Global ${n} market size and CAGR from research firms`, [`${n} market size CAGR`, `global ${n} market report 2024`, `${n} market forecast 2030`]),
+      S(`${n} industry size from trade associations, government data or company filings`, [`${n} industry association market size`, `${n} industry revenue US`]),
+    ]);
+    const seen = new Set();
+    for (const r of res.flat()) if (r?.url && !seen.has(r.url)) { seen.add(r.url); found.push({ title: r.title, url: r.url, date: r.publish_date || "", text: clip((r.excerpts || []).join("\n"), 1600) }); }
+    found = found.slice(0, 24);
+  }
+  const webNote = webOK && !found.length ? (webIssue ? `Web search unavailable (${webIssue})` : "Web search found nothing") : "";
+  tamBusy[sid] = found.length ? `Reading ${found.length} sources` : "Sizing from Claude's knowledge"; render();
+  const prompt = `You are sizing the market for "${sec.name}" for a buy-side M&A team focused on North America.
+
+${found.length ? `WEB RESULTS (use these; cite each figure with its URL exactly as given):
+${found.map((x, i) => `[${i + 1}] ${x.title} — ${x.url}${x.date ? " (" + x.date + ")" : ""}\n${x.text}`).join("\n\n")}
+
+Extract every market-size figure these results state` : `You have no web results. List the published market-size estimates you know`}: research firms (Freedonia, Kline, Grand View, MarketsandMarkets, Mordor, IHS/S&P and others), trade associations, government data, and figures from company filings. Keep the geography each source states (US, North America or Global), its year, value in USD millions (convert billions; convert other currencies and say so in scope) and CAGR. Then add one bottom-up estimate of your own, labelled "Bottom-up estimate", built from company revenues.
+
+For context, the companies already in Profiler sum to ${fmtM(f.total)} of revenue in this sector across ${f.rows.length} companies.
+${(t.sources || []).length ? `Already listed (don't repeat): ${t.sources.map(x => `${x.source} ${x.year}`).join("; ")}` : ""}
+
+Reliability: High = audited or widely cited primary source with a clear definition; Medium = reputable research firm; Low = press-release-grade or unclear scope. ${found.length ? "Only use URLs from the web results." : "Leave url empty."}
 
 Reply with ONLY JSON:
 {"sources":[{"source":"publisher and report","kind":"Research firm | Association | Government | Company filing | Bottom-up estimate","geography":"US | North America | Global","year":2024,"value_usd_m":0,"cagr_pct":0,"reliability":"High | Medium | Low","scope":"what the number includes","url":""}],"view":"two sentences on which figures you trust most for a US-focused definition and why"}`;
   try {
     const r = await sample.json(prompt, { modelTier: "complex", cache: false });
+    const okUrl = new Set(found.map(x => x.url));
     const got = (r?.sources || []).filter(x => x?.source && num(x.value_usd_m));
     const have = new Set((t.sources || []).map(x => norm(x.source) + (x.year || "")));
-    const fresh = got.filter(x => !have.has(norm(x.source) + (x.year || ""))).map(x => ({ source: x.source, kind: x.kind || "", geography: GEOS.includes(x.geography) ? x.geography : "Global", year: x.year || "", value_usd_m: num(x.value_usd_m), cagr_pct: num(x.cagr_pct), reliability: LEVELS.includes(x.reliability) && x.reliability !== "Verified" ? x.reliability : "Medium", scope: x.scope || "", url: x.url || "", by: "Claude" }));
-    await saveTam(sid, { sources: [...(t.sources || []), ...fresh], view: r?.view || t.view || "", geo: t.geo || "US", base_year: t.base_year || 2025 });
-    toast(`${fresh.length} market-size source${fresh.length === 1 ? "" : "s"} added`);
-  } catch (e) { if (e?.code === "not_granted" || e?.code === "sampling_disabled") sample = null; toast(ERRMSG[e?.code] || "Couldn't find sources. Try again."); }
+    const fresh = got.filter(x => !have.has(norm(x.source) + (x.year || ""))).map(x => ({ source: x.source, kind: x.kind || "", geography: GEOS.includes(x.geography) ? x.geography : "Global", year: x.year || "", value_usd_m: num(x.value_usd_m), cagr_pct: num(x.cagr_pct), reliability: !found.length ? "Low" : LEVELS.includes(x.reliability) && x.reliability !== "Verified" ? x.reliability : "Medium", scope: (found.length ? "" : "From Claude's knowledge, not checked on the web. ") + (x.scope || ""), url: okUrl.has(x.url) ? x.url : "", by: found.length ? "Claude + web" : "Claude" }));
+    await saveTam(sid, { sources: [...(t.sources || []), ...fresh], view: r?.view || t.view || "", geo: t.geo || "US", base_year: t.base_year || new Date().getFullYear() - 1, searched_at: now() });
+    const tri = triangulate(tams[sid] || {});
+    toast((webNote ? webNote + ": used Claude's knowledge (rated Low). Use Deep research for a full web search. " : "") + (fresh.length ? `${fresh.length} source${fresh.length === 1 ? "" : "s"} added${tri.tam ? ` · TAM ${fmtM(tri.tam)}` : ""}` : "No new market-size figures found."));
+  } catch (e) {
+    if (e?.code === "not_granted" || e?.code === "sampling_disabled") sample = null;
+    toast((ERRMSG[e?.code] || "Couldn't finish sizing the market.") + (e?.code ? ` [${e.code}]` : ""));
+  }
   delete tamBusy[sid]; render();
 }
 async function suggestCompanies(sid) {
@@ -1935,7 +1985,7 @@ function viewTam() {
     <td>${canW ? `<button class="x" style="opacity:1" data-act="deltam" data-r="${r.i}" aria-label="Remove source">×</button>` : ""}</td></tr>`).join("");
   const ment = mentionedNotProfiled(sid), sugg = (t.suggestions || []).filter(x => !findCompanyByName(x.name));
   return `<div class="page-h"><div><div class="eyebrow">${esc(sec.name)}</div><h1>Market size</h1><p>The TAM is triangulated from the sources below: each is brought forward to ${tri.base} with its growth rate, weighted by reliability, and outliers count for less. Found TAM adds up the ${esc(sec.short)} revenue of the companies already in Profiler.</p></div>
-    <div class="add">${canC ? `<button class="btn enh" data-act="tamsources" ${busy ? "disabled" : ""}>Find market-size sources</button>` : ""}</div></div>
+    <div class="add">${canC ? `<button class="btn enh" data-act="tamsources" ${busy ? "disabled" : ""}>Find market-size sources</button>` : ""}${canW ? `<button class="btn" data-act="tamdeep" title="Queue this market for the hourly research session, which uses Claude's own web search (no free-search limit)">${researchDocs.some(r => r.company_id === "tam:" + sid && ["queued", "running"].includes(r.status)) ? "Deep research queued" : "Deep research this market"}</button>` : ""}</div></div>
   ${busy ? `<div class="run" role="status"><span class="spin"></span><span><b>${esc(busy)}.</b> This usually takes a minute or two.</span></div>` : ""}
   <div class="tiles" style="margin-bottom:22px">
     ${tile(`TAM ${num(t.override_usd_m) !== null ? `<span class="cb cv">Verified</span>` : tri.n ? `<span class="cb ${tri.n >= 3 ? "ch" : "cm"}">${tri.n} source${tri.n > 1 ? "s" : ""}</span>` : ""}`, `<span class="u">$</span><span contenteditable="${canW ? "plaintext-only" : "false"}" data-tamov="${sid}" data-t="num" data-ph="–" title="Type to set your own TAM">${esc(fmtInt(tv))}</span><span class="u">M</span>`, num(t.override_usd_m) !== null ? `Your figure · triangulated ${fmtM(tri.tam)}` : tri.n ? `Range ${fmtM(tri.lo)}–${fmtM(tri.hi)}` : "Add sources or type a figure", null)}
@@ -3280,6 +3330,7 @@ app.addEventListener("click", async e => {
   if (r.view === "tam" && ui.sector) {
     const sid = ui.sector, t = tams[sid] || {};
     if (act === "tamsources") findTamSources(sid);
+    if (act === "tamdeep") { await queueTamResearch(sid); render(); }
     if (act === "tamsuggest") suggestCompanies(sid);
     if (act === "addtam") { pendingFocus = `[data-tam="${sid}"][data-r="${(t.sources || []).length}"][data-k="source"]`; await saveTam(sid, { sources: [...(t.sources || []), { source: "", kind: "", geography: t.geo || "US", year: t.base_year || 2025, value_usd_m: null, cagr_pct: null, reliability: "Medium", scope: "", by: "You" }] }); render(); }
     if (act === "deltam") { const src = [...(t.sources || [])]; src.splice(+btn.dataset.r, 1); await saveTam(sid, { sources: src }); render(); }
