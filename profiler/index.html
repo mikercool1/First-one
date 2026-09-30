@@ -150,6 +150,7 @@ td[contenteditable]{min-width:60px}
 .msg{max-width:100%;overflow-wrap:anywhere}
 .msg.cu{align-self:flex-end;background:var(--accent-soft);padding:9px 12px;border-radius:12px 12px 2px 12px;max-width:88%}
 .msg.ca{line-height:1.5}
+.msg.cu.cstep{background:var(--sunk);font-weight:600;font-size:13px}
 .msg .act{font-size:12px;color:var(--ink-3);display:flex;flex-direction:column;gap:2px;margin-bottom:6px}
 .msg .act span::before{content:"› ";color:var(--accent)}
 .msg .saved{margin-top:8px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;background:var(--sunk)}
@@ -160,6 +161,7 @@ td[contenteditable]{min-width:60px}
 .chat-f textarea{flex:1;min-height:44px;max-height:160px;resize:none}
 .chat-hint{font-size:12px;color:var(--ink-3);padding:0 14px 8px}
 @media (max-width:760px){.chat{width:100vw;border-left:0}}
+@media (min-width:900px){body.chat-open main,body.chat-open .top-in{margin-right:440px;margin-left:max(0px,calc((100vw - 440px - 1180px)/2))}}
 .run.warnrun{background:var(--warn-soft,#fbeee2)}
 .run .sp{flex:1}
 .run{margin-top:14px;padding:12px 14px;border-radius:var(--r);background:var(--accent-soft);color:var(--ink);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -1273,7 +1275,6 @@ function webTools(rk, signal) {
 }
 
 /* ---------- research: the page runs the web searches itself, in parallel, then Claude writes from them ---------- */
-const DOSSIER_DAYS = 14;
 const domainOf = u => String(u || "").replace(/^https?:\/\//, "").replace(/^www\./, "").split(/[/?#]/)[0].toLowerCase();
 async function webCall(tool, input, signal) {
   try { const r = await mcp.callTool(WEBSRV, tool, { ...input, session_id: WEB_SID, model_name: "claude" }, { signal }); return Array.isArray(r.payload?.results) ? r.payload.results : []; }
@@ -1285,119 +1286,7 @@ async function webCall(tool, input, signal) {
     console.warn("web", tool, e); return [];
   }
 }
-// Build (or reuse) the research file for a company: ~5 searches and page reads, run at once.
-async function research(id, signal, force = false) {
-  const c = getC(id); if (!c || !webOK || !mcp) return null;
-  const have = c.dossier;
-  if (!force && have?.items?.length && (Date.now() - new Date(have.at).getTime()) < DOSSIER_DAYS * 864e5) return have;
-  await webSetup();
-  const n = c.name, where = c.hq_address ? ` (${String(c.hq_address).slice(0, 60)})` : "", dom = domainOf(c.website);
-  const S = (objective, qs) => webCall("web_search", { objective, search_queries: qs.filter(Boolean).slice(0, 3) }, signal).then(r => r.map(x => ({ ...x, topic: objective })));
-  const jobs = [
-    S(`What ${n}${where} is: its business, history, headquarters and ownership (parent company or private equity owner)`, [`${n}`, `${n} company history`, `${n} owned by`]),
-    S(`Products, product lines and brand names sold by ${n}`, [`${n} products`, `${n} product line brands`, dom ? `site:${dom} products` : `${n} catalog`]),
-    S(`Acquisitions made by ${n}, and any sale of ${n}, with dates and buyers`, [`${n} acquires`, `${n} acquired by`, `${n} acquisition`]),
-    S(`${n} revenue, employee count, customers, industries served and main competitors`, [`${n} revenue employees`, `${n} industries served customers`, `${n} competitors`]),
-  ];
-  const found = (await Promise.all(jobs)).flat();
-  // Read the company's own pages: its homepage plus any product pages the searches surfaced.
-  const own = [...new Set(found.map(x => x.url).filter(u => dom && domainOf(u) === dom))].slice(0, 3);
-  const urls = [...new Set([dom ? "https://" + dom : null, ...own].filter(Boolean))].slice(0, 4);
-  if (urls.length) found.push(...(await webCall("web_fetch", { urls, objective: `Products, brands, product categories, markets served, history and ownership of ${n}`.slice(0, 200) }, signal)).map(x => ({ ...x, topic: "Company website" })));
-  const byUrl = new Map();
-  for (const x of found) {
-    if (!x?.url) continue;
-    const t = (x.excerpts || []).join("\n").trim(); if (!t) continue;
-    const cur = byUrl.get(x.url);
-    if (cur) { if (!cur.text.includes(t.slice(0, 80))) cur.text = (cur.text + "\n" + t).slice(0, 3000); }
-    else byUrl.set(x.url, { title: String(x.title || domainOf(x.url)).slice(0, 160), url: x.url, date: x.publish_date || "", text: t.slice(0, 3000) });
-  }
-  let items = [...byUrl.values()];
-  // Company's own site first, then the rest; keep the file a manageable size.
-  items.sort((a, b) => (domainOf(b.url) === dom) - (domainOf(a.url) === dom));
-  let total = 0; items = items.filter(x => (total += x.text.length) < 60000);
-  if (!items.length) return have?.items?.length ? have : null;
-  const dossier = { at: now(), items };
-  await save(id, { dossier }, [], true);
-  return dossier;
-}
-const dossierText = d => (d?.items || []).map((x, i) => `[S${i + 1}] ${x.title} — ${x.url}${x.date ? " (" + x.date + ")" : ""}\n${x.text}`).join("\n\n");
 
-// Steps are written in waves: the foundation first, then the rest in two parallel calls that build on it.
-const WAVES = [["overview", "deals", "products"], ["sectors", "endmarkets", "segments", "financials"], ["customers", "competitors", "buyers", "addons"]];
-function buildPrompt(c, keys, dossier) {
-  const idl = [c.what_it_is, c.hq_address, c.website, c.ultimate_parent && "owned by " + c.ultimate_parent].filter(Boolean).join(" · ");
-  const sname = sectorById(primarySector(c))?.name || primarySector(c);
-  return `You are a senior buy-side M&A analyst building the "${c.name}" profile in Profiler, a private database of chemical companies. Its primary sector is ${sname}.
-COMPANY${c.identity_confirmed ? " (identity confirmed by the user)" : ""}: ${c.name}${idl ? " — " + idl : ""}
-Stay on this exact company; ignore sources about a different company with a similar name.
-
-${dossier ? `WEB RESEARCH (gathered just now; cite as [S1], [S2] …)
-${dossierText(dossier)}
-
-HOW TO USE THE RESEARCH
-- Build from the sources first. Products means real products: categories, brand families and named products or grades exactly as the sources name them.
-- A value is High only if a source states it; cite it in basis like "[S3] company site". Estimates built from sourced facts are Medium, with the math. Anything from memory alone is Low and says so.
-- Never invent names, figures or deals. If the sources and your knowledge don't cover something, leave it empty.` : `You cannot browse; work from what you know. If you don't know this company, return empty values rated Low rather than inventing anything.`}
-
-WHAT THE PROFILE ALREADY KNOWS (Verified items were set by the user and are true)
-${knowledgeBase(c) || "Only the name."}
-
-BUILD THESE STEPS: ${keys.map(k => SECTIONS[k].label).join(", ")}. They build on each other in this order.
-
-${keys.map(k => `==== STEP "${k}": ${SECTIONS[k].label.toUpperCase()} ====\n${stepSpec(c, k)}`).join("\n\n")}
-
-Reply with ONLY one JSON object: {${keys.map(k => `"${k}": {<that step's object, in the shape given for it, with its "confidence", "basis" and "note">}`).join(", ")}${dossier ? `, "sources_used": {"<step key>": ["S1", "S4"]}` : ""}}
-Be concise: short text fields, no more than 25 rows in any list.`;
-}
-function setRun(id, keys, patch) { for (const k of keys) { const rk = runKey(id, k); if (runs[rk]) Object.assign(runs[rk], patch); } render(); }
-// Research once, then write the requested steps wave by wave. One Stop button stops all of it.
-async function buildSteps(id, keys) {
-  const c0 = getC(id); if (!c0 || !sample) return;
-  keys = SECTION_ORDER.filter(k => keys.includes(k) && !isRunning(id, k)); if (!keys.length) return;
-  const ctl = new AbortController();
-  for (const k of keys) runs[runKey(id, k)] = { ctl, msg: webOK ? "Researching the web…" : "Waiting…" };
-  render();
-  quietCascade = true; seqDone.clear();
-  try {
-    const dossier = webOK ? await research(id, ctl.signal) : null;
-    if (ctl.signal.aborted) throw { code: "cancelled" };
-    if (webOK && !dossier) setRun(id, keys, { msg: "No web results; writing from what Claude knows…" });
-    const waves = WAVES.map(w => w.filter(k => keys.includes(k))).filter(w => w.length);
-    // Wave 1 alone (everything else depends on it); later waves in parallel.
-    const groups = waves.length && waves[0].some(k => WAVES[0].includes(k)) ? [[waves[0]], waves.slice(1)] : [waves];
-    for (const g of groups) {
-      if (!g.length) continue;
-      if (ctl.signal.aborted) break;
-      for (const w of g) setRun(id, w, { msg: "Writing…" });
-      const c = getC(id);
-      const answers = await Promise.all(g.map(w => sample.json(buildPrompt(c, w, dossier), { modelTier: "complex", signal: ctl.signal, cache: false }).then(r => [w, r], e => [w, null, e])));
-      if (ctl.signal.aborted) break;
-      for (const [w, r, e] of answers) {
-        for (const k of w) {
-          const rk = runKey(id, k);
-          const res = r && typeof r === "object" ? r[k] : null;
-          if (!res || typeof res !== "object") { delete runs[rk]; if (e?.code === "cancelled") continue; runs[rk] = { error: ERRMSG[e?.code] || `${SECTIONS[k].label} didn't come back${e?.code ? " (" + e.code + ")" : ""}. Try again.` }; if (e?.code === "not_granted" || e?.code === "sampling_disabled") sample = null; continue; }
-          const used = new Set(((r.sources_used || {})[k] || []).map(x => String(x).replace(/\D/g, "")));
-          const cites = String(JSON.stringify(res.basis || "")).match(/S(\d+)/g) || []; cites.forEach(x => used.add(x.slice(1)));
-          const sources = dossier ? [...used].map(i => dossier.items[+i - 1]).filter(Boolean).map(x => ({ title: x.title, url: x.url, date: x.date, supports: SECTIONS[k].label, quote: x.text.slice(0, 200) })) : [];
-          delete runs[rk];
-          try { await applyResult(id, k, res, dossier ? { by: "Claude + web", web: true, sources } : {}); seqDone.add(k); }
-          catch (err) { console.warn("apply", k, err); runs[rk] = { error: ERRMSG[err?.code] ? ERRMSG[err.code] + (err.message ? " (" + err.message + ")" : "") : `${SECTIONS[k].label} didn't save. Try again.` }; }
-        }
-        render();
-      }
-    }
-  } catch (e) {
-    for (const k of keys) { const rk = runKey(id, k); if (runs[rk]?.ctl) delete runs[rk]; }
-    if (e?.code !== "cancelled") toast("The build stopped. Try again.");
-  } finally {
-    for (const k of keys) { const rk = runKey(id, k); if (runs[rk]?.ctl) delete runs[rk]; }
-    quietCascade = false; seqDone.clear(); render();
-  }
-  const c = getC(id); if (c) toast(`Profile strength now ${strength(c).pct}%`);
-}
-const enhance = (id, key) => buildSteps(id, [key]);
 
 // Merge an answer into the profile: confidence rules, derived views, stale marks. Used by Enhance and by web research.
 async function applyResult(id, key, res, src = {}) {
@@ -1580,8 +1469,9 @@ async function enhanceSeq(id, keys) {
   finally { quietCascade = false; seqDone.clear(); }
   const c = getC(id); if (c) toast(`Profile strength now ${strength(c).pct}%`);
 }
-const enhanceAll = id => buildSteps(id, SECTION_ORDER.slice());
-const updateStale = id => { const c = getC(id); if (c) buildSteps(id, staleSections(c)); };
+const enhanceAll = id => chatSteps(id, SECTION_ORDER.slice());
+const updateStale = id => { const c = getC(id); if (c) chatSteps(id, staleSections(c)); };
+const enhance = (id, key) => chatSteps(id, [key]);
 function short(v) {
   if (v === null || v === undefined) return "";
   if (typeof v === "number") return String(v);
@@ -2114,7 +2004,7 @@ function viewBuilder(c) {
   return `<div class="panel builder">
     <div class="sec-h"><h2>Profile builder</h2><span class="faint" style="font-size:12px">Builds in order; each step starts from everything before it. Click a finished step to go deeper.</span>${webOK ? `<span class="pill accent" title="Each step searches the web with Parallel Search and cites its sources">Web search on</span>` : `<span class="pill warn" title="Connect the free Parallel Search connector in claude.ai Settings → Connectors, then reload">Web search off${webIssue ? " (" + esc(webIssue) + ")" : ""}</span>`}<span class="sp"></span>
       ${ok && nx ? `<button class="btn sm primary" data-act="enhance" data-k="${nx}" ${busy ? "disabled" : ""}>Build next: ${esc(SECTIONS[nx].label)}</button>` : ""}${ok ? `<button class="btn sm" data-act="enhanceall" ${busy ? "disabled" : ""}>Build all</button>` : ""}${canWeb() ? `<button class="btn sm" data-act="webbuild" ${webActive(c.id) ? "disabled" : ""} title="A Claude research session with web search works through every step in order and saves each one here with its sources">${webActive(c.id) ? "Researching on the web…" : "Build all from the web"}</button>` : ""}</div>
-    ${(() => { const k = SECTION_ORDER.find(k => isRunning(c.id, k)); const d = c.dossier; return `<div class="faint" style="font-size:12px;margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">${d?.items?.length ? `Web research: ${d.items.length} sources, ${fmtDate(d.at)}` : webOK ? "No web research yet; the next build runs it first" : ""}${webOK && ok && !busy && d?.items?.length ? `<button class="btn sm ghost" data-act="reresearch">Refresh research</button>` : ""}${k ? `<button class="btn sm ghost" data-act="stopsec" data-k="${k}">Stop</button>` : ""}</div>`; })()}
+    ${(() => { const k = SECTION_ORDER.find(k => isRunning(c.id, k)); return k ? `<div class="faint" style="font-size:12px;margin-top:8px;display:flex;gap:10px;align-items:center">Building ${esc(SECTIONS[k].label)} in the chat. Watch it work on the right.<button class="btn sm ghost" data-act="stopsec" data-k="${k}">Stop</button></div>` : ""; })()}
     ${(() => { const k = SECTION_ORDER.find(k => runs[runKey(c.id, k)]?.error); return k ? `<div class="run warnrun" role="alert"><span><b>${esc(SECTIONS[k].label)} didn't finish.</b> ${esc(runs[runKey(c.id, k)].error)}</span><span class="sp"></span><button class="btn sm ghost" data-act="dismisssec" data-k="${k}">Dismiss</button></div>` : ""; })()}
     <ol class="steps">${SECTION_ORDER.map((k, i) => { const st = stepState(c, k); return `<li><button class="step ${st.cls}" data-act="enhance" data-k="${k}" ${!ok || busy ? "disabled" : ""} title="${st.cls === "done" ? "Go deeper on " : "Build "}${esc(SECTIONS[k].label)}"><span class="sn">${st.cls === "run" ? `<span class="spin"></span>` : i + 1}</span><span class="sl">${esc(SECTIONS[k].label)}</span><span class="ss">${esc(st.text)}</span></button></li>`; }).join("")}</ol>
   </div>`;
@@ -2448,6 +2338,7 @@ function mdLite(t) {
 function chatView() {
   const r = route(), onCo = r.view === "company" && getC(r.id) && !!db;
   chatFab.hidden = !onCo || chat.open || !sample;
+  document.body.classList.toggle("chat-open", !!(onCo && chat.open));
   if (!onCo || !chat.open) { chatEl.hidden = true; return; }
   const c = getC(r.id);
   if (chat.id !== c.id) { chat.id = c.id; chat.msgs = []; chat.loadedFor = null; }
@@ -2477,7 +2368,7 @@ function chatMsgs() {
     chatRaf = 0;
     const box = $("#chatMsgs"); if (!box) return;
     const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60;
-    box.innerHTML = chat.msgs.length ? chat.msgs.map((m, i) => m.role === "user" ? `<div class="msg cu">${esc(m.text)}</div>` :
+    box.innerHTML = chat.msgs.length ? chat.msgs.map((m, i) => m.role === "user" ? `<div class="msg cu${m.step ? " cstep" : ""}">${esc(m.text)}</div>` :
       `<div class="msg ca">${(m.activity || []).length ? `<div class="act">${m.activity.map(a => `<span>${esc(a)}</span>`).join("")}</div>` : ""}${m.text ? mdLite(m.text) : m.pending ? `<span class="faint"><span class="spin"></span> Thinking…</span>` : ""}${m.error ? `<div class="saved"><div class="no">${esc(m.error)}</div></div>` : ""}${(m.saved || []).length || (m.rejected || []).length ? `<div class="saved">${(m.saved || []).map(x => `<div>Saved: ${esc(x)}</div>`).join("")}${(m.rejected || []).map(x => `<div class="no">Not saved: ${esc(x)}</div>`).join("")}${m.undo && !m.undone ? `<button class="btn sm ghost" data-undo="${i}" style="margin-top:6px">Undo</button>` : m.undone ? `<div class="faint">Undone</div>` : ""}</div>` : ""}</div>`).join("")
       : `<div class="faint" style="font-size:13px">Try: “What products do they sell? Add the brands.” · “Did they make any acquisitions since 2020?” · “Who owns them and since when?” · “Revenue is about $40M per the CIM.” · “Find their top competitors.”</div>`;
     if (atBottom || chat.busy) box.scrollTop = box.scrollHeight;
@@ -2507,6 +2398,7 @@ RECORD RULES (code enforces these)
 - confidence: High only when a source states it; Medium for estimates built from sourced facts (put the math in basis).
 - Fields for set_field: ${CHAT_FIELDS.join(", ")}. Money in USD millions (numbers only).
 - Lists for add_row/update_row/remove_row: products {category, line, named_products, what_it_is, applications, end_markets[], made_or_resold, share_pct}, acquisitions {date, target, deal_type, what_it_does, what_it_added, value_usd_m}, customers {name, end_market, what, share_pct}, competitors {name, overlap, size}, buyers {name, type, fit, rationale}, addon_ideas {target, rationale, est_revenue_usd_m, location}.
+- set_step: for a builder step (when a STEP BRIEF is given, or to rebuild a whole section): "step" is the step key and "value" is that step's full object in its shape, with "confidence", "basis" and "note".
 - update_row/remove_row: "match" is the existing row's name exactly as listed. Never invent names, figures or deals.
 - Stay on this exact company; ignore look-alikes.`;
 function chatTools(c, seen, msg) {
@@ -2520,26 +2412,40 @@ function chatTools(c, seen, msg) {
       execute: async (i, ctx) => { const us = [].concat(i.urls || []).map(String).filter(u => /^https?:\/\//.test(u)).slice(0, 3); if (!us.length) throw new Error("Give full http(s) URLs."); act("Reading: " + us.map(u => domainOf(u) + u.replace(/^https?:\/\/[^/]+/, "").slice(0, 30)).join(", ")); const rs = await webCall("web_fetch", { urls: us, objective: String(i.objective || "").slice(0, 200) || null }, ctx.signal); return clip(slim(rs), 14000); } });
   tools.push({ name: "record", description: "Save changes to this company's profile. Call once per turn with every change. Returns what was saved and what was refused and why.",
     inputSchema: { type: "object", properties: { actions: { type: "array", items: { type: "object", properties: {
-      type: { type: "string", enum: ["set_field", "add_row", "update_row", "remove_row", "user_fact"] },
-      field: { type: "string", description: "set_field: field name" }, value: { description: "set_field: new value" },
+      type: { type: "string", enum: ["set_field", "add_row", "update_row", "remove_row", "user_fact", "set_step"] },
+      step: { type: "string", enum: SECTION_ORDER, description: "set_step: builder step key" },
+      field: { type: "string", description: "set_field: field name" }, value: { description: "set_field: new value; set_step: the full step object" },
       list: { type: "string", enum: Object.keys(CHAT_LISTS) }, match: { type: "string", description: "update_row/remove_row: existing row name" },
       row: { type: "object", description: "add_row/update_row: row fields" }, text: { type: "string", description: "user_fact: the fact in one sentence" },
       source: { type: "string", enum: ["web", "user", "knowledge"] }, source_urls: { type: "array", items: { type: "string" } },
       confidence: { type: "string", enum: ["High", "Medium", "Low"] }, basis: { type: "string" } }, required: ["type", "source"] } } }, required: ["actions"] },
-    execute: async i => { act("Saving to the profile"); const r = await applyChat(c.id, Array.isArray(i.actions) ? i.actions : [], seen); msg.saved = [...(msg.saved || []), ...r.saved]; msg.rejected = [...(msg.rejected || []), ...r.rejected]; if (r.undo) msg.undo = r.undo; chatMsgs(); return { saved: r.saved, not_saved: r.rejected }; } });
+    execute: async i => {
+      act("Saving to the profile");
+      const all = Array.isArray(i.actions) ? i.actions : [];
+      const st = await applySteps(c.id, all.filter(a => a?.type === "set_step"), seen, msg);
+      const r = await applyChat(c.id, all.filter(a => a?.type !== "set_step"), seen);
+      const saved = [...st.saved, ...r.saved], rejected = [...st.rejected, ...r.rejected];
+      msg.saved = [...(msg.saved || []), ...saved]; msg.rejected = [...(msg.rejected || []), ...rejected];
+      const before = { ...(r.undo?.before || {}), ...(st.before || {}) };
+      if (Object.keys(before).length) msg.undo = { id: c.id, before: { ...before, ...(msg.undo?.before || {}) } };
+      chatMsgs(); return { saved, not_saved: rejected };
+    } });
   return tools;
 }
-async function chatSend(id, text) {
-  const c = getC(id); if (!c || !sample || chat.busy) return;
+async function chatSend(id, text, opts = {}) {
+  const c = getC(id); if (!c || !sample || chat.busy) return false;
   const ctl = new AbortController(); chat.busy = ctl;
-  chat.msgs.push({ role: "user", text: text.slice(0, 4000), at: now() });
+  const rk = opts.step ? runKey(id, opts.step) : null;
+  if (rk) { runs[rk] = { ctl, msg: "Researching in chat…" }; render(); }
+  chat.msgs.push({ role: "user", text: text.slice(0, 4000), step: opts.step || null, at: now() });
   const msg = { role: "assistant", text: "", activity: [], pending: true, at: now() }; chat.msgs.push(msg);
   chatView();
   if (webOK) await webSetup();
   const seen = new Set((c.dossier?.items || []).map(x => x.url));
   const hist = chat.msgs.slice(0, -2).filter(m => m.text).slice(-10).map(m => ({ role: m.role, content: m.text.slice(0, 3000) }));
   while (hist.length && hist[0].role !== "user") hist.shift();
-  const turn = `${CHAT_RULES}\n\n${chatContext(c)}\n\nUSER: ${text}`;
+  const turn = `${CHAT_RULES}\n\n${chatContext(c)}\n\n${opts.brief ? opts.brief + "\n\n" : ""}USER: ${text}`;
+  let ok = true;
   try {
     const r = await sample([...hist, { role: "user", content: turn }], { modelTier: "default", signal: ctl.signal, tools: chatTools(c, seen, msg), onText: ({ text }) => { msg.text = text; chatMsgs(); } });
     msg.text = r.text;
@@ -2547,10 +2453,41 @@ async function chatSend(id, text) {
     if (e?.text) msg.text = e.text;
     msg.error = e?.code === "cancelled" ? "Stopped." : (ERRMSG[e?.code] || "Something went wrong" + (e?.code ? " (" + e.code + ")" : "") + ". Try again.");
     if (e?.code === "not_granted" || e?.code === "sampling_disabled") sample = null;
+    ok = false;
   }
   msg.pending = false; chat.busy = null;
+  if (rk) {
+    delete runs[rk];
+    // The step counts as built once its turn finishes, even when nothing new turned up.
+    const cur = getC(id);
+    if (ok && cur && !msg.stepApplied) {
+      const prev = (cur.section_meta || {})[opts.step] || {};
+      await save(id, { section_meta: { ...(cur.section_meta || {}), [opts.step]: { at: now(), by: "Chat", note: (msg.saved || []).slice(0, 3).join("; ").slice(0, 300) || "Researched; nothing new to save.", passes: (prev.passes || 0) + 1 } } }, [], true);
+    }
+    render();
+  }
   chatView();
   if (chat.id === id) db.doc("chats/" + id).set({ messages: clean(chat.msgs.slice(-40).map(m => ({ ...m, pending: false, text: String(m.text || "").slice(0, 6000) }))), updated_at: now() }).catch(() => {});
+  return ok;
+}
+// Builder buttons run through the chat: a detailed brief per step, researched the way a conversation would.
+function stepBrief(c, key) {
+  const sec = SECTIONS[key], pass = ((c.section_meta || {})[key]?.passes || 0) + 1;
+  return `STEP BRIEF: ${sec.label.toUpperCase()}${pass > 1 ? ` (pass ${pass}: go deeper than what's there)` : ""}
+Research this step specifically. Run several targeted searches (the company's own pages first), follow leads from what you find, and read pages where excerpts aren't enough. Build on what the profile and this conversation already established: the deals define the businesses, the businesses define the products, the products define where they sell.
+${stepSpec(c, key).replace("Reply with ONLY one JSON object in this shape:", "STEP OBJECT SHAPE (for set_step):")}
+Save with record: row actions (add_row / update_row) for list items where they fit, and set_step with step "${key}" and the full step object for everything else in this step. Then summarise what you found in a few lines with links.`;
+}
+async function chatSteps(id, keys) {
+  const c0 = getC(id); if (!c0 || !sample || chat.busy) return;
+  chat.open = true; chatView();
+  for (const k of SECTION_ORDER.filter(x => keys.includes(x))) {
+    const c = getC(id); if (!c) break;
+    const pass = ((c.section_meta || {})[k]?.passes || 0) + 1;
+    const ok = await chatSend(id, `Build: ${SECTIONS[k].label}${pass > 1 ? " (go deeper)" : ""}`, { step: k, brief: stepBrief(c, k) });
+    if (!ok) break;
+  }
+  const c = getC(id); if (c && keys.length > 1) toast(`Profile strength now ${strength(c).pct}%`);
 }
 function coerce(f, v) {
   if (/_usd_m$|^employees_total$/.test(f)) { const n = num(typeof v === "string" ? v.replace(/[$,~]/g, "") : v); return n; }
@@ -2628,6 +2565,26 @@ async function applyChat(id, actions, seen) {
   const ok = await save(id, patch, lockF, true);
   if (!ok) return { saved: [], rejected: ["Couldn't save: " + (lastSaveError || "database error")] };
   return { saved, rejected, undo: { id, before } };
+}
+// A whole builder step proposed in chat: same checks, then merged by the normal rules (weaker never beats stronger).
+async function applySteps(id, acts, seen, msg) {
+  const saved = [], rejected = [], before = {};
+  for (const a of acts.slice(0, 11)) {
+    const key = a.step, c = getC(id), sec = c && sectionDef(c, key);
+    if (!sec || !a.value || typeof a.value !== "object") { rejected.push(`step ${key || "?"}: missing step or value`); continue; }
+    const src = ["web", "user", "knowledge"].includes(a.source) ? a.source : "knowledge";
+    const urls = [].concat(a.source_urls || []).map(String).filter(u => seen.has(u));
+    if (src === "web" && !urls.length) { rejected.push(`${sec.label}: no source page found this turn`); continue; }
+    const v = clean(a.value);
+    if (src === "knowledge") v.confidence = Object.fromEntries(sec.fields.map(f => [f, "Low"]));
+    for (const f of [...sec.fields, "conf", "section_meta", "suggestions", "history", "evidence", "runs", "revenue_by_product", EM_FIELD, "ebitda_margin_pct", "status"]) if (!(f in before)) before[f] = c[f] === undefined ? null : clean(c[f]);
+    try {
+      await applyResult(id, key, v, { by: "Chat", web: urls.length > 0, sources: urls.map(u => ({ url: u, title: domainOf(u), publisher: domainOf(u), supports: sec.label })) });
+      saved.push(`${sec.label} step (${src === "web" ? urls.length + " source" + (urls.length > 1 ? "s" : "") : src === "user" ? "from you" : "from memory, rated Low"})`);
+      if (msg) msg.stepApplied = true;
+    } catch (e) { rejected.push(`${sec.label}: ${e?.code === "save_failed" ? "couldn't save" : "error"}`); }
+  }
+  return { saved, rejected, before };
 }
 async function chatUndo(i) {
   const m = chat.msgs[i]; if (!m?.undo || m.undone) return;
@@ -2754,7 +2711,6 @@ app.addEventListener("click", async e => {
   if (!c) return;
   if (act === "enhance") enhance(c.id, btn.dataset.k);
   if (act === "enhanceall") enhanceAll(c.id);
-  if (act === "reresearch") { const ctl = new AbortController(); toast("Refreshing web research…"); research(c.id, ctl.signal, true).then(d => toast(d ? `Research refreshed: ${d.items.length} sources. Build again to use it.` : "No new web results.")); }
   if (act === "webbuild") startWeb(c.id, SECTION_ORDER.slice());
   if (act === "websec") startWeb(c.id, [btn.dataset.k]);
   if (act === "webdismiss") { db.doc("research/" + btn.dataset.r).update({ status: "dismissed" }).catch(() => {}); }
