@@ -574,8 +574,9 @@ const seeding = {};
 function route() {
   const h = (location.hash || "#companies").slice(1);
   if (h.startsWith("c.")) { const [, id, tab] = h.split("."); return { view: "company", id, tab: ({ snapshot: "overview", sources: "notes" })[tab] || tab || "overview" }; }
+  if (h.startsWith("precedents")) { const [, forId] = h.split("~"); return { view: "precedents", forId: forId ? decodeURIComponent(forId) : "" }; }
   if (h.startsWith("sponsors")) { const [, fk, fv] = h.split("~"); return { view: "sponsors", fk: fk || "", fv: fv ? decodeURIComponent(fv) : "" }; }
-  if (["sectors", "companies", "targets", "precedents", "endmarkets", "tam", "inmarket"].includes(h)) return { view: h };
+  if (["sectors", "companies", "targets", "endmarkets", "tam", "inmarket"].includes(h)) return { view: h };
   return { view: "sectors" };
 }
 
@@ -2116,7 +2117,7 @@ function exploreButtons(c) {
   if (isPE(c)) { out.push(btn(`#sponsors~o~${encodeURIComponent(sponsorOf(c))}`, esc(sponsorOf(c)) + " portfolio", `PE-owned${entryYear(c) ? " since " + entryYear(c) : ""}${holdYears(c) !== null ? " · " + holdYears(c) + " yr hold" : ""}`)); out.push(btn("#sponsors", "All sponsor-owned", `${list().filter(isPE).length} companies by year and owner`)); }
   else if (c.owner_type) out.push(`<span class="xbtn static"><b>${esc(c.owner_type)}</b>${c.ultimate_parent ? `<small>${esc(String(c.ultimate_parent).slice(0, 60))}</small>` : ""}</span>`);
   out.push(btn("#inmarket", "In market", inMarket(c) ? esc(c.in_market.stage) : `${list().filter(inMarket).length} live processes`));
-  out.push(btn("#precedents", "Precedent deals", "EV / revenue and EV / EBITDA"));
+  out.push(btn(`#precedents~${encodeURIComponent(c.id)}`, "Best precedents", "Deals ranked by product and mix overlap"));
   out.push(btn(`#c.${esc(c.id)}.buyers`, "Buyer universe", "Strategics and sponsors ranked by fit"));
   if (c.website) out.push(`<a class="xbtn" href="${esc(/^https?:/.test(c.website) ? c.website : "https://" + String(c.website).split(/[ ;,]/)[0])}" target="_blank" rel="noopener"><b>Website ↗</b><small>${esc(String(c.website).split(/[ ;,]/)[0].replace(/^https?:\/\/(www\.)?/, ""))}</small></a>`);
   return `<div class="sec"><div class="sec-h"><h2>Explore</h2></div><div class="xgrid">${out.join("")}</div></div>`;
@@ -2474,12 +2475,47 @@ function viewSegments(c) {
   ${segs.length ? `<div class="sec"><div class="sec-h"><h2>Edit segments</h2></div>${editTable(c, "segment_profiles", [{ k: "name", label: "Segment", w: "180px" }, { k: "revenue_usd_m", label: "Rev $M", t: "num", w: "90px" }, { k: "ebitda_usd_m", label: "EBITDA $M", t: "num", w: "90px" }, { k: "margin_pct", label: "Margin %", t: "num", w: "80px" }, { k: "products", label: "Products" }, { k: "end_markets", label: "End markets" }, { k: "competitors", label: "Competitors" }, { k: "description", label: "Description" }], tableRows(c, "segment_profiles"))}</div>` : ""}`;
 }
 const SEG_BRIEF = `SEGMENT PROFILES: build one profile per business segment this company reports (10-K/annual report segment note, investor presentations, earnings releases). For each: name exactly as reported, latest full-year revenue and segment EBITDA or operating profit (say which) and margin, the main products and brands, end markets, main competitors in that segment, and a one-line description. For private companies, use the segments they describe publicly, or skip if there are none. Save each with add_row / update_row to list "segment_profiles" (source "web" with the filing or release URL). Then summarise the segment mix in a few lines with links.`;
-function viewPrecedents() {
+/* ---------- precedent relevance: product, mix, sector, size and recency overlap ---------- */
+const STOPW = new Set("the and of for to in with a an by on its from as at or inc llc ltd co company companies corp group holding holdings product products service services solution solutions chemical chemicals chemistry industrial industry specialty other various including include based north america american global business provider manufacturer maker supplier distributor leading line lines range brand brands market markets end use used".split(" "));
+function kwSet(t) { return new Set(String(t || "").toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(w => w.length > 2 && !STOPW.has(w) && !/^\d+$/.test(w)).map(w => w.replace(/ies$/, "y").replace(/([^s])s$/, "$1"))); }
+function profileKw(c) {
+  return memod("kw:" + c.id, () => kwSet([c.what_it_is, c.business_model, c.primary_category,
+    ...catalog(c).map(p => [p.category, p.line, p.applications, [].concat(p.end_markets || []).join(" ")].join(" ")),
+    ...(c.revenue_by_business || []).map(x => [x.business, x.category].join(" ")),
+    ...Object.keys(c[EM_FIELD] || {}), ...Object.keys(buckets(c) || {}), ...sectorsOf(c).map(x => sectorById(x.sector)?.name || "")].join(" ")));
+}
+function precedentScore(c, d, ck) {
+  const tp = d.targetId ? companies.get(d.targetId) : findCompanyByName(d.target);
+  const ov = tp && tp.id !== c.id ? overlap(c, tp) / 100 : null;
+  const dk = new Set([...kwSet(d.what + " " + d.target), ...(tp ? profileKw(tp) : [])]);
+  const shared = [...dk].filter(w => ck.has(w));
+  const text = Math.min(1, shared.length / 5);
+  const ap = d.acquirerId ? companies.get(d.acquirerId) : null, ps = primarySector(c);
+  const sameSec = (tp && inSector(tp, ps)) || (ap && inSector(ap, ps)) || (d.water && ps === "water");
+  const yr = yearOf(d.date), now = new Date().getFullYear();
+  const rec = yr ? Math.max(0, 1 - (now - yr) / 15) : 0.3;
+  const crev = num(c.total_revenue_usd_m), size = d.rev && crev ? 1 - Math.min(1, Math.abs(Math.log(d.rev / crev)) / 3) : 0.3;
+  const hasVal = (d.value && d.rev) || dealEvx(d) !== null;
+  const score = 100 * ((ov !== null ? 0.3 * ov + 0.3 * text : 0.55 * text + (0.05 * (shared.length > 0))) + 0.15 * (sameSec ? 1 : 0) + 0.12 * rec + 0.08 * size + 0.05 * (hasVal ? 1 : 0));
+  const own = d.acquirerId === c.id;
+  const why = [...(own ? ["its own deal"] : []), ...(ov !== null && ov > 0.15 ? [Math.round(ov * 100) + "% mix overlap"] : []), ...shared.slice(0, 4), ...(sameSec ? ["same sector"] : []), ...(d.rev && crev && size > 0.6 ? ["similar size"] : [])];
+  return { score: score - (own ? 12 : 0), why, tp };
+}
+function viewPrecedents(forId = "") {
   const q = ui.pq.toLowerCase();
   const sid = ui.sector, secOk = d => !sid || [d.acquirerId, d.targetId].some(x => x && companies.has(x) && inSector(companies.get(x), sid)) || (d.water && sid === "water");
-  let ds = allDeals().filter(secOk).filter(d => !q || [d.target, d.acquirer, d.what, d.date].join(" ").toLowerCase().includes(q));
+  const fc = forId ? getC(forId) : null;
+  let ds = allDeals().filter(fc ? () => true : secOk).filter(d => !q || [d.target, d.acquirer, d.what, d.date].join(" ").toLowerCase().includes(q));
+  if (fc) {
+    const ck = profileKw(fc);
+    ds = ds.filter(d => d.targetId !== fc.id || /Sponsor entry/.test(d.what)).map(d => ({ ...d, ...precedentScore(fc, d, ck) })).filter(d => d.score >= 20);
+    // One row per deal: the same deal logged by several profiles merges, keeping whatever figures each one has.
+    const byKey = new Map();
+    for (const d of ds) { const k = norm(d.target).slice(0, 18) + "|" + (yearOf(d.date) || ""); const cur = byKey.get(k); if (!cur) { byKey.set(k, d); continue; } for (const f of ["rev", "value", "ebitda", "evx", "url"]) if (cur[f] == null || cur[f] === "") cur[f] = d[f]; if (d.score > cur.score) { cur.score = d.score; cur.why = d.why; } if (!cur.acquirerId && d.acquirerId) { cur.acquirer = d.acquirer; cur.acquirerId = d.acquirerId; } }
+    ds = [...byKey.values()].sort((a, b) => b.score - a.score).slice(0, 80);
+  }
   const k = ui.psort, dir = ui.pdir;
-  ds.sort((a, b) => {
+  if (!fc) ds.sort((a, b) => {
     if (k === "year") return dir * (dateKey(a.date) - dateKey(b.date));
     if (k === "mult") { const ma = a.value && a.rev ? a.value / a.rev : -1, mb = b.value && b.rev ? b.value / b.rev : -1; return dir * (ma - mb); }
     if (k === "evx") return dir * ((dealEvx(a) ?? -1) - (dealEvx(b) ?? -1));
@@ -2492,12 +2528,17 @@ function viewPrecedents() {
   const medMult = med(withVal.map(d => d.value / d.rev)), medEvx = med(ds.map(dealEvx).filter(x => x !== null));
   const rows = ds.map(d => {
     const tgt = d.targetId || findCompanyByName(d.target)?.id;
-    return `<tr><td class="num" style="white-space:nowrap" title="${esc(d.date)}">${esc(String(d.date || "").slice(0, 10))}</td><td class="cname">${tgt ? `<a href="#c.${esc(tgt)}">${esc(d.target)}</a>` : esc(d.target)}</td><td>${d.acquirerId ? `<a href="#c.${esc(d.acquirerId)}.acquisitions">${esc(d.acquirer)}</a>` : esc(d.acquirer)}</td><td class="muted" style="font-size:13px">${esc(d.what)}</td><td class="r num">${d.rev !== null ? fmtM(d.rev) : "—"}</td><td class="r num">${d.value ? fmtM(d.value) : "—"}</td><td class="r num">${d.value && d.rev ? (d.value / d.rev).toFixed(1) + "x" : "—"}</td><td class="r num">${fmtX(dealEvx(d))}</td><td>${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener">Source</a>` : ""}</td></tr>`;
+    return `<tr>${fc ? `<td class="r num"><b>${Math.round(d.score)}</b></td>` : ""}<td class="num" style="white-space:nowrap" title="${esc(d.date)}">${esc(String(d.date || "").slice(0, 10))}</td><td class="cname">${tgt ? `<a href="#c.${esc(tgt)}">${esc(d.target)}</a>` : esc(d.target)}</td><td>${d.acquirerId ? `<a href="#c.${esc(d.acquirerId)}.acquisitions">${esc(d.acquirer)}</a>` : esc(d.acquirer)}</td><td class="muted" style="font-size:13px">${esc(d.what)}</td><td class="r num">${d.rev !== null ? fmtM(d.rev) : "—"}</td><td class="r num">${d.value ? fmtM(d.value) : "—"}</td><td class="r num">${d.value && d.rev ? (d.value / d.rev).toFixed(1) + "x" : "—"}</td><td class="r num">${fmtX(dealEvx(d))}</td>${fc ? `<td><div class="chips" style="margin:0">${(d.why || []).map(w => `<span class="pill">${esc(w)}</span>`).join("")}</div></td>` : ""}<td>${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener">Source</a>` : ""}</td></tr>`;
   }).join("");
-  return `<div class="page-h"><div><div class="eyebrow">${esc(sid ? sectorById(sid)?.name : "All sectors")} · Deal log</div><h1>Precedents</h1><p>Every acquisition from every profile, plus sponsor entries with a known EV. Add a deal on a company's Acquisitions tab and it lands here.</p></div></div>
-  <div class="stats"><div class="stat"><div class="v">${ds.length}</div><div class="l">Deals</div></div><div class="stat"><div class="v">${ds.filter(d => d.value).length}</div><div class="l">With disclosed value</div></div><div class="stat"><div class="v">${medMult !== null ? medMult.toFixed(1) + "x" : "—"}</div><div class="l">Median EV / revenue</div></div><div class="stat"><div class="v">${fmtX(medEvx)}</div><div class="l">Median EV / EBITDA</div></div></div>
-  <div class="bar"><div class="grow"><input class="search" id="pq" type="search" placeholder="Search target, acquirer, year or description" value="${esc(ui.pq)}" aria-label="Search precedents"></div></div>
-  <div class="tw"><table><thead><tr>${th("year", "Date")}${th("target", "Target")}${th("acquirer", "Acquirer")}<th>What it does</th>${th("rev", "Target rev", "r")}${th("value", "Value", "r")}${th("mult", "EV / Rev", "r")}${th("evx", "EV / EBITDA", "r")}<th>Source</th></tr></thead><tbody>${rows || `<tr><td colspan="9" class="faint">No deals match.</td></tr>`}</tbody></table></div>`;
+  const opts = list().map(x => `<option value="${esc(x.name)}"></option>`).join("");
+  const top = fc ? ds.slice(0, 15) : [];
+  const tMult = med(top.filter(d => d.value && d.rev).map(d => d.value / d.rev)), tEvx = med(top.map(dealEvx).filter(x => x !== null));
+  return `<div class="page-h"><div><div class="eyebrow">${fc ? "Best precedents" : esc(sid ? sectorById(sid)?.name : "All sectors") + " · Deal log"}</div><h1>${fc ? "Precedents for " + esc(fc.name) : "Precedents"}</h1><p>${fc ? `Every deal in Profiler ranked by relevance to ${esc(fc.name)}: product and mix overlap with the target, shared product and end-market terms, same sector, similar size and recency. The chips say why each deal ranks where it does.` : "Every acquisition from every profile, plus sponsor entries with a known EV. Type a company below to rank the deals by relevance to it."}</p></div></div>
+  <form class="bar" id="precFor"><div class="grow"><input class="search" id="precForIn" list="precForList" placeholder="Best precedents for… type a company" value="${esc(fc ? fc.name : "")}" aria-label="Find the best precedents for a company" autocomplete="off"><datalist id="precForList">${opts}</datalist></div><button class="btn primary" type="submit">Rank deals</button>${fc ? `<a class="btn ghost" href="#precedents">Show all deals</a><a class="btn ghost" href="#c.${esc(fc.id)}">Open ${esc(fc.name)}</a>` : ""}</form>
+  ${fc ? `<div class="stats"><div class="stat"><div class="v">${ds.length}</div><div class="l">Relevant deals</div></div><div class="stat"><div class="v">${top.length}</div><div class="l">Top matches</div></div><div class="stat"><div class="v">${tMult !== null ? tMult.toFixed(1) + "x" : "—"}</div><div class="l">Median EV / revenue (top ${top.length})</div></div><div class="stat"><div class="v">${fmtX(tEvx)}</div><div class="l">Median EV / EBITDA (top ${top.length})</div></div></div>`
+  : `<div class="stats"><div class="stat"><div class="v">${ds.length}</div><div class="l">Deals</div></div><div class="stat"><div class="v">${ds.filter(d => d.value).length}</div><div class="l">With disclosed value</div></div><div class="stat"><div class="v">${medMult !== null ? medMult.toFixed(1) + "x" : "—"}</div><div class="l">Median EV / revenue</div></div><div class="stat"><div class="v">${fmtX(medEvx)}</div><div class="l">Median EV / EBITDA</div></div></div>`}
+  <div class="bar"><div class="grow"><input class="search" id="pq" type="search" placeholder="Filter by target, acquirer, year or description" value="${esc(ui.pq)}" aria-label="Filter precedents"></div></div>
+  <div class="tw"><table><thead><tr>${fc ? `<th class="r">Relevance</th><th>Date</th><th>Target</th><th>Acquirer</th><th>What it does</th><th class="r">Target rev</th><th class="r">Value</th><th class="r">EV / Rev</th><th class="r">EV / EBITDA</th><th>Why</th>` : `${th("year", "Date")}${th("target", "Target")}${th("acquirer", "Acquirer")}<th>What it does</th>${th("rev", "Target rev", "r")}${th("value", "Value", "r")}${th("mult", "EV / Rev", "r")}${th("evx", "EV / EBITDA", "r")}`}<th>Source</th></tr></thead><tbody>${rows || `<tr><td colspan="${fc ? 11 : 9}" class="faint">No deals match.</td></tr>`}</tbody></table></div>`;
 }
 
 function viewEndMarkets() {
@@ -2543,7 +2584,7 @@ function render() {
   let html = "";
   if (r.view === "company") html = viewCompany(r.id, r.tab);
   else if (r.view === "targets") html = viewTargets();
-  else if (r.view === "precedents") html = viewPrecedents();
+  else if (r.view === "precedents") html = viewPrecedents(r.forId);
   else if (r.view === "endmarkets") html = viewEndMarkets();
   else if (r.view === "sectors") html = viewSectors();
   else if (r.view === "tam") html = viewTam();
@@ -2942,6 +2983,12 @@ app.addEventListener("change", async e => {
 
 app.addEventListener("submit", async e => {
   e.preventDefault();
+  if (e.target.id === "precFor") {
+    const v = $("#precForIn").value.trim(); if (!v) { location.hash = "precedents"; return; }
+    const m = findCompanyByName(v) || list().find(x => norm(x.name).startsWith(norm(v)));
+    if (m) location.hash = "precedents~" + encodeURIComponent(m.id); else toast("No company called “" + v + "” in Profiler. Add it first, then rank its precedents.");
+    return;
+  }
   if (e.target.id === "imForm") {
     const c = getC(route().id); if (!c) return;
     const g = id => $("#" + id)?.value.trim() || "";
