@@ -18,6 +18,19 @@ Live app: https://claude.ai/artifact/KCB1rWzeMTqDnqVXoQz3eG (private to the owne
 
 In-page deep dives run on Claude's own knowledge (no web browsing). For a web-researched dive, ask Claude in chat to research a company into Profiler, and it writes the profile to the same database.
 
+## Profile builder
+
+Profiles are built step by step, each step starting from everything the profile already knows:
+
+1. **Overview**: what the company is, who owns it, how it makes money.
+2. **M&A history**: deals in and out, and what each added. This defines the businesses it owns.
+3. **Products**: a catalog of real products (category, line or brand, named products, what it does, applications, end markets, made or resold, share of revenue).
+4. **Business lines & sectors**.
+5. **End-market mix**: built from where each product category goes, then rolled up by category revenue share.
+6. **Segment mix**, **Revenue & EBITDA**, **Top customers**, **Top competitors**, **Potential buyers**, **Add-on ideas**.
+
+Each step has its own detailed playbook (goal, what to cover, method, depth, checks). Enhancing a step that already has content runs a "go deeper" pass: for Products, one level further into categories, lines and named products. The builder panel on each profile shows every step's state (not built, from import, pass N, out of date). "Build next" runs the next unbuilt step; "Build all" runs them in order.
+
 ## How profiles learn
 
 - Every field carries a confidence: **Verified** (you typed it or clicked its badge), **High**, **Medium** or **Low**, with the basis. Profile strength sums this up.

@@ -318,6 +318,21 @@ tr:hover .rowx{opacity:1}
 .idc{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-top:6px}
 .idc .who{font-weight:600}
 .idc.typed{border-style:dashed}
+.builder{padding:14px 16px;margin-top:14px}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.step{width:100%;display:grid;grid-template-columns:22px minmax(0,1fr);grid-template-rows:auto auto;column-gap:8px;text-align:left;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.step:hover:not([disabled]){border-color:var(--accent)}
+.step[disabled]{cursor:default}
+.step .sn{grid-row:span 2;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:600 11px var(--f-mono);background:var(--sunk);color:var(--ink-2)}
+.step .sl{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.step .ss{font-size:11px;color:var(--ink-3)}
+.step.done .sn{background:var(--accent);color:var(--accent-ink)}
+.step.imp .sn{background:var(--accent-soft);color:var(--accent)}
+.step.stale{border-color:color-mix(in srgb,var(--warn) 50%,var(--line))}
+.step.stale .sn{background:var(--warn-soft);color:var(--warn)}
+.step.stale .ss{color:var(--warn)}
+.step.run{border-color:var(--accent)}
+.step.run .sn{background:transparent}
 .skeleton{padding:60px 0;color:var(--ink-3)}
 </style>
 
@@ -354,7 +369,7 @@ const now = () => new Date().toISOString();
 
 const BUCKETS = ["Municipal","Energy & chemicals","Heavy industry","Commercial & institutional","Light industry & high-purity","Pool & spa","Agriculture & farm","Other"];
 // Heavy fields live in details/<id> and load when a profile opens; everything else sits in companies/<id>.
-const DETAIL_KEYS = new Set(["history","suggestions","what_it_is","bluntly","profile_md","total_revenue_basis","ebitda_basis","employees_basis","us_water_treatment_arithmetic","open_questions","addon_corrections","what_changed_vs_prior","evidence","key_sites","chemistries","customers","runs","prior_owners"]);
+const DETAIL_KEYS = new Set(["products","product_em_map","history","suggestions","what_it_is","bluntly","profile_md","total_revenue_basis","ebitda_basis","employees_basis","us_water_treatment_arithmetic","open_questions","addon_corrections","what_changed_vs_prior","evidence","key_sites","chemistries","customers","runs","prior_owners"]);
 const END_MARKETS = ["Municipal drinking water","Municipal wastewater","Power generation","Oil & gas / refining","Chemicals & petrochem","Pulp & paper","Food & beverage","Mining & metals","Primary metals/steel","Commercial HVAC / buildings","Healthcare & institutional","Data centers","Pharma/life sciences","Microelectronics/semis","Manufacturing (general industrial)","Pools & spa","Agriculture & farm","Consumer / retail","Other"];
 
 /* ---------- sectors ---------- */
@@ -525,6 +540,7 @@ function segments(c) {
   return (c.revenue_by_business || []).map(s => ({ label: s.business, value: num(s.revenue_usd_m) ?? (num(s.pct) !== null && num(c.total_revenue_usd_m) ? s.pct * c.total_revenue_usd_m / 100 : null), pct: num(s.pct) })).filter(s => s.label);
 }
 function products(c) {
+  if ((c.products || []).length) return productRollup(c).map(p => ({ label: p.product, value: p.revenue_usd_m, pct: p.pct }));
   if ((c.revenue_by_product || []).length) return c.revenue_by_product.map(p => ({ label: p.product, value: num(p.revenue_usd_m), pct: num(p.pct) })).filter(p => p.label);
   const g = {};
   for (const s of c.revenue_by_business || []) { const k = s.category || "Other"; g[k] = (g[k] || 0) + (num(s.revenue_usd_m) || 0); }
@@ -716,11 +732,15 @@ function editTable(c, f, cols, rows, opts = {}) {
 // Table fields and their columns
 const EM_FIELD = "end_markets_total_platform";
 function tableRows(c, f) {
+  if (f === "products") return catalog(c).map(p => ({ ...p, end_markets: [].concat(p.end_markets || []).join(", ") }));
+  if (f === "product_em_map") return clone(c.product_em_map || []);
   if (f === "sectors") return sectorsOf(c).map(x => ({ name: sectorById(x.sector)?.name || x.sector, what: x.what || "", revenue_usd_m: x.revenue_usd_m ?? null, pct: x.pct ?? null }));
   if (f === EM_FIELD) return Object.entries(c[EM_FIELD] || {}).map(([name, pct]) => ({ name, pct }));
   return clone(c[f] || []);
 }
 function rowsToValue(f, rows) {
+  if (f === "products") return rows.map(r => ({ ...r, end_markets: String(r.end_markets || "").split(/\s*[,;/]\s*/).filter(Boolean), share_pct: num(r.share_pct), revenue_usd_m: num(r.revenue_usd_m) }));
+  if (f === "product_em_map") return rows.map(r => ({ ...r, pct: num(r.pct) }));
   if (f === "sectors") return rows.map(r => { const n = String(r.name || "").trim(); return { sector: n ? (sectorFromName(n)?.id || slugify(n)) : "", what: r.what || "", revenue_usd_m: num(r.revenue_usd_m), pct: num(r.pct) }; });
   if (f === EM_FIELD) { const o = {}; for (const r of rows) { const n = String(r.name || "").trim(); if (n) o[n] = num(r.pct) ?? 0; } return o; }
   return rows;
@@ -736,6 +756,8 @@ const BLANK = {
   revenue_by_product: { product: "", revenue_usd_m: null, pct: null },
   [EM_FIELD]: { name: "New end market", pct: 0 },
   sectors: { name: "", what: "", revenue_usd_m: null, pct: null },
+  products: { category: "", line: "", named_products: "", what_it_is: "", applications: "", end_markets: "", made_or_resold: "", share_pct: null, confidence: "" },
+  product_em_map: { category: "", end_market: "", pct: null, customers: "" },
   key_sites: { type: "", address: "", city: "", state: "" },
 };
 
@@ -794,6 +816,8 @@ async function commit(el) {
     if (String(old ?? "") === String(val ?? "")) return;
     rows[i][k] = val;
     const patch = { [f]: rowsToValue(f, rows) };
+    if (f === "products") patch.revenue_by_product = productRollup({ ...c, products: patch.products });
+    if ((f === "products" || f === "product_em_map") && !(c.locked || []).includes(EM_FIELD)) { const em = emFromMap({ ...c, ...patch }, patch.product_em_map || c.product_em_map); if (em) patch[EM_FIELD] = em; }
     if (f === "revenue_by_business" && k === "revenue_usd_m") recalcPct(rows, c, patch, f);
     if (f === "revenue_by_product" && k === "revenue_usd_m") recalcPct(rows, c, patch, f);
     await save(c.id, patch, [f]);
@@ -852,54 +876,141 @@ const isEditing = () => { const a = document.activeElement; return !!(a && app.c
 
 /* ---------- deep dive ---------- */
 /* ---------- enhance: one focused Claude run per section ---------- */
+/* ---------- profile builder: sections, playbooks, build order ---------- */
+// Each step has a data shape, a detailed playbook (what good looks like, how deep, what not to do) and a
+// "go deeper" instruction used when the step already has content.
 const SECTIONS = {
-  financials: { label: "Revenue & EBITDA", fields: ["total_revenue_usd_m", "total_revenue_year", "total_revenue_basis", "total_ebitda_usd_m", "ebitda_year", "ebitda_basis", "us_water_treatment_revenue_usd_m", "us_water_treatment_arithmetic", "employees_total"],
-    shape: `{"total_revenue_usd_m":0,"total_revenue_year":"","total_revenue_basis":"how you got it","total_ebitda_usd_m":0,"ebitda_year":"","ebitda_basis":"how you got it","us_water_treatment_revenue_usd_m":0,"us_water_treatment_arithmetic":"the math","employees_total":0}`,
-    rules: "USD millions. Total platform revenue and EBITDA for the latest year. US water treatment revenue counts only water treatment chemicals and chemical-based water treatment services sold in the US." },
-  endmarkets: { label: "End-market mix", fields: [EM_FIELD, "end_market_buckets"],
-    shape: `{"end_markets_total_platform":{"<end market>":0},"end_market_buckets":{"<bucket>":0}}`,
-    rules: `Both are percentages summing to 100. end_markets_total_platform splits total platform revenue using these names where they fit: ${END_MARKETS.join(", ")}. end_market_buckets splits US water treatment revenue into these eight buckets only: ${BUCKETS.join(", ")}.` },
-  segments: { label: "Segment mix", fields: ["revenue_by_business"],
-    shape: `{"revenue_by_business":[{"business":"","category":"","revenue_usd_m":0,"pct":0}]}`,
-    rules: "3 to 8 business segments whose revenue sums to total platform revenue." },
-  products: { label: "Products", fields: ["revenue_by_product", "chemistries"],
-    shape: `{"revenue_by_product":[{"product":"","revenue_usd_m":0,"pct":0}],"chemistries":[{"product_line":"","made_or_resold":"Made | Resold | Service","brands":""}]}`,
-    rules: "revenue_by_product: 3 to 8 product lines summing to total revenue. chemistries: up to 10 top product lines with brand names." },
-  customers: { label: "Top customers", fields: ["customers"],
-    shape: `{"customers":[{"name":"","what":"what they buy","share_pct":null,"source":"basis in a few words"}]}`,
-    rules: "Up to 10 top customers, largest first. Named accounts where you know them, otherwise specific customer groups." },
-  competitors: { label: "Top competitors", fields: ["competitors"],
-    shape: `{"competitors":[{"name":"","overlap":"where they compete"}]}`,
-    rules: "Up to 10 closest competitors, most direct first." },
-  buyers: { label: "Potential buyers", fields: ["buyers"],
-    shape: `{"buyers":[{"name":"","type":"Strategic | Financial","fit":"High | Medium | Low","rationale":"why they would buy, in one sentence"}]}`,
-    rules: "Up to 10 most likely acquirers of this whole business, best fit first. Mix strategics and PE sponsors. Use the candidate list from the Profiler index where it fits, and add others you know." },
-  addons: { label: "Add-on ideas", fields: ["addon_ideas"],
-    shape: `{"addon_ideas":[{"target":"","rationale":"","est_revenue_usd_m":null,"location":""}]}`,
-    rules: "Up to 10 real, named companies this business could acquire, best first. Use the candidate list from the Profiler index where it fits." },
+  overview: { label: "Overview", fields: ["what_it_is", "bluntly", "profile_md", "owner_type", "ultimate_parent", "pe_sponsor", "pe_entry_year", "prior_owners", "hq_address", "website", "business_model"],
+    shape: `{"what_it_is":"1-2 sentences","bluntly":"2-3 plain-spoken sentences","profile_md":"markdown, 250-450 words","business_model":"Manufacturer | Formulator/blender | Distributor | Service route business | Toll/private label | Mixed: ...","owner_type":"","ultimate_parent":"","pe_sponsor":"","pe_entry_year":"","prior_owners":"","hq_address":"","website":""}`,
+    rules: "Identity and business model only. No revenue or EBITDA numbers unless they are already in the known facts." },
   deals: { label: "M&A history", fields: ["acquisitions"], append: true,
-    shape: `{"acquisitions":[{"date":"YYYY or YYYY-MM","target":"","what_it_does":"","revenue_usd_m":null,"value_usd_m":null,"source_url":""}]}`,
-    rules: "Only acquisitions that are NOT already in the current list. Newest first. Leave source_url empty unless you are sure of it." },
-  overview: { label: "Overview", fields: ["what_it_is", "bluntly", "profile_md", "owner_type", "ultimate_parent", "pe_sponsor", "pe_entry_year", "prior_owners", "hq_address", "website"],
-    shape: `{"what_it_is":"1-2 sentences","bluntly":"2-3 plain-spoken sentences","profile_md":"markdown investor profile, 250-400 words, ## headings","owner_type":"","ultimate_parent":"","pe_sponsor":"","pe_entry_year":"","prior_owners":"","hq_address":"","website":""}`,
-    rules: "Keep facts consistent with the snapshot and ground truth." },
+    shape: `{"acquisitions":[{"date":"YYYY or YYYY-MM","target":"legal or trading name","deal_type":"Add-on | Platform | Merger | Divestiture | Ownership change","what_it_does":"target's products, end markets and geography","what_it_added":"what the deal added to this company: product line, geography, end market, capability","revenue_usd_m":null,"value_usd_m":null,"source_url":"","confidence":"High | Medium | Low"}]}`,
+    rules: "Only deals NOT already in the current list, newest first." },
+  products: { label: "Products", fields: ["products"],
+    shape: `{"products":[{"category":"product category, e.g. Industrial gear oils","line":"brand family or product line, e.g. Duolec","named_products":"named products or grades, comma separated","what_it_is":"chemistry, base and form","applications":"what it is used for","end_markets":["end markets it goes into"],"made_or_resold":"Made | Resold | Toll-made | Service | Equipment","share_pct":0,"revenue_usd_m":null,"confidence":"High | Medium | Low"}]}`,
+    rules: "share_pct across all lines sums to about 100. revenue_usd_m = share of total revenue where total revenue is known." },
+  sectors: { label: "Business lines & sectors", fields: ["sectors", "primary_sector"],
+    shape: `{"primary_sector":"<sector id>","sectors":[{"sector":"<sector id>","revenue_usd_m":0,"pct":0,"what":"which product categories and brands"}]}`,
+    rules: "" },
+  endmarkets: { label: "End-market mix", fields: ["product_em_map", EM_FIELD, "end_market_buckets"],
+    shape: `{"product_em_map":[{"category":"product category exactly as in the catalog","end_market":"end market name","pct":0,"customers":"typical customer types in this end market"}],"end_market_buckets":{"<bucket>":0}}`,
+    rules: "" },
+  segments: { label: "Segment mix", fields: ["revenue_by_business"],
+    shape: `{"revenue_by_business":[{"business":"","category":"product category or sector it maps to","revenue_usd_m":0,"pct":0}]}`,
+    rules: "3 to 8 segments whose revenue sums to total revenue." },
+  financials: { label: "Revenue & EBITDA", fields: ["total_revenue_usd_m", "total_revenue_year", "total_revenue_basis", "total_ebitda_usd_m", "ebitda_year", "ebitda_basis", "us_water_treatment_revenue_usd_m", "us_water_treatment_arithmetic", "employees_total"],
+    shape: `{"total_revenue_usd_m":0,"total_revenue_year":"","total_revenue_basis":"the math","total_ebitda_usd_m":0,"ebitda_year":"","ebitda_basis":"the math","us_water_treatment_revenue_usd_m":0,"us_water_treatment_arithmetic":"the math","employees_total":0}`,
+    rules: "USD millions, latest full year." },
+  customers: { label: "Top customers", fields: ["customers"],
+    shape: `{"customers":[{"name":"named account, or a specific customer type","end_market":"","what":"which products they buy","share_pct":null,"source":"basis in a few words","confidence":"High | Medium | Low"}]}`,
+    rules: "Up to 15, largest first." },
+  competitors: { label: "Top competitors", fields: ["competitors"],
+    shape: `{"competitors":[{"name":"","overlap":"which product categories and end markets they compete in","size":"rough size or scale","confidence":"High | Medium | Low"}]}`,
+    rules: "Up to 12, most direct first." },
+  buyers: { label: "Potential buyers", fields: ["buyers"],
+    shape: `{"buyers":[{"name":"","type":"Strategic | Financial","fit":"High | Medium | Low","rationale":"why, tied to specific product categories, end markets or geography","confidence":"High | Medium | Low"}]}`,
+    rules: "Up to 12, best fit first." },
+  addons: { label: "Add-on ideas", fields: ["addon_ideas"],
+    shape: `{"addon_ideas":[{"target":"","rationale":"which gap it fills: product, end market or geography","est_revenue_usd_m":null,"location":"","confidence":"High | Medium | Low"}]}`,
+    rules: "Up to 12, best first." },
 };
-// Water companies carry extra water-index fields; every other sector uses the generic shape.
+// Build order: understand the company, then what it sells, then where that goes, then everyone around it.
+const SECTION_ORDER = ["overview", "deals", "products", "sectors", "endmarkets", "segments", "financials", "customers", "competitors", "buyers", "addons"];
+
+const PLAYBOOK = {
+  overview: `GOAL: a precise description of what this company is and how it makes money. Every later step builds on this, so accuracy matters more than length.
+COVER: the name it trades under and its main brands; founding year and founders; ownership history with years (founder, family, PE, strategic, ESOP); headquarters and main plants, blending sites or branches; what it sells in one sentence; business model (manufacturer, formulator/blender, distributor, service route business, toll or private label); how it goes to market (direct reps, distributors, OEMs, dealers, e-commerce); geographic reach; headcount if known.
+profile_md: use these headings: ## Business, ## History & ownership, ## Go-to-market & footprint, ## What sets it apart, ## Open questions. Facts you are sure of go in plainly; anything uncertain goes under Open questions.
+bluntly: what the business really is, without the marketing.
+DON'T: invent owners, deals or numbers. If you are unsure who owns it, say so and leave owner fields empty.`,
+  deals: `GOAL: every acquisition, merger, divestiture and ownership change in the company's history. Acquired businesses define what the company owns today, so later steps use this list to find product lines, end markets and geographies.
+FOR EACH DEAL: date, the target's name, deal type, what the target did (products, end markets, geography), what it added to this company, target revenue at the time and deal value if disclosed.
+Include divestitures (deal_type Divestiture) and changes of the company's own ownership (deal_type Ownership change, target = this company, naming the new owner in what_it_added).
+DON'T: list a deal unless you are confident it happened. Never claim the company itself was acquired unless you are certain; a wrong ownership change corrupts the whole profile. An empty list is better than a wrong one.`,
+  products: `GOAL: a real product catalog built from actual products, not generic chemistry words.
+STRUCTURE: category (for example "Industrial gear oils", "Food-grade greases", "Cooling-tower biocides", "Salon hair color") → product line or brand family (for example "Duolec", "Quinplex") → named products or grades. For each line give what it is (chemistry, base, form), what it does and key applications, the end markets it is sold into, whether it is made in-house, resold, toll-made, a service or equipment, and its share of company revenue.
+DEPTH: a mid-size company should have 8 to 25 lines across 3 to 8 categories. Use the company's own brand names where you know them. Put services (testing, lab, route service) and equipment in their own categories. Include product lines that came with acquisitions.
+CHECK: shares sum to about 100; the categories match the overview and the M&A history.
+DON'T: write "specialty chemicals" or other generic filler. If you don't know a brand name, describe the line plainly and rate it Low. Never invent brand names.`,
+  sectors: `GOAL: map the product catalog onto chemical sectors so the company shows up in the right markets.
+METHOD: assign each product category to one sector, then add up the category shares by sector. Say which categories and brands sit in each sector.
+Sector ids to use where they fit: ${BASE_SECTORS.map(x => `${x.id} (${x.name})`).join(", ")}. If nothing fits, use a short new lowercase id with hyphens. pct values sum to 100. primary_sector is the largest.`,
+  endmarkets: `GOAL: build the end-market mix bottom-up from where each product category is sold.
+METHOD: for every category in the product catalog, split it across the end markets it is sold into (pct of that category, summing to 100 per category), and name the typical customer types. Profiler weights these by each category's share of revenue to get the company's end-market mix, so be precise category by category. Use the applications, customers and deals already known.
+END-MARKET NAMES: use these where they fit: {EM_NAMES}.
+DON'T: give one company-wide guess; work category by category. Every catalog category must appear.`,
+  segments: `GOAL: the business segments the company reports or is organized into, each with revenue.
+METHOD: start from how the company itself describes its divisions; otherwise group product categories and acquired businesses into 3 to 8 segments. Revenue sums to total revenue; tie each segment to its product categories in "category".`,
+  financials: `GOAL: the best-grounded revenue, EBITDA and headcount you can give, with the arithmetic shown.
+REVENUE: use disclosures first. Otherwise triangulate: headcount × revenue per employee for this business model; plant or blending capacity; the size of acquisitions added since the last known figure; the sum of the product catalog. Give the year.
+EBITDA: build margin from the product and end-market mix: formulated specialty products usually earn more than commodity or resold products, distribution earns less, service route businesses sit in between. Adjust for scale. Show the blended margin and the math in ebitda_basis.
+DON'T: state a figure as disclosed unless it is.`,
+  customers: `GOAL: who actually buys the products, by end market.
+FOR EACH: a named account where you know it (utilities, OEMs, distributors, retailers, industrial plants), otherwise a specific customer type with examples; its end market; which product categories it buys; share of revenue if known.
+DON'T: invent named accounts. A specific customer type is better than a made-up name.`,
+  competitors: `GOAL: the companies this business actually competes with, category by category.
+METHOD: for each product category in the catalog, name the real companies selling competing products into the same end markets and regions. Merge into one list, most direct first; say which categories and end markets overlap and roughly how big each competitor is.
+DON'T: list only the global giants when regional or mid-market companies are the real day-to-day competitors.`,
+  buyers: `GOAL: the most likely acquirers of this whole business.
+METHOD: strategics that sell adjacent products into the same end markets, or want its channel or geography; PE sponsors with related platforms that would add it on; larger sponsors for a standalone platform deal if it is big enough. Tie every rationale to specific product categories, end markets or geography from the profile. Prefer companies with a record of doing deals like this.`,
+  addons: `GOAL: real companies this business could buy to fill specific gaps.
+METHOD: find the gaps in the profile (missing product categories, thin end markets, regions without coverage), then name real companies that fill each one and are a sensible size for this company to buy. Say which gap each fills.
+DON'T: suggest companies much larger than the buyer, or ones that are already owned by a major strategic.`,
+};
+const DEEPEN = {
+  overview: "Tighten the description, fill the missing history and ownership years, add the footprint (plants, branches) and go-to-market detail, and move anything uncertain to Open questions.",
+  deals: "Look for deals the list is missing: smaller tuck-ins, older deals, divestitures and ownership changes. Add what each deal contributed.",
+  products: "Keep every correct line, then go one level deeper: split broad categories into specific product lines, add the named products or grades under each line, fill in applications and end markets for every line, add service and equipment lines, and reconcile shares to 100.",
+  sectors: "Re-check each category's sector against the latest product catalog and fix the shares.",
+  endmarkets: "Cover every category in the latest catalog, split end markets more finely where a category serves several, and name customer types for each.",
+  segments: "Re-align segments with the latest product catalog and deals.",
+  financials: "Re-derive revenue and margin from the latest products, end markets and deals, and show the math more fully.",
+  customers: "Add more named accounts and cover every major end market.",
+  competitors: "Cover every product category and add the regional and mid-market competitors.",
+  buyers: "Refine the list against the latest products, end markets and deals, and add sponsors with related platforms.",
+  addons: "Target the specific gaps visible in the latest catalog and end markets.",
+};
+
+// Water companies carry extra water-index fields; other sectors use the generic shape.
 function sectionDef(c, key) {
   const base = SECTIONS[key]; if (!base) return null;
-  const water = inSector(c, "water"), sid = primarySector(c), sname = sectorById(sid)?.name || sid;
+  const water = inSector(c, "water");
   if (key === "financials" && !water) return { ...base, fields: base.fields.filter(f => !f.startsWith("us_water")),
-    shape: `{"total_revenue_usd_m":0,"total_revenue_year":"","total_revenue_basis":"how you got it","total_ebitda_usd_m":0,"ebitda_year":"","ebitda_basis":"how you got it","employees_total":0}`,
-    rules: "USD millions. Total company revenue and EBITDA for the latest year." };
-  if (key === "endmarkets" && !water) return { ...base, fields: [EM_FIELD], shape: `{"end_markets_total_platform":{"<end market>":0}}`,
-    rules: `Percentages of total revenue summing to 100, using end markets that fit a ${sname} business. Use these names where they fit: ${GENERIC_EM.join(", ")}.` };
+    shape: `{"total_revenue_usd_m":0,"total_revenue_year":"","total_revenue_basis":"the math","total_ebitda_usd_m":0,"ebitda_year":"","ebitda_basis":"the math","employees_total":0}` };
+  if (key === "endmarkets" && !water) return { ...base, fields: ["product_em_map", EM_FIELD],
+    shape: `{"product_em_map":[{"category":"product category exactly as in the catalog","end_market":"end market name","pct":0,"customers":"typical customer types in this end market"}]}` };
   return base;
 }
-SECTIONS.sectors = { label: "Business lines & sectors", fields: ["sectors", "primary_sector"],
-  shape: `{"primary_sector":"<sector id>","sectors":[{"sector":"<sector id>","revenue_usd_m":0,"pct":0,"what":"which products or brands"}]}`,
-  rules: "Split total revenue by business line into chemical sectors. Use these sector ids where they fit: " + BASE_SECTORS.map(x => `${x.id} (${x.name})`).join(", ") + ". If nothing fits, use a short new lowercase id with hyphens. pct values sum to 100. primary_sector is the largest line." };
-// Enhance all runs in this order so each step builds on what the previous one learned.
-const SECTION_ORDER = ["sectors", "deals", "financials", "segments", "endmarkets", "products", "customers", "competitors", "buyers", "addons", "overview"];
+// Product catalog helpers. Older profiles only have a flat "chemistries" list; treat each item as a line.
+function catalog(c) {
+  if ((c.products || []).length) return c.products;
+  return (c.chemistries || []).map(x => ({ category: x.product_line, line: x.brands || "", named_products: "", what_it_is: "", applications: "", end_markets: [], made_or_resold: x.made_or_resold || "", share_pct: null, revenue_usd_m: null }));
+}
+function categoryShares(c) {
+  const m = new Map(), tot = num(c.total_revenue_usd_m);
+  for (const p of catalog(c)) { const k = String(p.category || p.line || "Other").trim(); const s = num(p.share_pct) ?? (tot && num(p.revenue_usd_m) ? p.revenue_usd_m / tot * 100 : 0); m.set(k, (m.get(k) || 0) + (s || 0)); }
+  return m;
+}
+// Revenue by product category, for the product pie.
+function productRollup(c) {
+  const tot = num(c.total_revenue_usd_m), out = [];
+  for (const [k, s] of categoryShares(c)) if (s) out.push({ product: k, pct: +s.toFixed(1), revenue_usd_m: tot ? +(tot * s / 100).toFixed(1) : null });
+  return out;
+}
+// End-market mix from the product map: each category's split, weighted by the category's revenue share.
+function emFromMap(c, map) {
+  const sh = categoryShares(c), total = [...sh.values()].reduce((a, b) => a + b, 0), out = {};
+  const cats = new Map(); for (const r of map || []) { if (!r?.category || !num(r.pct)) continue; const k = String(r.category).trim(); if (!cats.has(k)) cats.set(k, []); cats.get(k).push(r); }
+  if (!cats.size) return null;
+  const even = 100 / cats.size;
+  for (const [k, rows] of cats) {
+    const w = total ? (sh.get(k) ?? 0) / total * 100 : even, sum = rows.reduce((a, r) => a + num(r.pct), 0) || 1;
+    for (const r of rows) { const em = String(r.end_market || "Other").trim(); out[em] = (out[em] || 0) + w * num(r.pct) / sum; }
+  }
+  const s = Object.values(out).reduce((a, b) => a + b, 0) || 1;
+  for (const k in out) out[k] = +(out[k] / s * 100).toFixed(1);
+  return out;
+}
 
 function snapshotFor(c) {
   const keys = ["name", "platform_name", "owner_type", "ultimate_parent", "pe_sponsor", "pe_entry_year", "primary_category", "business_model", "scope", "water_relevance", "hq_address", "website", "total_revenue_usd_m", "total_revenue_year", "total_ebitda_usd_m", "us_water_treatment_revenue_usd_m", "us_market_share_pct", "employees_total", "end_market_buckets"];
@@ -916,35 +1027,45 @@ function sectionPrompt(c, key) {
   const sec = sectionDef(c, key), rl = sectorRevLabel(primarySector(c)).replace(/ rev$/, " revenue");
   const current = {}; for (const f of sec.fields) if (c[f] !== undefined) current[f] = c[f];
   if (key === "sectors") { current.sectors = sectorsOf(c); current.primary_sector = primarySector(c); }
+  if (key === "products" && !(c.products || []).length && (c.chemistries || []).length) current.products = catalog(c);
   const curConf = sec.fields.filter(f => has(current[f])).map(f => `${label(f)}: ${confOf(c, f).level}`).join("; ");
-  const stale = (c.section_meta || {})[key]?.stale;
+  const meta = (c.section_meta || {})[key] || {}, stale = meta.stale, pass = (meta.passes || 0) + 1;
+  const filled = sec.fields.some(f => has(current[f]));
+  const water = inSector(c, "water");
   let cands = "";
   if (key === "buyers") cands = likelyBuyers(c).slice(0, 12).map(b => `- ${b.p.name} (${b.p.owner_type || ""}${b.p.pe_sponsor ? ", backed by " + b.p.pe_sponsor : ""}; ${fmtM(b.r)} ${rl}; ${b.o.toFixed(0)}% similarity; ${b.n} deals)`).join("\n");
   if (key === "competitors") cands = likelyCompetitors(c).map(b => `- ${b.p.name} (${b.p.business_model || ""}; ${fmtM(b.r)} ${rl}; ${stateOf(b.p)}; ${b.o.toFixed(0)}% similarity)`).join("\n");
   if (key === "addons") cands = likelyAddons(c).slice(0, 15).map(b => `- ${b.name} (${b.what || ""}; ${fmtM(b.rev)} ${rl}${b.state ? "; " + b.state : ""}; ${b.o.toFixed(0)}% similarity)`).join("\n");
   const sname = sectorById(primarySector(c))?.name || primarySector(c);
-  return `You are a buy-side M&A analyst updating one section of the "${c.name}" profile in Profiler, a private database of chemical companies across sectors used for deal work. Its primary sector is ${sname}; judge it as a ${sname} business.
+  const emNames = water ? END_MARKETS.join(", ") : GENERIC_EM.join(", ");
+  const cats = [...categoryShares(c).keys()];
+  let play = PLAYBOOK[key].replace("{EM_NAMES}", emNames);
+  if (key === "endmarkets") play += cats.length ? `\nCATALOG CATEGORIES TO COVER: ${cats.join("; ")}` : `\nThere is no product catalog yet; use the categories implied by the overview and segments.`;
+  if (key === "endmarkets" && water) play += `\nAlso give end_market_buckets: the split of US water treatment revenue into exactly these eight buckets: ${BUCKETS.join(", ")}.`;
+  if (key === "financials" && water) play += `\nUS water treatment revenue counts only water treatment chemicals and chemical-based water treatment services sold in the US; show the arithmetic.`;
+  return `You are a senior buy-side M&A analyst building the "${c.name}" profile in Profiler, a private database of chemical companies used for deal work. Profiler builds each profile step by step: overview, M&A history, products, sectors, end markets, segments, financials, customers, competitors, buyers, add-ons. Each step starts from everything the earlier steps established. Its primary sector is ${sname}; judge it as a ${sname} business.
 
-Update ONLY the "${sec.label}" section. You cannot browse.
+THIS STEP: ${sec.label} (pass ${pass}). Update ONLY this step. You cannot browse; work from what you know.
 
-STAY ON THIS EXACT COMPANY. ${c.identity_confirmed ? "The user confirmed its identity: " + (c.what_it_is || "") + (c.hq_address ? " (" + c.hq_address + ")" : "") + ". " : ""}If you don't have real knowledge of this company, do not invent figures, customers, deals or names: leave unknown fields null or empty, rate anything you do return Low, and say plainly in the note that you don't recognise the company. An empty answer is better than a made-up one.
+STAY ON THIS EXACT COMPANY. ${c.identity_confirmed ? "The user confirmed its identity: " + (c.what_it_is || "") + (c.hq_address ? " (" + c.hq_address + ")" : "") + ". " : ""}If you don't have real knowledge of this company, do not invent figures, products, customers, deals or names: leave unknown fields null or empty, rate anything you do return Low, and say plainly in the note that you don't recognise the company. An empty answer is better than a made-up one.
 
-HOW TO REASON. Below is everything the profile knows, grouped by confidence. Build this section from the strongest facts first:
-- Verified and High items are the anchor. Never contradict them.
-- Use them to derive and correct weaker items. For example, derive margin from a known end-market and product mix and from sector benchmarks; treat recent acquisitions as added revenue and new end markets; pick buyers and competitors that fit the known sectors, end markets, size and footprint.
-- Keep what is already right, and replace Low-confidence guesses with better-grounded figures where the known facts allow.
-- Rate each field you return: High = disclosed or directly derived from Verified/High facts; Medium = a credible estimate consistent with the known facts; Low = a rough guess. Be honest; don't rate a guess High.
-${stale ? `\nThis section is out of date because these changed since it was last updated: ${stale.because.join(", ")}. Make sure your answer reflects the new information.\n` : ""}
-WHAT THE PROFILE KNOWS:
-${knowledgeBase(c) || "Almost nothing yet beyond the name."}
+PLAYBOOK FOR THIS STEP
+${play}
+${filled ? `\nGO DEEPER. This step already has content (shown below). Don't start over and don't just restate it. Keep every item that is right, fix what is wrong, then: ${DEEPEN[key]} Return the full, improved version, not only the additions${sec.append ? " (for M&A: return only deals not already listed)" : ""}.\n` : ""}${stale ? `\nNEW INFORMATION since this step was last built: ${stale.because.join(", ")}. Make sure the answer reflects it.\n` : ""}
+HOW TO REASON
+- Everything the profile knows is below, grouped by confidence. Verified and High items are the anchor; never contradict them.
+- Build this step from the earlier steps: the overview and M&A history define the businesses; the product catalog defines what is sold; end markets come from where those products go; competitors, customers and buyers follow from products, end markets, size and footprint.
+- Rate each field you return: High = disclosed or directly derived from Verified/High facts; Medium = a credible estimate consistent with the known facts; Low = a rough guess. Don't rate a guess High.
 
-CURRENT VALUE OF THIS SECTION${curConf ? ` (confidence: ${curConf})` : ""}:
+WHAT THE PROFILE KNOWS
+${knowledgeBase(c, sec.fields) || "Almost nothing yet beyond the name."}
+
+CURRENT VALUE OF THIS STEP${curConf ? ` (confidence: ${curConf})` : ""}
 ${JSON.stringify(current).slice(0, 30000)}
-${cands ? `\nCANDIDATES FROM THE PROFILER INDEX:\n${cands}\n` : ""}
+${cands ? `\nCANDIDATES FROM THE PROFILER INDEX (use these exact names when you mean them, so profiles link up)\n${cands}\n` : ""}
 Reply with ONLY one JSON object in this shape:
 ${sec.shape.replace(/}$/, "")},"confidence":{"<field name>":"High | Medium | Low"},"basis":{"<field name>":"one line: source or reasoning, naming the known facts you used"},"note":"one sentence on what you changed and why"}
-Give a confidence and basis for every field you return. In list fields, each row may also carry "confidence":"High | Medium | Low".
-Rules: ${sec.rules}${cands ? " When you mean a company from the candidate list, use its name exactly as written there so Profiler can link the two profiles." : ""}`;
+Give a confidence and basis for every field you return; list rows may carry their own "confidence".${sec.rules ? " " + sec.rules : ""}`;
 }
 
 /* ---------- knowledge: confidence, dependencies, knowledge base ---------- */
@@ -982,21 +1103,23 @@ const has = v => v !== undefined && v !== null && v !== "" && !(Array.isArray(v)
 
 // What each section informs. When a section changes, its dependents are marked out of date.
 const DEPS = {
-  sectors: ["financials", "segments", "endmarkets", "products", "competitors", "buyers", "addons"],
-  deals: ["financials", "segments", "endmarkets", "products", "customers", "competitors", "buyers", "addons", "overview"],
-  financials: ["segments", "buyers", "addons", "overview"],
-  segments: ["financials", "endmarkets", "products", "competitors"],
+  overview: ["deals", "products", "sectors", "endmarkets", "segments", "financials", "customers", "competitors", "buyers", "addons"],
+  deals: ["products", "sectors", "endmarkets", "segments", "financials", "competitors", "buyers", "addons"],
+  products: ["sectors", "endmarkets", "segments", "financials", "customers", "competitors", "buyers", "addons"],
+  sectors: ["segments", "financials", "competitors", "buyers", "addons"],
   endmarkets: ["financials", "customers", "competitors", "buyers", "addons"],
-  products: ["endmarkets", "customers", "competitors"],
-  customers: ["endmarkets", "financials"],
+  segments: ["financials"],
+  financials: ["buyers", "addons"],
+  customers: ["competitors"],
   competitors: ["buyers", "addons"],
-  buyers: [], addons: [], overview: [],
+  buyers: [], addons: [],
 };
 const FIELD_SECTION = {};
 function sectionOfField(f) {
   if (!Object.keys(FIELD_SECTION).length) for (const [k, d] of Object.entries(SECTIONS)) for (const x of d.fields) FIELD_SECTION[x] ??= k;
   if (f === "ebitda_margin_pct" || f === "us_market_share_pct" || f === "us_water_ebitda_usd_m" || f === "__secrev") return "financials";
-  if (f === "end_market_buckets") return "endmarkets";
+  if (f === "end_market_buckets" || f === "product_em_map" || f === EM_FIELD) return "endmarkets";
+  if (f === "products" || f === "chemistries" || f === "revenue_by_product") return "products";
   return FIELD_SECTION[f] || null;
 }
 function markStale(cur, changedSections, meta) {
@@ -1024,12 +1147,15 @@ function strength(c) {
 
 // Everything the profile knows, grouped strongest first, for Claude to reason from.
 function compactVal(f, v) {
+  if (f === "products" && Array.isArray(v)) return "\n" + v.slice(0, 40).map(p => `  · ${p.category || ""}${p.line ? " / " + p.line : ""}${p.named_products ? " (" + String(p.named_products).slice(0, 90) + ")" : ""}${num(p.share_pct) ? ", " + p.share_pct + "% of revenue" : ""}${p.made_or_resold ? ", " + p.made_or_resold : ""}${(p.end_markets || []).length ? ", into " + [].concat(p.end_markets).join("/") : ""}${p.applications ? ", for " + String(p.applications).slice(0, 80) : ""}`).join("\n");
+  if (f === "product_em_map" && Array.isArray(v)) return "\n" + v.slice(0, 60).map(r => `  · ${r.category} → ${r.end_market} ${r.pct}%${r.customers ? " (" + String(r.customers).slice(0, 60) + ")" : ""}`).join("\n");
+  if (f === "acquisitions" && Array.isArray(v)) return "\n" + v.slice(0, 30).map(a => `  · ${a.date || ""} ${a.target}${a.deal_type ? " [" + a.deal_type + "]" : ""}${a.what_it_added ? ": added " + String(a.what_it_added).slice(0, 100) : a.what_it_does ? ": " + String(a.what_it_does).slice(0, 100) : ""}`).join("\n");
   if (Array.isArray(v)) return v.slice(0, 20).map(r => typeof r !== "object" ? r : [r.name || r.target || r.business || r.product || r.product_line || (r.sector && sectorById(r.sector)?.name) || "", r.date, num(r.revenue_usd_m) !== null ? fmtM(r.revenue_usd_m) : "", num(r.pct) !== null && r.pct !== undefined ? r.pct + "%" : "", num(r.share_pct) ? r.share_pct + "% of rev" : "", r.value_usd_m ? "value " + fmtM(r.value_usd_m) : "", r.overlap || r.what || r.what_it_does || r.rationale || ""].filter(x => x !== undefined && x !== "" && x !== null).join(", ").slice(0, 180)).join(" | ");
   if (v && typeof v === "object") return Object.entries(v).sort((a, b) => b[1] - a[1]).map(([k, x]) => `${k} ${x}%`).join(", ");
   if (typeof v === "number") return /_usd_m$/.test(f) ? fmtM(v) : /_pct$/.test(f) ? v + "%" : String(v);
   return String(v).slice(0, 700);
 }
-const KB_FIELDS = ["total_revenue_usd_m", "total_revenue_year", "total_ebitda_usd_m", "ebitda_margin_pct", "us_water_treatment_revenue_usd_m", "employees_total", "owner_type", "ultimate_parent", "pe_sponsor", "pe_entry_year", "hq_address", "business_model", "sectors", "revenue_by_business", "revenue_by_product", EM_FIELD, "end_market_buckets", "chemistries", "customers", "competitors", "acquisitions", "buyers", "addon_ideas", "what_it_is", "bluntly"];
+const KB_FIELDS = ["what_it_is", "business_model", "products", "product_em_map", "total_revenue_usd_m", "total_revenue_year", "total_ebitda_usd_m", "ebitda_margin_pct", "us_water_treatment_revenue_usd_m", "employees_total", "owner_type", "ultimate_parent", "pe_sponsor", "pe_entry_year", "hq_address", "business_model", "sectors", "revenue_by_business", "revenue_by_product", EM_FIELD, "end_market_buckets", "chemistries", "customers", "competitors", "acquisitions", "buyers", "addon_ideas", "bluntly"];
 function knowledgeBase(c, skipFields = []) {
   const tiers = { Verified: [], High: [], Medium: [], Low: [] };
   for (const f of KB_FIELDS) {
@@ -1093,13 +1219,23 @@ async function enhance(id, key) {
       conf[f] = { level: sec.append && has(cur[f]) ? oldL : newL, basis: String(rb[f] || "").slice(0, 300), at: now(), by: "Claude" };
       hist.push({ at: now(), field: f, by: "Claude", before: short(cur[f]), after: short(v), level: newL });
     }
+    // Derived views: the product pie comes from the catalog; the end-market mix from where each category goes.
+    if (patch.products) { patch.revenue_by_product = productRollup({ ...cur, products: patch.products }); conf.revenue_by_product = conf.products; }
+    const map = patch.product_em_map || (key === "endmarkets" ? cur.product_em_map : null);
+    if (map && !locked.has(EM_FIELD)) {
+      const em = emFromMap({ ...cur, ...patch }, map);
+      if (em && JSON.stringify(em) !== JSON.stringify(cur[EM_FIELD])) {
+        hist.push({ at: now(), field: EM_FIELD, by: "Claude", before: short(cur[EM_FIELD]), after: short(em) });
+        patch[EM_FIELD] = em; conf[EM_FIELD] = { level: minLevel(conf.product_em_map?.level || "Medium", confOf({ ...cur, conf }, "products").level === "Low" ? "Low" : "High"), basis: "Rolled up from where each product category goes, weighted by category revenue share", at: now(), by: "Profiler" };
+      }
+    }
     const rv = num(patch.total_revenue_usd_m ?? cur.total_revenue_usd_m), eb = num(patch.total_ebitda_usd_m ?? cur.total_ebitda_usd_m);
     if ((("total_revenue_usd_m" in patch) || ("total_ebitda_usd_m" in patch)) && !locked.has("ebitda_margin_pct") && rv && eb !== null) { patch.ebitda_margin_pct = +(eb / rv * 100).toFixed(1); conf.ebitda_margin_pct = { level: minLevel(confOf({ ...cur, conf }, "total_revenue_usd_m").level, confOf({ ...cur, conf }, "total_ebitda_usd_m").level), basis: "EBITDA / revenue", at: now(), by: "Claude" }; }
     patch.conf = conf;
     const note = String(res.note || "").slice(0, 300) || (Object.keys(patch).length ? "Section updated." : "No changes.");
     const summary = sec.append ? (added ? `Added ${added} new deal${added > 1 ? "s" : ""}. ${note}` : "No new deals found.") : note;
     const changed = Object.keys(patch).filter(f => sec.fields.includes(f));
-    let meta = { ...(cur.section_meta || {}), [key]: { at: now(), by: "Claude", note: summary } };
+    let meta = { ...(cur.section_meta || {}), [key]: { at: now(), by: "Claude", note: summary, passes: ((cur.section_meta || {})[key]?.passes || 0) + 1 } };
     if (changed.length) meta = markStale(cur, [key], meta);
     patch.section_meta = meta;
     patch.suggestions = sugg;
@@ -1571,7 +1707,7 @@ function secMeta(c, key) {
   return (m ? `<span class="faint" style="font-size:12px" title="${esc(m.note || "")}">Enhanced ${fmtDate(m.at)}</span>` : "")
     + (err ? `<span class="pill warn" role="alert">${esc(err)}</span><button class="btn sm ghost" data-act="dismisssec" data-k="${key}">Dismiss</button>` : "");
 }
-const LABELS = { sectors: "business lines by sector", primary_sector: "primary sector", total_revenue_usd_m: "revenue", total_revenue_year: "revenue year", total_revenue_basis: "revenue basis", total_ebitda_usd_m: "EBITDA", ebitda_year: "EBITDA year", ebitda_basis: "EBITDA basis", ebitda_margin_pct: "EBITDA margin", us_water_treatment_revenue_usd_m: "US water revenue", us_water_treatment_arithmetic: "US water revenue math", employees_total: "employee count", end_markets_total_platform: "end-market mix", end_market_buckets: "US water end-market buckets", revenue_by_business: "segment split", revenue_by_product: "product split", chemistries: "product list", addon_ideas: "add-on ideas", acquisitions: "deal list", what_it_is: "description", bluntly: "blunt take", profile_md: "write-up", pe_sponsor: "sponsor", pe_entry_year: "entry year", us_market_share_pct: "US market share", us_water_ebitda_usd_m: "US water EBITDA" };
+const LABELS = { products: "product catalog", product_em_map: "where products go", business_model: "business model", sectors: "business lines by sector", primary_sector: "primary sector", total_revenue_usd_m: "revenue", total_revenue_year: "revenue year", total_revenue_basis: "revenue basis", total_ebitda_usd_m: "EBITDA", ebitda_year: "EBITDA year", ebitda_basis: "EBITDA basis", ebitda_margin_pct: "EBITDA margin", us_water_treatment_revenue_usd_m: "US water revenue", us_water_treatment_arithmetic: "US water revenue math", employees_total: "employee count", end_markets_total_platform: "end-market mix", end_market_buckets: "US water end-market buckets", revenue_by_business: "segment split", revenue_by_product: "product split", chemistries: "product list", addon_ideas: "add-on ideas", acquisitions: "deal list", what_it_is: "description", bluntly: "blunt take", profile_md: "write-up", pe_sponsor: "sponsor", pe_entry_year: "entry year", us_market_share_pct: "US market share", us_water_ebitda_usd_m: "US water EBITDA" };
 const label = f => LABELS[f] || f.replace(/_/g, " ");
 function suggestionBox(c, fields) {
   const s = c.suggestions || {};
@@ -1590,7 +1726,7 @@ function viewCompany(id, tab) {
   const queued = (queueDocs || []).filter(q => q.company_id === id && q.status !== "done");
   const runStrip = busy.length ? `<div class="run" role="status"><span class="spin"></span><span><b>Enhancing ${busy.length === 1 ? SECTIONS[busy[0]].label : busy.length + " sections"}.</b> Each section saves as soon as it finishes. Your overrides stay as they are.</span></div>` : "";
   const stl = staleSections(c), sg = strength(c);
-  const actions = `${canEnhance() ? `<button class="btn primary" data-act="enhanceall" ${busy.length ? "disabled" : ""} title="Enhance every section in order, each one building on what the last one learned">Enhance all</button>` : ""}${writable && db ? `<button class="btn" data-act="queue" ${queued.length ? "disabled" : ""} title="Ask a Claude research agent with web search to update this profile">${queued.length ? "Web research queued" : "Request web research"}</button>` : ""}${delBtn()}`;
+  const actions = `${writable && db ? `<button class="btn" data-act="queue" ${queued.length ? "disabled" : ""} title="Ask a Claude research agent with web search to update this profile">${queued.length ? "Web research queued" : "Request web research"}</button>` : ""}${delBtn()}`;
 
   if (c.status === "empty" || c.status === "researching" && !(c.runs || []).length) {
     return `<div class="crumb"><a href="#companies">Companies</a> / ${esc(c.name)}</div>
@@ -1599,15 +1735,15 @@ function viewCompany(id, tab) {
     <div class="panel empty-hero">
       <div class="eyebrow">First run</div>
       <h2>Build this profile</h2>
-      <p class="muted">Claude fills in revenue and EBITDA, segment, product and end-market mix, customers, competitors, deals, add-on ideas and likely buyers, one section at a time. Each section saves as it finishes, and you can override any value afterwards.</p>
+      <p class="muted">The builder works in order: overview, M&A history, products, sectors, end markets (from where the products go), segments, financials, customers, competitors, buyers and add-ons. Each step starts from everything before it and saves as it finishes. You can override any value afterwards and run any step again to go deeper.</p>
       <label class="eyebrow" for="seedFacts">What you already know (optional)</label>
       <textarea id="seedFacts" placeholder="e.g. Revenue was $140M in 2025 per the CIM. Largest customer is Veolia at ~15%. Owned by XYZ Capital since 2022."></textarea>
-      <div class="add">${canEnhance() ? `<button class="btn primary" data-act="firstdive" ${busy.length ? "disabled" : ""}>Enhance all</button>` : ""}${writable && db ? `<button class="btn" data-act="queue" ${queued.length ? "disabled" : ""}>${queued.length ? "Web research queued" : "Request web research"}</button><button class="btn ghost" data-act="manual">Fill in by hand</button>` : ""}</div>
+      <div class="add">${canEnhance() ? `<button class="btn primary" data-act="firstdive" ${busy.length ? "disabled" : ""}>Build profile</button>` : ""}${writable && db ? `<button class="btn" data-act="queue" ${queued.length ? "disabled" : ""}>${queued.length ? "Web research queued" : "Request web research"}</button><button class="btn ghost" data-act="manual">Fill in by hand</button>` : ""}</div>
       <p class="faint" style="font-size:12px;margin-top:14px">Enhance uses Claude's own knowledge and runs here in the page. Web research is done by a Claude agent with search, which picks up queued requests.</p>
     </div>`;
   }
 
-  const counts = { customers: (c.customers || []).length, products: (c.chemistries || []).length, competitors: (c.competitors || []).length, acquisitions: (c.acquisitions || []).length, buyers: (c.buyers || []).length, addons: addonList(c).length, sources: (c.evidence || []).length + (c.source_of_truth || []).length };
+  const counts = { customers: (c.customers || []).length, products: catalog(c).length, competitors: (c.competitors || []).length, acquisitions: (c.acquisitions || []).length, buyers: (c.buyers || []).length, addons: addonList(c).length, sources: (c.evidence || []).length + (c.source_of_truth || []).length };
   const tabs = TABS.map(([k, l]) => `<a href="#c.${esc(id)}.${k}" aria-current="${tab === k}">${l}${counts[k] ? `<span class="n">${counts[k]}</span>` : ""}</a>`).join("");
   const m = margin(c);
   const ps = primarySector(c), prk = sectorRank(c, ps);
@@ -1631,11 +1767,33 @@ function viewCompany(id, tab) {
   </div>
   <div class="kpi-foot">${secMeta(c, "financials")}<span class="faint" style="font-size:12px">Type over any number to override it.</span><span class="sp"></span>${enhanceBtn(c, "financials", "Enhance financials")}</div>
   ${suggestionBox(c, SECTIONS.financials.fields)}
+  ${viewBuilder(c)}
   ${writable && db ? `<form class="facts" id="factForm"><span class="lab">Add a fact</span><input id="factText" placeholder="Something the profile gets wrong or misses, e.g. 2025 EBITDA was $24M per lender deck" autocomplete="off" aria-label="Add a fact"><button class="btn" type="submit">Save fact</button></form>` : ""}
   ${runStrip}
   ${stl.length && !busy.length ? `<div class="run err"><span><b>${stl.length} section${stl.length > 1 ? "s are" : " is"} out of date</b> because newer information came in: ${esc(stl.map(k => SECTIONS[k].label).join(", "))}.</span><span style="flex:1"></span>${canEnhance() ? `<button class="btn sm primary" data-act="updatestale">Update them</button>` : ""}</div>` : ""}
   <nav class="tabs" aria-label="Profile sections">${tabs}</nav>`;
   return hdr + tabBody(c, tab);
+}
+// The builder: each step in order, its state, and one click to build the next step or go deeper.
+function stepState(c, k) {
+  if (isRunning(c.id, k)) return { cls: "run", text: "Building…" };
+  const m = (c.section_meta || {})[k] || {};
+  if (m.stale) return { cls: "stale", text: "Out of date" };
+  if (m.at) return { cls: "done", text: `Pass ${m.passes || 1} · ${sectionConf(c, k) || "—"}` };
+  const d = sectionDef(c, k), hasData = k === "sectors" ? !!(c.sectors || c.imported_from) : k === "products" ? catalog(c).length > 0 : d.fields.some(f => has(c[f]));
+  return hasData ? { cls: "imp", text: c.imported_from ? "From import" : "Has data" } : { cls: "todo", text: "Not built" };
+}
+function nextStep(c) {
+  const st = SECTION_ORDER.map(k => [k, stepState(c, k).cls]);
+  return (st.find(([, s]) => s !== "done") || [])[0] || null;   // first step, in order, the builder hasn't finished
+}
+function viewBuilder(c) {
+  const nx = nextStep(c), busy = SECTION_ORDER.some(k => isRunning(c.id, k)), ok = canEnhance();
+  return `<div class="panel builder">
+    <div class="sec-h"><h2>Profile builder</h2><span class="faint" style="font-size:12px">Builds in order; each step starts from everything before it. Click a finished step to go deeper.</span><span class="sp"></span>
+      ${ok && nx ? `<button class="btn sm primary" data-act="enhance" data-k="${nx}" ${busy ? "disabled" : ""}>Build next: ${esc(SECTIONS[nx].label)}</button>` : ""}${ok ? `<button class="btn sm" data-act="enhanceall" ${busy ? "disabled" : ""}>Build all</button>` : ""}</div>
+    <ol class="steps">${SECTION_ORDER.map((k, i) => { const st = stepState(c, k); return `<li><button class="step ${st.cls}" data-act="enhance" data-k="${k}" ${!ok || busy ? "disabled" : ""} title="${st.cls === "done" ? "Go deeper on " : "Build "}${esc(SECTIONS[k].label)}"><span class="sn">${st.cls === "run" ? `<span class="spin"></span>` : i + 1}</span><span class="sl">${esc(SECTIONS[k].label)}</span><span class="ss">${esc(st.text)}</span></button></li>`; }).join("")}</ol>
+  </div>`;
 }
 function delBtn() {
   if (!writable || !db) return "";
@@ -1761,12 +1919,20 @@ function tabBody(c, tab) {
     ${editTable(c, "revenue_by_business", [{ k: "business", label: "Segment" }, { k: "category", label: "Category", w: "220px" }, { k: "revenue_usd_m", label: "$M", t: "num", w: "90px" }, { k: "pct", label: "%", t: "num", w: "70px" }], segs, { empty: "No segment split yet. Hit Enhance and Claude fills it in." })}</div>
     <div class="sec">${secHead(c, "revenue_by_product", "Products", "", "products", ["revenue_by_product"])}
     ${editTable(c, "revenue_by_product", [{ k: "product", label: "Product line" }, { k: "revenue_usd_m", label: "$M", t: "num", w: "90px" }, { k: "pct", label: "%", t: "num", w: "70px" }], prods, { empty: "No product split yet. Hit Enhance and Claude fills it in." })}</div>
-    <div class="sec">${secHead(c, EM_FIELD, "End markets", `<span class="faint num" style="font-size:12px">Sum ${fmtPct(emSum)}</span>`, "endmarkets")}
+    <div class="sec">${secHead(c, "product_em_map", "Where products go", `<span class="faint" style="font-size:12px">Each category's split across end markets. The end-market mix below is rolled up from this, weighted by category revenue.</span>`, "endmarkets", ["product_em_map"])}
+    ${editTable(c, "product_em_map", [{ k: "category", label: "Product category", w: "220px" }, { k: "end_market", label: "End market", w: "220px" }, { k: "pct", label: "% of category", t: "num", w: "110px" }, { k: "customers", label: "Typical customers" }], tableRows(c, "product_em_map"), { empty: "Not mapped yet. Build the product catalog first, then Enhance end markets." })}</div>
+    <div class="sec">${secHead(c, EM_FIELD, "End markets", `<span class="faint num" style="font-size:12px">Sum ${fmtPct(emSum)}</span>`)}
     ${editTable(c, EM_FIELD, [{ k: "name", label: "End market" }, { k: "pct", label: "% of revenue", t: "num", w: "120px" }, { k: "_d", label: "$M", t: "num", ro: true, w: "90px", fmt: r => rev !== null && num(r.pct) ? fmtM(rev * r.pct / 100) : "—" }], ems, { empty: "No end-market split yet. Hit Enhance and Claude fills it in." })}</div>`;
   }
   const E = what => `Nothing here yet. Hit Enhance and Claude fills in ${what}, or add rows yourself.`;
   if (tab === "customers") return `<div class="sec">${secHead(c, "customers", "Top customers", "", "customers")}${editTable(c, "customers", [{ k: "name", label: "Customer" }, { k: "what", label: "What they buy" }, { k: "share_pct", label: "% of rev", t: "num", w: "90px" }, { k: "source", label: "Basis", w: "200px" }, CONF_COL], tableRows(c, "customers"), { empty: E("the top customers") })}</div>`;
-  if (tab === "products") return `<div class="sec">${secHead(c, "chemistries", "Top products", "", "products", ["chemistries"])}${editTable(c, "chemistries", [{ k: "product_line", label: "Product line" }, { k: "made_or_resold", label: "Made or resold", w: "260px" }, { k: "brands", label: "Brands", w: "220px" }], tableRows(c, "chemistries"), { empty: E("the top products") })}</div>`;
+  if (tab === "products") {
+    const legacy = !(c.products || []).length && (c.chemistries || []).length;
+    const roll = productRollup(c);
+    return `<div class="sec">${secHead(c, "products", "Product catalog", roll.length ? `<span class="faint" style="font-size:12px">${catalog(c).length} lines in ${roll.length} categories</span>` : "", "products", ["products"])}
+      <p class="muted" style="margin:-4px 0 10px;font-size:13px">Category → product line → named products. ${legacy ? "This is the short list from the water index; Enhance turns it into a full catalog." : "Each Enhance goes one level deeper. End markets are built from where these categories go."}</p>
+      ${editTable(c, "products", [{ k: "category", label: "Category", w: "150px" }, { k: "line", label: "Line / brand", w: "130px" }, { k: "named_products", label: "Named products", w: "170px" }, { k: "what_it_is", label: "What it is", w: "170px" }, { k: "applications", label: "Applications", w: "170px" }, { k: "end_markets", label: "End markets", w: "150px" }, { k: "made_or_resold", label: "Made / resold", w: "90px" }, { k: "share_pct", label: "% rev", t: "num", w: "64px" }, CONF_COL], tableRows(c, "products"), { empty: "No product catalog yet. Hit Enhance and Claude builds one from the overview and M&A history." })}</div>`;
+  }
   if (tab === "competitors") {
     const rev = reverseLinks().comp.get(c.id) || [], named = new Set((c.competitors || []).map(x => findCompanyByName(x.name, c.id)?.id).filter(Boolean));
     const lc = likelyCompetitors(c).filter(x => !named.has(x.p.id));
