@@ -934,7 +934,7 @@ const SECTIONS = {
     shape: `{"what_it_is":"1-2 sentences","bluntly":"2-3 plain-spoken sentences","profile_md":"markdown, 250-450 words","business_model":"Manufacturer | Formulator/blender | Distributor | Service route business | Toll/private label | Mixed: ...","owner_type":"","ultimate_parent":"","pe_sponsor":"","pe_entry_year":"","prior_owners":"","hq_address":"","website":""}`,
     rules: "Identity and business model only. No revenue or EBITDA numbers unless they are already in the known facts." },
   deals: { label: "M&A history", fields: ["acquisitions"], append: true,
-    shape: `{"acquisitions":[{"date":"YYYY or YYYY-MM","target":"legal or trading name","deal_type":"Add-on | Platform | Merger | Divestiture | Ownership change","what_it_does":"target's products, end markets and geography","what_it_added":"what the deal added to this company: product line, geography, end market, capability","revenue_usd_m":null,"value_usd_m":null,"source_url":"","confidence":"High | Medium | Low"}]}`,
+    shape: `{"acquisitions":[{"date":"YYYY or YYYY-MM","target":"legal or trading name","deal_type":"Add-on | Platform | Merger | Divestiture | Ownership change","what_it_does":"target's products, end markets and geography","what_it_added":"what the deal added to this company: product line, geography, end market, capability","closed_date":"YYYY-MM when it closed","revenue_usd_m":null,"employees":null,"value_usd_m":null,"source_url":"","confidence":"High | Medium | Low"}]}`,
     rules: "Only deals NOT already in the current list, newest first." },
   products: { label: "Products", fields: ["products"],
     shape: `{"products":[{"category":"product category, e.g. Industrial gear oils","line":"brand family or product line, e.g. Duolec","named_products":"named products or grades, comma separated","what_it_is":"chemistry, base and form","applications":"what it is used for","end_markets":["end markets it goes into"],"made_or_resold":"Made | Resold | Toll-made | Service | Equipment","share_pct":0,"revenue_usd_m":null,"confidence":"High | Medium | Low"}]}`,
@@ -948,8 +948,8 @@ const SECTIONS = {
   segments: { label: "Segment mix", fields: ["revenue_by_business"],
     shape: `{"revenue_by_business":[{"business":"","category":"product category or sector it maps to","revenue_usd_m":0,"pct":0}]}`,
     rules: "3 to 8 segments whose revenue sums to total revenue." },
-  financials: { label: "Revenue & EBITDA", fields: ["total_revenue_usd_m", "total_revenue_year", "total_revenue_basis", "total_ebitda_usd_m", "ebitda_year", "ebitda_basis", "us_water_treatment_revenue_usd_m", "us_water_treatment_arithmetic", "employees_total"],
-    shape: `{"total_revenue_usd_m":0,"total_revenue_year":"","total_revenue_basis":"the math","total_ebitda_usd_m":0,"ebitda_year":"","ebitda_basis":"the math","us_water_treatment_revenue_usd_m":0,"us_water_treatment_arithmetic":"the math","employees_total":0}`,
+  financials: { label: "Revenue & EBITDA", fields: ["total_revenue_usd_m", "total_revenue_year", "total_revenue_basis", "total_ebitda_usd_m", "ebitda_year", "ebitda_basis", "us_water_treatment_revenue_usd_m", "us_water_treatment_arithmetic", "employees_total", "employees_basis"],
+    shape: `{"total_revenue_usd_m":0,"total_revenue_year":"","total_revenue_basis":"reported figure, period, source and date, then the pro forma bridge and headcount check","total_ebitda_usd_m":0,"ebitda_year":"","ebitda_basis":"the math","us_water_treatment_revenue_usd_m":0,"us_water_treatment_arithmetic":"the math","employees_total":0,"employees_basis":"pro forma headcount: sources and dates"}`,
     rules: "USD millions, latest full year." },
   customers: { label: "Top customers", fields: ["customers"],
     shape: `{"customers":[{"name":"named account, or a specific customer type","end_market":"","what":"which products they buy","share_pct":null,"source":"basis in a few words","confidence":"High | Medium | Low"}]}`,
@@ -976,7 +976,8 @@ DON'T: invent owners, deals or numbers. If you are unsure who owns it, say so an
   deals: `GOAL: every acquisition, merger, divestiture and ownership change in the company's history. Acquired businesses define what the company owns today, so later steps use this list to find product lines, end markets and geographies.
 FOR EACH DEAL: date, the target's name, deal type, what the target did (products, end markets, geography), what it added to this company, target revenue at the time and deal value if disclosed.
 Include divestitures (deal_type Divestiture) and changes of the company's own ownership (deal_type Ownership change, target = this company, naming the new owner in what_it_added).
-DON'T: list a deal unless you are confident it happened. Never claim the company itself was acquired unless you are certain; a wrong ownership change corrupts the whole profile. An empty list is better than a wrong one.`,
+DON'T: list a deal unless you are confident it happened. Never claim the company itself was acquired unless you are certain; a wrong ownership change corrupts the whole profile. An empty list is better than a wrong one.
+SIZE EVERY DEAL: for each acquisition find the target's revenue (revenue_usd_m) and headcount (employees) at the time, and the close date. Deal announcements, sponsor and law-firm releases and trade press usually state them; otherwise estimate from the target's headcount and say so. The revenue step uses these to build pro forma revenue.`,
   products: `GOAL: a real product catalog built from actual products, not generic chemistry words.
 STRUCTURE: category (for example "Industrial gear oils", "Food-grade greases", "Cooling-tower biocides", "Salon hair color") → product line or brand family (for example "Duolec", "Quinplex") → named products or grades. For each line give what it is (chemistry, base, form), what it does and key applications, the end markets it is sold into, whether it is made in-house, resold, toll-made, a service or equipment, and its share of company revenue.
 DEPTH: a mid-size company should have 8 to 25 lines across 3 to 8 categories. Use the company's own brand names where you know them. Put services (testing, lab, route service) and equipment in their own categories. Include product lines that came with acquisitions.
@@ -991,10 +992,16 @@ END-MARKET NAMES: use these where they fit: {EM_NAMES}.
 DON'T: give one company-wide guess; work category by category. Every catalog category must appear.`,
   segments: `GOAL: the business segments the company reports or is organized into, each with revenue.
 METHOD: start from how the company itself describes its divisions; otherwise group product categories and acquired businesses into 3 to 8 segments. Revenue sums to total revenue; tie each segment to its product categories in "category".`,
-  financials: `GOAL: the best-grounded revenue, EBITDA and headcount you can give, with the arithmetic shown.
-REVENUE: use disclosures first. Otherwise triangulate: headcount × revenue per employee for this business model; plant or blending capacity; the size of acquisitions added since the last known figure; the sum of the product catalog. Give the year.
-EBITDA: build margin from the product and end-market mix: formulated specialty products usually earn more than commodity or resold products, distribution earns less, service route businesses sit in between. Adjust for scale. Show the blended margin and the math in ebitda_basis.
-DON'T: state a figure as disclosed unless it is.`,
+  financials: `GOAL: pro forma revenue (today's business, including every acquisition), EBITDA and headcount, each with its date and the arithmetic shown.
+REVENUE, IN THIS ORDER:
+1. Find the latest REPORTED revenue number and WHEN it was reported and for what period. Search the company name with "revenue", "sales", "$ million", "annual revenue"; press releases and deal announcements (sponsor, lender and law-firm releases often state it); trade press; industry lists (Inc. 5000, ICIS, C&EN, Coatings World, Adhesives Magazine and similar top-company lists); and executive bios on LinkedIn and company or sponsor pages ("led growth to $X million", "grew revenue from $A to $B"), which often state revenue. Note the source, the period and the reported date for each number.
+2. Make it PRO FORMA. Take the M&A history and add every acquisition that closed AFTER the period of the reported figure, using each target's revenue (search it: deal announcements usually state it; otherwise estimate from the target's headcount). Subtract anything divested since. A figure reported before an acquisition is not pro forma: say so and adjust it.
+3. Cross-check with headcount: pro forma employees (the company's own count plus acquired companies' staff; LinkedIn, the company site, deal releases) × revenue per employee for this business model (formulators and blenders typically $300-600K per employee, distributors more, service route businesses less). Also check against the product catalog and plant capacity where known.
+4. Pick the best-supported figure and show the bridge in total_revenue_basis: "Reported $X for <period> (<source>, reported <date>) + <acquisition> $Y (closed <date>) + … − <divestiture> = pro forma $Z; headcount check: N employees × $K = $W." Use the pro forma year for total_revenue_year (e.g. "2026 pro forma").
+EMPLOYEES: pro forma headcount with its sources and date in employees_basis (company count plus acquired staff).
+EBITDA: build margin from the product and end-market mix: formulated specialty products usually earn more than commodity or resold products, distribution earns less, service route businesses sit in between. Adjust for scale; use any margin disclosed in deal or lender releases. Show the blended margin and the math in ebitda_basis.
+CONFIDENCE: High only if a source states the pro forma number; a reported figure adjusted with sourced deal sizes is Medium; a headcount-only estimate is Low-Medium.
+DON'T: present an old or pre-acquisition figure as current, or state a figure as disclosed unless it is.`,
   customers: `GOAL: who actually buys the products, by end market.
 FOR EACH: a named account where you know it (utilities, OEMs, distributors, retailers, industrial plants), otherwise a specific customer type with examples; its end market; which product categories it buys; share of revenue if known.
 DON'T: invent named accounts. A specific customer type is better than a made-up name.`,
@@ -1014,7 +1021,7 @@ const DEEPEN = {
   sectors: "Re-check each category's sector against the latest product catalog and fix the shares.",
   endmarkets: "Cover every category in the latest catalog, split end markets more finely where a category serves several, and name customer types for each.",
   segments: "Re-align segments with the latest product catalog and deals.",
-  financials: "Re-derive revenue and margin from the latest products, end markets and deals, and show the math more fully.",
+  financials: "Search again for a newer reported revenue figure and its date (press releases, deal announcements, executive LinkedIn bios, top-company lists), re-check every acquisition closed since it for the pro forma bridge, and re-run the headcount cross-check.",
   customers: "Add more named accounts and cover every major end market.",
   competitors: "Cover every product category and add the regional and mid-market competitors.",
   buyers: "Refine the list against the latest products, end markets and deals, and add sponsors with related platforms.",
@@ -1026,7 +1033,7 @@ function sectionDef(c, key) {
   const base = SECTIONS[key]; if (!base) return null;
   const water = inSector(c, "water");
   if (key === "financials" && !water) return { ...base, fields: base.fields.filter(f => !f.startsWith("us_water")),
-    shape: `{"total_revenue_usd_m":0,"total_revenue_year":"","total_revenue_basis":"the math","total_ebitda_usd_m":0,"ebitda_year":"","ebitda_basis":"the math","employees_total":0}` };
+    shape: `{"total_revenue_usd_m":0,"total_revenue_year":"","total_revenue_basis":"reported figure, period, source and date, then the pro forma bridge and headcount check","total_ebitda_usd_m":0,"ebitda_year":"","ebitda_basis":"the math","employees_total":0,"employees_basis":"pro forma headcount: sources and dates"}` };
   if (key === "endmarkets" && !water) return { ...base, fields: ["product_em_map", EM_FIELD],
     shape: `{"product_em_map":[{"category":"product category exactly as in the catalog","end_market":"end market name","pct":0,"customers":"typical customer types in this end market"}]}` };
   return base;
@@ -2327,7 +2334,7 @@ function render() {
 }
 
 /* ---------- chat: ask and tell, with web search; Claude proposes changes, code checks and saves them ---------- */
-const CHAT_FIELDS = ["what_it_is", "business_model", "owner_type", "ultimate_parent", "pe_sponsor", "pe_entry_year", "prior_owners", "hq_address", "website", "total_revenue_usd_m", "total_revenue_year", "total_ebitda_usd_m", "ebitda_year", "employees_total"];
+const CHAT_FIELDS = ["what_it_is", "business_model", "owner_type", "ultimate_parent", "pe_sponsor", "pe_entry_year", "prior_owners", "hq_address", "website", "total_revenue_usd_m", "total_revenue_year", "total_revenue_basis", "total_ebitda_usd_m", "ebitda_year", "ebitda_basis", "employees_total", "employees_basis"];
 const CHAT_LISTS = { products: "products", acquisitions: "deals", customers: "customers", competitors: "competitors", buyers: "buyers", addon_ideas: "addons" };
 const rowName = r => r ? String(r.name || r.target || [r.category, r.line].filter(Boolean).join(" / ") || r.product || "") : "";
 const chat = { id: null, open: false };
@@ -2419,6 +2426,7 @@ RECORD RULES (code enforces these)
 - Lists for add_row/update_row/remove_row: products {category, line, named_products, what_it_is, applications, end_markets[], made_or_resold, share_pct}, acquisitions {date, target, deal_type, what_it_does, what_it_added, value_usd_m}, customers {name, end_market, what, share_pct}, competitors {name, overlap, size}, buyers {name, type, fit, rationale}, addon_ideas {target, rationale, est_revenue_usd_m, location}.
 - set_step: for a builder step (when a STEP BRIEF is given, or to rebuild a whole section): "step" is the step key and "value" is that step's full object in its shape, with "confidence", "basis" and "note".
 - update_row/remove_row: "match" is the existing row's name exactly as listed. Never invent names, figures or deals.
+- Revenue: first find the latest REPORTED number and when it was reported and for what period (press and deal releases, top-company lists, executive LinkedIn bios often state it). Then make it pro forma: add acquisitions closed after that period (their revenue), subtract divestitures, and cross-check with pro forma headcount × revenue per employee. Put the bridge in total_revenue_basis via set_step "financials" (or state it in basis). A pre-acquisition figure is not current.
 - Stay on this exact company; ignore look-alikes.`;
 function chatTools(c, seen, msg) {
   const act = t => { msg.activity = [...(msg.activity || []), t].slice(-30); chatMsgs(); };
