@@ -18,6 +18,14 @@ Live app: https://claude.ai/artifact/KCB1rWzeMTqDnqVXoQz3eG (private to the owne
 
 In-page deep dives run on Claude's own knowledge (no web browsing). For a web-researched dive, ask Claude in chat to research a company into Profiler, and it writes the profile to the same database.
 
+## How profiles learn
+
+- Every field carries a confidence: **Verified** (you typed it or clicked its badge), **High**, **Medium** or **Low**, with the basis. Profile strength sums this up.
+- Enhance sends Claude everything the profile knows, strongest first, and tells it to derive weaker items from stronger ones. It returns a confidence and basis per field.
+- A weaker answer never overwrites a stronger one; it is held as a suggestion.
+- Sections depend on each other (deals inform financials, mix, customers, competitors and buyers; end markets inform financials, competitors and buyers; and so on). When a section changes, its dependents are marked out of date and "Update them" refreshes them in order.
+- Enhance all runs one section at a time in dependency order, so each step builds on the last.
+
 ## Data
 
 The repository holds the full US Water Treatment Chemicals index (v8 workbook, built 26 Sep 2026): 558 ultimate owners as profiles, 804 add-on deals on their Acquisitions tabs, 148 outside and sponsor deals, and 281 add-on, excluded and duplicate entities for Targets. The 10 September 27 deep dives (P05A/P05B) take precedence over the workbook rows for those companies.
