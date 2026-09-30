@@ -35,6 +35,14 @@ Each step has its own detailed playbook (goal, what to cover, method, depth, che
 
 Web search uses the free Parallel Search connector (claude.ai Settings → Connectors). Builder buttons run through the chat: each step sends a detailed brief (the step's playbook, what the profile knows, go-deeper instructions on later passes), and Claude researches it the way it would a question, with targeted searches and page reads, building on the steps before it in the same conversation. Build all runs the steps in order as chat turns.
 
+## Sponsor owned, In market, valuation
+
+- **Sponsor owned** (`#sponsors`): every PE-owned company, grouped by entry year, sub-industry and owner, with hold periods (5+ years highlighted), entry and current EV/EBITDA. The PE-owned tag on a profile links to its sponsor's portfolio.
+- **In market** (`#inmarket`): companies marked "In market" on their profile, with seller, sell-side advisor, stage, launch date, guided multiple and notes (`in_market` on the company).
+- **Valuation**: EV, EV/EBITDA, EV/revenue and sponsor entry multiple on each profile; EV/EBITDA columns on Companies and Precedents.
+- **Logos**: upload on a profile; stored shrunk in `logos/<company>` and shown on the Sponsor owned and In market tables.
+- **Segments tab**: a profile per reported segment (revenue, EBITDA, margin, products, end markets, competitors), built from filings through the chat or entered by hand (`segment_profiles`).
+
 ## Chat
 
 Every company page has a Chat button. Ask or tell it anything in plain language ("find their product brands", "did they buy anyone since 2020?", "revenue is $40M per the CIM"). It searches the web, shows what it is searching and reading as it goes, then proposes changes through a `record` tool. Code checks each change before saving: web facts must cite a page actually found in that turn, a weaker source never overwrites a stronger one, and what you tell it is saved as Verified. Each reply lists what was saved and not saved, with Undo. Conversations are kept in `chats/<company>`.

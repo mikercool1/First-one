@@ -165,6 +165,33 @@ td[contenteditable]{min-width:60px}
 .chat-hint{font-size:12px;color:var(--ink-3);padding:0 14px 8px}
 @media (max-width:760px){.chat{width:100vw;border-left:0}}
 @media (min-width:900px){body.chat-open main,body.chat-open .top-in{margin-right:440px;margin-left:max(0px,calc((100vw - 440px - 1180px)/2))}}
+/* sponsors, in market, logos, valuation, segments */
+.logo{display:inline-block;object-fit:contain;vertical-align:middle;background:#fff;border-radius:4px}
+.logo.sm{height:20px;max-width:64px;margin-right:8px}
+.logo.lg{height:44px;max-width:180px;padding:3px 6px;border:1px solid var(--line)}
+.logo-row{display:flex;gap:8px;align-items:center;min-height:0;margin-bottom:6px}
+.logo-row:empty{display:none}
+a.pill.pe{background:var(--accent-soft);color:var(--accent);text-decoration:none;font-weight:600}
+a.pill.pe:hover{text-decoration:underline}
+.valrow{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:baseline;margin-top:10px;padding:10px 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);font-size:14px}
+.valrow b{font-weight:600}
+.run.im{background:var(--accent-soft);margin-top:10px}
+.imform{padding:14px 16px;margin-top:10px}
+.imgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 14px}
+.imgrid label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ink-3)}
+.imgrid .wide{grid-column:1/-1}
+.spgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}
+.spg{padding:12px 14px;max-height:420px;overflow:auto}
+.gt{width:100%;border-collapse:collapse}.gt td{padding:5px 6px;border-bottom:1px solid var(--line);font-size:13px}
+.gt tr.on td{background:var(--accent-soft)}
+.hb{display:inline-block;width:90px;height:8px;background:var(--sunk);border-radius:4px;overflow:hidden;vertical-align:middle}
+.hb i{display:block;height:100%;background:var(--accent)}
+td.warnc{color:var(--warn);font-weight:600}
+.stg{display:inline-flex;gap:3px;vertical-align:middle}.stg i{width:10px;height:6px;border-radius:2px;background:var(--sunk)}.stg i.on{background:var(--accent)}
+.seggrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.seg{padding:12px 14px}.seg h3{margin:0;font-size:16px}.seg .hb{width:100%}
+.segdl{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;margin:6px 0 0;font-size:13px}.segdl dt{color:var(--ink-3)}.segdl dd{margin:0}
+@media (max-width:900px){.spgrid,.seggrid,.imgrid{grid-template-columns:1fr}}
 .run.warnrun{background:var(--warn-soft,#fbeee2)}
 .run .sp{flex:1}
 .run{margin-top:14px;padding:12px 14px;border-radius:var(--r);background:var(--accent-soft);color:var(--ink);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -374,6 +401,8 @@ tr:hover .rowx{opacity:1}
       <a href="#precedents" data-v="precedents">Precedents</a>
       <a href="#endmarkets" data-v="endmarkets">End markets</a>
       <a href="#tam" data-v="tam">Market size</a>
+      <a href="#sponsors" data-v="sponsors">Sponsor owned</a>
+      <a href="#inmarket" data-v="inmarket">In market</a>
     </nav>
     <div class="live" id="live"><span class="dot"></span><span>Connecting</span></div>
   </div>
@@ -398,7 +427,7 @@ const now = () => new Date().toISOString();
 
 const BUCKETS = ["Municipal","Energy & chemicals","Heavy industry","Commercial & institutional","Light industry & high-purity","Pool & spa","Agriculture & farm","Other"];
 // Heavy fields live in details/<id> and load when a profile opens; everything else sits in companies/<id>.
-const DETAIL_KEYS = new Set(["dossier","products","product_em_map","history","suggestions","what_it_is","bluntly","profile_md","total_revenue_basis","ebitda_basis","employees_basis","us_water_treatment_arithmetic","open_questions","addon_corrections","what_changed_vs_prior","evidence","key_sites","chemistries","customers","runs","prior_owners"]);
+const DETAIL_KEYS = new Set(["segment_profiles","dossier","products","product_em_map","history","suggestions","what_it_is","bluntly","profile_md","total_revenue_basis","ebitda_basis","employees_basis","us_water_treatment_arithmetic","open_questions","addon_corrections","what_changed_vs_prior","evidence","key_sites","chemistries","customers","runs","prior_owners"]);
 const END_MARKETS = ["Municipal drinking water","Municipal wastewater","Power generation","Oil & gas / refining","Chemicals & petrochem","Pulp & paper","Food & beverage","Mining & metals","Primary metals/steel","Commercial HVAC / buildings","Healthcare & institutional","Data centers","Pharma/life sciences","Microelectronics/semis","Manufacturing (general industrial)","Pools & spa","Agriculture & farm","Consumer / retail","Other"];
 
 /* ---------- sectors ---------- */
@@ -505,7 +534,8 @@ const seeding = {};
 function route() {
   const h = (location.hash || "#companies").slice(1);
   if (h.startsWith("c.")) { const [, id, tab] = h.split("."); return { view: "company", id, tab: tab || "snapshot" }; }
-  if (["sectors", "companies", "targets", "precedents", "endmarkets", "tam"].includes(h)) return { view: h };
+  if (h.startsWith("sponsors")) { const [, fk, fv] = h.split("~"); return { view: "sponsors", fk: fk || "", fv: fv ? decodeURIComponent(fv) : "" }; }
+  if (["sectors", "companies", "targets", "precedents", "endmarkets", "tam", "inmarket"].includes(h)) return { view: h };
   return { view: "sectors" };
 }
 
@@ -636,10 +666,10 @@ function allDealsRaw() {
   for (const c of list()) {
     for (const a of c.acquisitions || []) {
       if (!a || !a.target) continue;
-      out.push({ date: a.date || "", year: yearOf(a.date), target: a.target, acquirer: c.name, acquirerId: c.id, what: a.what_it_does || "", rev: num(a.revenue_usd_m), value: num(a.value_usd_m), url: a.source_url || "" });
+      out.push({ date: a.date || "", year: yearOf(a.date), target: a.target, acquirer: c.name, acquirerId: c.id, what: a.what_it_does || "", rev: num(a.revenue_usd_m), value: num(a.value_usd_m), ebitda: num(a.ebitda_usd_m), evx: num(a.ev_ebitda_x), url: a.source_url || "" });
     }
     if (num(c.pe_entry_ev_usd_m) && c.pe_sponsor) {
-      out.push({ date: c.pe_entry_year || "", year: yearOf(c.pe_entry_year), target: c.name, targetId: c.id, acquirer: String(c.pe_sponsor).split(/[;(]/)[0].trim(), what: "Sponsor entry" + (c.pe_entry_multiple && !/not disclosed|n\/a/i.test(c.pe_entry_multiple) ? " · " + c.pe_entry_multiple : ""), rev: null, value: num(c.pe_entry_ev_usd_m), url: "" });
+      out.push({ date: c.pe_entry_year || "", year: yearOf(c.pe_entry_year), target: c.name, targetId: c.id, acquirer: String(c.pe_sponsor).split(/[;(]/)[0].trim(), what: "Sponsor entry" + (c.pe_entry_multiple && !/not disclosed|n\/a/i.test(c.pe_entry_multiple) ? " · " + c.pe_entry_multiple : ""), rev: null, value: num(c.pe_entry_ev_usd_m), evx: entryMult(c), url: "" });
     }
   }
   return out;
@@ -776,6 +806,7 @@ function rowsToValue(f, rows) {
 }
 const BLANK = {
   customers: { name: "", what: "", share_pct: null, source: "You" },
+  segment_profiles: { name: "", revenue_usd_m: null, ebitda_usd_m: null, margin_pct: null, products: "", end_markets: "", competitors: "", description: "" },
   competitors: { name: "", overlap: "" },
   buyers: { name: "", type: "Strategic", rationale: "" },
   addon_ideas: { target: "", rationale: "", est_revenue_usd_m: null, location: "" },
@@ -922,7 +953,7 @@ app.addEventListener("paste", e => {
   const text = (e.clipboardData || window.clipboardData).getData("text/plain");
   document.execCommand("insertText", false, text);
 });
-const isEditing = () => { const a = document.activeElement; return !!(a && app.contains(a) && (a.isContentEditable || a.tagName === "TEXTAREA" || ((a.id === "addName" || a.id === "factText") && a.value))); };
+const isEditing = () => { const a = document.activeElement; return !!(a && app.contains(a) && (a.isContentEditable || a.tagName === "TEXTAREA" || ((a.id === "addName" || a.id === "factText") && a.value) || (!!a.closest?.("#imForm") && /^(INPUT|SELECT)$/.test(a.tagName)))); };
 
 /* ---------- deep dive ---------- */
 /* ---------- enhance: one focused Claude run per section ---------- */
@@ -934,7 +965,7 @@ const SECTIONS = {
     shape: `{"what_it_is":"1-2 sentences","bluntly":"2-3 plain-spoken sentences","profile_md":"markdown, 250-450 words","business_model":"Manufacturer | Formulator/blender | Distributor | Service route business | Toll/private label | Mixed: ...","owner_type":"","ultimate_parent":"","pe_sponsor":"","pe_entry_year":"","prior_owners":"","hq_address":"","website":""}`,
     rules: "Identity and business model only. No revenue or EBITDA numbers unless they are already in the known facts." },
   deals: { label: "M&A history", fields: ["acquisitions"], append: true,
-    shape: `{"acquisitions":[{"date":"YYYY or YYYY-MM","target":"legal or trading name","deal_type":"Add-on | Platform | Merger | Divestiture | Ownership change","what_it_does":"target's products, end markets and geography","what_it_added":"what the deal added to this company: product line, geography, end market, capability","closed_date":"YYYY-MM when it closed","revenue_usd_m":null,"employees":null,"value_usd_m":null,"source_url":"","confidence":"High | Medium | Low"}]}`,
+    shape: `{"acquisitions":[{"date":"YYYY or YYYY-MM","target":"legal or trading name","deal_type":"Add-on | Platform | Merger | Divestiture | Ownership change","what_it_does":"target's products, end markets and geography","what_it_added":"what the deal added to this company: product line, geography, end market, capability","closed_date":"YYYY-MM when it closed","revenue_usd_m":null,"employees":null,"ebitda_usd_m":null,"ev_ebitda_x":null,"value_usd_m":null,"source_url":"","confidence":"High | Medium | Low"}]}`,
     rules: "Only deals NOT already in the current list, newest first." },
   products: { label: "Products", fields: ["products"],
     shape: `{"products":[{"category":"product category, e.g. Industrial gear oils","line":"brand family or product line, e.g. Duolec","named_products":"named products or grades, comma separated","what_it_is":"chemistry, base and form","applications":"what it is used for","end_markets":["end markets it goes into"],"made_or_resold":"Made | Resold | Toll-made | Service | Equipment","share_pct":0,"revenue_usd_m":null,"confidence":"High | Medium | Low"}]}`,
@@ -948,8 +979,8 @@ const SECTIONS = {
   segments: { label: "Segment mix", fields: ["revenue_by_business"],
     shape: `{"revenue_by_business":[{"business":"","category":"product category or sector it maps to","revenue_usd_m":0,"pct":0}]}`,
     rules: "3 to 8 segments whose revenue sums to total revenue." },
-  financials: { label: "Revenue & EBITDA", fields: ["total_revenue_usd_m", "total_revenue_year", "total_revenue_basis", "total_ebitda_usd_m", "ebitda_year", "ebitda_basis", "us_water_treatment_revenue_usd_m", "us_water_treatment_arithmetic", "employees_total", "employees_basis"],
-    shape: `{"total_revenue_usd_m":0,"total_revenue_year":"","total_revenue_basis":"reported figure, period, source and date, then the pro forma bridge and headcount check","total_ebitda_usd_m":0,"ebitda_year":"","ebitda_basis":"the math","us_water_treatment_revenue_usd_m":0,"us_water_treatment_arithmetic":"the math","employees_total":0,"employees_basis":"pro forma headcount: sources and dates"}`,
+  financials: { label: "Revenue & EBITDA", fields: ["total_revenue_usd_m", "total_revenue_year", "total_revenue_basis", "total_ebitda_usd_m", "ebitda_year", "ebitda_basis", "us_water_treatment_revenue_usd_m", "us_water_treatment_arithmetic", "employees_total", "employees_basis", "ev_usd_m", "ev_ebitda_x", "pe_entry_ev_ebitda_x"],
+    shape: `{"total_revenue_usd_m":0,"total_revenue_year":"","total_revenue_basis":"reported figure, period, source and date, then the pro forma bridge and headcount check","total_ebitda_usd_m":0,"ebitda_year":"","ebitda_basis":"the math","us_water_treatment_revenue_usd_m":0,"us_water_treatment_arithmetic":"the math","employees_total":0,"employees_basis":"pro forma headcount: sources and dates","ev_usd_m":null,"ev_ebitda_x":null,"pe_entry_ev_ebitda_x":null}`,
     rules: "USD millions, latest full year." },
   customers: { label: "Top customers", fields: ["customers"],
     shape: `{"customers":[{"name":"named account, or a specific customer type","end_market":"","what":"which products they buy","share_pct":null,"source":"basis in a few words","confidence":"High | Medium | Low"}]}`,
@@ -1000,6 +1031,7 @@ REVENUE, IN THIS ORDER:
 4. Pick the best-supported figure and show the bridge in total_revenue_basis: "Reported $X for <period> (<source>, reported <date>) + <acquisition> $Y (closed <date>) + … − <divestiture> = pro forma $Z; headcount check: N employees × $K = $W." Use the pro forma year for total_revenue_year (e.g. "2026 pro forma").
 EMPLOYEES: pro forma headcount with its sources and date in employees_basis (company count plus acquired staff).
 EBITDA: build margin from the product and end-market mix: formulated specialty products usually earn more than commodity or resold products, distribution earns less, service route businesses sit in between. Adjust for scale; use any margin disclosed in deal or lender releases. Show the blended margin and the math in ebitda_basis.
+VALUATION: if an enterprise value or multiple has been reported (sponsor entry, deal release, public market cap plus net debt), give ev_usd_m and ev_ebitda_x (current or latest), and pe_entry_ev_ebitda_x for the sponsor's entry, with the source in basis. Leave them null rather than guess.
 CONFIDENCE: High only if a source states the pro forma number; a reported figure adjusted with sourced deal sizes is Medium; a headcount-only estimate is Low-Medium.
 DON'T: present an old or pre-acquisition figure as current, or state a figure as disclosed unless it is.`,
   customers: `GOAL: who actually buys the products, by end market.
@@ -1033,7 +1065,7 @@ function sectionDef(c, key) {
   const base = SECTIONS[key]; if (!base) return null;
   const water = inSector(c, "water");
   if (key === "financials" && !water) return { ...base, fields: base.fields.filter(f => !f.startsWith("us_water")),
-    shape: `{"total_revenue_usd_m":0,"total_revenue_year":"","total_revenue_basis":"reported figure, period, source and date, then the pro forma bridge and headcount check","total_ebitda_usd_m":0,"ebitda_year":"","ebitda_basis":"the math","employees_total":0,"employees_basis":"pro forma headcount: sources and dates"}` };
+    shape: `{"total_revenue_usd_m":0,"total_revenue_year":"","total_revenue_basis":"reported figure, period, source and date, then the pro forma bridge and headcount check","total_ebitda_usd_m":0,"ebitda_year":"","ebitda_basis":"the math","employees_total":0,"employees_basis":"pro forma headcount: sources and dates","ev_usd_m":null,"ev_ebitda_x":null,"pe_entry_ev_ebitda_x":null}` };
   if (key === "endmarkets" && !water) return { ...base, fields: ["product_em_map", EM_FIELD],
     shape: `{"product_em_map":[{"category":"product category exactly as in the catalog","end_market":"end market name","pct":0,"customers":"typical customer types in this end market"}]}` };
   return base;
@@ -1880,7 +1912,7 @@ function viewCompanies() {
     && (!q || [c.name, c.platform_name, c.primary_category, c.owner_type, c.pe_sponsor, c.hq_address, c.business_model, c.rolled_in].join(" ").toLowerCase().includes(q)));
   const k = ui.sort, d = ui.dir;
   rows.sort((a, b) => {
-    const val = x => k === "margin" ? margin(x) : k === "secrev" ? sectorRev(x, sid || primarySector(x)) : k === "rank" ? (sectorRank(x, sid || primarySector(x))?.rank ?? null) : x[k];
+    const val = x => k === "margin" ? margin(x) : k === "evx" ? evEbitda(x) : k === "secrev" ? sectorRev(x, sid || primarySector(x)) : k === "rank" ? (sectorRank(x, sid || primarySector(x))?.rank ?? null) : x[k];
     let va = val(a), vb = val(b);
     if (k === "name" || k === "owner_type") return d * String(va || "").localeCompare(String(vb || ""));
     if (k === "updated_at") return d * String(va || "").localeCompare(String(vb || ""));
@@ -1899,7 +1931,7 @@ function viewCompanies() {
     const ps = primarySector(c), rk = sectorRank(c, sid || ps);
     if (ui.delRow === c.id) return `<tr class="delrow"><td colspan="10"><span><b>Delete ${esc(c.name)}</b> and everything saved on it? This can't be undone.</span> <button class="btn sm dangerfill" data-act="rowdelyes" data-id="${esc(c.id)}">Delete for good</button> <button class="btn sm ghost" data-act="rowdelno">Keep it</button></td></tr>`;
     const mine = !c.imported_from ? `<span class="pill" title="Added in Profiler, not from the water index">${c.identity_confirmed ? "Added by you" : "Added, not confirmed"}</span>` : "";
-    return `<tr class="link" data-open="${esc(c.id)}"><td class="num faint">${rk?.rank ?? ""}</td><td class="cname">${esc(c.name)} ${st} ${mine}${writable && db ? `<button class="x rowx" data-act="rowdel" data-id="${esc(c.id)}" title="Delete ${esc(c.name)}" aria-label="Delete ${esc(c.name)}">×</button>` : ""}<small>${esc([c.business_model || c.primary_category, stateOf(c)].filter(Boolean).join(" · "))}</small></td><td><div class="chips" style="margin:0">${sectorChips(c, false)}</div></td><td>${esc(c.owner_type || "")}</td><td class="r num">${fmtM(sectorRev(c, sid || ps))}${sid ? "" : `<small class="faint" style="display:block;font-size:11px">${esc(sectorShort(ps))}</small>`}</td>${water ? `<td class="r num">${num(c.us_market_share_pct) ? (+c.us_market_share_pct).toFixed(1) + "%" : "—"}</td>` : ""}<td class="r num">${fmtM(c.total_revenue_usd_m)}</td><td class="r num">${fmtM(c.total_ebitda_usd_m)}</td><td class="r num">${fmtPct(margin(c))}</td><td class="muted">${esc(topEM(c))}</td></tr>`;
+    return `<tr class="link" data-open="${esc(c.id)}"><td class="num faint">${rk?.rank ?? ""}</td><td class="cname">${esc(c.name)} ${st} ${mine}${writable && db ? `<button class="x rowx" data-act="rowdel" data-id="${esc(c.id)}" title="Delete ${esc(c.name)}" aria-label="Delete ${esc(c.name)}">×</button>` : ""}<small>${esc([c.business_model || c.primary_category, stateOf(c)].filter(Boolean).join(" · "))}</small></td><td><div class="chips" style="margin:0">${sectorChips(c, false)}</div></td><td>${esc(c.owner_type || "")}</td><td class="r num">${fmtM(sectorRev(c, sid || ps))}${sid ? "" : `<small class="faint" style="display:block;font-size:11px">${esc(sectorShort(ps))}</small>`}</td>${water ? `<td class="r num">${num(c.us_market_share_pct) ? (+c.us_market_share_pct).toFixed(1) + "%" : "—"}</td>` : ""}<td class="r num">${fmtM(c.total_revenue_usd_m)}</td><td class="r num">${fmtM(c.total_ebitda_usd_m)}</td><td class="r num">${fmtPct(margin(c))}</td><td class="r num">${fmtX(evEbitda(c))}</td><td class="muted">${esc(topEM(c))}</td></tr>`;
   }).join("") + (rows.length > shown.length ? `<tr><td colspan="9" style="text-align:center;padding:14px"><button class="btn sm" data-act="more">Show ${Math.min(150, rows.length - shown.length)} more of ${rows.length - shown.length}</button></td></tr>` : "") : `<tr><td colspan="10" class="faint" style="padding:28px 12px">${all.length ? "No companies match that search." : `No companies in ${esc(sname)} yet. Add one above, or build out the sector from the Sectors page.`}</td></tr>`;
   return `
   <div class="page-h"><div><div class="eyebrow">${esc(sname)}</div><h1>Companies</h1><p>${sid ? `Companies with a business line in ${esc(sname)}, ranked by ${water ? "US water treatment revenue" : "revenue in this sector"}.` : "Every company in Profiler, across all sectors."} Search always covers every sector. Type over any value in a profile to correct it.</p></div>
@@ -1916,10 +1948,10 @@ function viewCompanies() {
     ${water ? `<select id="fscope" aria-label="Scope"><option value="">Core and adjacent</option>${["Core", "Adjacent"].map(v => `<option ${ui.scope === v ? "selected" : ""}>${v}</option>`).join("")}</select>` : ""}
     <select id="fotype" aria-label="Owner type"><option value="">All owners</option>${["PE-backed", "Public", "Family/founder-owned", "Subsidiary of strategic", "ESOP", "Other", "Added in Profiler"].map(v => `<option ${ui.otype === v ? "selected" : ""}>${v}</option>`).join("")}</select>
     <span class="faint">${rows.length} shown</span></div>
-  <div class="tw"><table><thead><tr>${th("rank", "#")}${th("name", "Company")}<th>Sectors</th>${th("owner_type", "Owner")}${th("secrev", sid ? sectorRevLabel(sid) : "Primary sector rev", "r")}${water ? th("us_market_share_pct", "US share", "r") : ""}${th("total_revenue_usd_m", "Total rev", "r")}${th("total_ebitda_usd_m", "EBITDA", "r")}${th("margin", "Margin", "r")}<th>Top end market</th></tr></thead><tbody>${body}</tbody></table></div>`;
+  <div class="tw"><table><thead><tr>${th("rank", "#")}${th("name", "Company")}<th>Sectors</th>${th("owner_type", "Owner")}${th("secrev", sid ? sectorRevLabel(sid) : "Primary sector rev", "r")}${water ? th("us_market_share_pct", "US share", "r") : ""}${th("total_revenue_usd_m", "Total rev", "r")}${th("total_ebitda_usd_m", "EBITDA", "r")}${th("margin", "Margin", "r")}${th("evx", "EV / EBITDA", "r")}<th>Top end market</th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
-const TABS = [["snapshot", "Snapshot"], ["overview", "Overview"], ["mix", "Mix"], ["customers", "Customers"], ["products", "Products"], ["competitors", "Competitors"], ["acquisitions", "M&A"], ["buyers", "Buyers"], ["addons", "Add-ons"], ["sources", "Sources"]];
+const TABS = [["snapshot", "Snapshot"], ["overview", "Overview"], ["mix", "Mix"], ["segments", "Segments"], ["customers", "Customers"], ["products", "Products"], ["competitors", "Competitors"], ["acquisitions", "M&A"], ["buyers", "Buyers"], ["addons", "Add-ons"], ["sources", "Sources"]];
 const canEnhance = () => !!sample && writable && !!db;
 const canWeb = () => writable && !!db;
 function enhanceBtn(c, key, label = "Enhance") {
@@ -1952,7 +1984,7 @@ function viewCompany(id, tab) {
   const queued = (queueDocs || []).filter(q => q.company_id === id && q.status !== "done");
   const runStrip = busy.length ? `<div class="run" role="status"><span class="spin"></span><span><b>Enhancing ${busy.length === 1 ? SECTIONS[busy[0]].label : busy.length + " sections"}.</b> Each section saves as soon as it finishes. Your overrides stay as they are.</span></div>` : "";
   const stl = staleSections(c), sg = strength(c);
-  const actions = delBtn();
+  const actions = `${writable && db && !inMarket(c) && ui.imEdit !== c.id ? `<button class="btn" data-act="imedit">In market</button>` : ""}${delBtn()}`;
 
   if (c.status === "empty" || c.status === "researching" && !(c.runs || []).length) {
     return `<div class="crumb"><a href="#companies">Companies</a> / ${esc(c.name)}</div>
@@ -1970,16 +2002,16 @@ function viewCompany(id, tab) {
     </div>`;
   }
 
-  const counts = { customers: (c.customers || []).length, products: catalog(c).length, competitors: (c.competitors || []).length, acquisitions: (c.acquisitions || []).length, buyers: (c.buyers || []).length, addons: addonList(c).length, sources: (c.evidence || []).length + (c.source_of_truth || []).length };
+  const counts = { segments: (c.segment_profiles || []).length, customers: (c.customers || []).length, products: catalog(c).length, competitors: (c.competitors || []).length, acquisitions: (c.acquisitions || []).length, buyers: (c.buyers || []).length, addons: addonList(c).length, sources: (c.evidence || []).length + (c.source_of_truth || []).length };
   const tabs = TABS.map(([k, l]) => `<a href="#c.${esc(id)}.${k}" aria-current="${tab === k}">${l}${counts[k] ? `<span class="n">${counts[k]}</span>` : ""}</a>`).join("");
   const m = margin(c);
   const ps = primarySector(c), prk = sectorRank(c, ps);
-  const chips = [prk && `<span class="pill">#${prk.rank} of ${prk.of} in ${esc(sectorShort(ps))}${ps === "water" && num(c.us_market_share_pct) ? " · " + (+c.us_market_share_pct).toFixed(1) + "% US share" : ""}</span>`, c.owner_type && `<span class="pill">${esc(c.owner_type)}</span>`, c.business_model && `<span class="pill">${esc(c.business_model)}</span>`, c.primary_category && `<span class="pill">${esc(c.primary_category)}</span>`, c.confidence && `<span class="pill ${c.confidence === "Low" ? "warn" : ""}">${esc(c.confidence)} confidence</span>`, c.website && `<a class="pill" href="${esc(/^https?:/.test(c.website) ? c.website : "https://" + c.website)}" target="_blank" rel="noopener">${esc(String(c.website).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))} ↗</a>`].filter(Boolean).join("");
+  const chips = [prk && `<span class="pill">#${prk.rank} of ${prk.of} in ${esc(sectorShort(ps))}${ps === "water" && num(c.us_market_share_pct) ? " · " + (+c.us_market_share_pct).toFixed(1) + "% US share" : ""}</span>`, c.owner_type && (isPE(c) ? `<a class="pill pe" href="#sponsors~o~${encodeURIComponent(sponsorOf(c))}" title="See ${esc(sponsorOf(c))}'s portfolio and all sponsor-owned companies">PE-owned · ${esc(sponsorOf(c))}${entryYear(c) ? " since " + entryYear(c) : ""}</a>` : `<span class="pill">${esc(c.owner_type)}</span>`), c.business_model && `<span class="pill">${esc(c.business_model)}</span>`, c.primary_category && `<span class="pill">${esc(c.primary_category)}</span>`, c.confidence && `<span class="pill ${c.confidence === "Low" ? "warn" : ""}">${esc(c.confidence)} confidence</span>`, c.website && `<a class="pill" href="${esc(/^https?:/.test(c.website) ? c.website : "https://" + c.website)}" target="_blank" rel="noopener">${esc(String(c.website).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))} ↗</a>`].filter(Boolean).join("");
   const kpi = (f, lab, note, pre = "$", unit = "M") => `<div class="kpi"><div class="lab">${lab} ${confBadge(c, f)}</div><div class="val">${pre ? `<span class="u">${pre}</span>` : ""}${ed(f, c[f], "num", "–")}${unit ? `<span class="u">${unit}</span>` : ""}</div><div class="note">${esc(note || "")}</div></div>`;
   const hdr = `
   <div class="crumb"><a href="#companies">Companies</a> / ${esc(c.name)}</div>
   <div class="ph">
-    <div class="ph-main"><h1>${ed("name", c.name, "text", "Company name")}</h1>
+    <div class="ph-main"><div class="logo-row">${logoImg(c, "lg")}${writable && db ? `<button class="btn sm ghost" data-act="logoadd">${logos.has(c.id) ? "Change logo" : "Add logo"}</button>${logos.has(c.id) ? `<button class="btn sm ghost" data-act="logodel">Remove</button>` : ""}<input type="file" id="logoFile" accept="image/*" hidden>` : ""}</div><h1>${ed("name", c.name, "text", "Company name")}</h1>
       <div class="sub">${esc([c.platform_name && c.platform_name !== c.name ? c.platform_name : "", c.hq_address].filter(Boolean).join(" · "))}</div>
       <div class="chips">${sectorChips(c)}</div><div class="chips" style="margin-top:6px">${chips}</div>
       <div class="strength" title="How much of the key picture is known, weighted by confidence"><span class="eyebrow">Profile strength</span><div class="sbar">${["Verified", "High", "Medium", "Low"].map(L => sg.n[L] ? `<span class="${CONF_TAG[L]}" style="flex:${sg.n[L]}" data-tip="${sg.n[L]} ${L}"></span>` : "").join("")}${sg.n.Missing ? `<span class="cx" style="flex:${sg.n.Missing}" data-tip="${sg.n.Missing} missing"></span>` : ""}</div><b class="num">${sg.pct}%</b><span class="faint" style="font-size:12px">${sg.n.Verified} verified · ${sg.n.High} high · ${sg.n.Medium} medium · ${sg.n.Low} low · ${sg.n.Missing} missing</span></div></div>
@@ -1992,6 +2024,8 @@ function viewCompany(id, tab) {
     ${ps === "water" ? kpi("us_water_treatment_revenue_usd_m", "US water rev", "Strict water treatment") : `<div class="kpi"><div class="lab">${esc(sectorRevLabel(ps))} ${confBadge(c, "sectors")}</div><div class="val"><span class="u">$</span>${ed("__secrev", sectorRev(c, ps), "num", "–")}<span class="u">M</span></div><div class="note">${esc(sectorById(ps)?.name || "")}</div></div>`}
     ${kpi("employees_total", "Employees", "", "", "")}
   </div>
+  <div class="valrow"><span class="eyebrow">Valuation</span><span>EV <b class="num">$${ed("ev_usd_m", c.ev_usd_m, "num", "–")}M</b> ${num(c.ev_usd_m) !== null ? confBadge(c, "ev_usd_m") : ""}</span><span>EV / EBITDA <b class="num">${ed("ev_ebitda_x", num(c.ev_ebitda_x) ?? (evEbitda(c) !== null ? +evEbitda(c).toFixed(1) : null), "num", "–")}x</b></span><span>EV / revenue <b class="num">${num(c.ev_usd_m) && num(c.total_revenue_usd_m) ? (c.ev_usd_m / c.total_revenue_usd_m).toFixed(1) + "x" : "—"}</b></span>${isPE(c) ? `<span>Sponsor entry <b class="num">${ed("pe_entry_ev_ebitda_x", num(c.pe_entry_ev_ebitda_x) ?? entryMult(c), "num", "–")}x</b>${entryYear(c) ? ` <span class="faint">(${entryYear(c)})</span>` : ""}</span>` : ""}</div>
+  ${inMarketPanel(c)}
   <div class="kpi-foot">${secMeta(c, "financials")}<span class="faint" style="font-size:12px">Type over any number to override it.</span><span class="sp"></span>${enhanceBtn(c, "financials", "Enhance financials")}</div>
   ${suggestionBox(c, SECTIONS.financials.fields)}
   ${viewBuilder(c)}
@@ -2101,6 +2135,7 @@ const SRC = { saved: ["k-acq", "Saved"], buyer: ["k-idea", "Named buyer"], index
 function tabBody(c, tab) {
   const rev = num(c.total_revenue_usd_m);
   if (tab === "snapshot") return viewSnapshot(c);
+  if (tab === "segments") return viewSegments(c);
   if (tab === "overview") {
     const em = endMarkets(c);
     return `
@@ -2258,6 +2293,87 @@ function viewTargets() {
   <div class="split"><div class="panel tlist">${listHtml}</div>${detail}</div>`;
 }
 
+/* ---------- sponsors, in market, logos, multiples ---------- */
+const isPE = c => c.owner_type === "PE-owned" || !!c.pe_backed;
+function sponsorOf(c) {
+  const raw = String(c.pe_sponsor || (isPE(c) ? c.ultimate_parent : "") || "");
+  const n = raw.split(/[;(]| \+ |, | and |\//)[0].replace(/\b(L\.?P\.?|LLC|Inc\.?|Ltd\.?)\b\.?/gi, "").replace(/\s+/g, " ").replace(/[,.\s]+$/, "").trim();
+  return n || "Sponsor not named";
+}
+const subIndustry = c => { const sec = sectorShort(primarySector(c)), cat = String(c.primary_category || "").split(/[(;]/)[0].trim(); return cat ? `${sec}: ${cat}` : sec; };
+const entryYear = c => { const y = yearOf(c.pe_entry_year); return y && y > 1980 && y <= new Date().getFullYear() ? y : null; };
+const holdYears = c => { const y = entryYear(c); return y ? new Date().getFullYear() - y : null; };
+function entryMult(c) {
+  const x = num(c.pe_entry_ev_ebitda_x); if (x) return x;
+  const m = String(c.pe_entry_multiple || "").match(/(\d+(?:\.\d+)?)\s*(?:[-–]\s*\d+(?:\.\d+)?)?\s*x\b/i); return m ? +m[1] : null;
+}
+const evEbitda = c => num(c.ev_ebitda_x) ?? (num(c.ev_usd_m) && num(c.total_ebitda_usd_m) ? c.ev_usd_m / c.total_ebitda_usd_m : null);
+const dealEvx = d => num(d.evx) ?? (d.value && num(d.ebitda) ? d.value / d.ebitda : null);
+const fmtX = v => num(v) === null ? "—" : (+v).toFixed(1) + "x";
+const IM_STAGES = ["Rumored", "Preparing (bank hired)", "Launched / teasers out", "First round", "Second round / management meetings", "Final bids / exclusivity", "Signed", "Pulled"];
+const inMarket = c => c.in_market && c.in_market.stage && c.in_market.stage !== "Pulled" ? c.in_market : null;
+const logos = new Map();
+const logoImg = (c, cls = "sm") => logos.get(c.id) ? `<img class="logo ${cls}" src="${esc(logos.get(c.id))}" alt="">` : "";
+// Shrink an uploaded logo to at most 320×160 so it stores in one small document and loads fast on strips.
+function logoData(file) {
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => { const k = Math.min(1, 320 / img.width, 160 / img.height), cv = document.createElement("canvas"); cv.width = Math.max(1, Math.round(img.width * k)); cv.height = Math.max(1, Math.round(img.height * k)); cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url); res(cv.toDataURL("image/png")); };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("Not an image")); };
+    img.src = url;
+  });
+}
+const bar = (v, max) => `<span class="hb"><i style="width:${max ? Math.max(2, Math.round(v / max * 100)) : 0}%"></i></span>`;
+function viewSponsors(r) {
+  const all = list().filter(isPE);
+  const f = r.fk, v = r.fv;
+  const match = c => !f || (f === "o" && sponsorOf(c) === v) || (f === "y" && String(entryYear(c) || "Not known") === v) || (f === "s" && subIndustry(c) === v);
+  const rows = all.filter(match).sort((a, b) => (num(b.total_revenue_usd_m) || 0) - (num(a.total_revenue_usd_m) || 0));
+  const group = (keyFn, labelFn) => { const m = new Map(); for (const c of all) { const k = keyFn(c); const g = m.get(k) || { k, n: 0, rev: 0, names: [] }; g.n++; g.rev += num(c.total_revenue_usd_m) || 0; g.names.push(c.name); m.set(k, g); } return [...m.values()].map(g => ({ ...g, label: labelFn(g.k) })); };
+  const byYear = group(c => String(entryYear(c) || "Not known"), k => k).sort((a, b) => (b.k === "Not known") - (a.k === "Not known") || String(b.k).localeCompare(String(a.k)));
+  const bySec = group(c => subIndustry(c), k => k).sort((a, b) => b.n - a.n);
+  const byOwner = group(c => sponsorOf(c), k => k).sort((a, b) => b.n - a.n || b.rev - a.rev);
+  const panel = (title, gs, key) => { const mx = Math.max(...gs.map(g => g.n), 1); return `<div class="panel spg"><div class="sec-h"><h2>${title}</h2></div><table class="gt"><tbody>${gs.map(g => `<tr class="${f === key && v === String(g.k) ? "on" : ""}"><td><a href="#sponsors~${key}~${encodeURIComponent(g.k)}" title="${esc(g.names.slice(0, 12).join(", "))}">${esc(g.label)}</a></td><td class="r num">${g.n}</td><td>${bar(g.n, mx)}</td><td class="r num faint">${g.rev ? fmtM(g.rev) : ""}</td></tr>`).join("")}</tbody></table></div>`; };
+  const holds = all.map(holdYears).filter(x => x !== null).sort((a, b) => a - b);
+  const medHold = holds.length ? holds[Math.floor(holds.length / 2)] : null;
+  const fLabel = f === "o" ? v : f === "y" ? "Entry year " + v : f === "s" ? v : "";
+  const tr = c => { const h = holdYears(c), im = inMarket(c); return `<tr class="link" data-open="${esc(c.id)}"><td class="cname">${logoImg(c)}${esc(c.name)}${im ? ` <span class="pill accent">In market</span>` : ""}<small>${esc([c.business_model, c.hq_address].filter(Boolean).join(" · "))}</small></td><td><a href="#sponsors~o~${encodeURIComponent(sponsorOf(c))}">${esc(sponsorOf(c))}</a></td><td class="num">${entryYear(c) || "—"}</td><td class="r num ${h >= 5 ? "warnc" : ""}">${h !== null ? h + " yrs" : "—"}</td><td style="font-size:13px">${esc(subIndustry(c))}</td><td class="r num">${fmtM(c.total_revenue_usd_m)}</td><td class="r num">${fmtM(c.total_ebitda_usd_m)}</td><td class="r num">${fmtX(entryMult(c))}</td><td class="r num">${fmtX(evEbitda(c))}</td></tr>`; };
+  return `<div class="page-h"><div><div class="eyebrow">All sectors · Private equity</div><h1>Sponsor owned</h1><p>Every PE-owned company in Profiler, by entry year, sub-industry and owner. Holds of five years or more are highlighted: those are the likeliest sellers. Click any group to filter.</p></div></div>
+  <div class="stats"><div class="stat"><div class="v">${all.length}</div><div class="l">PE-owned companies</div></div><div class="stat"><div class="v">${byOwner.length}</div><div class="l">Sponsors</div></div><div class="stat"><div class="v">${fmtM(all.reduce((t, c) => t + (num(c.total_revenue_usd_m) || 0), 0))}</div><div class="l">Combined revenue</div></div><div class="stat"><div class="v">${medHold !== null ? medHold + " yrs" : "—"}</div><div class="l">Median hold</div></div><div class="stat"><div class="v">${holds.filter(h => h >= 5).length}</div><div class="l">Held 5+ years</div></div><div class="stat"><div class="v">${all.filter(inMarket).length}</div><div class="l">In market</div></div></div>
+  <div class="spgrid">${panel("By entry year", byYear, "y")}${panel("By sub-industry", bySec, "s")}${panel("By owner", byOwner.slice(0, 40), "o")}</div>
+  <div class="sec"><div class="sec-h"><h2>${fLabel ? esc(fLabel) : "All sponsor-owned companies"}</h2><span class="faint" style="font-size:12px">${rows.length} companies</span>${fLabel ? `<a class="btn sm ghost" href="#sponsors">Clear filter</a>` : ""}</div>
+  <div class="tw"><table><thead><tr><th>Company</th><th>Sponsor</th><th>Entry</th><th class="r">Hold</th><th>Sub-industry</th><th class="r">Revenue</th><th class="r">EBITDA</th><th class="r">Entry EV/EBITDA</th><th class="r">EV/EBITDA now</th></tr></thead><tbody>${rows.map(tr).join("") || `<tr><td colspan="9" class="faint">No sponsor-owned companies match.</td></tr>`}</tbody></table></div></div>`;
+}
+function viewInMarket() {
+  const rows = list().filter(inMarket).sort((a, b) => IM_STAGES.indexOf(b.in_market.stage) - IM_STAGES.indexOf(a.in_market.stage) || (num(b.total_revenue_usd_m) || 0) - (num(a.total_revenue_usd_m) || 0));
+  const steps = st => { const i = IM_STAGES.indexOf(st), n = 6; return `<span class="stg" title="${esc(st)}">${Array.from({ length: n }, (_, k) => `<i class="${k <= i - 1 || (i === 0 && k === 0) ? "on" : ""}"></i>`).join("")}</span>`; };
+  const cnt = IM_STAGES.slice(0, 7).map(st => [st, rows.filter(c => c.in_market.stage === st).length]).filter(x => x[1]);
+  return `<div class="page-h"><div><div class="eyebrow">Live processes</div><h1>In market</h1><p>Companies currently for sale: who is selling, the sell-side advisor and where the process stands. Mark a company on its profile with “In market”.</p></div></div>
+  <div class="stats"><div class="stat"><div class="v">${rows.length}</div><div class="l">In market</div></div>${cnt.map(([st, n]) => `<div class="stat"><div class="v">${n}</div><div class="l">${esc(st)}</div></div>`).join("")}</div>
+  <div class="tw"><table><thead><tr><th>Company</th><th>Seller</th><th>Sell-side advisor</th><th>Stage</th><th>Launched</th><th class="r">Revenue</th><th class="r">EBITDA</th><th class="r">Guided multiple</th><th>Notes</th></tr></thead><tbody>${rows.map(c => { const m = c.in_market; return `<tr class="link" data-open="${esc(c.id)}"><td class="cname">${logoImg(c)}${esc(c.name)}<small>${esc(sectorShort(primarySector(c)))}</small></td><td>${esc(m.seller || "")}</td><td>${esc(m.advisor || "")}</td><td>${steps(m.stage)} <span style="font-size:13px">${esc(m.stage)}</span></td><td class="num">${esc(m.launched || "")}</td><td class="r num">${fmtM(c.total_revenue_usd_m)}</td><td class="r num">${fmtM(c.total_ebitda_usd_m)}</td><td class="r num">${esc(m.multiple || "")}</td><td class="muted" style="font-size:13px">${esc(m.notes || "")}</td></tr>`; }).join("") || `<tr><td colspan="9" class="faint">Nothing marked in market yet. Open a company and click “In market”.</td></tr>`}</tbody></table></div>`;
+}
+function inMarketPanel(c) {
+  const m = c.in_market || {}, editing = ui.imEdit === c.id;
+  if (!editing) return inMarket(c) ? `<div class="run im" role="status"><span><b>In market</b> · ${esc(m.stage)}${m.seller ? " · Seller: " + esc(m.seller) : ""}${m.advisor ? " · Advisor: " + esc(m.advisor) : ""}${m.launched ? " · Launched " + esc(m.launched) : ""}${m.multiple ? " · Guided " + esc(m.multiple) : ""}${m.notes ? `<div class="faint" style="font-size:12px;margin-top:2px">${esc(m.notes)}</div>` : ""}</span><span class="sp"></span>${writable && db ? `<button class="btn sm ghost" data-act="imedit">Edit</button>` : ""}<a class="btn sm ghost" href="#inmarket">All in market</a></div>` : "";
+  const seller = m.seller || (isPE(c) ? sponsorOf(c) : c.ultimate_parent || c.owner_type || "");
+  return `<form class="panel imform" id="imForm"><div class="sec-h"><h2>In market</h2><span class="sp"></span><button type="button" class="btn sm ghost" data-act="imcancel">Cancel</button></div>
+    <div class="imgrid"><label>Stage<select id="imStage">${IM_STAGES.map(st => `<option ${st === (m.stage || "Launched / teasers out") ? "selected" : ""}>${esc(st)}</option>`).join("")}</select></label>
+    <label>Seller<input id="imSeller" value="${esc(seller)}" placeholder="Who is selling"></label>
+    <label>Sell-side advisor<input id="imAdvisor" value="${esc(m.advisor || "")}" placeholder="e.g. Harris Williams"></label>
+    <label>Launched<input id="imLaunched" value="${esc(m.launched || "")}" placeholder="e.g. Sep 2026"></label>
+    <label>Guided multiple<input id="imMult" value="${esc(m.multiple || "")}" placeholder="e.g. 12-14x EBITDA"></label>
+    <label class="wide">Notes<input id="imNotes" value="${esc(m.notes || "")}" placeholder="Process notes, bidders, timing"></label></div>
+    <div class="add" style="margin-top:10px"><button class="btn primary" type="submit">Save</button>${c.in_market ? `<button type="button" class="btn danger" data-act="imremove">No longer in market</button>` : ""}</div></form>`;
+}
+function viewSegments(c) {
+  const segs = c.segment_profiles || [], S = cst(c.id);
+  const mx = Math.max(...segs.map(x => num(x.revenue_usd_m) || 0), 1);
+  const cards = segs.map(x => `<div class="panel seg"><div class="sec-h"><h3>${esc(x.name || "Segment")}</h3><span class="sp"></span><span class="num">${fmtM(x.revenue_usd_m)}</span>${num(x.ebitda_usd_m) !== null ? `<span class="faint num">EBITDA ${fmtM(x.ebitda_usd_m)}</span>` : ""}${num(x.margin_pct) !== null ? `<span class="faint num">${fmtPct(x.margin_pct)}</span>` : ""}</div>${num(x.revenue_usd_m) ? bar(num(x.revenue_usd_m), mx) : ""}${x.description ? `<p style="margin:8px 0 6px">${esc(x.description)}</p>` : ""}<dl class="segdl">${x.products ? `<dt>Products</dt><dd>${esc(x.products)}</dd>` : ""}${x.end_markets ? `<dt>End markets</dt><dd>${esc([].concat(x.end_markets).join(", "))}</dd>` : ""}${x.competitors ? `<dt>Competitors</dt><dd>${esc([].concat(x.competitors).join(", "))}</dd>` : ""}</dl></div>`).join("");
+  return `<div class="sec"><div class="sec-h"><h2>Segment profiles</h2><span class="faint" style="font-size:12px">A profile per reported business segment: most useful for public companies.</span><span class="sp"></span>${canEnhance() ? `<button class="btn sm enh" data-act="segbuild" ${S.busy ? "disabled" : ""}>${S.busy ? "Working in chat…" : segs.length ? "Update segment profiles" : "Build segment profiles"}</button>` : ""}${writable && db ? `<button class="btn sm ghost" data-act="addrow" data-f="segment_profiles">Add segment</button>` : ""}</div>
+    ${cards ? `<div class="seggrid">${cards}</div>` : `<p class="faint">No segment profiles yet. ${canEnhance() ? "Build them from the company's filings and investor materials, or add one by hand." : ""}</p>`}</div>
+  ${segs.length ? `<div class="sec"><div class="sec-h"><h2>Edit segments</h2></div>${editTable(c, "segment_profiles", [{ k: "name", label: "Segment", w: "180px" }, { k: "revenue_usd_m", label: "Rev $M", t: "num", w: "90px" }, { k: "ebitda_usd_m", label: "EBITDA $M", t: "num", w: "90px" }, { k: "margin_pct", label: "Margin %", t: "num", w: "80px" }, { k: "products", label: "Products" }, { k: "end_markets", label: "End markets" }, { k: "competitors", label: "Competitors" }, { k: "description", label: "Description" }], tableRows(c, "segment_profiles"))}</div>` : ""}`;
+}
+const SEG_BRIEF = `SEGMENT PROFILES: build one profile per business segment this company reports (10-K/annual report segment note, investor presentations, earnings releases). For each: name exactly as reported, latest full-year revenue and segment EBITDA or operating profit (say which) and margin, the main products and brands, end markets, main competitors in that segment, and a one-line description. For private companies, use the segments they describe publicly, or skip if there are none. Save each with add_row / update_row to list "segment_profiles" (source "web" with the filing or release URL). Then summarise the segment mix in a few lines with links.`;
 function viewPrecedents() {
   const q = ui.pq.toLowerCase();
   const sid = ui.sector, secOk = d => !sid || [d.acquirerId, d.targetId].some(x => x && companies.has(x) && inSector(companies.get(x), sid)) || (d.water && sid === "water");
@@ -2266,21 +2382,22 @@ function viewPrecedents() {
   ds.sort((a, b) => {
     if (k === "year") return dir * (dateKey(a.date) - dateKey(b.date));
     if (k === "mult") { const ma = a.value && a.rev ? a.value / a.rev : -1, mb = b.value && b.rev ? b.value / b.rev : -1; return dir * (ma - mb); }
+    if (k === "evx") return dir * ((dealEvx(a) ?? -1) - (dealEvx(b) ?? -1));
     if (k === "value" || k === "rev") return dir * ((a[k] ?? -1) - (b[k] ?? -1));
     return dir * String(a[k] || "").localeCompare(String(b[k] || ""));
   });
   const th = (key, label, cls = "") => `<th class="sortable ${cls}" data-psort="${key}" aria-sort="${ui.psort === key ? (ui.pdir > 0 ? "ascending" : "descending") : "none"}">${label}${ui.psort === key ? (ui.pdir > 0 ? " ↑" : " ↓") : ""}</th>`;
   const withVal = ds.filter(d => d.value && d.rev);
   const med = arr => { if (!arr.length) return null; const s = [...arr].sort((a, b) => a - b); const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
-  const medMult = med(withVal.map(d => d.value / d.rev));
+  const medMult = med(withVal.map(d => d.value / d.rev)), medEvx = med(ds.map(dealEvx).filter(x => x !== null));
   const rows = ds.map(d => {
     const tgt = d.targetId || findCompanyByName(d.target)?.id;
-    return `<tr><td class="num" style="white-space:nowrap">${esc(d.date)}</td><td class="cname">${tgt ? `<a href="#c.${esc(tgt)}">${esc(d.target)}</a>` : esc(d.target)}</td><td>${d.acquirerId ? `<a href="#c.${esc(d.acquirerId)}.acquisitions">${esc(d.acquirer)}</a>` : esc(d.acquirer)}</td><td class="muted" style="font-size:13px;min-width:240px">${esc(d.what)}</td><td class="r num">${d.rev !== null ? fmtM(d.rev) : "—"}</td><td class="r num">${d.value ? fmtM(d.value) : "—"}</td><td class="r num">${d.value && d.rev ? (d.value / d.rev).toFixed(1) + "x" : "—"}</td><td>${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener">Source</a>` : ""}</td></tr>`;
+    return `<tr><td class="num" style="white-space:nowrap">${esc(d.date)}</td><td class="cname">${tgt ? `<a href="#c.${esc(tgt)}">${esc(d.target)}</a>` : esc(d.target)}</td><td>${d.acquirerId ? `<a href="#c.${esc(d.acquirerId)}.acquisitions">${esc(d.acquirer)}</a>` : esc(d.acquirer)}</td><td class="muted" style="font-size:13px;min-width:240px">${esc(d.what)}</td><td class="r num">${d.rev !== null ? fmtM(d.rev) : "—"}</td><td class="r num">${d.value ? fmtM(d.value) : "—"}</td><td class="r num">${d.value && d.rev ? (d.value / d.rev).toFixed(1) + "x" : "—"}</td><td class="r num">${fmtX(dealEvx(d))}</td><td>${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener">Source</a>` : ""}</td></tr>`;
   }).join("");
   return `<div class="page-h"><div><div class="eyebrow">${esc(sid ? sectorById(sid)?.name : "All sectors")} · Deal log</div><h1>Precedents</h1><p>Every acquisition from every profile, plus sponsor entries with a known EV. Add a deal on a company's Acquisitions tab and it lands here.</p></div></div>
-  <div class="stats"><div class="stat"><div class="v">${ds.length}</div><div class="l">Deals</div></div><div class="stat"><div class="v">${ds.filter(d => d.value).length}</div><div class="l">With disclosed value</div></div><div class="stat"><div class="v">${medMult !== null ? medMult.toFixed(1) + "x" : "—"}</div><div class="l">Median EV / revenue</div></div></div>
+  <div class="stats"><div class="stat"><div class="v">${ds.length}</div><div class="l">Deals</div></div><div class="stat"><div class="v">${ds.filter(d => d.value).length}</div><div class="l">With disclosed value</div></div><div class="stat"><div class="v">${medMult !== null ? medMult.toFixed(1) + "x" : "—"}</div><div class="l">Median EV / revenue</div></div><div class="stat"><div class="v">${fmtX(medEvx)}</div><div class="l">Median EV / EBITDA</div></div></div>
   <div class="bar"><div class="grow"><input class="search" id="pq" type="search" placeholder="Search target, acquirer, year or description" value="${esc(ui.pq)}" aria-label="Search precedents"></div></div>
-  <div class="tw"><table><thead><tr>${th("year", "Date")}${th("target", "Target")}${th("acquirer", "Acquirer")}<th>What it does</th>${th("rev", "Target rev", "r")}${th("value", "Value", "r")}${th("mult", "EV / Rev", "r")}<th>Source</th></tr></thead><tbody>${rows || `<tr><td colspan="8" class="faint">No deals match.</td></tr>`}</tbody></table></div>`;
+  <div class="tw"><table><thead><tr>${th("year", "Date")}${th("target", "Target")}${th("acquirer", "Acquirer")}<th>What it does</th>${th("rev", "Target rev", "r")}${th("value", "Value", "r")}${th("mult", "EV / Rev", "r")}${th("evx", "EV / EBITDA", "r")}<th>Source</th></tr></thead><tbody>${rows || `<tr><td colspan="9" class="faint">No deals match.</td></tr>`}</tbody></table></div>`;
 }
 
 function viewEndMarkets() {
@@ -2330,6 +2447,8 @@ function render() {
   else if (r.view === "endmarkets") html = viewEndMarkets();
   else if (r.view === "sectors") html = viewSectors();
   else if (r.view === "tam") html = viewTam();
+  else if (r.view === "sponsors") html = viewSponsors(r);
+  else if (r.view === "inmarket") html = viewInMarket();
   else html = viewCompanies();
   const active = document.activeElement?.id, selS = document.activeElement?.selectionStart;
   app.innerHTML = html;
@@ -2340,8 +2459,8 @@ function render() {
 }
 
 /* ---------- chat: ask and tell, with web search; Claude proposes changes, code checks and saves them ---------- */
-const CHAT_FIELDS = ["what_it_is", "business_model", "owner_type", "ultimate_parent", "pe_sponsor", "pe_entry_year", "prior_owners", "hq_address", "website", "total_revenue_usd_m", "total_revenue_year", "total_revenue_basis", "total_ebitda_usd_m", "ebitda_year", "ebitda_basis", "employees_total", "employees_basis"];
-const CHAT_LISTS = { products: "products", acquisitions: "deals", customers: "customers", competitors: "competitors", buyers: "buyers", addon_ideas: "addons" };
+const CHAT_FIELDS = ["ev_usd_m", "ev_ebitda_x", "pe_entry_ev_ebitda_x", "what_it_is", "business_model", "owner_type", "ultimate_parent", "pe_sponsor", "pe_entry_year", "prior_owners", "hq_address", "website", "total_revenue_usd_m", "total_revenue_year", "total_revenue_basis", "total_ebitda_usd_m", "ebitda_year", "ebitda_basis", "employees_total", "employees_basis"];
+const CHAT_LISTS = { segment_profiles: "segments", products: "products", acquisitions: "deals", customers: "customers", competitors: "competitors", buyers: "buyers", addon_ideas: "addons" };
 const rowName = r => r ? String(r.name || r.target || [r.category, r.line].filter(Boolean).join(" / ") || r.product || "") : "";
 const chat = { id: null, open: false };
 // Each company keeps its own conversation, so a build can keep running while you look at another company.
@@ -2438,7 +2557,7 @@ RECORD RULES (code enforces these)
 - source "knowledge": your own memory; saved Low only where nothing better exists.
 - confidence: High only when a source states it; Medium for estimates built from sourced facts (put the math in basis).
 - Fields for set_field: ${CHAT_FIELDS.join(", ")}. Money in USD millions (numbers only).
-- Lists for add_row/update_row/remove_row: products {category, line, named_products, what_it_is, applications, end_markets[], made_or_resold, share_pct}, acquisitions {date, target, deal_type, what_it_does, what_it_added, value_usd_m}, customers {name, end_market, what, share_pct}, competitors {name, overlap, size}, buyers {name, type, fit, rationale}, addon_ideas {target, rationale, est_revenue_usd_m, location}.
+- Lists for add_row/update_row/remove_row: segment_profiles {name, revenue_usd_m, ebitda_usd_m, margin_pct, products, end_markets, competitors, description} (one row per reported business segment; use for public companies and anyone with disclosed segments), products {category, line, named_products, what_it_is, applications, end_markets[], made_or_resold, share_pct}, acquisitions {date, target, deal_type, what_it_does, what_it_added, value_usd_m}, customers {name, end_market, what, share_pct}, competitors {name, overlap, size}, buyers {name, type, fit, rationale}, addon_ideas {target, rationale, est_revenue_usd_m, location}.
 - set_step: for a builder step (when a STEP BRIEF is given, or to rebuild a whole section): "step" is the step key and "value" is that step's full object in its shape, with "confidence", "basis" and "note".
 - update_row/remove_row: "match" is the existing row's name exactly as listed. Never invent names, figures or deals.
 - Revenue: first find the latest REPORTED number and when it was reported and for what period (press and deal releases, top-company lists, executive LinkedIn bios often state it). Then make it pro forma: add acquisitions closed after that period (their revenue), subtract divestitures, and cross-check with pro forma headcount × revenue per employee. Put the bridge in total_revenue_basis via set_step "financials" (or state it in basis). A pre-acquisition figure is not current.
@@ -2552,7 +2671,7 @@ async function chatSteps(id, keys) {
   const c = getC(id); if (c && keys.length > 1) toast(`Profile strength now ${strength(c).pct}%`);
 }
 function coerce(f, v) {
-  if (/_usd_m$|^employees_total$/.test(f)) { const n = num(typeof v === "string" ? v.replace(/[$,~]/g, "") : v); return n; }
+  if (/_usd_m$|_x$|^employees_total$/.test(f)) { const n = num(typeof v === "string" ? v.replace(/[$,~]/g, "") : v); return n; }
   if (/_year$/.test(f)) return String(v ?? "").slice(0, 20);
   return typeof v === "string" ? v.slice(0, 1500) : v == null ? null : String(v).slice(0, 1500);
 }
@@ -2560,7 +2679,7 @@ function cleanRow(L, r) {
   const o = {};
   for (const [k, v] of Object.entries(r || {})) {
     if (k === "end_markets") o[k] = [].concat(v || []).map(String).filter(Boolean).slice(0, 10);
-    else if (/_usd_m$|_pct$/.test(k)) o[k] = num(v);
+    else if (/_usd_m$|_pct$|_x$/.test(k)) o[k] = num(v);
     else if (v != null && typeof v !== "object") o[k] = String(v).slice(0, 600);
   }
   return o;
@@ -2630,7 +2749,7 @@ async function applyChat(id, actions, seen) {
 }
 // Reruns build on the profile: catalog-type lists merge (matching rows update, new rows add, rows not mentioned
 // stay). Mix splits that must add to 100% (segments, sectors, where products go) are replaced as a whole.
-const MERGE_KEYS = { products: r => norm(r.category) + "|" + norm(r.line), customers: r => norm(r.name), competitors: r => norm(r.name), buyers: r => norm(r.name), addon_ideas: r => norm(r.target) };
+const MERGE_KEYS = { segment_profiles: r => norm(r.name), products: r => norm(r.category) + "|" + norm(r.line), customers: r => norm(r.name), competitors: r => norm(r.name), buyers: r => norm(r.name), addon_ideas: r => norm(r.target) };
 function mergeLists(c, v) {
   for (const [f, key] of Object.entries(MERGE_KEYS)) {
     if (!Array.isArray(v[f])) continue;
@@ -2689,7 +2808,13 @@ app.addEventListener("input", e => {
   if (id === "tq") { ui.tq = e.target.value; ui.tsel = null; render(); }
   if (id === "pq") { ui.pq = e.target.value; render(); }
 });
-app.addEventListener("change", e => {
+app.addEventListener("change", async e => {
+  if (e.target.id === "logoFile" && e.target.files?.[0]) {
+    const c = getC(route().id); if (!c) return;
+    try { const data = await logoData(e.target.files[0]); if (data.length > 200000) { toast("That image is too large even after shrinking. Try a simpler logo."); return; } await db.doc("logos/" + c.id).set({ data, at: now() }); logos.set(c.id, data); render(); toast("Logo saved"); }
+    catch (err) { toast(err?.message === "Not an image" ? "That file isn't an image." : "Couldn't save the logo."); }
+    return;
+  }
   const id = e.target.id;
   if (id === "em") ui.em = e.target.value;
   else if (id === "fscope") { ui.scope = e.target.value; ui.limit = 150; }
@@ -2708,6 +2833,15 @@ app.addEventListener("change", e => {
 
 app.addEventListener("submit", async e => {
   e.preventDefault();
+  if (e.target.id === "imForm") {
+    const c = getC(route().id); if (!c) return;
+    const g = id => $("#" + id)?.value.trim() || "";
+    document.activeElement?.blur?.();
+    const im = { stage: g("imStage"), seller: g("imSeller"), advisor: g("imAdvisor"), launched: g("imLaunched"), multiple: g("imMult"), notes: g("imNotes"), updated_at: now() };
+    ui.imEdit = null;
+    await save(c.id, { in_market: im, history: [{ at: now(), field: "in_market", by: "You", before: c.in_market?.stage || "", after: im.stage }, ...(c.history || [])].slice(0, 200) }, [], true);
+    toast(im.stage === "Pulled" ? "Marked as pulled" : "Saved to In market"); render(); return;
+  }
   if (e.target.id === "addForm") {
     const name = $("#addName").value.trim(); if (!name) return;
     $("#addName").value = "";
@@ -2789,6 +2923,12 @@ app.addEventListener("click", async e => {
   if (!c) return;
   if (act === "enhance") enhance(c.id, btn.dataset.k);
   if (act === "enhanceall") enhanceAll(c.id);
+  if (act === "logoadd") { $("#logoFile")?.click(); return; }
+  if (act === "logodel") { try { await db.doc("logos/" + c.id).delete(); logos.delete(c.id); render(); toast("Logo removed"); } catch (err) { handleWriteError(err); } return; }
+  if (act === "imedit") { ui.imEdit = c.id; render(); return; }
+  if (act === "imcancel") { document.activeElement?.blur?.(); ui.imEdit = null; render(); return; }
+  if (act === "imremove") { ui.imEdit = null; await save(c.id, { in_market: null }, [], true); toast("Removed from In market"); render(); return; }
+  if (act === "segbuild") { chatSend(c.id, "Build segment profiles", { brief: SEG_BRIEF }); render(); toast("Building segment profiles in the background. Open Chat to watch."); return; }
   if (act === "viewchat") { chat.open = true; chatView(); render(); }
   if (act === "webbuild") startWeb(c.id, SECTION_ORDER.slice());
   if (act === "websec") startWeb(c.id, [btn.dataset.k]);
@@ -2875,6 +3015,7 @@ render();
     try { const l = await m.listTools(WEBSRV); webOK = (l.servers || []).some(x => x.server === WEBSRV); } catch { webOK = false; }
     if (loaded) render();
   }).catch(() => {});
+  db.collection("logos").limit(1000).onSnapshot(snap => { logos.clear(); snap.docs.forEach(d => { const x = d.data(); if (x?.data) logos.set(d.id, x.data); }); if (loaded) render(); }, () => {});
   db.collection("research").limit(500).onSnapshot(snap => { researchDocs = snap.docs.map(d => ({ ...d.data(), id: d.id })); if (loaded) render(); }, () => {});
   db.collection("webresults").limit(1000).onSnapshot(snap => { webDocs = snap.docs.map(d => ({ ...d.data(), id: d.id })); drainWeb(); if (loaded) render(); }, () => {});
   db.collection("queue").limit(500).onSnapshot(snap => { queueDocs = snap.docs.map(d => ({ ...d.data(), id: d.id })); if (loaded) render(); }, () => {});
