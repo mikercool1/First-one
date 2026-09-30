@@ -184,7 +184,8 @@ a.pill.pe:hover{text-decoration:underline}
 .spg{padding:12px 14px;max-height:420px;overflow:auto}
 .gt{width:100%;border-collapse:collapse}.gt td{padding:5px 6px;border-bottom:1px solid var(--line);font-size:13px}
 table.spt tr.yr th{background:var(--sunk);text-align:left;padding:10px 12px;font-size:15px;text-transform:none;letter-spacing:0;color:var(--ink)}
-table.spt tr.yr th span{margin-right:12px}
+table.spt tr.yr th span{margin-right:12px;display:inline-block}
+@media (max-width:700px){table.spt tr.yr th span{display:block;white-space:normal}}
 table.spt td.cname a{color:inherit;text-decoration:none;font-weight:600}table.spt td.cname a:hover{text-decoration:underline}
 .gt tr.on td{background:var(--accent-soft)}
 .hb{display:inline-block;width:90px;height:8px;background:var(--sunk);border-radius:4px;overflow:hidden;vertical-align:middle}
@@ -195,6 +196,45 @@ td.warnc{color:var(--warn);font-weight:600}
 .seg{padding:12px 14px}.seg h3{margin:0;font-size:16px}.seg .hb{width:100%}
 .segdl{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;margin:6px 0 0;font-size:13px}.segdl dt{color:var(--ink-3)}.segdl dd{margin:0}
 @media (max-width:900px){.spgrid,.seggrid,.imgrid{grid-template-columns:1fr}}
+/* navigation redesign */
+.ph.compact{align-items:flex-start;margin-bottom:6px}
+.ph.compact h1{font-size:44px;margin:0}
+.ph-name{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ph.compact .sub{max-width:900px}
+.tabs{position:sticky;top:calc(env(safe-area-inset-top,0px) + 57px);z-index:15;background:var(--bg);display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:8px 0;margin:10px 0 18px;border-bottom:1px solid var(--line)}
+.tabs::-webkit-scrollbar{display:none}
+.tabs a{flex:0 0 auto;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);white-space:nowrap;text-decoration:none;color:var(--ink-2);font-size:14px}
+.tabs a[aria-current="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tabs a[aria-current="true"] .n{color:var(--bg);opacity:.7}
+.tabs a{font-weight:500}
+.bstrip{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding:10px 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.xgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.xbtn{display:flex;flex-direction:column;gap:3px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);text-decoration:none;color:var(--ink)}
+a.xbtn:hover{border-color:var(--accent);box-shadow:0 2px 10px rgba(15,27,36,.08)}
+.xbtn small{color:var(--ink-3);font-size:12px}
+.xbtn.static{background:var(--sunk)}
+@media (max-width:900px){.grid3{grid-template-columns:1fr}.ph.compact h1{font-size:34px}}
+@media (max-width:700px){
+  .top{position:static}
+  .top-in{gap:8px;padding-block:6px}
+  .nav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;width:100%}
+  .nav::-webkit-scrollbar{display:none}
+  .nav a{flex:0 0 auto}
+  .tabs{top:env(safe-area-inset-top,0px)}
+}
+/* tables become cards on phones: no sideways scrolling */
+@media (max-width:700px){
+  .tw{overflow:visible;border:0;background:transparent}
+  .tw table,.tw tbody,.tw tr,.tw td,.tw tfoot{display:block;width:100%}
+  .tw thead{display:none}
+  .tw tr{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;padding:8px 12px}
+  .tw tr.yr{background:var(--sunk)}
+  .tw tr.yr th{display:block;border:0;padding:4px 0}
+  .tw td{border:0;padding:3px 0;text-align:left!important;min-width:0!important;white-space:normal!important}
+  .tw td[data-label]:not(:first-child)::before{content:attr(data-label);display:block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}
+  .tw td:empty{display:none}
+}
 .run.warnrun{background:var(--warn-soft,#fbeee2)}
 .run .sp{flex:1}
 .run{margin-top:14px;padding:12px 14px;border-radius:var(--r);background:var(--accent-soft);color:var(--ink);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -203,10 +243,7 @@ td.warnc{color:var(--warn);font-weight:600}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation:none}}
 
-.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:26px 0 20px;overflow-x:auto;scrollbar-width:none}
-.tabs a{padding:10px 12px;color:var(--ink-2);text-decoration:none;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
 .tabs a:hover{color:var(--ink)}
-.tabs a[aria-current="true"]{color:var(--ink);border-bottom-color:var(--ink)}
 .tabs .n{font:500 11px var(--f-mono);color:var(--ink-3);margin-left:4px}
 
 .sec{margin-bottom:28px}
@@ -400,7 +437,7 @@ tr:hover .rowx{opacity:1}
     <nav class="nav" id="nav">
       <a href="#sectors" data-v="sectors">Sectors</a>
       <a href="#companies" data-v="companies">Companies</a>
-      <a href="#targets" data-v="targets">Targets</a>
+      <a href="#targets" data-v="targets">Buyer finder</a>
       <a href="#precedents" data-v="precedents">Precedents</a>
       <a href="#endmarkets" data-v="endmarkets">End markets</a>
       <a href="#tam" data-v="tam">Market size</a>
@@ -536,7 +573,7 @@ const seeding = {};
 
 function route() {
   const h = (location.hash || "#companies").slice(1);
-  if (h.startsWith("c.")) { const [, id, tab] = h.split("."); return { view: "company", id, tab: tab || "snapshot" }; }
+  if (h.startsWith("c.")) { const [, id, tab] = h.split("."); return { view: "company", id, tab: ({ snapshot: "overview", sources: "notes" })[tab] || tab || "overview" }; }
   if (h.startsWith("sponsors")) { const [, fk, fv] = h.split("~"); return { view: "sponsors", fk: fk || "", fv: fv ? decodeURIComponent(fv) : "" }; }
   if (["sectors", "companies", "targets", "precedents", "endmarkets", "tam", "inmarket"].includes(h)) return { view: h };
   return { view: "sectors" };
@@ -1945,7 +1982,7 @@ function viewCompanies() {
     ${sid ? `<div class="stat"><div class="v">${fmtM(secRev)}</div><div class="l">${water ? "US water treatment revenue" : esc(sname) + " revenue"}</div></div>` : ""}
     <div class="stat"><div class="v">${fmtM(totRev)}</div><div class="l">Combined platform revenue</div></div>
     <div class="stat"><div class="v">${nDeals}</div><div class="l">Deals logged</div></div>
-    <div class="stat"><div class="v">${allTargets().length}</div><div class="l">Targets tracked</div></div>
+    <div class="stat"><div class="v">${allTargets().length}</div><div class="l">Companies in Buyer finder</div></div>
   </div>
   <div class="bar"><div class="grow acwrap"><input class="search" id="q" type="search" placeholder="Search by name, category, owner, sponsor, HQ or rolled-in company" value="${esc(ui.q)}" aria-label="Search companies" role="combobox" aria-autocomplete="list" aria-expanded="${ui.acOpen && !!ui.q}" aria-controls="acList" autocomplete="off">${autofill()}</div>
     ${water ? `<select id="fscope" aria-label="Scope"><option value="">Core and adjacent</option>${["Core", "Adjacent"].map(v => `<option ${ui.scope === v ? "selected" : ""}>${v}</option>`).join("")}</select>` : ""}
@@ -1954,7 +1991,7 @@ function viewCompanies() {
   <div class="tw"><table><thead><tr>${th("rank", "#")}${th("name", "Company")}<th>Sectors</th>${th("owner_type", "Owner")}${th("secrev", sid ? sectorRevLabel(sid) : "Primary sector rev", "r")}${water ? th("us_market_share_pct", "US share", "r") : ""}${th("total_revenue_usd_m", "Total rev", "r")}${th("total_ebitda_usd_m", "EBITDA", "r")}${th("margin", "Margin", "r")}${th("evx", "EV / EBITDA", "r")}<th>Top end market</th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
-const TABS = [["snapshot", "Snapshot"], ["overview", "Overview"], ["mix", "Mix"], ["segments", "Segments"], ["customers", "Customers"], ["products", "Products"], ["competitors", "Competitors"], ["acquisitions", "M&A"], ["buyers", "Buyers"], ["addons", "Add-ons"], ["sources", "Sources"]];
+const TABS = [["overview", "Overview"], ["products", "Products"], ["acquisitions", "M&A"], ["customers", "Customers"], ["competitors", "Competitors"], ["buyers", "Buyers"], ["addons", "Add-ons"], ["segments", "Segments"], ["mix", "Mix"], ["stats", "Peers"], ["notes", "Notes"], ["build", "Build"]];
 const canEnhance = () => !!sample && writable && !!db;
 const canWeb = () => writable && !!db;
 function enhanceBtn(c, key, label = "Enhance") {
@@ -1987,7 +2024,7 @@ function viewCompany(id, tab) {
   const queued = (queueDocs || []).filter(q => q.company_id === id && q.status !== "done");
   const runStrip = busy.length ? `<div class="run" role="status"><span class="spin"></span><span><b>Enhancing ${busy.length === 1 ? SECTIONS[busy[0]].label : busy.length + " sections"}.</b> Each section saves as soon as it finishes. Your overrides stay as they are.</span></div>` : "";
   const stl = staleSections(c), sg = strength(c);
-  const actions = `${writable && db && !inMarket(c) && ui.imEdit !== c.id ? `<button class="btn" data-act="imedit">In market</button>` : ""}${delBtn()}`;
+  const actions = `${writable && db && !inMarket(c) && ui.imEdit !== c.id ? `<button class="btn sm" data-act="imedit">Mark in market</button>` : ""}`;
 
   if (c.status === "empty" || c.status === "researching" && !(c.runs || []).length) {
     return `<div class="crumb"><a href="#companies">Companies</a> / ${esc(c.name)}</div>
@@ -2005,21 +2042,29 @@ function viewCompany(id, tab) {
     </div>`;
   }
 
-  const counts = { segments: (c.segment_profiles || []).length, customers: (c.customers || []).length, products: catalog(c).length, competitors: (c.competitors || []).length, acquisitions: (c.acquisitions || []).length, buyers: (c.buyers || []).length, addons: addonList(c).length, sources: (c.evidence || []).length + (c.source_of_truth || []).length };
+  const counts = { segments: (c.segment_profiles || []).length, customers: (c.customers || []).length, products: catalog(c).length, competitors: (c.competitors || []).length, acquisitions: (c.acquisitions || []).length, buyers: (c.buyers || []).length, addons: addonList(c).length, notes: (c.evidence || []).length + (c.source_of_truth || []).length };
   const tabs = TABS.map(([k, l]) => `<a href="#c.${esc(id)}.${k}" aria-current="${tab === k}">${l}${counts[k] ? `<span class="n">${counts[k]}</span>` : ""}</a>`).join("");
   const m = margin(c);
   const ps = primarySector(c), prk = sectorRank(c, ps);
   const chips = [prk && `<span class="pill">#${prk.rank} of ${prk.of} in ${esc(sectorShort(ps))}${ps === "water" && num(c.us_market_share_pct) ? " · " + (+c.us_market_share_pct).toFixed(1) + "% US share" : ""}</span>`, c.owner_type && (isPE(c) ? `<a class="pill pe" href="#sponsors~o~${encodeURIComponent(sponsorOf(c))}" title="See ${esc(sponsorOf(c))}'s portfolio and all sponsor-owned companies">PE-owned · ${esc(sponsorOf(c))}${entryYear(c) ? " since " + entryYear(c) : ""}</a>` : `<span class="pill">${esc(c.owner_type)}</span>`), c.business_model && `<span class="pill">${esc(c.business_model)}</span>`, c.primary_category && `<span class="pill">${esc(c.primary_category)}</span>`, c.confidence && `<span class="pill ${c.confidence === "Low" ? "warn" : ""}">${esc(c.confidence)} confidence</span>`, c.website && `<a class="pill" href="${esc(/^https?:/.test(c.website) ? c.website : "https://" + c.website)}" target="_blank" rel="noopener">${esc(String(c.website).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))} ↗</a>`].filter(Boolean).join("");
   const kpi = (f, lab, note, pre = "$", unit = "M") => `<div class="kpi"><div class="lab">${lab} ${confBadge(c, f)}</div><div class="val">${pre ? `<span class="u">${pre}</span>` : ""}${ed(f, c[f], "num", "–")}${unit ? `<span class="u">${unit}</span>` : ""}</div><div class="note">${esc(note || "")}</div></div>`;
-  const hdr = `
+  const oneLine = String(c.what_it_is || "").replace(/\s+/g, " ").trim();
+  const tags = [
+    `<a class="pill" href="#companies" data-setsector="${esc(ps)}">${esc(sectorShort(ps))}${prk ? ` · #${prk.rank} of ${prk.of}` : ""}</a>`,
+    isPE(c) ? `<a class="pill pe" href="#sponsors~o~${encodeURIComponent(sponsorOf(c))}">PE-owned · ${esc(sponsorOf(c))}</a>` : c.owner_type ? `<span class="pill">${esc(c.owner_type)}</span>` : "",
+    inMarket(c) ? `<a class="pill accent" href="#inmarket">In market · ${esc(c.in_market.stage)}</a>` : "",
+  ].join("");
+  const head = `
   <div class="crumb"><a href="#companies">Companies</a> / ${esc(c.name)}</div>
-  <div class="ph">
-    <div class="ph-main"><div class="logo-row">${logoImg(c, "lg")}${writable && db ? `<button class="btn sm ghost" data-act="logoadd">${logos.has(c.id) ? "Change logo" : "Add logo"}</button>${logos.has(c.id) ? `<button class="btn sm ghost" data-act="logodel">Remove</button>` : ""}<input type="file" id="logoFile" accept="image/*" hidden>` : ""}</div><h1>${ed("name", c.name, "text", "Company name")}</h1>
-      <div class="sub">${esc([c.platform_name && c.platform_name !== c.name ? c.platform_name : "", c.hq_address].filter(Boolean).join(" · "))}</div>
-      <div class="chips">${sectorChips(c)}</div><div class="chips" style="margin-top:6px">${chips}</div>
-      <div class="strength" title="How much of the key picture is known, weighted by confidence"><span class="eyebrow">Profile strength</span><div class="sbar">${["Verified", "High", "Medium", "Low"].map(L => sg.n[L] ? `<span class="${CONF_TAG[L]}" style="flex:${sg.n[L]}" data-tip="${sg.n[L]} ${L}"></span>` : "").join("")}${sg.n.Missing ? `<span class="cx" style="flex:${sg.n.Missing}" data-tip="${sg.n.Missing} missing"></span>` : ""}</div><b class="num">${sg.pct}%</b><span class="faint" style="font-size:12px">${sg.n.Verified} verified · ${sg.n.High} high · ${sg.n.Medium} medium · ${sg.n.Low} low · ${sg.n.Missing} missing</span></div></div>
+  <div class="ph compact">
+    <div class="ph-main"><div class="ph-name">${logoImg(c, "lg")}<h1>${ed("name", c.name, "text", "Company name")}</h1></div>
+      <div class="sub">${esc(oneLine ? (oneLine.length > 190 ? oneLine.slice(0, 187) + "…" : oneLine) : (c.hq_address || ""))}</div>
+      <div class="chips">${tags}</div></div>
     <div class="ph-act">${actions}</div>
   </div>
+  ${runStrip}
+  <nav class="tabs" aria-label="Profile sections">${tabs}</nav>`;
+  const overviewTop = `
   <div class="kpis">
     ${kpi("total_revenue_usd_m", "Revenue", c.total_revenue_year)}
     ${kpi("total_ebitda_usd_m", "EBITDA", c.ebitda_year)}
@@ -2031,12 +2076,50 @@ function viewCompany(id, tab) {
   ${inMarketPanel(c)}
   <div class="kpi-foot">${secMeta(c, "financials")}<span class="faint" style="font-size:12px">Type over any number to override it.</span><span class="sp"></span>${enhanceBtn(c, "financials", "Enhance financials")}</div>
   ${suggestionBox(c, SECTIONS.financials.fields)}
+  ${builderStrip(c, stl, busy)}`;
+  const buildTab = `
+  <div class="strength" title="How much of the key picture is known, weighted by confidence"><span class="eyebrow">Profile strength</span><div class="sbar">${["Verified", "High", "Medium", "Low"].map(L => sg.n[L] ? `<span class="${CONF_TAG[L]}" style="flex:${sg.n[L]}" data-tip="${sg.n[L]} ${L}"></span>` : "").join("")}${sg.n.Missing ? `<span class="cx" style="flex:${sg.n.Missing}" data-tip="${sg.n.Missing} missing"></span>` : ""}</div><b class="num">${sg.pct}%</b><span class="faint" style="font-size:12px">${sg.n.Verified} verified · ${sg.n.High} high · ${sg.n.Medium} medium · ${sg.n.Low} low · ${sg.n.Missing} missing</span></div>
+  ${stl.length && !busy.length ? `<div class="run err"><span><b>${stl.length} section${stl.length > 1 ? "s are" : " is"} out of date</b> because newer information came in: ${esc(stl.map(k => SECTIONS[k].label).join(", "))}.</span><span style="flex:1"></span>${canEnhance() ? `<button class="btn sm primary" data-act="updatestale">Update them</button>` : ""}</div>` : ""}
   ${viewBuilder(c)}
   ${writable && db ? `<form class="facts" id="factForm"><span class="lab">Add a fact</span><input id="factText" placeholder="Something the profile gets wrong or misses, e.g. 2025 EBITDA was $24M per lender deck" autocomplete="off" aria-label="Add a fact"><button class="btn" type="submit">Save fact</button></form>` : ""}
-  ${runStrip}
-  ${stl.length && !busy.length ? `<div class="run err"><span><b>${stl.length} section${stl.length > 1 ? "s are" : " is"} out of date</b> because newer information came in: ${esc(stl.map(k => SECTIONS[k].label).join(", "))}.</span><span style="flex:1"></span>${canEnhance() ? `<button class="btn sm primary" data-act="updatestale">Update them</button>` : ""}</div>` : ""}
-  <nav class="tabs" aria-label="Profile sections">${tabs}</nav>`;
-  return hdr + tabBody(c, tab);
+  ${writable && db ? `<div class="sec"><div class="sec-h"><h2>Logo</h2></div><div class="logo-row">${logoImg(c, "lg")}<button class="btn sm" data-act="logoadd">${logos.has(c.id) ? "Change logo" : "Add logo"}</button>${logos.has(c.id) ? `<button class="btn sm ghost" data-act="logodel">Remove</button>` : ""}<input type="file" id="logoFile" accept="image/*" hidden></div></div>
+  <div class="sec"><div class="sec-h"><h2>Delete</h2></div><div class="add">${delBtn()}</div></div>` : ""}`;
+  if (tab === "overview") return head + overviewTop + tabBody(c, "overview");
+  if (tab === "build") return head + buildTab;
+  return head + tabBody(c, tab);
+}
+// A one-line builder status for the Overview; the full step grid lives on the Build tab.
+function builderStrip(c, stl, busy) {
+  if (!canEnhance() && !canWeb()) return "";
+  const done = SECTION_ORDER.filter(k => stepState(c, k).cls === "done").length, nx = nextStep(c), running = SECTION_ORDER.find(k => isRunning(c.id, k));
+  if (running) return `<div class="run" role="status" style="margin-top:12px"><span class="spin"></span><span><b>Building ${esc(SECTIONS[running].label)} in the background.</b> Each step saves as it finishes.</span><span class="sp"></span>${chat.open ? "" : `<button class="btn sm" data-act="viewchat">View live</button>`}<button class="btn sm ghost" data-act="stopsec" data-k="${running}">Stop</button></div>`;
+  return `<div class="bstrip"><span><b>Profile builder</b> <span class="faint">${done} of ${SECTION_ORDER.length} steps built${stl.length ? ` · ${stl.length} out of date` : ""}</span></span><span class="sp"></span>${canEnhance() && nx ? `<button class="btn sm primary" data-act="enhance" data-k="${nx}">Build next: ${esc(SECTIONS[nx].label)}</button>` : ""}${canEnhance() ? `<button class="btn sm" data-act="enhanceall">Build all</button>` : ""}<a class="btn sm ghost" href="#c.${esc(c.id)}.build">Details</a></div>${webPanel(c)}`;
+}
+// Overview lists: the latest deals, top products and top buyers at a glance.
+function overviewLists(c) {
+  const deals = [...(c.acquisitions || [])].sort((a, b) => dateKey(b.date) - dateKey(a.date)).slice(0, 5);
+  const prods = catalog(c).slice(0, 6);
+  const buyers = (c.buyers || []).length ? c.buyers.slice(0, 5).map(b => ({ name: b.name, sub: b.rationale || b.type || "", id: findCompanyByName(b.name)?.id })) : likelyBuyers(c).slice(0, 5).map(b => ({ name: b.p.name, id: b.p.id, sub: `${b.o.toFixed(0)}% similarity` }));
+  const li = (who, sub, href) => `<div class="li"><div class="who">${href ? `<a href="${href}">${who}</a>` : who}</div>${sub ? `<div class="muted" style="font-size:12px">${sub}</div>` : ""}</div>`;
+  const box = (title, href, items, empty) => `<div><div class="sec-h"><h2>${title}</h2><span class="sp"></span><a class="btn sm ghost" href="${href}">See all</a></div><div class="panel list-p">${items || `<p class="faint" style="padding:6px 4px">${empty}</p>`}</div></div>`;
+  return `<div class="sec grid3">
+    ${box("Products", `#c.${esc(c.id)}.products`, prods.map(p => li(esc([p.category, p.line].filter(Boolean).join(" · ")), esc(String(p.named_products || p.what_it_is || "").slice(0, 90)))).join(""), "No product catalog yet.")}
+    ${box("Latest deals", `#c.${esc(c.id)}.acquisitions`, deals.map(d => li(`${esc(d.target)} <span class="faint num" style="font-weight:400">${esc(String(d.date || "").slice(0, 7))}</span>`, esc(String(d.what_it_added || d.what_it_does || "").slice(0, 90)))).join(""), "No deals on file.")}
+    ${box((c.buyers || []).length ? "Top buyers" : "Likely buyers", `#c.${esc(c.id)}.buyers`, buyers.map(b => li(esc(b.name), esc(String(b.sub).slice(0, 90)), b.id ? `#c.${esc(b.id)}` : "")).join(""), "No buyers yet.")}
+  </div>`;
+}
+// Bigger categories as buttons: the company's industries, its sponsor, and the screens that matter for it.
+function exploreButtons(c) {
+  const btn = (href, title, sub, attrs = "") => `<a class="xbtn" href="${href}" ${attrs}><b>${title}</b>${sub ? `<small>${sub}</small>` : ""}</a>`;
+  const out = [];
+  for (const x of sectorsOf(c)) { const sec = sectorById(x.sector); if (!sec) continue; const rk = sectorRank(c, x.sector); out.push(btn("#companies", esc(sec.name), [x.pct ? Math.round(x.pct) + "% of revenue" : "", rk ? `#${rk.rank} of ${rk.of}` : ""].filter(Boolean).join(" · "), `data-setsector="${esc(x.sector)}"`)); }
+  if (isPE(c)) { out.push(btn(`#sponsors~o~${encodeURIComponent(sponsorOf(c))}`, esc(sponsorOf(c)) + " portfolio", `PE-owned${entryYear(c) ? " since " + entryYear(c) : ""}${holdYears(c) !== null ? " · " + holdYears(c) + " yr hold" : ""}`)); out.push(btn("#sponsors", "All sponsor-owned", `${list().filter(isPE).length} companies by year and owner`)); }
+  else if (c.owner_type) out.push(`<span class="xbtn static"><b>${esc(c.owner_type)}</b>${c.ultimate_parent ? `<small>${esc(String(c.ultimate_parent).slice(0, 60))}</small>` : ""}</span>`);
+  out.push(btn("#inmarket", "In market", inMarket(c) ? esc(c.in_market.stage) : `${list().filter(inMarket).length} live processes`));
+  out.push(btn("#precedents", "Precedent deals", "EV / revenue and EV / EBITDA"));
+  out.push(btn(`#c.${esc(c.id)}.buyers`, "Buyer universe", "Strategics and sponsors ranked by fit"));
+  if (c.website) out.push(`<a class="xbtn" href="${esc(/^https?:/.test(c.website) ? c.website : "https://" + String(c.website).split(/[ ;,]/)[0])}" target="_blank" rel="noopener"><b>Website ↗</b><small>${esc(String(c.website).split(/[ ;,]/)[0].replace(/^https?:\/\/(www\.)?/, ""))}</small></a>`);
+  return `<div class="sec"><div class="sec-h"><h2>Explore</h2></div><div class="xgrid">${out.join("")}</div></div>`;
 }
 // The builder: each step in order, its state, and one click to build the next step or go deeper.
 function stepState(c, k) {
@@ -2137,7 +2220,6 @@ function mapCell(name, selfId) {
 const SRC = { saved: ["k-acq", "Saved"], buyer: ["k-idea", "Named buyer"], index: ["k-buyer", "Index match"] };
 function tabBody(c, tab) {
   const rev = num(c.total_revenue_usd_m);
-  if (tab === "snapshot") return viewSnapshot(c);
   if (tab === "segments") return viewSegments(c);
   if (tab === "overview") {
     const em = endMarkets(c);
@@ -2151,6 +2233,13 @@ function tabBody(c, tab) {
     <div class="sec">${secHead(c, "", "About", "", "overview", ["what_it_is", "bluntly"])}
       ${ed("what_it_is", c.what_it_is, "text", "One or two sentences on what this company is", "div", "lede")}
       <div class="take"><div class="eyebrow">Bluntly</div>${ed("bluntly", c.bluntly, "text", "Plain-spoken take on the business", "div")}</div></div>
+    ${overviewLists(c)}
+    ${exploreButtons(c)}`;
+  }
+  if (tab === "stats") return viewSnapshot(c);
+  if (tab === "notes") {
+    return `
+    <div class="sec"><div class="sec-h"><h2>Notes</h2><span class="faint" style="font-size:12px">The long view: what we know, where we know it from, and what changed.</span></div></div>
     <div class="sec grid2">
       <div class="panel"><div class="kv">
         <dt>Owner type</dt><dd>${ed("owner_type", c.owner_type, "text", "e.g. PE-owned")}</dd>
@@ -2177,7 +2266,9 @@ function tabBody(c, tab) {
       ${c.total_revenue_basis ? `<p><b>Revenue basis.</b> ${esc(c.total_revenue_basis)}</p>` : ""}
       ${c.ebitda_basis ? `<p><b>EBITDA basis.</b> ${esc(c.ebitda_basis)}</p>` : ""}
       ${c.us_water_treatment_arithmetic ? `<p><b>US water revenue math.</b> ${esc(c.us_water_treatment_arithmetic)}</p>` : ""}
-    </div>`;
+      ${c.employees_basis ? `<p><b>Headcount basis.</b> ${esc(c.employees_basis)}</p>` : ""}
+    </div>
+    ${tabBody(c, "sources")}`;
   }
   if (tab === "mix") {
     const segs = tableRows(c, "revenue_by_business"), prods = tableRows(c, "revenue_by_product"), ems = tableRows(c, EM_FIELD).sort((a, b) => (b.pct || 0) - (a.pct || 0));
@@ -2213,7 +2304,7 @@ function tabBody(c, tab) {
   }
   if (tab === "acquisitions") {
     const html = editTable(c, "acquisitions", [{ k: "date", label: "Date", w: "120px" }, { k: "target", label: "Target", w: "220px" }, { k: "what_it_does", label: "What it does" }, { k: "revenue_usd_m", label: "Rev $M", t: "num", w: "80px" }, { k: "value_usd_m", label: "Value $M", t: "num", w: "90px" }, { k: "source_url", label: "Source", link: true, w: "160px" }, CONF_COL], tableRows(c, "acquisitions"), { empty: "No deals logged. Hit Enhance to search for deals, or add one yourself." });
-    return `<div class="sec">${secHead(c, "acquisitions", "M&A history", "", "deals")}<p class="muted" style="margin:-4px 0 10px;font-size:13px">Enhance looks for deals that aren't listed yet and adds them. Every deal here also shows up on Targets and Precedents.</p>${html}</div>
+    return `<div class="sec">${secHead(c, "acquisitions", "M&A history", "", "deals")}<p class="muted" style="margin:-4px 0 10px;font-size:13px">Enhance looks for deals that aren't listed yet and adds them. Every deal here also shows up in Buyer finder and Precedents.</p>${html}</div>
     ${c.rolled_in ? `<div class="sec basis"><p><b>Rolled into this platform.</b> ${esc(c.rolled_in)}</p></div>` : ""}
     ${c.addon_corrections ? `<div class="sec basis"><p><b>Notes on the deal list.</b> ${esc(c.addon_corrections)}</p></div>` : ""}`;
   }
@@ -2230,7 +2321,7 @@ function tabBody(c, tab) {
     const rows = al.map((x, j) => `<tr><td class="cname">${x.id ? `<a href="#c.${esc(x.id)}">${esc(x.name)}</a>` : esc(x.name)}</td><td><span class="kind ${SRC[x.src][0]}">${SRC[x.src][1]}</span></td><td class="muted" style="font-size:13px">${esc(x.why || "")}</td><td class="r num">${x.rev !== null && x.rev !== undefined ? fmtM(x.rev) : "—"}</td><td class="muted">${esc(x.state || "")}</td><td>${x.src === "saved" ? (writable && db ? `<button class="x" style="opacity:1" data-act="delrow" data-f="addon_ideas" data-r="${x.i}" aria-label="Remove">×</button>` : "") : writable && db ? `<button class="btn sm ghost" data-act="saveaddonx" data-j="${j}">Save</button>` : ""}</td></tr>`).join("");
     const nb = al.filter(x => x.src === "buyer").length;
     return `<div class="sec">${secHead(c, "", "Add-on list", `<span class="faint" style="font-size:12px">${al.length} targets${nb ? ` · ${nb} from buyer links` : ""}</span>${writable && db ? `<button class="btn sm ghost" data-act="addrow" data-f="addon_ideas">Add target</button>` : ""}`, "addons", ["addon_ideas"])}
-      <p class="muted" style="margin:-4px 0 10px;font-size:13px">Companies ${esc(c.name)} could buy. <b>Saved</b> are yours or Claude's. <b>Named buyer</b> means another profile lists ${esc(c.name)} as its potential buyer. <b>Index match</b> is a smaller private company with similar end markets. Every entry also shows on Targets.</p>
+      <p class="muted" style="margin:-4px 0 10px;font-size:13px">Companies ${esc(c.name)} could buy. <b>Saved</b> are yours or Claude's. <b>Named buyer</b> means another profile lists ${esc(c.name)} as its potential buyer. <b>Index match</b> is a smaller private company with similar end markets. Every entry also shows in Buyer finder.</p>
       <div class="tw"><table><thead><tr><th style="width:240px">Target</th><th style="width:120px">Source</th><th>Why it fits</th><th class="r" style="width:90px">${esc(sectorRevLabel(primarySector(c)))}</th><th style="width:70px">State</th><th style="width:60px"></th></tr></thead><tbody>${rows || `<tr><td colspan="6" class="faint">No add-on targets found. Hit Enhance and Claude suggests some.</td></tr>`}</tbody></table></div></div>
     ${(c.addon_ideas || []).length ? `<div class="sec"><div class="sec-h"><h2>Edit saved add-ons</h2></div>${editTable(c, "addon_ideas", [{ k: "target", label: "Target", w: "240px" }, { k: "rationale", label: "Why it fits" }, { k: "est_revenue_usd_m", label: "Est rev $M", t: "num", w: "100px" }, { k: "location", label: "Location", w: "150px" }], tableRows(c, "addon_ideas"))}</div>` : ""}`;
   }
@@ -2291,7 +2382,7 @@ function viewTargets() {
       ${sel.entity?.what ? `<p class="muted" style="max-width:70ch;margin:10px 0 0">${esc(sel.entity.what)}</p>` : ""}
       <div class="links">${links}</div>${fit}</div>`;
   }
-  return `<div class="page-h"><div><div class="eyebrow">${esc(ui.sector ? sectorById(ui.sector)?.name : "All sectors")} · Reverse search</div><h1>Targets</h1><p>Every company that shows up as a past deal, an add-on already rolled into a platform, an add-on idea, or a company with named buyers. Pick a target to see who bought it, who wants it, and which platforms fit it best.</p></div></div>
+  return `<div class="page-h"><div><div class="eyebrow">${esc(ui.sector ? sectorById(ui.sector)?.name : "All sectors")} · Who would buy it?</div><h1>Buyer finder</h1><p>Type any company, including ones that are only mentioned in other profiles, to see <b>who already bought it</b>, <b>who has named it as an add-on</b>, and <b>which platforms in Profiler are the best fit to buy it</b>, ranked by shared end markets and size. Use it to build a buyer list for a sell-side pitch in seconds.</p></div></div>
   <div class="bar"><div class="grow"><input class="search" id="tq" type="search" placeholder="Search a target, a platform, or a keyword like Legionella" value="${esc(ui.tq)}" aria-label="Search targets"></div><span class="faint">${ts.length} targets</span></div>
   <div class="split"><div class="panel tlist">${listHtml}</div>${detail}</div>`;
 }
@@ -2401,7 +2492,7 @@ function viewPrecedents() {
   const medMult = med(withVal.map(d => d.value / d.rev)), medEvx = med(ds.map(dealEvx).filter(x => x !== null));
   const rows = ds.map(d => {
     const tgt = d.targetId || findCompanyByName(d.target)?.id;
-    return `<tr><td class="num" style="white-space:nowrap">${esc(d.date)}</td><td class="cname">${tgt ? `<a href="#c.${esc(tgt)}">${esc(d.target)}</a>` : esc(d.target)}</td><td>${d.acquirerId ? `<a href="#c.${esc(d.acquirerId)}.acquisitions">${esc(d.acquirer)}</a>` : esc(d.acquirer)}</td><td class="muted" style="font-size:13px;min-width:240px">${esc(d.what)}</td><td class="r num">${d.rev !== null ? fmtM(d.rev) : "—"}</td><td class="r num">${d.value ? fmtM(d.value) : "—"}</td><td class="r num">${d.value && d.rev ? (d.value / d.rev).toFixed(1) + "x" : "—"}</td><td class="r num">${fmtX(dealEvx(d))}</td><td>${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener">Source</a>` : ""}</td></tr>`;
+    return `<tr><td class="num" style="white-space:nowrap" title="${esc(d.date)}">${esc(String(d.date || "").slice(0, 10))}</td><td class="cname">${tgt ? `<a href="#c.${esc(tgt)}">${esc(d.target)}</a>` : esc(d.target)}</td><td>${d.acquirerId ? `<a href="#c.${esc(d.acquirerId)}.acquisitions">${esc(d.acquirer)}</a>` : esc(d.acquirer)}</td><td class="muted" style="font-size:13px">${esc(d.what)}</td><td class="r num">${d.rev !== null ? fmtM(d.rev) : "—"}</td><td class="r num">${d.value ? fmtM(d.value) : "—"}</td><td class="r num">${d.value && d.rev ? (d.value / d.rev).toFixed(1) + "x" : "—"}</td><td class="r num">${fmtX(dealEvx(d))}</td><td>${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener">Source</a>` : ""}</td></tr>`;
   }).join("");
   return `<div class="page-h"><div><div class="eyebrow">${esc(sid ? sectorById(sid)?.name : "All sectors")} · Deal log</div><h1>Precedents</h1><p>Every acquisition from every profile, plus sponsor entries with a known EV. Add a deal on a company's Acquisitions tab and it lands here.</p></div></div>
   <div class="stats"><div class="stat"><div class="v">${ds.length}</div><div class="l">Deals</div></div><div class="stat"><div class="v">${ds.filter(d => d.value).length}</div><div class="l">With disclosed value</div></div><div class="stat"><div class="v">${medMult !== null ? medMult.toFixed(1) + "x" : "—"}</div><div class="l">Median EV / revenue</div></div><div class="stat"><div class="v">${fmtX(medEvx)}</div><div class="l">Median EV / EBITDA</div></div></div>
@@ -2463,8 +2554,17 @@ function render() {
   app.innerHTML = html;
   if (active && ["q", "tq", "pq"].includes(active)) { const el = document.getElementById(active); el?.focus(); try { el.setSelectionRange(selS, selS); } catch {} }
   if (pendingFocus) { const el = app.querySelector(pendingFocus); pendingFocus = null; el?.focus(); }
+  labelTables();
   window.scrollTo(0, y);
   chatView();
+}
+// Give every table cell its column name so phones can show rows as cards.
+function labelTables() {
+  for (const t of app.querySelectorAll(".tw table")) {
+    const heads = [...(t.tHead?.rows[0]?.cells || [])].map(h => h.innerText.replace(/[↑↓]/g, "").trim());
+    if (!heads.length) continue;
+    for (const r of t.tBodies[0]?.rows || []) [...r.cells].forEach((td, i) => { if (td.tagName === "TD" && heads[i] && !td.hasAttribute("colspan")) td.dataset.label = heads[i]; });
+  }
 }
 
 /* ---------- chat: ask and tell, with web search; Claude proposes changes, code checks and saves them ---------- */
