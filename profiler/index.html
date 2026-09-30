@@ -1017,10 +1017,18 @@ async function commit(el) {
     if (f === "name" && !String(val).trim()) { el.textContent = c.name; return; }
     const patch = { [f]: val };
     const locks = [f];
-    if ((f === "total_revenue_usd_m" || f === "total_ebitda_usd_m") && !(c.locked || []).includes("ebitda_margin_pct")) {
-      const rv = f === "total_revenue_usd_m" ? val : num(c.total_revenue_usd_m), eb = f === "total_ebitda_usd_m" ? val : num(c.total_ebitda_usd_m);
-      if (rv && eb !== null) patch.ebitda_margin_pct = +(eb / rv * 100).toFixed(1);
+    // Revenue, EBITDA and margin move together: margin drives EBITDA, EBITDA drives margin, and a revenue
+    // change keeps whichever of the two you set yourself.
+    const L = new Set(c.locked || []), rv0 = num(c.total_revenue_usd_m), eb0 = num(c.total_ebitda_usd_m);
+    if (f === "ebitda_margin_pct" && val !== null && rv0) { patch.total_ebitda_usd_m = +(rv0 * val / 100).toFixed(1); locks.push("total_ebitda_usd_m"); }
+    if (f === "total_ebitda_usd_m" && val !== null && rv0) patch.ebitda_margin_pct = +(val / rv0 * 100).toFixed(1);
+    if (f === "total_revenue_usd_m" && val) {
+      const m0 = num(c.ebitda_margin_pct);
+      if (L.has("ebitda_margin_pct") && !L.has("total_ebitda_usd_m") && m0 !== null) patch.total_ebitda_usd_m = +(val * m0 / 100).toFixed(1);
+      else if (eb0 !== null) patch.ebitda_margin_pct = +(eb0 / val * 100).toFixed(1);
     }
+    if (patch.total_ebitda_usd_m !== undefined && f !== "total_ebitda_usd_m") toast(`EBITDA updated to ${fmtM(patch.total_ebitda_usd_m)}`);
+    if (patch.ebitda_margin_pct !== undefined && f !== "ebitda_margin_pct") toast(`Margin updated to ${patch.ebitda_margin_pct}%`);
     await save(c.id, patch, locks);
   }
 }
@@ -1290,7 +1298,7 @@ function confOf(c, f) {
 const CONF_TAG = { Verified: "cv", High: "ch", Medium: "cm", Low: "cl" };
 function confBadge(c, f, act = true) {
   const k = confOf(c, f), t = `${k.level}${k.basis ? ": " + k.basis : ""}${act && writable ? (k.level === "Verified" ? ". Click to release." : ". Click to mark verified.") : ""}`;
-  return act && writable && db ? `<button class="cb ${CONF_TAG[k.level]}" data-act="${k.level === "Verified" ? "unlock" : "verify"}" data-f="${f}" title="${esc(t)}">${k.level}</button>` : `<span class="cb ${CONF_TAG[k.level]}" title="${esc(t)}">${k.level}</span>`;
+  return act && writable && db ? `<button class="cb ${CONF_TAG[k.level]}" data-act="${k.level === "Verified" ? "unlock" : "verify"}" data-f="${f}" title="${esc(t)}">${k.level}${k.level === "Verified" ? ` <span aria-hidden="true" style="opacity:.7">×</span>` : ""}</button>` : `<span class="cb ${CONF_TAG[k.level]}" title="${esc(t)}">${k.level}</span>`;
 }
 function sectionConf(c, key) {
   const d = sectionDef(c, key); if (!d) return null;
@@ -3338,7 +3346,16 @@ app.addEventListener("click", async e => {
   if (act === "askdel") { ui.confirmDel = true; render(); }
   if (act === "nodel") { ui.confirmDel = false; render(); }
   if (act === "del") { await deleteCompany(c.id); location.hash = "companies"; }
-  if (act === "unlock") { const cc = companies.get(c.id); companies.set(c.id, { ...cc, locked: (cc.locked || []).filter(f => f !== btn.dataset.f) }); await save(c.id, {}); render(); }
+  if (act === "unlock") {
+    const f = btn.dataset.f, lab = label(f);
+    if (!confirm(`Remove "Verified" from ${lab}? Use this if it was a mistake or is out of date. It goes back to Low confidence, and the next build or chat can update it.`)) return;
+    const cc = companies.get(c.id), sec = sectionOfField(f);
+    companies.set(c.id, { ...cc, locked: (cc.locked || []).filter(x => x !== f) });
+    const meta = { ...(cc.section_meta || {}) };
+    if (sec && SECTIONS[sec]) meta[sec] = { ...(meta[sec] || {}), stale: { since: now(), because: [`You unverified ${lab}`] } };
+    await save(c.id, { conf: { ...(cc.conf || {}), [f]: { level: "Low", basis: "Unverified by you: was wrong or out of date", at: now(), by: "You" } }, section_meta: meta, history: [{ at: now(), field: f, by: "You", before: "Verified", after: "Unverified", level: "Low" }, ...(cc.history || [])].slice(0, 200) }, [], true);
+    toast(`${lab} is no longer verified`); render();
+  }
   if (act === "addrow") {
     const f = btn.dataset.f, rows = tableRows(c, f); rows.push(clone(BLANK[f] || {}));
     const firstKey = f === EM_FIELD ? "name" : Object.keys(BLANK[f] || { x: 1 })[0];
