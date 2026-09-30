@@ -16,7 +16,16 @@ Live app: https://claude.ai/artifact/KCB1rWzeMTqDnqVXoQz3eG (private to the owne
 
 In-page deep dives run on Claude's own knowledge (no web browsing). For a web-researched dive, ask Claude in chat to research a company into Profiler, and it writes the profile to the same database.
 
+## Data
+
+The repository holds the full US Water Treatment Chemicals index (v8 workbook, built 26 Sep 2026): 558 ultimate owners as profiles, 804 add-on deals on their Acquisitions tabs, 148 outside and sponsor deals, and 281 add-on, excluded and duplicate entities for Targets. The 10 September 27 deep dives (P05A/P05B) take precedence over the workbook rows for those companies.
+
+Each company is two database documents: `companies/<id>` (summary used by lists and screens) and `details/<id>` (write-up, evidence, sites, customers, competitors, run history), loaded when a profile opens. `meta/deals` and `meta/entities` hold the deal log and non-owner entities.
+
+To rebuild the import from a new workbook version: `python3 profiler/import/build_import.py <workbook.xlsx>`, then load `profiler/import/out/` into the artifact database.
+
 ## Files
 
 - `index.html`: the app (single file, published as a claude.ai artifact).
+- `import/build_import.py`: converts the workbook into database documents.
 - `seed/*.json`: the 10 profiles imported from the WTC deep-dive batches P05A and P05B. Customers, competitors and buyers on these were added from the deep-dive text.

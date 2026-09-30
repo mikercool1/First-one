@@ -270,6 +270,9 @@ const slugify = s => String(s).toLowerCase().normalize("NFKD").replace(/[^\w\s-]
 const norm = s => String(s || "").toLowerCase().replace(/\(.*?\)/g, "").replace(/\b(inc|llc|ltd|co|corp|corporation|company|group|the|holdings?)\b\.?/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 const now = () => new Date().toISOString();
 
+const BUCKETS = ["Municipal","Energy & chemicals","Heavy industry","Commercial & institutional","Light industry & high-purity","Pool & spa","Agriculture & farm","Other"];
+// Heavy fields live in details/<id> and load when a profile opens; everything else sits in companies/<id>.
+const DETAIL_KEYS = new Set(["what_it_is","bluntly","profile_md","total_revenue_basis","ebitda_basis","employees_basis","us_water_treatment_arithmetic","open_questions","addon_corrections","what_changed_vs_prior","evidence","key_sites","chemistries","customers","competitors","runs","prior_owners"]);
 const END_MARKETS = ["Municipal drinking water","Municipal wastewater","Power generation","Oil & gas / refining","Chemicals & petrochem","Pulp & paper","Food & beverage","Mining & metals","Primary metals/steel","Commercial HVAC / buildings","Healthcare & institutional","Data centers","Pharma/life sciences","Microelectronics/semis","Manufacturing (general industrial)","Pools & spa","Agriculture & farm","Consumer / retail","Other"];
 
 function fmtM(v) {
@@ -287,9 +290,15 @@ const yearOf = s => { const m = String(s || "").match(/(19|20)\d{2}/); return m 
 /* ---------- state ---------- */
 let db = null, sample = null;
 const companies = new Map();
+const details = {};                    // id -> detail doc (loaded on open)
+let detailSub = null, detailId = null;
+let meta = { deals: [], entities: [] };
+let ver = 0; const memo = {};
+const memod = (k, f) => (memo[k] && memo[k].v === ver) ? memo[k].x : (memo[k] = { v: ver, x: f() }).x;
+let nameIndex = new Map();
 let loaded = false, dbState = "connecting", writable = true;
 const runs = {};                       // id -> {phase, ctl, error}
-const ui = { sort: "total_revenue_usd_m", dir: -1, q: "", tq: "", tsel: null, pq: "", psort: "year", pdir: -1, em: "Municipal drinking water", emMode: "pct", editMd: false, confirmDel: false };
+const ui = { sort: "us_water_treatment_revenue_usd_m", dir: -1, q: "", scope: "", otype: "", emTax: "broad", tq: "", tsel: null, pq: "", psort: "year", pdir: -1, em: "Municipal drinking water", emMode: "pct", editMd: false, confirmDel: false };
 let pendingRender = false, pendingFocus = null;
 
 function route() {
@@ -326,6 +335,12 @@ function setLive() {
 }
 
 /* ---------- derived data ---------- */
+function getC(id) { const c = companies.get(id); return c ? { ...c, ...(details[id] || {}), id } : null; }
+function rebuildIndex() {
+  nameIndex = new Map();
+  for (const c of companies.values()) for (const n of [c.name, c.platform_name]) { const k = norm(n); if (k && !nameIndex.has(k)) nameIndex.set(k, c); }
+  for (const c of companies.values()) { const k = norm(String(c.name).split(/[(\/]/)[0]); if (k && !nameIndex.has(k)) nameIndex.set(k, c); }
+}
 const list = () => [...companies.values()];
 function segments(c) {
   return (c.revenue_by_business || []).map(s => ({ label: s.business, value: num(s.revenue_usd_m) ?? (num(s.pct) !== null && num(c.total_revenue_usd_m) ? s.pct * c.total_revenue_usd_m / 100 : null), pct: num(s.pct) })).filter(s => s.label);
@@ -334,23 +349,33 @@ function products(c) {
   if ((c.revenue_by_product || []).length) return c.revenue_by_product.map(p => ({ label: p.product, value: num(p.revenue_usd_m), pct: num(p.pct) })).filter(p => p.label);
   const g = {};
   for (const s of c.revenue_by_business || []) { const k = s.category || "Other"; g[k] = (g[k] || 0) + (num(s.revenue_usd_m) || 0); }
-  return Object.entries(g).map(([label, value]) => ({ label, value, pct: null }));
+  const out = Object.entries(g).map(([label, value]) => ({ label, value, pct: null }));
+  const segLabels = (c.revenue_by_business || []).map(s => s.business).sort().join("|");
+  return out.map(o => o.label).sort().join("|") === segLabels ? [] : out;
 }
-function endMarkets(c) {
+function endMarkets(c, tax) {
   const rev = num(c.total_revenue_usd_m);
-  return Object.entries(c.end_markets_total_platform || {}).map(([label, p]) => ({ label, pct: num(p), value: rev !== null && num(p) !== null ? rev * p / 100 : null })).filter(e => e.pct);
+  const src = tax === "broad" ? buckets(c) : (Object.keys(c.end_markets_total_platform || {}).length ? c.end_markets_total_platform : buckets(c));
+  return Object.entries(src || {}).map(([label, p]) => ({ label, pct: num(p), value: rev !== null && num(p) !== null ? rev * p / 100 : null })).filter(e => e.pct);
 }
 function topEM(c) { const e = endMarkets(c).sort((a, b) => b.pct - a.pct)[0]; return e ? e.label : ""; }
 function margin(c) { const r = num(c.total_revenue_usd_m), e = num(c.total_ebitda_usd_m); return num(c.ebitda_margin_pct) ?? (r && e !== null ? e / r * 100 : null); }
 function findCompanyByName(name) {
   const n = norm(name); if (!n) return null;
-  for (const c of companies.values()) { if (norm(c.name) === n || norm(c.platform_name) === n) return c; }
-  for (const c of companies.values()) { const cn = norm(c.name); if (cn && cn.length > 4 && (n.startsWith(cn + " ") || n === cn)) return c; }
-  return null;
+  return nameIndex.get(n) || nameIndex.get(norm(String(name).split(/[(\/]/)[0])) || null;
+}
+function buckets(c) {
+  if (c.end_market_buckets && Object.keys(c.end_market_buckets).length) return c.end_market_buckets;
+  return c.buckets || {};
 }
 
-function allDeals() {
+function allDeals() { return memod("deals", allDealsRaw); }
+function allDealsRaw() {
   const out = [];
+  for (const d of meta.deals || []) {
+    if (!d || !d.target) continue;
+    out.push({ date: d.date || "", year: yearOf(d.date), target: d.target, targetId: d.target_owner_id || undefined, acquirer: d.acquirer || "", what: d.what_it_does || d.deal_type || "", rev: num(d.revenue_usd_m), value: num(d.value_usd_m), url: d.source_url || "" });
+  }
   for (const c of list()) {
     for (const a of c.acquisitions || []) {
       if (!a || !a.target) continue;
@@ -363,7 +388,8 @@ function allDeals() {
   return out;
 }
 
-function allTargets() {
+function allTargets() { return memod("targets", allTargetsRaw); }
+function allTargetsRaw() {
   const map = new Map();
   const add = (name, link) => {
     const key = norm(name) || name.toLowerCase();
@@ -375,12 +401,19 @@ function allTargets() {
     for (const i of c.addon_ideas || []) if (i?.target) add(i.target, { kind: "idea", platform: c.name, platformId: c.id, what: i.rationale, rev: num(i.est_revenue_usd_m) });
     for (const b of c.buyers || []) if (b?.name && !/not a realistic/i.test(b.name)) add(c.name, { kind: "buyer", platform: b.name, platformId: findCompanyByName(b.name)?.id, what: b.rationale, btype: b.type });
   }
+  for (const e of meta.entities || []) {
+    if (!e?.name) continue;
+    const key = norm(e.name) || e.name.toLowerCase();
+    const link = { kind: "owned", platform: e.owner || "", platformId: e.owner_id, what: e.status || e.role, rev: e.us_rev };
+    if (map.has(key)) { const t = map.get(key); t.entity = e; if (!t.links.some(l => l.platformId && l.platformId === e.owner_id)) t.links.push(link); }
+    else if (e.owner_id) map.set(key, { key, name: e.name, entity: e, links: [link] });
+  }
   for (const t of map.values()) t.company = findCompanyByName(t.name);
   return [...map.values()];
 }
 
 function overlap(a, b) {
-  const ea = a.end_markets_total_platform || {}, eb = b.end_markets_total_platform || {};
+  const ea = buckets(a), eb = buckets(b);
   let s = 0; for (const k in ea) if (eb[k]) s += Math.min(+ea[k] || 0, +eb[k] || 0);
   return s;
 }
@@ -485,15 +518,24 @@ const BLANK = {
 };
 
 /* ---------- saving ---------- */
-async function save(id, patch, lockFields = []) {
+async function save(id, patch, lockFields = [], quiet = false) {
   const c = companies.get(id); if (!c || !db) return;
   const locked = new Set(c.locked || []);
   lockFields.forEach(f => locked.add(f));
-  const full = { ...patch, locked: [...locked], updated_at: now() };
+  const sum = { locked: [...locked], updated_at: now() }, det = {};
+  for (const [k, v] of Object.entries(patch)) (DETAIL_KEYS.has(k) ? det : sum)[k] = v;
   // optimistic
-  Object.assign(c, full);
-  try { await db.doc("companies/" + id).update(full); toast("Saved"); }
-  catch (e) { handleWriteError(e); }
+  companies.set(id, { ...c, ...sum });
+  if (Object.keys(det).length) details[id] = { ...(details[id] || {}), ...det };
+  ver++;
+  try {
+    await db.doc("companies/" + id).update(sum);
+    if (Object.keys(det).length) {
+      try { await db.doc("details/" + id).update(det); }
+      catch (e) { if (e?.code === "not_granted" || e?.code === "revoked" || e?.code === "quota_exceeded") throw e; await db.doc("details/" + id).set({ ...(details[id] || {}), ...det }); }
+    }
+    if (!quiet) toast("Saved");
+  } catch (e) { handleWriteError(e); }
 }
 function handleWriteError(e) {
   if (e?.code === "not_granted" || e?.code === "revoked") { writable = false; dbState = "readonly"; setLive(); toast("You can view this repository but not edit it."); render(); return; }
@@ -508,7 +550,7 @@ function parseCell(t, raw) {
 
 async function commit(el) {
   const r = route(); if (r.view !== "company") return;
-  const c = companies.get(r.id); if (!c) return;
+  const c = getC(r.id); if (!c) return;
   const f = el.dataset.f, t = el.dataset.t, raw = el.innerText.replace(/ /g, " ").trim();
   const val = parseCell(t, raw);
   if (el.dataset.r !== undefined) {
@@ -556,7 +598,7 @@ app.addEventListener("paste", e => {
   const text = (e.clipboardData || window.clipboardData).getData("text/plain");
   document.execCommand("insertText", false, text);
 });
-const isEditing = () => { const a = document.activeElement; return !!(a && app.contains(a) && (a.isContentEditable || a.tagName === "TEXTAREA" || (a.tagName === "INPUT" && a.value))); };
+const isEditing = () => { const a = document.activeElement; return !!(a && app.contains(a) && (a.isContentEditable || a.tagName === "TEXTAREA" || ((a.id === "addName" || a.id === "factText") && a.value))); };
 
 /* ---------- deep dive ---------- */
 const CORE_KEYS = ["platform_name","website","hq_address","what_it_is","bluntly","primary_category","water_relevance","owner_type","ultimate_parent","pe_sponsor","pe_entry_year","pe_entry_ev_usd_m","prior_owners","total_revenue_usd_m","total_revenue_year","total_revenue_basis","total_ebitda_usd_m","ebitda_year","ebitda_basis","ebitda_margin_pct","us_water_treatment_revenue_usd_m","us_water_treatment_arithmetic","employees_total","revenue_by_business","revenue_by_product",EM_FIELD,"chemistries","confidence","open_questions","profile_md"];
@@ -606,18 +648,18 @@ Rules: up to 10 top customers (named accounts where known, otherwise customer gr
 }
 
 async function deepDive(id) {
-  const c = companies.get(id); if (!c || !sample || runs[id]?.phase) return;
+  const c = getC(id); if (!c || !sample || runs[id]?.phase) return;
   const ctl = new AbortController();
   runs[id] = { phase: "Researching financials, mix, customers and deals", ctl };
   render();
-  await save(id, { status: c.status === "empty" ? "researching" : (c.status || "ready") });
+  await save(id, { status: c.status === "empty" ? "researching" : (c.status || "ready") }, [], true);
   const ctx = contextFor(c);
   try {
     const [core, mkt] = await Promise.all([
       sample.json(promptCore(c, ctx), { modelTier: "complex", signal: ctl.signal, cache: false }),
       sample.json(promptMkt(c, ctx), { modelTier: "complex", signal: ctl.signal, cache: false }),
     ]);
-    const cur = companies.get(id) || c;
+    const cur = getC(id) || c;
     const locked = new Set(cur.locked || []);
     const patch = {};
     for (const [src, keys] of [[core, CORE_KEYS], [mkt, MKT_KEYS]]) {
@@ -637,7 +679,8 @@ async function deepDive(id) {
     toast("Profile updated");
   } catch (e) {
     const code = e?.code;
-    if (code === "cancelled") { delete runs[id]; await save(id, { status: companies.get(id)?.status === "researching" ? (companies.get(id).runs?.length ? "ready" : "empty") : companies.get(id)?.status }); render(); return; }
+    const cx = getC(id);
+    if (code === "cancelled") { delete runs[id]; if (cx?.status === "researching") await save(id, { status: cx.runs?.length ? "ready" : "empty" }, [], true); render(); return; }
     const msg = {
       not_granted: "Claude isn't allowed to run from this page. Allow it when asked, then try again.",
       sampling_disabled: "Claude isn't available on this account.",
@@ -648,8 +691,7 @@ async function deepDive(id) {
     }[code] || "The deep dive didn't finish. Try again.";
     if (code === "not_granted" || code === "sampling_disabled") sample = null;
     runs[id] = { error: msg };
-    const cc = companies.get(id);
-    if (cc?.status === "researching") await save(id, { status: cc.runs?.length ? "ready" : "empty" });
+    if (cx?.status === "researching") await save(id, { status: cx.runs?.length ? "ready" : "empty" }, [], true);
     render();
   }
 }
@@ -657,38 +699,45 @@ async function deepDive(id) {
 /* ---------- views ---------- */
 function viewCompanies() {
   const q = ui.q.toLowerCase();
-  let rows = list().filter(c => !q || [c.name, c.platform_name, c.primary_category, c.owner_type, c.pe_sponsor, c.hq_address].join(" ").toLowerCase().includes(q));
+  let rows = list().filter(c => (!ui.scope || c.scope === ui.scope) && (!ui.otype || (ui.otype === "PE-backed" ? c.pe_backed || c.owner_type === "PE-owned" : c.owner_type === ui.otype))
+    && (!q || [c.name, c.platform_name, c.primary_category, c.owner_type, c.pe_sponsor, c.hq_address, c.business_model, c.rolled_in].join(" ").toLowerCase().includes(q)));
   const k = ui.sort, d = ui.dir;
   rows.sort((a, b) => {
     let va = k === "margin" ? margin(a) : a[k], vb = k === "margin" ? margin(b) : b[k];
-    if (k === "name") return d * String(va || "").localeCompare(String(vb || ""));
+    if (k === "name" || k === "owner_type") return d * String(va || "").localeCompare(String(vb || ""));
     if (k === "updated_at") return d * String(va || "").localeCompare(String(vb || ""));
-    return d * ((num(va) ?? -Infinity) - (num(vb) ?? -Infinity));
+    const miss = k === "rank" ? Infinity * d : -Infinity;
+    return d * ((num(va) ?? miss) - (num(vb) ?? miss)) || 0;
   });
   const all = list();
   const totRev = all.reduce((s, c) => s + (num(c.total_revenue_usd_m) || 0), 0);
-  const nDeals = all.reduce((s, c) => s + (c.acquisitions || []).length, 0);
+  const nDeals = allDeals().length;
   const th = (key, label, cls = "") => `<th class="sortable ${cls}" data-sort="${key}" aria-sort="${ui.sort === key ? (ui.dir > 0 ? "ascending" : "descending") : "none"}">${label}${ui.sort === key ? (ui.dir > 0 ? " ↑" : " ↓") : ""}</th>`;
-  const body = rows.length ? rows.map(c => {
+  const shown = rows.slice(0, ui.limit || 150);
+  const body = rows.length ? shown.map(c => {
     const st = c.status === "empty" ? `<span class="pill">Empty</span>` : c.status === "researching" || runs[c.id]?.phase ? `<span class="pill accent">Researching</span>` : "";
-    return `<tr class="link" data-open="${esc(c.id)}"><td class="cname">${esc(c.name)} ${st}<small>${esc(c.primary_category || c.what_it_is || "")}</small></td><td>${esc(c.owner_type || "")}</td><td class="r num">${fmtM(c.total_revenue_usd_m)}</td><td class="r num">${fmtM(c.total_ebitda_usd_m)}</td><td class="r num">${fmtPct(margin(c))}</td><td class="r num">${fmtM(c.us_water_treatment_revenue_usd_m)}</td><td class="muted">${esc(topEM(c))}</td><td class="faint">${c.updated_at ? fmtDate(c.updated_at) : ""}</td></tr>`;
-  }).join("") : `<tr><td colspan="8" class="faint" style="padding:28px 12px">${all.length ? "No companies match that search." : "No companies yet. Add one above and run a deep dive."}</td></tr>`;
+    return `<tr class="link" data-open="${esc(c.id)}"><td class="num faint">${c.rank ?? ""}</td><td class="cname">${esc(c.name)} ${st}<small>${esc([c.primary_category, c.business_model].filter(Boolean).join(" · "))}</small></td><td>${esc(c.owner_type || "")}</td><td class="r num">${fmtM(c.us_water_treatment_revenue_usd_m)}</td><td class="r num">${num(c.us_market_share_pct) ? (+c.us_market_share_pct).toFixed(1) + "%" : "—"}</td><td class="r num">${fmtM(c.total_revenue_usd_m)}</td><td class="r num">${fmtM(c.total_ebitda_usd_m)}</td><td class="r num">${fmtPct(margin(c))}</td><td class="muted">${esc(topEM(c))}</td></tr>`;
+  }).join("") + (rows.length > shown.length ? `<tr><td colspan="9" style="text-align:center;padding:14px"><button class="btn sm" data-act="more">Show ${Math.min(150, rows.length - shown.length)} more of ${rows.length - shown.length}</button></td></tr>` : "") : `<tr><td colspan="9" class="faint" style="padding:28px 12px">${all.length ? "No companies match that search." : "No companies yet. Add one above and run a deep dive."}</td></tr>`;
   return `
-  <div class="page-h"><div><div class="eyebrow">Repository</div><h1>Companies</h1><p>Every profile saves here. Open one to see its revenue, EBITDA, mix, customers, deals and buyers. Type over any value to correct it.</p></div>
+  <div class="page-h"><div><div class="eyebrow">Repository</div><h1>Companies</h1><p>Every profile saves here, ranked by US water treatment revenue. Open one to see its revenue, EBITDA, mix, customers, deals and buyers. Type over any value to correct it.</p></div>
     ${writable && db ? `<form class="add" id="addForm"><input id="addName" placeholder="Company name" autocomplete="off" aria-label="New company name"><button class="btn primary" type="submit">Add company</button></form>` : ""}</div>
   <div class="stats">
     <div class="stat"><div class="v">${all.length}</div><div class="l">Profiles</div></div>
-    <div class="stat"><div class="v">${fmtM(totRev)}</div><div class="l">Combined revenue</div></div>
+    <div class="stat"><div class="v">${fmtM(all.reduce((s, c) => s + (num(c.us_water_treatment_revenue_usd_m) || 0), 0))}</div><div class="l">US water treatment revenue</div></div>
+    <div class="stat"><div class="v">${fmtM(totRev)}</div><div class="l">Combined platform revenue</div></div>
     <div class="stat"><div class="v">${nDeals}</div><div class="l">Deals logged</div></div>
     <div class="stat"><div class="v">${allTargets().length}</div><div class="l">Targets tracked</div></div>
   </div>
-  <div class="bar"><div class="grow"><input class="search" id="q" type="search" placeholder="Search by name, category, owner, sponsor or HQ" value="${esc(ui.q)}" aria-label="Search companies"></div></div>
-  <div class="tw"><table><thead><tr>${th("name", "Company")}${th("owner_type", "Owner")}${th("total_revenue_usd_m", "Revenue", "r")}${th("total_ebitda_usd_m", "EBITDA", "r")}${th("margin", "Margin", "r")}${th("us_water_treatment_revenue_usd_m", "US water rev", "r")}<th>Top end market</th>${th("updated_at", "Updated")}</tr></thead><tbody>${body}</tbody></table></div>`;
+  <div class="bar"><div class="grow"><input class="search" id="q" type="search" placeholder="Search by name, category, owner, sponsor, HQ or rolled-in company" value="${esc(ui.q)}" aria-label="Search companies"></div>
+    <select id="fscope" aria-label="Scope"><option value="">Core and adjacent</option>${["Core", "Adjacent"].map(v => `<option ${ui.scope === v ? "selected" : ""}>${v}</option>`).join("")}</select>
+    <select id="fotype" aria-label="Owner type"><option value="">All owners</option>${["PE-backed", "Public", "Family/founder-owned", "Subsidiary of strategic", "ESOP", "Other"].map(v => `<option ${ui.otype === v ? "selected" : ""}>${v}</option>`).join("")}</select>
+    <span class="faint">${rows.length} shown</span></div>
+  <div class="tw"><table><thead><tr>${th("rank", "#")}${th("name", "Company")}${th("owner_type", "Owner")}${th("us_water_treatment_revenue_usd_m", "US water rev", "r")}${th("us_market_share_pct", "US share", "r")}${th("total_revenue_usd_m", "Platform rev", "r")}${th("total_ebitda_usd_m", "EBITDA", "r")}${th("margin", "Margin", "r")}<th>Top end market</th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
 const TABS = [["overview", "Overview"], ["mix", "Mix"], ["customers", "Customers"], ["products", "Products"], ["competitors", "Competitors"], ["acquisitions", "Acquisitions"], ["buyers", "Buyers"], ["addons", "Add-ons"], ["sources", "Sources"]];
 function viewCompany(id, tab) {
-  const c = companies.get(id);
+  const c = getC(id);
   if (!c) return `<div class="crumb"><a href="#companies">Companies</a></div><div class="panel empty-hero"><h2>No profile called “${esc(id)}”</h2><p class="muted">It may have been deleted. Go back to Companies to add it again.</p></div>`;
   const run = runs[id];
   const canRun = !!sample && writable && db;
@@ -715,7 +764,7 @@ function viewCompany(id, tab) {
   const counts = { customers: (c.customers || []).length, products: (c.chemistries || []).length, competitors: (c.competitors || []).length, acquisitions: (c.acquisitions || []).length, buyers: (c.buyers || []).length, addons: (c.addon_ideas || []).length, sources: (c.evidence || []).length + (c.source_of_truth || []).length };
   const tabs = TABS.map(([k, l]) => `<a href="#c.${esc(id)}.${k}" aria-current="${tab === k}">${l}${counts[k] ? `<span class="n">${counts[k]}</span>` : ""}</a>`).join("");
   const m = margin(c);
-  const chips = [c.owner_type && `<span class="pill">${esc(c.owner_type)}</span>`, c.primary_category && `<span class="pill">${esc(c.primary_category)}</span>`, c.water_relevance && `<span class="pill accent">${esc(c.water_relevance)}</span>`, c.confidence && `<span class="pill ${c.confidence === "Low" ? "warn" : ""}">${esc(c.confidence)} confidence</span>`, c.website && `<a class="pill" href="${esc(/^https?:/.test(c.website) ? c.website : "https://" + c.website)}" target="_blank" rel="noopener">${esc(String(c.website).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))} ↗</a>`].filter(Boolean).join("");
+  const chips = [c.rank && `<span class="pill accent">#${c.rank} in US water${num(c.us_market_share_pct) ? " · " + (+c.us_market_share_pct).toFixed(1) + "% share" : ""}</span>`, c.owner_type && `<span class="pill">${esc(c.owner_type)}</span>`, c.business_model && `<span class="pill">${esc(c.business_model)}</span>`, c.primary_category && `<span class="pill">${esc(c.primary_category)}</span>`, c.water_relevance && `<span class="pill">${esc(c.water_relevance)}</span>`, c.confidence && `<span class="pill ${c.confidence === "Low" ? "warn" : ""}">${esc(c.confidence)} confidence</span>`, c.website && `<a class="pill" href="${esc(/^https?:/.test(c.website) ? c.website : "https://" + c.website)}" target="_blank" rel="noopener">${esc(String(c.website).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))} ↗</a>`].filter(Boolean).join("");
   const kpi = (f, lab, note, pre = "$", unit = "M") => `<div class="kpi"><div class="lab">${lab} ${lockPill(c, f)}</div><div class="val">${pre ? `<span class="u">${pre}</span>` : ""}${ed(f, c[f], "num", "–")}${unit ? `<span class="u">${unit}</span>` : ""}</div><div class="note">${esc(note || "")}</div></div>`;
   const hdr = `
   <div class="crumb"><a href="#companies">Companies</a> / ${esc(c.name)}</div>
@@ -801,6 +850,7 @@ function tabBody(c, tab) {
     const orig = tableRows(c, "acquisitions");
     const html = editTable(c, "acquisitions", [{ k: "date", label: "Date", w: "120px" }, { k: "target", label: "Target", w: "220px" }, { k: "what_it_does", label: "What it does" }, { k: "revenue_usd_m", label: "Rev $M", t: "num", w: "80px" }, { k: "value_usd_m", label: "Value $M", t: "num", w: "90px" }, { k: "source_url", label: "Source", link: true, w: "160px" }], orig, { empty: "No deals logged. Add one and it appears on Targets and Precedents." });
     return `<div class="sec">${secHead(c, "acquisitions", "Recent acquisitions")}<p class="muted" style="margin:-4px 0 10px;font-size:13px">Every deal here also shows up on Targets and Precedents.</p>${html}</div>
+    ${c.rolled_in ? `<div class="sec basis"><p><b>Rolled into this platform.</b> ${esc(c.rolled_in)}</p></div>` : ""}
     ${c.addon_corrections ? `<div class="sec basis"><p><b>Notes on the deal list.</b> ${esc(c.addon_corrections)}</p></div>` : ""}`;
   }
   if (tab === "buyers") return `<div class="sec">${secHead(c, "buyers", "Potential buyers")}${editTable(c, "buyers", [{ k: "name", label: "Buyer", w: "240px" }, { k: "type", label: "Type", w: "120px" }, { k: "rationale", label: "Why they'd buy" }], tableRows(c, "buyers"))}</div>`;
@@ -831,25 +881,32 @@ function viewTargets() {
     .sort((a, b) => b.links.length - a.links.length || a.name.localeCompare(b.name));
   if (!ts.find(t => t.key === ui.tsel)) ui.tsel = ts[0]?.key || null;
   const sel = ts.find(t => t.key === ui.tsel);
-  const listHtml = ts.length ? ts.map(t => {
+  const listHtml = ts.length ? ts.slice(0, 300).map(t => {
     const kinds = new Set(t.links.map(l => l.kind));
-    return `<button data-tsel="${esc(t.key)}" aria-current="${t.key === ui.tsel}"><span class="t-n">${esc(t.name)}</span><span class="faint" style="font-size:12px;white-space:nowrap">${kinds.has("acq") ? "Acquired" : kinds.has("idea") ? "Idea" : "Has buyers"}</span></button>`;
+    return `<button data-tsel="${esc(t.key)}" aria-current="${t.key === ui.tsel}"><span class="t-n">${esc(t.name)}</span><span class="faint" style="font-size:12px;white-space:nowrap">${kinds.has("acq") || kinds.has("owned") ? "Acquired" : kinds.has("idea") ? "Idea" : "Has buyers"}</span></button>`;
   }).join("") : `<p class="faint" style="padding:12px">No targets match.</p>`;
   let detail = `<div class="detail faint">Pick a target on the left.</div>`;
   if (sel) {
-    const K = { acq: ["k-acq", "Acquired by"], idea: ["k-idea", "Add-on idea for"], buyer: ["k-buyer", "Potential buyer"] };
+    const K = { acq: ["k-acq", "Acquired by"], owned: ["k-acq", "Now part of"], idea: ["k-idea", "Add-on idea for"], buyer: ["k-buyer", "Potential buyer"] };
     const links = sel.links.map(l => `<div class="lnk"><span class="kind ${K[l.kind][0]}">${K[l.kind][1]}</span><div style="min-width:0"><div class="who">${l.platformId ? `<a href="#c.${esc(l.platformId)}.${l.kind === "idea" ? "addons" : l.kind === "acq" ? "acquisitions" : "overview"}">${esc(l.platform)}</a>` : esc(l.platform)}${l.btype ? ` <span class="faint" style="font-weight:400">· ${esc(l.btype)}</span>` : ""}</div><div class="muted" style="font-size:13px">${esc(l.what || "")}</div></div><div class="num faint" style="font-size:12px;text-align:right">${esc(l.date || "")}${l.rev !== null && l.rev !== undefined ? `<br>${fmtM(l.rev)} rev` : ""}${l.value ? `<br>${fmtM(l.value)} value` : ""}</div></div>`).join("");
     let fit = "";
-    if (sel.company) {
-      const ranked = list().filter(p => p.id !== sel.company.id).map(p => ({ p, s: overlap(sel.company, p) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, 6);
-      fit = ranked.length ? `<div class="sec-h" style="margin-top:22px"><h2>Best-fit homes in Profiler</h2><span class="faint" style="font-size:12px">Ranked by shared end-market exposure</span></div>
-      <div class="panel bars" style="padding:6px">${ranked.map((x, i) => `<div class="brow" data-open="${esc(x.p.id)}" data-tip="${esc(x.p.name)}: ${x.s.toFixed(0)}% end-market overlap"><span class="rk">${i + 1}</span><span class="nm">${esc(x.p.name)}</span><div class="track"><div class="fill" style="width:${Math.min(100, x.s)}%"></div></div><span class="v">${x.s.toFixed(0)}%</span></div>`).join("")}</div>` : "";
+    const base = sel.company || sel.entity;
+    if (base && Object.keys(buckets(base)).length) {
+      const skip = new Set([sel.company?.id, sel.entity?.owner_id].filter(Boolean));
+      const tRev = num(sel.company?.us_water_treatment_revenue_usd_m) ?? num(sel.entity?.us_rev) ?? 0;
+      const minRev = Math.max(2 * tRev, 10);
+      const ranked = list().filter(p => !skip.has(p.id) && (num(p.us_water_treatment_revenue_usd_m) || 0) >= minRev)
+        .map(p => { const o = overlap(base, p), n = (p.acquisitions || []).length; return { p, o, n, s: o * (0.6 + 0.4 * Math.min(1, n / 10)) }; })
+        .filter(x => x.o > 0).sort((a, b) => b.s - a.s).slice(0, 8);
+      fit = ranked.length ? `<div class="sec-h" style="margin-top:22px"><h2>Best-fit homes in Profiler</h2><span class="faint" style="font-size:12px">Platforms at least twice its size, ranked by shared end-market mix and boosted for active acquirers</span></div>
+      <div class="panel bars" style="padding:6px">${ranked.map((x, i) => `<div class="brow" data-open="${esc(x.p.id)}" data-tip="${esc(x.p.name)}: ${x.o.toFixed(0)}% end-market overlap · ${x.n} deals · ${fmtM(x.p.us_water_treatment_revenue_usd_m)} US water revenue"><span class="rk">${i + 1}</span><span class="nm">${esc(x.p.name)} <span class="faint" style="font-weight:400;font-size:12px">${fmtM(x.p.us_water_treatment_revenue_usd_m)} · ${x.n} deals</span></span><div class="track"><div class="fill" style="width:${Math.min(100, x.o)}%"></div></div><span class="v">${x.o.toFixed(0)}%</span></div>`).join("")}</div>` : "";
     }
     detail = `<div class="panel detail"><div class="eyebrow">Target</div><h2 class="tt">${sel.company ? `<a href="#c.${esc(sel.company.id)}" style="color:inherit;text-decoration:none">${esc(sel.name)}</a>` : esc(sel.name)}</h2>
-      <div class="muted">${sel.company ? `Profiled · ${fmtM(sel.company.total_revenue_usd_m)} revenue · ${esc(sel.company.owner_type || "")}` : `Not profiled yet`}${!sel.company && writable && db ? ` · <button class="btn sm ghost" data-act="profile-target" data-name="${esc(sel.name)}">Create profile</button>` : ""}</div>
+      <div class="muted">${sel.company ? `Profiled · ${fmtM(sel.company.us_water_treatment_revenue_usd_m)} US water revenue · ${esc(sel.company.owner_type || "")}` : sel.entity ? esc([sel.entity.role, num(sel.entity.us_rev) ? fmtM(sel.entity.us_rev) + " US water revenue" : "", sel.entity.state].filter(Boolean).join(" · ")) : `Not profiled yet`}${!sel.company && writable && db ? ` · <button class="btn sm ghost" data-act="profile-target" data-name="${esc(sel.name)}">Create profile</button>` : ""}</div>
+      ${sel.entity?.what ? `<p class="muted" style="max-width:70ch;margin:10px 0 0">${esc(sel.entity.what)}</p>` : ""}
       <div class="links">${links}</div>${fit}</div>`;
   }
-  return `<div class="page-h"><div><div class="eyebrow">Reverse search</div><h1>Targets</h1><p>Every company that shows up in a profile as a past deal, an add-on idea, or a company with named buyers. Search a target to see which platforms bought it, want it, or could buy it.</p></div></div>
+  return `<div class="page-h"><div><div class="eyebrow">Reverse search</div><h1>Targets</h1><p>Every company that shows up as a past deal, an add-on already rolled into a platform, an add-on idea, or a company with named buyers. Pick a target to see who bought it, who wants it, and which platforms fit it best.</p></div></div>
   <div class="bar"><div class="grow"><input class="search" id="tq" type="search" placeholder="Search a target, a platform, or a keyword like Legionella" value="${esc(ui.tq)}" aria-label="Search targets"></div><span class="faint">${ts.length} targets</span></div>
   <div class="split"><div class="panel tlist">${listHtml}</div>${detail}</div>`;
 }
@@ -879,18 +936,22 @@ function viewPrecedents() {
 }
 
 function viewEndMarkets() {
-  const names = new Set(END_MARKETS);
-  list().forEach(c => Object.keys(c[EM_FIELD] || {}).forEach(k => names.add(k)));
+  const broad = ui.emTax === "broad";
+  const names = new Set(broad ? BUCKETS : END_MARKETS);
+  if (!broad) list().forEach(c => Object.keys(c[EM_FIELD] || {}).forEach(k => names.add(k)));
+  if (!names.has(ui.em)) ui.em = [...names][0];
   const opts = [...names].map(n => `<option ${n === ui.em ? "selected" : ""}>${esc(n)}</option>`).join("");
-  const rows = list().map(c => { const p = num((c[EM_FIELD] || {})[ui.em]) || 0; const rev = num(c.total_revenue_usd_m); return { c, p, d: rev !== null ? rev * p / 100 : null }; }).filter(r => r.p > 0);
+  const rows = list().map(c => { const p = num((broad ? buckets(c) : (c[EM_FIELD] || {}))[ui.em]) || 0; const rev = num(broad ? c.us_water_treatment_revenue_usd_m : c.total_revenue_usd_m); return { c, p, d: rev !== null ? rev * p / 100 : null }; }).filter(r => r.p > 0);
   const key = ui.emMode === "pct" ? "p" : "d";
   rows.sort((a, b) => (b[key] ?? -1) - (a[key] ?? -1));
   const max = Math.max(...rows.map(r => r[key] || 0), 1);
   const total = rows.reduce((s, r) => s + (r.d || 0), 0);
-  const bars = rows.length ? rows.map((r, i) => `<div class="brow" data-open="${esc(r.c.id)}" data-tip="${esc(r.c.name)}: ${fmtPct(r.p)} of revenue · ${fmtM(r.d)}"><span class="rk">${i + 1}</span><span class="nm">${esc(r.c.name)}</span><div class="track"><div class="fill" style="width:${((r[key] || 0) / max * 100).toFixed(1)}%"></div></div><span class="v">${key === "p" ? fmtPct(r.p) : fmtM(r.d)}</span></div>`).join("")
+  const top = rows.slice(0, 60);
+  const bars = rows.length ? top.map((r, i) => `<div class="brow" data-open="${esc(r.c.id)}" data-tip="${esc(r.c.name)}: ${fmtPct(r.p)} of ${broad ? "US water revenue" : "platform revenue"} · ${fmtM(r.d)}"><span class="rk">${i + 1}</span><span class="nm">${esc(r.c.name)}</span><div class="track"><div class="fill" style="width:${((r[key] || 0) / max * 100).toFixed(1)}%"></div></div><span class="v">${key === "p" ? fmtPct(r.p) : fmtM(r.d)}</span></div>`).join("")
     : `<p class="faint" style="padding:16px">No profiled company has exposure to ${esc(ui.em)} yet.</p>`;
-  return `<div class="page-h"><div><div class="eyebrow">Exposure screen</div><h1>End markets</h1><p>Pick an end market to rank every profiled company by how much of its revenue comes from it, as a share or in dollars.</p></div></div>
-  <div class="bar"><select id="em" aria-label="End market" style="min-width:260px">${opts}</select>
+  return `<div class="page-h"><div><div class="eyebrow">Exposure screen</div><h1>End markets</h1><p>Pick an end market to rank companies by how much of their revenue comes from it, as a share or in dollars. Broad uses the workbook's eight buckets, which every company has. Detailed uses the finer split, where one exists. Shows the top 60.</p></div></div>
+  <div class="bar"><div class="seg" role="group" aria-label="End-market detail"><button data-emtax="broad" aria-pressed="${broad}">Broad</button><button data-emtax="detailed" aria-pressed="${!broad}">Detailed</button></div>
+    <select id="em" aria-label="End market" style="min-width:240px">${opts}</select>
     <div class="seg" role="group" aria-label="Rank by"><button data-em="pct" aria-pressed="${ui.emMode === "pct"}">% of revenue</button><button data-em="usd" aria-pressed="${ui.emMode === "usd"}">$ revenue</button></div>
     <span class="faint">${rows.length} companies · ${fmtM(total)} combined exposure</span></div>
   <div class="panel bars">${bars}</div>`;
@@ -926,16 +987,25 @@ addEventListener("hashchange", () => {
   const r = route(), k = r.view + (r.id || "");
   if (k !== lastRouteKey) { ui.confirmDel = false; ui.editMd = false; window.scrollTo(0, 0); }
   lastRouteKey = k;
+  if (isEditing() && !document.activeElement.isContentEditable) document.activeElement.blur();
+  watchDetails();
   render();
 });
 
 app.addEventListener("input", e => {
   const id = e.target.id;
-  if (id === "q") { ui.q = e.target.value; render(); }
+  if (id === "q") { ui.q = e.target.value; ui.limit = 150; render(); }
   if (id === "tq") { ui.tq = e.target.value; ui.tsel = null; render(); }
   if (id === "pq") { ui.pq = e.target.value; render(); }
 });
-app.addEventListener("change", e => { if (e.target.id === "em") { ui.em = e.target.value; render(); } });
+app.addEventListener("change", e => {
+  const id = e.target.id;
+  if (id === "em") ui.em = e.target.value;
+  else if (id === "fscope") { ui.scope = e.target.value; ui.limit = 150; }
+  else if (id === "fotype") { ui.otype = e.target.value; ui.limit = 150; }
+  else return;
+  e.target.blur(); render();
+});
 
 app.addEventListener("submit", async e => {
   e.preventDefault();
@@ -947,7 +1017,7 @@ app.addEventListener("submit", async e => {
   }
   if (e.target.id === "factForm") {
     const inp = $("#factText"), text = inp.value.trim(); if (!text) return;
-    const c = companies.get(route().id); if (!c) return;
+    const c = getC(route().id); if (!c) return;
     inp.value = "";
     await save(c.id, { source_of_truth: [...(c.source_of_truth || []), { text, at: now() }] });
     render();
@@ -956,24 +1026,27 @@ app.addEventListener("submit", async e => {
 
 async function createCompany(name, facts = "") {
   let id = slugify(name); let n = 2; while (companies.has(id)) id = slugify(name) + "-" + n++;
-  const doc = { name, status: "empty", created_at: now(), updated_at: now(), locked: [], source_of_truth: facts ? [{ text: facts, at: now() }] : [], runs: [] };
-  try { await db.doc("companies/" + id).set(doc); companies.set(id, { id, ...doc }); location.hash = "c." + id; }
+  const doc = { name, status: "empty", created_at: now(), updated_at: now(), locked: [], source_of_truth: facts ? [{ text: facts, at: now() }] : [], acquisitions: [], buyers: [], addon_ideas: [] };
+  const det = { runs: [], customers: [], competitors: [] };
+  try { await db.doc("companies/" + id).set(doc); await db.doc("details/" + id).set(det); companies.set(id, { id, ...doc }); details[id] = det; ver++; rebuildIndex(); location.hash = "c." + id; }
   catch (e) { handleWriteError(e); }
 }
 
 app.addEventListener("click", async e => {
   const t = e.target;
   const sortTh = t.closest("[data-sort]");
-  if (sortTh) { const k = sortTh.dataset.sort; if (ui.sort === k) ui.dir *= -1; else { ui.sort = k; ui.dir = k === "name" ? 1 : -1; } render(); return; }
+  if (sortTh) { const k = sortTh.dataset.sort; if (ui.sort === k) ui.dir *= -1; else { ui.sort = k; ui.dir = ["name", "rank", "owner_type"].includes(k) ? 1 : -1; } render(); return; }
   const psTh = t.closest("[data-psort]");
   if (psTh) { const k = psTh.dataset.psort; if (ui.psort === k) ui.pdir *= -1; else { ui.psort = k; ui.pdir = ["target", "acquirer"].includes(k) ? 1 : -1; } render(); return; }
   const ts = t.closest("[data-tsel]"); if (ts) { ui.tsel = ts.dataset.tsel; render(); return; }
   const em = t.closest("[data-em]"); if (em) { ui.emMode = em.dataset.em; render(); return; }
+  const et = t.closest("[data-emtax]"); if (et) { ui.emTax = et.dataset.emtax; render(); return; }
   if (t.closest("a")) return;
   const open = t.closest("[data-open]"); if (open && !t.closest("[contenteditable]")) { location.hash = "c." + open.dataset.open; return; }
   const btn = t.closest("[data-act]"); if (!btn) return;
-  const act = btn.dataset.act, r = route(), c = companies.get(r.id);
+  const act = btn.dataset.act, r = route(), c = getC(r.id);
   if (act === "profile-target") { await createCompany(btn.dataset.name); return; }
+  if (act === "more") { ui.limit = (ui.limit || 150) + 150; render(); return; }
   if (!c) return;
   if (act === "dive") deepDive(c.id);
   if (act === "firstdive") {
@@ -987,10 +1060,10 @@ app.addEventListener("click", async e => {
   if (act === "askdel") { ui.confirmDel = true; render(); }
   if (act === "nodel") { ui.confirmDel = false; render(); }
   if (act === "del") {
-    try { await db.doc("companies/" + c.id).delete(); companies.delete(c.id); ui.confirmDel = false; toast(`Deleted ${c.name}`); location.hash = "companies"; }
+    try { await db.doc("companies/" + c.id).delete(); db.doc("details/" + c.id).delete().catch(() => {}); companies.delete(c.id); ver++; ui.confirmDel = false; toast(`Deleted ${c.name}`); location.hash = "companies"; }
     catch (err) { handleWriteError(err); }
   }
-  if (act === "unlock") { await save(c.id, { locked: (c.locked || []).filter(f => f !== btn.dataset.f) }); c.locked = (c.locked || []).filter(f => f !== btn.dataset.f); render(); }
+  if (act === "unlock") { const cc = companies.get(c.id); companies.set(c.id, { ...cc, locked: (cc.locked || []).filter(f => f !== btn.dataset.f) }); await save(c.id, {}); render(); }
   if (act === "addrow") {
     const f = btn.dataset.f, rows = tableRows(c, f); rows.push(clone(BLANK[f] || {}));
     const firstKey = f === EM_FIELD ? "name" : Object.keys(BLANK[f] || { x: 1 })[0];
@@ -1006,6 +1079,15 @@ app.addEventListener("click", async e => {
   if (act === "savemd") { const v = $("#mdEdit").value; ui.editMd = false; await save(c.id, { profile_md: v }, ["profile_md"]); render(); }
 });
 
+function watchDetails() {
+  const r = route(), id = r.view === "company" ? r.id : null;
+  if (!db || id === detailId) return;
+  if (detailSub) { detailSub(); detailSub = null; }
+  detailId = id;
+  if (!id) return;
+  detailSub = db.doc("details/" + id).onSnapshot(d => { details[id] = d.exists ? d.data() : {}; render(); }, () => {});
+}
+
 /* ---------- boot ---------- */
 render();
 (async () => {
@@ -1018,10 +1100,13 @@ render();
     if (u?.can) { const w = await u.can("data.write"); if (w === false) { writable = false; } }
   } catch {}
   dbState = writable ? "live" : "readonly";
+  db.doc("meta/deals").onSnapshot(d => { meta.deals = d.exists ? (d.data().deals || []) : []; ver++; if (loaded) render(); }, () => {});
+  db.doc("meta/entities").onSnapshot(d => { meta.entities = d.exists ? (d.data().entities || []) : []; ver++; if (loaded) render(); }, () => {});
   db.collection("companies").limit(1000).onSnapshot(snap => {
     companies.clear();
-    snap.docs.forEach(doc => companies.set(doc.id, { id: doc.id, ...doc.data() }));
-    loaded = true;
+    snap.docs.forEach(doc => companies.set(doc.id, { ...doc.data(), id: doc.id }));
+    loaded = true; ver++; rebuildIndex();
+    watchDetails();
     render();
   }, err => {
     if (err?.code === "revoked" || err?.code === "not_granted") { dbState = "off"; }
