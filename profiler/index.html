@@ -1046,7 +1046,7 @@ function snapshotFor(c) {
   if ((c.acquisitions || []).length) o.recent_deals = c.acquisitions.slice(0, 8).map(a => `${a.date} ${a.target}`).join("; ");
   return o;
 }
-function sectionPrompt(c, key) {
+function sectionPrompt(c, key, opts = {}) {
   const sec = sectionDef(c, key), rl = sectorRevLabel(primarySector(c)).replace(/ rev$/, " revenue");
   const current = {}; for (const f of sec.fields) if (c[f] !== undefined) current[f] = c[f];
   if (key === "sectors") { current.sectors = sectorsOf(c); current.primary_sector = primarySector(c); }
@@ -1068,7 +1068,7 @@ function sectionPrompt(c, key) {
   if (key === "financials" && water) play += `\nUS water treatment revenue counts only water treatment chemicals and chemical-based water treatment services sold in the US; show the arithmetic.`;
   return `You are a senior buy-side M&A analyst building the "${c.name}" profile in Profiler, a private database of chemical companies used for deal work. Profiler builds each profile step by step: overview, M&A history, products, sectors, end markets, segments, financials, customers, competitors, buyers, add-ons. Each step starts from everything the earlier steps established. Its primary sector is ${sname}; judge it as a ${sname} business.
 
-THIS STEP: ${sec.label} (pass ${pass}). Update ONLY this step. You cannot browse; work from what you know.
+THIS STEP: ${sec.label} (pass ${pass}). Update ONLY this step. ${opts.web ? WEB_RULES : "You cannot browse; work from what you know."}
 
 STAY ON THIS EXACT COMPANY. ${c.identity_confirmed ? "The user confirmed its identity: " + (c.what_it_is || "") + (c.hq_address ? " (" + c.hq_address + ")" : "") + ". " : ""}If you don't have real knowledge of this company, do not invent figures, products, customers, deals or names: leave unknown fields null or empty, rate anything you do return Low, and say plainly in the note that you don't recognise the company. An empty answer is better than a made-up one.
 
@@ -1087,7 +1087,7 @@ CURRENT VALUE OF THIS STEP${curConf ? ` (confidence: ${curConf})` : ""}
 ${JSON.stringify(current).slice(0, 30000)}
 ${cands ? `\nCANDIDATES FROM THE PROFILER INDEX (use these exact names when you mean them, so profiles link up)\n${cands}\n` : ""}
 Reply with ONLY one JSON object in this shape:
-${sec.shape.replace(/}$/, "")},"confidence":{"<field name>":"High | Medium | Low"},"basis":{"<field name>":"one line: source or reasoning, naming the known facts you used"},"note":"one sentence on what you changed and why"}
+${sec.shape.replace(/}$/, "")},"confidence":{"<field name>":"High | Medium | Low"},"basis":{"<field name>":"one line: source or reasoning, naming the known facts you used"},"note":"one sentence on what you changed and why"${opts.web ? `,"sources":[{"title":"","publisher":"","url":"","date":"","supports":"which fields or rows it supports"}]` : ""}}
 Give a confidence and basis for every field you return; list rows may carry their own "confidence".${sec.rules ? " " + sec.rules : ""}`;
 }
 
@@ -1209,6 +1209,52 @@ const ERRMSG = {
   save_failed: "Claude answered but the result didn't save. Try again; if it keeps failing, tell Claude in chat what this says.",
 };
 
+/* ---------- web search inside the page (Parallel Search connector) ---------- */
+const WEBSRV = "Parallel Search";
+let webOK = false, webSchemas = null, webIssue = "";
+const WEB_RULES = `You have web tools: search_web(query) and read_page(url). RESEARCH BEFORE ANSWERING.
+- Start with the company's own website (product, brand, about and history pages), then filings, investor material, press releases and deal announcements, owner or sponsor portfolio pages, distributor listings and trade press.
+- You get only a handful of tool rounds, so run several searches at once in the first round (for example "<company> products", "<company> acquires", "<company> site:<its domain>"), then read the one or two pages that matter most.
+- Products means actual products: categories, brand families and named products or grades from the company's own catalog pages.
+- Only call something High if a source you found states it. Put the source in basis and list every source you used in "sources".
+- If the web has nothing on a point, fall back on what you know and rate it Low. Never invent names, figures or deals.`;
+// Fill a connector tool's input from one value, whatever its parameter names are.
+function fillInput(schema, value) {
+  const props = schema?.properties || {}, req = schema?.required?.length ? schema.required : Object.keys(props).slice(0, 1), out = {};
+  for (const k of req) { const t = props[k]?.type; if (t === "array") out[k] = [value]; else if (t === "string" || !t) out[k] = value; }
+  for (const [k, v] of Object.entries(props)) if (!(k in out) && /objective|query|queries/i.test(k)) out[k] = v.type === "array" ? [value] : value;
+  return Object.keys(out).length ? out : { query: value };
+}
+async function webSetup() {
+  if (!mcp) return false;
+  try { const perm = await window.claude.use("permissions"); if (perm?.request) await perm.request(["mcp:" + WEBSRV]); } catch {}
+  if (!webSchemas) {
+    const d = t => mcp.describeTool(WEBSRV, t).then(x => x.inputSchema).catch(() => null);
+    const [a, b] = await Promise.all([d("web_search"), d("web_fetch")]);
+    if (a || b) webSchemas = { search: a, fetch: b };
+  }
+  return true;
+}
+const clip = (v, n) => { const t = typeof v === "string" ? v : JSON.stringify(v); return t.length > n ? t.slice(0, n) + " …" : t; };
+function webTools(rk, signal) {
+  const note = m => { if (runs[rk]) { runs[rk].msg = m; render(); } };
+  const call = async (tool, schemaKey, value) => {
+    let r;
+    try { r = await mcp.callTool(WEBSRV, tool, fillInput(webSchemas?.[schemaKey], value), { signal }); }
+    catch (e) {
+      if (["server_not_connected", "not_in_manifest", "needs_reauth", "blocked_by_policy"].includes(e?.code)) { webOK = false; webIssue = e.code; }
+      throw new Error("Web tool failed (" + (e?.code || "error") + "). Carry on with what you know and rate it Low.");
+    }
+    return clip(r.payload ?? r.content?.map(x => x.text || "").join("\n") ?? "", 14000);
+  };
+  return [
+    { name: "search_web", description: "Search the web. Returns results with titles, URLs and page excerpts. Run several at once for different angles.", inputSchema: { type: "object", properties: { query: { type: "string", description: "What to find, e.g. 'Acme Corp anti-seize product line'" } }, required: ["query"] },
+      execute: async i => { const q = String(i.query || "").slice(0, 300); note("Searching: " + q); return call("web_search", "search", q); } },
+    { name: "read_page", description: "Read one web page (for example the company's products page) and return its text.", inputSchema: { type: "object", properties: { url: { type: "string" } }, required: ["url"] },
+      execute: async i => { const u = String(i.url || ""); note("Reading: " + u.replace(/^https?:\/\//, "").slice(0, 60)); return call("web_fetch", "fetch", u); } },
+  ];
+}
+
 async function enhance(id, key) {
   const c = getC(id); const sec = c && sectionDef(c, key);
   if (!c || !sec || !sample || isRunning(id, key)) return;
@@ -1216,10 +1262,14 @@ async function enhance(id, key) {
   runs[runKey(id, key)] = { ctl };
   render();
   try {
-    const res = await sample.json(sectionPrompt(c, key), { modelTier: "complex", signal: ctl.signal, cache: false });
+    const web = webOK && await webSetup();
+    const rk = runKey(id, key);
+    if (web && runs[rk]) { runs[rk].msg = "Researching on the web"; render(); }
+    if (web) { const lim = await sample.limits().catch(() => null); if (lim && !lim.tools) webOK = false; }
+    const res = await sample.json(sectionPrompt(c, key, { web: web && webOK }), web && webOK ? { modelTier: "complex", signal: ctl.signal, tools: webTools(rk, ctl.signal) } : { modelTier: "complex", signal: ctl.signal, cache: false });
     if (!res || typeof res !== "object") throw { code: "invalid_json" };
-    delete runs[runKey(id, key)];
-    await applyResult(id, key, res);
+    delete runs[rk];
+    await applyResult(id, key, res, web && webOK ? { by: "Claude + web", web: true, sources: Array.isArray(res.sources) ? res.sources : [] } : {});
   } catch (e) {
     delete runs[runKey(id, key)];
     if (e?.code === "cancelled") { render(); return; }
@@ -1232,7 +1282,7 @@ async function enhance(id, key) {
 async function applyResult(id, key, res, src = {}) {
   const c = getC(id), sec = c && sectionDef(c, key);
   if (!c || !sec || !res || typeof res !== "object") return;
-  const by = src.by || "Claude", web = by === "Web research";
+  const by = src.by || "Claude", web = !!src.web || by === "Web research";
   const cur = getC(id) || c;
   const locked = new Set(cur.locked || []);
   const patch = {}, sugg = { ...(cur.suggestions || {}) }, hist = [], conf = { ...(cur.conf || {}) };
@@ -1843,7 +1893,7 @@ function viewCompanies() {
 
 const TABS = [["snapshot", "Snapshot"], ["overview", "Overview"], ["mix", "Mix"], ["customers", "Customers"], ["products", "Products"], ["competitors", "Competitors"], ["acquisitions", "M&A"], ["buyers", "Buyers"], ["addons", "Add-ons"], ["sources", "Sources"]];
 const canEnhance = () => !!sample && writable && !!db;
-const canWeb = () => !!mcp && writable && !!db;
+const canWeb = () => false;   // research sessions from pages are blocked for this account; web search runs in-page instead
 function enhanceBtn(c, key, label = "Enhance") {
   if (!canEnhance()) return canWeb() && SECTIONS[key] ? `<button class="btn sm" data-act="websec" data-k="${key}" ${webActive(c.id) ? "disabled" : ""}>Search the web</button>` : "";
   if (isRunning(c.id, key)) return `<span class="pill accent"><span class="spin"></span>Enhancing</span><button class="btn sm ghost" data-act="stopsec" data-k="${key}">Stop</button>`;
@@ -1925,7 +1975,7 @@ function viewCompany(id, tab) {
 }
 // The builder: each step in order, its state, and one click to build the next step or go deeper.
 function stepState(c, k) {
-  if (isRunning(c.id, k)) return { cls: "run", text: "Building…" };
+  if (isRunning(c.id, k)) return { cls: "run", text: runs[runKey(c.id, k)].msg || "Building…" };
   if (runs[runKey(c.id, k)]?.error) return { cls: "stale", text: "Didn't finish · retry" };
   const m = (c.section_meta || {})[k] || {};
   if (m.stale) return { cls: "stale", text: "Out of date" };
@@ -1940,7 +1990,7 @@ function nextStep(c) {
 function viewBuilder(c) {
   const nx = nextStep(c), busy = SECTION_ORDER.some(k => isRunning(c.id, k)), ok = canEnhance();
   return `<div class="panel builder">
-    <div class="sec-h"><h2>Profile builder</h2><span class="faint" style="font-size:12px">Builds in order; each step starts from everything before it. Click a finished step to go deeper.</span><span class="sp"></span>
+    <div class="sec-h"><h2>Profile builder</h2><span class="faint" style="font-size:12px">Builds in order; each step starts from everything before it. Click a finished step to go deeper.</span>${webOK ? `<span class="pill accent" title="Each step searches the web with Parallel Search and cites its sources">Web search on</span>` : `<span class="pill warn" title="Connect the free Parallel Search connector in claude.ai Settings → Connectors, then reload">Web search off${webIssue ? " (" + esc(webIssue) + ")" : ""}</span>`}<span class="sp"></span>
       ${ok && nx ? `<button class="btn sm primary" data-act="enhance" data-k="${nx}" ${busy ? "disabled" : ""}>Build next: ${esc(SECTIONS[nx].label)}</button>` : ""}${ok ? `<button class="btn sm" data-act="enhanceall" ${busy ? "disabled" : ""}>Build all</button>` : ""}${canWeb() ? `<button class="btn sm" data-act="webbuild" ${webActive(c.id) ? "disabled" : ""} title="A Claude research session with web search works through every step in order and saves each one here with its sources">${webActive(c.id) ? "Researching on the web…" : "Build all from the web"}</button>` : ""}</div>
     ${webPanel(c)}
     ${(() => { const k = SECTION_ORDER.find(k => runs[runKey(c.id, k)]?.error); return k ? `<div class="run warnrun" role="alert"><span><b>${esc(SECTIONS[k].label)} didn't finish.</b> ${esc(runs[runKey(c.id, k)].error)}</span><span class="sp"></span><button class="btn sm ghost" data-act="dismisssec" data-k="${k}">Dismiss</button></div>` : ""; })()}
@@ -2456,7 +2506,11 @@ render();
     if (u?.can) { const w = await u.can("data.write"); if (w === false) { writable = false; } }
   } catch {}
   dbState = writable ? "live" : "readonly";
-  window.claude.use("mcp").then(m => { mcp = m; if (loaded) render(); }).catch(() => {});
+  window.claude.use("mcp").then(async m => {
+    mcp = m; if (!m) return;
+    try { const l = await m.listTools(WEBSRV); webOK = (l.servers || []).some(x => x.server === WEBSRV); } catch { webOK = false; }
+    if (loaded) render();
+  }).catch(() => {});
   db.collection("research").limit(500).onSnapshot(snap => { researchDocs = snap.docs.map(d => ({ ...d.data(), id: d.id })); if (loaded) render(); }, () => {});
   db.collection("webresults").limit(1000).onSnapshot(snap => { webDocs = snap.docs.map(d => ({ ...d.data(), id: d.id })); drainWeb(); if (loaded) render(); }, () => {});
   db.collection("queue").limit(500).onSnapshot(snap => { queueDocs = snap.docs.map(d => ({ ...d.data(), id: d.id })); if (loaded) render(); }, () => {});

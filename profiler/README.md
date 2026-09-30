@@ -33,7 +33,7 @@ Each step has its own detailed playbook (goal, what to cover, method, depth, che
 
 ## Web research
 
-"Search the web" on any section, or "Build all from the web" in the builder, starts a Claude research session (through the Claude Code Remote connector, on your Claude plan) with web search. It gets a brief with everything the profile knows and each step's playbook, researches company sites, filings, press releases and trade press, and writes one `webresults/<run>__<step>` document per step. The page merges each result with the normal confidence rules, adds its sources to the Sources tab, and tracks runs in `research/<run>`. The first click asks you to allow the connector.
+With the free Parallel Search connector connected in claude.ai (Settings → Connectors), every builder step searches the web from inside the page: Claude gets search_web and read_page tools, researches the company's own site, filings, press releases and trade press, and returns sources with its answer. Sources go on the Sources tab; the builder panel shows "Web search on" and what it is searching. Without the connector, steps run on Claude's own knowledge. It all runs on your Claude plan.
 
 ## How profiles learn
 
