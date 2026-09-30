@@ -1,5 +1,7 @@
 # Profiler
 
+A chemicals company repository for deal work, organised by sector (water treatment, lubricants, personal care and professional beauty, food ingredients, coatings and more; custom sectors can be added). Each company has business lines in one or more sectors and a primary sector. "Build out this sector" on the Sectors page has Claude add a sector's leading companies as starter profiles.
+
 A company repository for deal work. Each company gets a profile with revenue, EBITDA, margin, pie charts by end market, segment and product, and tabs for customers, products, competitors, acquisitions, potential buyers and add-on ideas.
 
 Live app: https://claude.ai/artifact/KCB1rWzeMTqDnqVXoQz3eG (private to the owner until shared)
