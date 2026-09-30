@@ -1211,47 +1211,42 @@ const ERRMSG = {
 
 /* ---------- web search inside the page (Parallel Search connector) ---------- */
 const WEBSRV = "Parallel Search";
-let webOK = false, webSchemas = null, webIssue = "";
-const WEB_RULES = `You have web tools: search_web(query) and read_page(url). RESEARCH BEFORE ANSWERING.
+let webOK = false, webIssue = "";
+const WEB_RULES = `You have web tools: search_web(objective, queries) and read_pages(urls). RESEARCH BEFORE ANSWERING.
 - Start with the company's own website (product, brand, about and history pages), then filings, investor material, press releases and deal announcements, owner or sponsor portfolio pages, distributor listings and trade press.
-- You get only a handful of tool rounds, so run several searches at once in the first round (for example "<company> products", "<company> acquires", "<company> site:<its domain>"), then read the one or two pages that matter most.
+- You get only a handful of tool rounds, so run two or three searches at once in the first round, each with 2-3 queries (for example "<company> products", "<company> acquires", "site:<its domain> products"); search excerpts usually answer directly, so read pages only when you need a full product list.
 - Products means actual products: categories, brand families and named products or grades from the company's own catalog pages.
 - Only call something High if a source you found states it. Put the source in basis and list every source you used in "sources".
 - If the web has nothing on a point, fall back on what you know and rate it Low. Never invent names, figures or deals.`;
-// Fill a connector tool's input from one value, whatever its parameter names are.
-function fillInput(schema, value) {
-  const props = schema?.properties || {}, req = schema?.required?.length ? schema.required : Object.keys(props).slice(0, 1), out = {};
-  for (const k of req) { const t = props[k]?.type; if (t === "array") out[k] = [value]; else if (t === "string" || !t) out[k] = value; }
-  for (const [k, v] of Object.entries(props)) if (!(k in out) && /objective|query|queries/i.test(k)) out[k] = v.type === "array" ? [value] : value;
-  return Object.keys(out).length ? out : { query: value };
-}
 async function webSetup() {
   if (!mcp) return false;
   try { const perm = await window.claude.use("permissions"); if (perm?.request) await perm.request(["mcp:" + WEBSRV]); } catch {}
-  if (!webSchemas) {
-    const d = t => mcp.describeTool(WEBSRV, t).then(x => x.inputSchema).catch(() => null);
-    const [a, b] = await Promise.all([d("web_search"), d("web_fetch")]);
-    if (a || b) webSchemas = { search: a, fetch: b };
-  }
   return true;
 }
 const clip = (v, n) => { const t = typeof v === "string" ? v : JSON.stringify(v); return t.length > n ? t.slice(0, n) + " …" : t; };
+// A stable id per browser: Parallel Search's free tier rate-limits per session id.
+const WEB_SID = (() => { try { let v = localStorage.getItem("profiler_web_sid"); if (!v) { v = "profiler-" + Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, "0")).join(""); localStorage.setItem("profiler_web_sid", v); } return v; } catch { return "profiler-" + Math.random().toString(16).slice(2) + Date.now().toString(16); } })();
+function slimWeb(p) {
+  const rs = Array.isArray(p?.results) ? p.results : null;
+  if (!rs) return clip(p ?? "", 12000);
+  return clip(rs.slice(0, 8).map(r => ({ title: r.title, url: r.url, date: r.publish_date || "", text: clip((r.excerpts || []).join("\n") || r.full_content || "", 1800) })), 14000);
+}
 function webTools(rk, signal) {
-  const note = m => { if (runs[rk]) { runs[rk].msg = m; render(); } };
-  const call = async (tool, schemaKey, value) => {
-    let r;
-    try { r = await mcp.callTool(WEBSRV, tool, fillInput(webSchemas?.[schemaKey], value), { signal }); }
+  const note = m => { if (rk && runs[rk]) { runs[rk].msg = m; render(); } };
+  const call = async (tool, input) => {
+    try { const r = await mcp.callTool(WEBSRV, tool, { ...input, session_id: WEB_SID, model_name: "claude" }, { signal }); return slimWeb(r.payload); }
     catch (e) {
+      const msg = String(e?.message || "");
       if (["server_not_connected", "not_in_manifest", "needs_reauth", "blocked_by_policy"].includes(e?.code)) { webOK = false; webIssue = e.code; }
-      throw new Error("Web tool failed (" + (e?.code || "error") + "). Carry on with what you know and rate it Low.");
+      if (/rate.?limit/i.test(msg)) webIssue = "free search limit reached, try again later";
+      throw new Error(/rate.?limit/i.test(msg) ? "Web search limit reached for now. Carry on with what you already found and what you know; rate unsourced items Low." : "Web tool failed (" + (e?.code || "error") + "). Carry on with what you know and rate it Low.");
     }
-    return clip(r.payload ?? r.content?.map(x => x.text || "").join("\n") ?? "", 14000);
   };
   return [
-    { name: "search_web", description: "Search the web. Returns results with titles, URLs and page excerpts. Run several at once for different angles.", inputSchema: { type: "object", properties: { query: { type: "string", description: "What to find, e.g. 'Acme Corp anti-seize product line'" } }, required: ["query"] },
-      execute: async i => { const q = String(i.query || "").slice(0, 300); note("Searching: " + q); return call("web_search", "search", q); } },
-    { name: "read_page", description: "Read one web page (for example the company's products page) and return its text.", inputSchema: { type: "object", properties: { url: { type: "string" } }, required: ["url"] },
-      execute: async i => { const u = String(i.url || ""); note("Reading: " + u.replace(/^https?:\/\//, "").slice(0, 60)); return call("web_fetch", "fetch", u); } },
+    { name: "search_web", description: "Search the web. Returns up to 8 results with title, URL, date and page excerpts that usually answer directly. Give 2-3 short keyword queries per call.", inputSchema: { type: "object", properties: { objective: { type: "string", description: "What you are trying to find, one sentence" }, queries: { type: "array", items: { type: "string" }, description: "2-3 keyword queries, 3-6 words each" } }, required: ["objective", "queries"] },
+      execute: async i => { const qs = [].concat(i.queries || []).map(String).filter(Boolean).slice(0, 3); const obj = String(i.objective || qs[0] || "").slice(0, 300); note("Searching: " + (qs[0] || obj).slice(0, 60)); return call("web_search", { objective: obj, search_queries: qs.length ? qs : [obj.slice(0, 60)] }); } },
+    { name: "read_pages", description: "Read up to 3 specific web pages (for example the company's products page) and return the parts relevant to your objective. Use only when search excerpts are not enough.", inputSchema: { type: "object", properties: { urls: { type: "array", items: { type: "string" } }, objective: { type: "string" } }, required: ["urls"] },
+      execute: async i => { const us = [].concat(i.urls || []).map(String).filter(u => /^https?:\/\//.test(u)).slice(0, 3); if (!us.length) throw new Error("Give full http(s) URLs."); note("Reading: " + us[0].replace(/^https?:\/\//, "").slice(0, 60)); return call("web_fetch", { urls: us, objective: String(i.objective || "").slice(0, 200) || null }); } },
   ];
 }
 
@@ -1804,7 +1799,8 @@ Which real companies could this mean? List up to 5, most likely first. Include a
 Reply with ONLY JSON:
 {"candidates":[{"name":"official company name","one_line":"what it does, under 15 words","hq":"City, ST or City, Country","website":"domain.com or empty","parent":"owner or parent if any","sector":"one of: ${allSectors().map(x => x.id).join(", ")}","confidence":"High | Medium | Low"}]}`;
   try {
-    const r = await sample.json(prompt, { modelTier: "default", cache: false });
+    const web = webOK && await webSetup();
+    const r = await sample.json(web ? prompt.replace("Which real companies could this mean?", "Search the web first (search_web, one call with 2-3 queries such as the name plus \"company\" and the name plus the sector), then answer from what you find. Which real companies could this mean?") : prompt, web ? { modelTier: "default", tools: webTools(null) } : { modelTier: "default", cache: false });
     if (ui.addFlow?.q !== q) return;
     ui.addFlow.cands = (r?.candidates || []).filter(x => x?.name && x?.one_line).slice(0, 5);
     ui.addFlow.status = "pick";
@@ -1821,7 +1817,7 @@ function viewAddFlow() {
   return `<div class="panel addflow" role="dialog" aria-label="Confirm the company">
     <div class="sec-h"><h2>Is this the right company?</h2><span class="faint" style="font-size:12px">You typed “${esc(f.q)}”</span><span class="sp"></span><button class="btn sm ghost" data-act="canceladd">Cancel</button></div>
     ${f.db.length ? `<div class="eyebrow" style="margin:4px 0 6px">Already in Profiler</div>${f.db.map(c => `<div class="idc"><div style="min-width:0"><div class="who">${esc(c.name)}</div><div class="faint" style="font-size:12px">${esc([sectorShort(primarySector(c)), c.business_model, c.hq_address].filter(Boolean).join(" · "))}</div></div><a class="btn sm" href="#c.${esc(c.id)}" data-act="canceladd">Open it</a></div>`).join("")}` : ""}
-    ${f.status === "searching" ? `<div class="run" style="margin-top:8px"><span class="spin"></span><span>Looking up companies called “${esc(f.q)}”…</span></div>` : ""}
+    ${f.status === "searching" ? `<div class="run" style="margin-top:8px"><span class="spin"></span><span>Looking up companies called “${esc(f.q)}”${webOK ? " on the web" : ""}…</span></div>` : ""}
     ${f.status === "pick" && f.cands.length ? `<div class="eyebrow" style="margin:12px 0 6px">Companies this could be. Pick one</div>${f.cands.map(card).join("")}` : ""}
     ${f.status === "pick" && !f.cands.length && !f.error && sample ? `<p class="muted" style="margin:10px 0">Claude doesn't recognise a real company by this name. Check the spelling, or add it as typed with your own description below.</p>` : ""}
     ${f.error ? `<p class="muted" style="margin:10px 0">${esc(f.error)}</p>` : ""}
