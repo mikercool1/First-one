@@ -141,6 +141,9 @@ td[contenteditable]{min-width:60px}
 .facts .lab{font-size:12px;font-weight:600;color:var(--ink-2);padding-inline:4px}
 
 /* chat dock */
+.chat-fab.live{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px var(--accent-soft)}}
+@media (prefers-reduced-motion:reduce){.chat-fab.live{animation:none}}
 .chat-fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:40;border-radius:999px;padding:12px 18px;box-shadow:0 8px 24px rgba(15,27,36,.22)}
 .chat{position:fixed;top:0;right:0;bottom:0;width:min(440px,100vw);z-index:45;background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column;box-shadow:-12px 0 30px rgba(15,27,36,.14);padding-top:env(safe-area-inset-top,0px)}
 .chat[hidden]{display:none}
@@ -2005,7 +2008,7 @@ function viewBuilder(c) {
     <div class="sec-h"><h2>Profile builder</h2><span class="faint" style="font-size:12px">Builds in order; each step starts from everything before it. Click a finished step to go deeper.</span>${webOK ? `<span class="pill accent" title="Each step searches the web with Parallel Search and cites its sources">Web search on</span>` : `<span class="pill warn" title="Connect the free Parallel Search connector in claude.ai Settings → Connectors, then reload">Web search off${webIssue ? " (" + esc(webIssue) + ")" : ""}</span>`}<span class="sp"></span>
       ${ok && nx ? `<button class="btn sm primary" data-act="enhance" data-k="${nx}" ${busy ? "disabled" : ""}>Build next: ${esc(SECTIONS[nx].label)}</button>` : ""}${ok ? `<button class="btn sm" data-act="enhanceall" ${busy ? "disabled" : ""}>Build all</button>` : ""}${canWeb() ? `<button class="btn sm" data-act="webbuild" ${webActive(c.id) ? "disabled" : ""} title="Queue a full build for the scheduled Claude research session, which uses Claude's own web search (no search limits). Results arrive within the hour.">${webActive(c.id) ? "Deep research queued" : "Deep research"}</button>` : ""}</div>
     ${webPanel(c)}
-    ${(() => { const k = SECTION_ORDER.find(k => isRunning(c.id, k)); return k ? `<div class="faint" style="font-size:12px;margin-top:8px;display:flex;gap:10px;align-items:center">Building ${esc(SECTIONS[k].label)} in the chat. Watch it work on the right.<button class="btn sm ghost" data-act="stopsec" data-k="${k}">Stop</button></div>` : ""; })()}
+    ${(() => { const k = SECTION_ORDER.find(k => isRunning(c.id, k)); return k ? `<div class="run" role="status" style="margin-top:10px"><span class="spin"></span><span><b>Building ${esc(SECTIONS[k].label)} in the background.</b> Each step saves as it finishes.</span><span class="sp"></span>${chat.open ? "" : `<button class="btn sm" data-act="viewchat">View live</button>`}<button class="btn sm ghost" data-act="stopsec" data-k="${k}">Stop</button></div>` : ""; })()}
     ${(() => { const k = SECTION_ORDER.find(k => runs[runKey(c.id, k)]?.error); return k ? `<div class="run warnrun" role="alert"><span><b>${esc(SECTIONS[k].label)} didn't finish.</b> ${esc(runs[runKey(c.id, k)].error)}</span><span class="sp"></span><button class="btn sm ghost" data-act="dismisssec" data-k="${k}">Dismiss</button></div>` : ""; })()}
     <ol class="steps">${SECTION_ORDER.map((k, i) => { const st = stepState(c, k); return `<li><button class="step ${st.cls}" data-act="enhance" data-k="${k}" ${!ok || busy ? "disabled" : ""} title="${st.cls === "done" ? "Go deeper on " : "Build "}${esc(SECTIONS[k].label)}"><span class="sn">${st.cls === "run" ? `<span class="spin"></span>` : i + 1}</span><span class="sl">${esc(SECTIONS[k].label)}</span><span class="ss">${esc(st.text)}</span></button></li>`; }).join("")}</ol>
   </div>`;
@@ -2327,7 +2330,17 @@ function render() {
 const CHAT_FIELDS = ["what_it_is", "business_model", "owner_type", "ultimate_parent", "pe_sponsor", "pe_entry_year", "prior_owners", "hq_address", "website", "total_revenue_usd_m", "total_revenue_year", "total_ebitda_usd_m", "ebitda_year", "employees_total"];
 const CHAT_LISTS = { products: "products", acquisitions: "deals", customers: "customers", competitors: "competitors", buyers: "buyers", addon_ideas: "addons" };
 const rowName = r => r ? String(r.name || r.target || [r.category, r.line].filter(Boolean).join(" / ") || r.product || "") : "";
-const chat = { id: null, open: false, msgs: [], busy: null, loadedFor: null };
+const chat = { id: null, open: false };
+// Each company keeps its own conversation, so a build can keep running while you look at another company.
+const chatStore = new Map();
+const cst = id => { if (!chatStore.has(id)) chatStore.set(id, { msgs: [], busy: null, loaded: false }); return chatStore.get(id); };
+async function chatLoad(id) {
+  const S = cst(id); if (S.loaded) return S; S.loaded = true;
+  try { const d = await db.doc("chats/" + id).get(); if (d.exists && !S.msgs.length) S.msgs = d.data().messages || []; } catch {}
+  if (chat.id === id) chatMsgs();
+  return S;
+}
+const chatSave = id => db.doc("chats/" + id).set({ messages: clean(cst(id).msgs.slice(-40).map(m => ({ ...m, pending: false, text: String(m.text || "").slice(0, 6000) }))), updated_at: now() }).catch(() => {});
 const chatEl = $("#chat"), chatFab = $("#chatFab");
 function mdLite(t) {
   let h = esc(String(t || ""));
@@ -2338,20 +2351,23 @@ function mdLite(t) {
 }
 function chatView() {
   const r = route(), onCo = r.view === "company" && getC(r.id) && !!db;
+  if (onCo) chat.id = r.id;
+  const S0 = onCo ? cst(r.id) : null;
   chatFab.hidden = !onCo || chat.open || !sample;
+  chatFab.textContent = S0?.busy ? "Chat · working…" : "Chat";
+  chatFab.classList.toggle("live", !!S0?.busy);
   document.body.classList.toggle("chat-open", !!(onCo && chat.open));
   if (!onCo || !chat.open) { chatEl.hidden = true; return; }
   const c = getC(r.id);
-  if (chat.id !== c.id) { chat.id = c.id; chat.msgs = []; chat.loadedFor = null; }
-  if (chat.loadedFor !== c.id) { chat.loadedFor = c.id; Promise.resolve().then(() => db.doc("chats/" + c.id).get()).then(d => { if (chat.id === c.id && d.exists && !chat.msgs.length) { chat.msgs = d.data().messages || []; chatMsgs(); } }).catch(() => {}); }
+  if (!cst(c.id).loaded) chatLoad(c.id);
   if (!chatEl.firstChild) {
     chatEl.innerHTML = `<div class="chat-h"><b id="chatTitle"></b><span class="pill" id="chatWeb"></span><button class="btn sm ghost" id="chatClear" title="Clear this conversation">Clear</button><button class="btn sm ghost" id="chatClose" aria-label="Close chat">Close</button></div>
       <div class="chat-m" id="chatMsgs" aria-live="polite"></div>
       <div class="chat-hint" id="chatHint"></div>
       <form class="chat-f" id="chatForm"><textarea id="chatIn" rows="2" placeholder="Ask or tell, e.g. “Find their product brands” or “Revenue is $40M per the CIM”" aria-label="Message"></textarea><button class="btn primary" id="chatSend" type="submit">Send</button></form>`;
     $("#chatClose").onclick = () => { chat.open = false; chatView(); };
-    $("#chatClear").onclick = () => { if (chat.busy) return; chat.msgs = []; chatMsgs(); db.doc("chats/" + chat.id).set({ messages: [] }).catch(() => {}); };
-    $("#chatForm").onsubmit = e => { e.preventDefault(); if (chat.busy) { chat.busy.abort(); return; } const t = $("#chatIn").value.trim(); if (t) { $("#chatIn").value = ""; chatSend(chat.id, t); } };
+    $("#chatClear").onclick = () => { const S = cst(chat.id); if (S.busy) return; S.msgs = []; chatMsgs(); chatSave(chat.id); };
+    $("#chatForm").onsubmit = e => { e.preventDefault(); const S = cst(chat.id); if (S.busy) { S.busy.abort(); return; } const t = $("#chatIn").value.trim(); if (t) { $("#chatIn").value = ""; chatSend(chat.id, t); } };
     $("#chatIn").onkeydown = e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#chatForm").requestSubmit(); } };
     chatEl.addEventListener("click", e => { const b = e.target.closest("[data-undo]"); if (b) chatUndo(+b.dataset.undo); });
   }
@@ -2359,7 +2375,7 @@ function chatView() {
   $("#chatTitle").textContent = c.name;
   $("#chatWeb").textContent = webOK ? "Web on" : "Web off"; $("#chatWeb").className = "pill " + (webOK ? "accent" : "warn");
   $("#chatHint").textContent = webOK ? "Searches the web, shows its work, and saves what it finds to this profile. Every save can be undone." : "Web search is off (connect Parallel Search). Chat still saves what you tell it.";
-  $("#chatSend").textContent = chat.busy ? "Stop" : "Send";
+  $("#chatSend").textContent = cst(c.id).busy ? "Stop" : "Send";
   chatMsgs();
 }
 let chatRaf = 0;
@@ -2367,12 +2383,13 @@ function chatMsgs() {
   if (chatRaf) return;
   chatRaf = requestAnimationFrame(() => {
     chatRaf = 0;
-    const box = $("#chatMsgs"); if (!box) return;
+    const box = $("#chatMsgs"); if (!box || !chat.id) return;
+    const S = cst(chat.id);
     const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60;
-    box.innerHTML = chat.msgs.length ? chat.msgs.map((m, i) => m.role === "user" ? `<div class="msg cu${m.step ? " cstep" : ""}">${esc(m.text)}</div>` :
+    box.innerHTML = S.msgs.length ? S.msgs.map((m, i) => m.role === "user" ? `<div class="msg cu${m.step ? " cstep" : ""}">${esc(m.text)}</div>` :
       `<div class="msg ca">${(m.activity || []).length ? `<div class="act">${m.activity.map(a => `<span>${esc(a)}</span>`).join("")}</div>` : ""}${m.text ? mdLite(m.text) : m.pending ? `<span class="faint"><span class="spin"></span> Thinking…</span>` : ""}${m.error ? `<div class="saved"><div class="no">${esc(m.error)}</div></div>` : ""}${(m.saved || []).length || (m.rejected || []).length ? `<div class="saved">${(m.saved || []).map(x => `<div>Saved: ${esc(x)}</div>`).join("")}${(m.rejected || []).map(x => `<div class="no">Not saved: ${esc(x)}</div>`).join("")}${m.undo && !m.undone ? `<button class="btn sm ghost" data-undo="${i}" style="margin-top:6px">Undo</button>` : m.undone ? `<div class="faint">Undone</div>` : ""}</div>` : ""}</div>`).join("")
       : `<div class="faint" style="font-size:13px">Try: “What products do they sell? Add the brands.” · “Did they make any acquisitions since 2020?” · “Who owns them and since when?” · “Revenue is about $40M per the CIM.” · “Find their top competitors.”</div>`;
-    if (atBottom || chat.busy) box.scrollTop = box.scrollHeight;
+    if (atBottom || S.busy) box.scrollTop = box.scrollHeight;
   });
 }
 function chatContext(c) {
@@ -2435,16 +2452,16 @@ function chatTools(c, seen, msg) {
   return tools;
 }
 async function chatSend(id, text, opts = {}) {
-  const c = getC(id); if (!c || !sample || chat.busy) return false;
-  const ctl = new AbortController(); chat.busy = ctl;
+  const c = getC(id), S = await chatLoad(id); if (!c || !sample || S.busy) return false;
+  const ctl = new AbortController(); S.busy = ctl;
   const rk = opts.step ? runKey(id, opts.step) : null;
   if (rk) { runs[rk] = { ctl, msg: "Researching in chat…" }; render(); }
-  chat.msgs.push({ role: "user", text: text.slice(0, 4000), step: opts.step || null, at: now() });
-  const msg = { role: "assistant", text: "", activity: [], pending: true, at: now() }; chat.msgs.push(msg);
+  S.msgs.push({ role: "user", text: text.slice(0, 4000), step: opts.step || null, at: now() });
+  const msg = { role: "assistant", text: "", activity: [], pending: true, at: now() }; S.msgs.push(msg);
   chatView();
   if (webOK) await webSetup();
   const seen = new Set((c.dossier?.items || []).map(x => x.url));
-  const hist = chat.msgs.slice(0, -2).filter(m => m.text).slice(-10).map(m => ({ role: m.role, content: m.text.slice(0, 3000) }));
+  const hist = S.msgs.slice(0, -2).filter(m => m.text).slice(-10).map(m => ({ role: m.role, content: m.text.slice(0, 3000) }));
   while (hist.length && hist[0].role !== "user") hist.shift();
   const turn = `${CHAT_RULES}\n\n${chatContext(c)}\n\n${opts.brief ? opts.brief + "\n\n" : ""}USER: ${text}`;
   let ok = true;
@@ -2457,7 +2474,7 @@ async function chatSend(id, text, opts = {}) {
     if (e?.code === "not_granted" || e?.code === "sampling_disabled") sample = null;
     ok = false;
   }
-  msg.pending = false; chat.busy = null;
+  msg.pending = false; S.busy = null;
   if (rk) {
     delete runs[rk];
     // The step counts as built once its turn finishes, even when nothing new turned up.
@@ -2466,10 +2483,11 @@ async function chatSend(id, text, opts = {}) {
       const prev = (cur.section_meta || {})[opts.step] || {};
       await save(id, { section_meta: { ...(cur.section_meta || {}), [opts.step]: { at: now(), by: "Chat", note: (msg.saved || []).slice(0, 3).join("; ").slice(0, 300) || "Researched; nothing new to save.", passes: (prev.passes || 0) + 1 } } }, [], true);
     }
+    if (ok && !chat.open) toast(`${SECTIONS[opts.step].label} built${(msg.saved || []).length ? ": " + msg.saved.length + " update" + (msg.saved.length > 1 ? "s" : "") + " saved" : ""}`);
     render();
   }
   chatView();
-  if (chat.id === id) db.doc("chats/" + id).set({ messages: clean(chat.msgs.slice(-40).map(m => ({ ...m, pending: false, text: String(m.text || "").slice(0, 6000) }))), updated_at: now() }).catch(() => {});
+  chatSave(id);
   return ok;
 }
 // Builder buttons run through the chat: a detailed brief per step, researched the way a conversation would.
@@ -2481,8 +2499,8 @@ ${stepSpec(c, key).replace("Reply with ONLY one JSON object in this shape:", "ST
 Save with record: row actions (add_row / update_row) for list items where they fit, and set_step with step "${key}" and the full step object for everything else in this step. Then summarise what you found in a few lines with links.`;
 }
 async function chatSteps(id, keys) {
-  const c0 = getC(id); if (!c0 || !sample || chat.busy) return;
-  chat.open = true; chatView();
+  const c0 = getC(id); if (!c0 || !sample || cst(id).busy) return;
+  // Runs in the background; "View live" in the builder (or the Chat button) opens the conversation.
   for (const k of SECTION_ORDER.filter(x => keys.includes(x))) {
     const c = getC(id); if (!c) break;
     const pass = ((c.section_meta || {})[k]?.passes || 0) + 1;
@@ -2589,10 +2607,10 @@ async function applySteps(id, acts, seen, msg) {
   return { saved, rejected, before };
 }
 async function chatUndo(i) {
-  const m = chat.msgs[i]; if (!m?.undo || m.undone) return;
+  const S = cst(chat.id), m = S.msgs[i]; if (!m?.undo || m.undone) return;
   const b = { ...m.undo.before }; if (b.locked == null) b.locked = [];
   const ok = await save(m.undo.id, b, [], true);
-  if (ok) { m.undone = true; chatMsgs(); toast("Undone"); db.doc("chats/" + chat.id).set({ messages: clean(chat.msgs.slice(-40)), updated_at: now() }).catch(() => {}); }
+  if (ok) { m.undone = true; chatMsgs(); toast("Undone"); chatSave(chat.id); }
 }
 chatFab.onclick = () => { chat.open = true; chatView(); setTimeout(() => $("#chatIn")?.focus(), 30); };
 
@@ -2713,6 +2731,7 @@ app.addEventListener("click", async e => {
   if (!c) return;
   if (act === "enhance") enhance(c.id, btn.dataset.k);
   if (act === "enhanceall") enhanceAll(c.id);
+  if (act === "viewchat") { chat.open = true; chatView(); render(); }
   if (act === "webbuild") startWeb(c.id, SECTION_ORDER.slice());
   if (act === "websec") startWeb(c.id, [btn.dataset.k]);
   if (act === "webdismiss") { db.doc("research/" + btn.dataset.r).update({ status: "dismissed" }).catch(() => {}); }
