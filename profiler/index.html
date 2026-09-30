@@ -140,6 +140,8 @@ td[contenteditable]{min-width:60px}
 .facts input{flex:1 1 280px;min-width:0}
 .facts .lab{font-size:12px;font-weight:600;color:var(--ink-2);padding-inline:4px}
 
+.run.warnrun{background:var(--warn-soft,#fbeee2)}
+.run .sp{flex:1}
 .run{margin-top:14px;padding:12px 14px;border-radius:var(--r);background:var(--accent-soft);color:var(--ink);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .run.err{background:var(--warn-soft)}
 .spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--accent);border-right-color:transparent;animation:sp 0.8s linear infinite}
@@ -762,6 +764,12 @@ const BLANK = {
 };
 
 /* ---------- saving ---------- */
+const isMap = v => v && typeof v === "object" && !Array.isArray(v);
+function lostKeys(a, b) { return isMap(a) && isMap(b) && Object.keys(a).some(k => !(k in b) || lostKeys(a[k], b[k])); }
+function dropped(old, patch) {
+  const out = {}; for (const [k, v] of Object.entries(patch)) if (lostKeys(old?.[k], v)) out[k] = null;
+  return Object.keys(out).length ? out : null;
+}
 async function save(id, patch, lockFields = [], quiet = false) {
   const c = companies.get(id); if (!c || !db) return;
   const locked = new Set(c.locked || []);
@@ -778,9 +786,13 @@ async function save(id, patch, lockFields = [], quiet = false) {
   if (Object.keys(det).length) details[id] = { ...(details[id] || {}), ...det };
   ver++;
   try {
+    // update() merges nested objects, so keys dropped from a map (a cleared "out of date" flag, a dismissed
+    // suggestion, a product gone from the mix) would linger. Null those maps out first, then write them whole.
+    const clearS = dropped(c, sum), clearD = dropped(details[id] ? { ...c, ...details[id] } : c, det);
+    if (clearS) await db.doc("companies/" + id).update(clearS);
     await db.doc("companies/" + id).update(sum);
     if (Object.keys(det).length) {
-      try { await db.doc("details/" + id).update(det); }
+      try { if (clearD) await db.doc("details/" + id).update(clearD); await db.doc("details/" + id).update(det); }
       catch (e) { if (e?.code === "not_granted" || e?.code === "revoked" || e?.code === "quota_exceeded") throw e; await db.doc("details/" + id).set({ ...(details[id] || {}), ...det }); }
     }
     if (!quiet) toast("Saved");
@@ -1122,6 +1134,7 @@ function sectionOfField(f) {
   if (f === "products" || f === "chemistries" || f === "revenue_by_product") return "products";
   return FIELD_SECTION[f] || null;
 }
+const PROSE = new Set(["what_it_is", "bluntly", "profile_md", "website", "hq_address", "prior_owners"]);
 function markStale(cur, changedSections, meta) {
   meta = { ...(meta || cur.section_meta || {}) };
   for (const s of changedSections) for (const d of DEPS[s] || []) {
@@ -1235,8 +1248,10 @@ async function enhance(id, key) {
     const note = String(res.note || "").slice(0, 300) || (Object.keys(patch).length ? "Section updated." : "No changes.");
     const summary = sec.append ? (added ? `Added ${added} new deal${added > 1 ? "s" : ""}. ${note}` : "No new deals found.") : note;
     const changed = Object.keys(patch).filter(f => sec.fields.includes(f));
+    // Rewording a description or a basis doesn't make other steps out of date; new facts do.
+    const material = changed.filter(f => !PROSE.has(f) && !/_basis$|_arithmetic$|_year$/.test(f));
     let meta = { ...(cur.section_meta || {}), [key]: { at: now(), by: "Claude", note: summary, passes: ((cur.section_meta || {})[key]?.passes || 0) + 1 } };
-    if (changed.length) meta = markStale(cur, [key], meta);
+    if (material.length) meta = markStale(cur, [key], meta);
     patch.section_meta = meta;
     patch.suggestions = sugg;
     patch.history = [...hist, ...(cur.history || [])].slice(0, 200);
@@ -1244,13 +1259,13 @@ async function enhance(id, key) {
     if (cur.status === "empty" || cur.status === "researching") patch.status = "ready";
     delete runs[runKey(id, key)];
     await save(id, patch, [], true);
-    const deps = changed.length ? (DEPS[key] || []).length : 0;
+    const deps = material.length ? (DEPS[key] || []).length : 0;
     toast(`${sec.label}: ${sec.append ? (added ? `${added} new deal${added > 1 ? "s" : ""} added` : "no new deals") : changed.length ? "updated" : (suggested || held) ? "suggestion held for review" : "no change"}${deps && !quietCascade ? ` · ${deps} related section${deps > 1 ? "s" : ""} now out of date` : ""}`);
   } catch (e) {
     delete runs[runKey(id, key)];
     if (e?.code === "cancelled") { render(); return; }
     if (e?.code === "not_granted" || e?.code === "sampling_disabled") sample = null;
-    runs[runKey(id, key)] = { error: ERRMSG[e?.code] || `${sec.label} didn't finish. Try again.` };
+    runs[runKey(id, key)] = { error: ERRMSG[e?.code] || `${sec.label} didn't finish${e?.code || e?.message ? " (" + String(e.code || e.message).slice(0, 80) + ")" : ""}. Try again.` }; console.warn("enhance", key, e);
     render();
   }
 }
@@ -1777,6 +1792,7 @@ function viewCompany(id, tab) {
 // The builder: each step in order, its state, and one click to build the next step or go deeper.
 function stepState(c, k) {
   if (isRunning(c.id, k)) return { cls: "run", text: "Building…" };
+  if (runs[runKey(c.id, k)]?.error) return { cls: "stale", text: "Didn't finish · retry" };
   const m = (c.section_meta || {})[k] || {};
   if (m.stale) return { cls: "stale", text: "Out of date" };
   if (m.at) return { cls: "done", text: `Pass ${m.passes || 1} · ${sectionConf(c, k) || "—"}` };
@@ -1792,6 +1808,7 @@ function viewBuilder(c) {
   return `<div class="panel builder">
     <div class="sec-h"><h2>Profile builder</h2><span class="faint" style="font-size:12px">Builds in order; each step starts from everything before it. Click a finished step to go deeper.</span><span class="sp"></span>
       ${ok && nx ? `<button class="btn sm primary" data-act="enhance" data-k="${nx}" ${busy ? "disabled" : ""}>Build next: ${esc(SECTIONS[nx].label)}</button>` : ""}${ok ? `<button class="btn sm" data-act="enhanceall" ${busy ? "disabled" : ""}>Build all</button>` : ""}</div>
+    ${(() => { const k = SECTION_ORDER.find(k => runs[runKey(c.id, k)]?.error); return k ? `<div class="run warnrun" role="alert"><span><b>${esc(SECTIONS[k].label)} didn't finish.</b> ${esc(runs[runKey(c.id, k)].error)}</span><span class="sp"></span><button class="btn sm ghost" data-act="dismisssec" data-k="${k}">Dismiss</button></div>` : ""; })()}
     <ol class="steps">${SECTION_ORDER.map((k, i) => { const st = stepState(c, k); return `<li><button class="step ${st.cls}" data-act="enhance" data-k="${k}" ${!ok || busy ? "disabled" : ""} title="${st.cls === "done" ? "Go deeper on " : "Build "}${esc(SECTIONS[k].label)}"><span class="sn">${st.cls === "run" ? `<span class="spin"></span>` : i + 1}</span><span class="sl">${esc(SECTIONS[k].label)}</span><span class="ss">${esc(st.text)}</span></button></li>`; }).join("")}</ol>
   </div>`;
 }
