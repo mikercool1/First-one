@@ -300,6 +300,14 @@ td.confcell.ch{color:var(--good)} td.confcell.cm{color:var(--warn)} td.confcell.
 .scard-t{font-size:13px;color:var(--ink-2)}
 .scard-t a{color:var(--ink-2)}
 .scard-a{margin-top:auto;padding-top:4px}
+.cov{height:10px;border-radius:5px;background:var(--sunk);overflow:hidden}
+.cov-f{height:100%;background:var(--accent)}
+table.tamt td{vertical-align:middle}
+table.tamt select{padding:4px 6px;font-size:13px}
+tr.dim td{opacity:.55}
+.sugg-li{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.sugg-li>div:first-child{min-width:0}
+.tile select{font:500 14px var(--f-body);padding:4px 6px}
 .skeleton{padding:60px 0;color:var(--ink-3)}
 </style>
 
@@ -313,6 +321,7 @@ td.confcell.ch{color:var(--good)} td.confcell.cm{color:var(--warn)} td.confcell.
       <a href="#targets" data-v="targets">Targets</a>
       <a href="#precedents" data-v="precedents">Precedents</a>
       <a href="#endmarkets" data-v="endmarkets">End markets</a>
+      <a href="#tam" data-v="tam">Market size</a>
     </nav>
     <div class="live" id="live"><span class="dot"></span><span>Connecting</span></div>
   </div>
@@ -442,7 +451,7 @@ const seeding = {};
 function route() {
   const h = (location.hash || "#companies").slice(1);
   if (h.startsWith("c.")) { const [, id, tab] = h.split("."); return { view: "company", id, tab: tab || "snapshot" }; }
-  if (["sectors", "companies", "targets", "precedents", "endmarkets"].includes(h)) return { view: h };
+  if (["sectors", "companies", "targets", "precedents", "endmarkets", "tam"].includes(h)) return { view: h };
   return { view: "sectors" };
 }
 
@@ -485,7 +494,7 @@ const GENERIC = new Set(["water", "aqua", "chemical", "chemicals", "chem", "indu
 function nameVariants(n) {
   const out = new Set(), raw = String(n || "");
   const SUFFIX = /\s(chemicals?|chemistry|corporation|corp|company|co|inc|llc|ltd|group|holdings?|industries|international|technologies|technology|solutions|services|systems|products|enterprises|usa|us|america|north america)$/;
-  const add = x => { let k = norm(x); if (!k || k.length < 3) return; out.add(k); let core = k; while (SUFFIX.test(core)) core = core.replace(SUFFIX, ""); if (core.length >= 4) out.add(core); };
+  const add = x => { let k = norm(x).replace(/^u s /, "united states ").replace(/^us /, "united states "); if (!k || k.length < 3) return; out.add(k); let core = k; while (SUFFIX.test(core)) core = core.replace(SUFFIX, ""); if (core.length >= 4) out.add(core); };
   add(raw); add(raw.split(/[(\/|]/)[0]);
   for (const m of raw.matchAll(/\(([^)]+)\)/g)) for (const part of m[1].split(/[;,/]| - |\bformerly\b|\bincl\.?|\ban?\b|\bcompany\b/i)) add(part);
   for (const part of raw.split(/\s\/\s|\s-\s/)) add(part);
@@ -799,6 +808,13 @@ function recalcPct(rows, c, patch, f) {
 
 app.addEventListener("focusout", e => {
   const el = e.target;
+  if (el?.isContentEditable && (el.dataset.tam || el.dataset.tamov)) {
+    const sid = el.dataset.tam || el.dataset.tamov, t = tams[sid] || {}, val = parseCell(el.dataset.t, el.innerText.replace(/\u00a0/g, " ").trim());
+    if (el.dataset.tamov) { const tri = triangulate(t).tam; if (val === null || (tri !== null && Math.round(val) === Math.round(tri))) { if (num(t.override_usd_m) !== null) saveTam(sid, { override_usd_m: null }).then(render); } else if (val !== num(t.override_usd_m)) saveTam(sid, { override_usd_m: val }).then(render); return; }
+    const src = (t.sources || []).map(x => ({ ...x })), row = src[+el.dataset.r]; if (!row) return;
+    if (String(row[el.dataset.k] ?? "") === String(val ?? "")) return;
+    row[el.dataset.k] = val; saveTam(sid, { sources: src }).then(() => setTimeout(() => { if (!isEditing()) render(); }, 30)); return;
+  }
   if (el.id === "q" && ui.acOpen) setTimeout(() => { if (document.activeElement?.id !== "q" && ui.acOpen) { ui.acOpen = false; render(); } }, 150);
   if (el?.isContentEditable && el.dataset.f) commit(el).finally(() => setTimeout(() => { if (pendingRender && !isEditing()) { pendingRender = false; render(); } }, 30));
 });
@@ -1242,14 +1258,7 @@ Sector ids for other_sectors: ${BASE_SECTORS.map(x => x.id).join(", ")}.`;
         const cur = sectorsOf(ex);
         await save(ex.id, { sectors: [...cur, line] }, [], true); tagged++; continue;
       }
-      let id = slugify(r.name), n = 2; while (companies.has(id)) id = slugify(r.name) + "-" + n++;
-      const others = (Array.isArray(r.other_sectors) ? r.other_sectors : []).filter(x => x !== sid && allSectors().some(z => z.id === x)).map(x => ({ sector: x, revenue_usd_m: null, pct: null }));
-      const doc = { name: r.name, primary_sector: sid, sectors: [line, ...others], hq_address: r.hq_address || "", owner_type: r.owner_type || "", ultimate_parent: r.ultimate_parent || "", pe_sponsor: r.pe_sponsor || "", business_model: r.business_model || "", website: r.website || "",
-        total_revenue_usd_m: num(r.total_revenue_usd_m), total_ebitda_usd_m: num(r.total_ebitda_usd_m), employees_total: num(r.employees_total), confidence: "Low", status: "ready",
-        acquisitions: [], buyers: [], addon_ideas: [], competitors: [], locked: [], source_of_truth: [], created_at: now(), updated_at: now(), section_meta: {} };
-      if (doc.total_revenue_usd_m && doc.total_ebitda_usd_m) doc.ebitda_margin_pct = +(doc.total_ebitda_usd_m / doc.total_revenue_usd_m * 100).toFixed(1);
-      const det = { what_it_is: r.what_it_is || "", runs: [{ at: now(), kind: "Sector build", summary: `Added as a starter profile while building out ${sec.name}. Figures are Claude estimates; use Enhance all to fill in the rest.` }], customers: [] };
-      try { await db.doc("companies/" + id).set(doc); await db.doc("details/" + id).set(det); companies.set(id, { ...doc, id }); details[id] = det; added++; ver++; }
+      try { await createStarter(r, sid, "Sector build"); added++; }
       catch (e) { handleWriteError(e); break; }
     }
     rebuildIndex();
@@ -1259,6 +1268,174 @@ Sector ids for other_sectors: ${BASE_SECTORS.map(x => x.id).join(", ")}.`;
     toast(ERRMSG[e?.code] || "Couldn't build out the sector. Try again.");
   }
   delete seeding[sid]; render();
+}
+
+/* ---------- TAM: triangulated market size, found TAM, names to add ---------- */
+let tams = {};                         // sectorId -> tam doc
+const tamBusy = {};
+const REL_W = { High: 3, Medium: 2, Low: 1 };
+const GEOS = ["US", "North America", "Global"];
+// Starter profile from a name plus whatever Claude estimated. Used by sector build-outs and TAM suggestions.
+async function createStarter(r, sid, how) {
+  const sec = sectorById(sid);
+  let id = slugify(r.name), n = 2; while (companies.has(id)) id = slugify(r.name) + "-" + n++;
+  const others = (Array.isArray(r.other_sectors) ? r.other_sectors : []).filter(x => x !== sid && allSectors().some(z => z.id === x)).map(x => ({ sector: x, revenue_usd_m: null, pct: null }));
+  const line = { sector: sid, revenue_usd_m: num(r.sector_revenue_usd_m), pct: num(r.sector_pct) };
+  const doc = { name: r.name, primary_sector: sid, sectors: [line, ...others], hq_address: r.hq_address || "", owner_type: r.owner_type || "", ultimate_parent: r.ultimate_parent || "", pe_sponsor: r.pe_sponsor || "", business_model: r.business_model || "", website: r.website || "",
+    total_revenue_usd_m: num(r.total_revenue_usd_m), total_ebitda_usd_m: num(r.total_ebitda_usd_m), employees_total: num(r.employees_total), confidence: "Low", status: "ready",
+    acquisitions: [], buyers: [], addon_ideas: [], competitors: [], locked: [], source_of_truth: [], created_at: now(), updated_at: now(), section_meta: {} };
+  if (doc.total_revenue_usd_m && doc.total_ebitda_usd_m) doc.ebitda_margin_pct = +(doc.total_ebitda_usd_m / doc.total_revenue_usd_m * 100).toFixed(1);
+  const det = { what_it_is: r.what_it_is || r.why || "", runs: [{ at: now(), kind: how, summary: `Added as a starter profile in ${sec?.name || sid}. Figures are estimates; use Enhance all to fill in the rest.` }], customers: [] };
+  await db.doc("companies/" + id).set(doc); await db.doc("details/" + id).set(det);
+  companies.set(id, { ...doc, id }); details[id] = det; ver++;
+  return id;
+}
+async function saveTam(sid, patch) {
+  const cur = tams[sid] || {}, next = { ...cur, ...patch, sector: sid, updated_at: now() };
+  tams[sid] = next; ver++;
+  try { await db.doc("tam/" + sid).set(next); } catch (e) { handleWriteError(e); }
+}
+
+// Bring every source to the base year with its own growth rate (or the median of the others), weight by
+// reliability, and down-weight outliers far from the median.
+function triangulate(t) {
+  const geo = t?.geo || "US", base = +(t?.base_year || 2025);
+  const src = (t?.sources || []).filter(x => num(x.value_usd_m));
+  const cagrs = src.map(x => num(x.cagr_pct)).filter(x => x !== null);
+  const medC = median(cagrs) ?? 4;
+  const rows = src.map((x, i) => {
+    const inGeo = (x.geography || "US") === geo, g = num(x.cagr_pct) ?? medC, yr = +(yearOf(x.year) || base);
+    const adj = num(x.value_usd_m) * Math.pow(1 + g / 100, base - yr);
+    return { ...x, i, inGeo, adj, g, w0: REL_W[x.reliability] || 1 };
+  });
+  const use = rows.filter(r => r.inGeo);
+  const med = median(use.map(r => r.adj));
+  for (const r of use) { r.outlier = med && (r.adj > 2.5 * med || r.adj < med / 2.5); r.w = r.w0 * (r.outlier ? 0.25 : 1); }
+  const W = use.reduce((s, r) => s + r.w, 0);
+  const tam = W ? use.reduce((s, r) => s + r.adj * r.w, 0) / W : null;
+  const vals = use.map(r => r.adj);
+  return { rows, tam, lo: vals.length ? Math.min(...vals) : null, hi: vals.length ? Math.max(...vals) : null, n: use.length, geo, base, medC };
+}
+const tamValue = t => num(t?.override_usd_m) ?? triangulate(t).tam;
+function foundTam(sid) {
+  return memod("found:" + sid, () => {
+    const rows = list().filter(c => inSector(c, sid)).map(c => ({ c, r: sectorRev(c, sid) || 0 })).filter(x => x.r > 0).sort((a, b) => b.r - a.r);
+    return { rows, total: rows.reduce((s, x) => s + x.r, 0) };
+  });
+}
+// Simple database search: names that profiles in this sector mention but that have no profile yet.
+function mentionedNotProfiled(sid) {
+  return memod("mentioned:" + sid, () => {
+    const m = new Map(), dismissed = new Set((tams[sid]?.dismissed || []).map(norm));
+    const add = (name, how, from) => {
+      const k = norm(name); if (!k || k.length < 3 || dismissed.has(k) || findCompanyByName(name)) return;
+      if (/^(private equity|ipo|not a realistic|chinese |on-site|other)|->|sold to|\b(funds?|sponsors?|investors?|platforms|producers|private equity|pe firms?|regional|generation systems|backed|market)\b/i.test(name) || name.length > 60) return;
+      const e = m.get(k) || { name, how: new Set(), from: new Set(), n: 0 }; e.n++; e.how.add(how); e.from.add(from); m.set(k, e);
+    };
+    // Deal targets are already owned by their acquirer, so only competitors, buyers and add-on ideas count.
+    for (const c of list().filter(c => primarySector(c) === sid)) {
+      for (const x of c.competitors || []) add(x.name, "competitor", c.name);
+      for (const x of c.buyers || []) add(x.name, "buyer", c.name);
+      for (const x of c.addon_ideas || []) add(x.target, "add-on idea", c.name);
+    }
+    return [...m.values()].sort((a, b) => b.n - a.n).slice(0, 25);
+  });
+}
+
+async function findTamSources(sid) {
+  const sec = sectorById(sid); if (!sample || tamBusy[sid]) return;
+  tamBusy[sid] = "Finding market-size sources"; render();
+  const t = tams[sid] || {}, f = foundTam(sid);
+  const prompt = `You are sizing the market for "${sec.name}" for a buy-side M&A team focused on North America.
+
+List the published market-size estimates you know for this market: industry research firms (for example Freedonia, Kline, Grand View, MarketsandMarkets, Mordor, IHS/S&P, ACC), trade associations, government data, and figures stated by public companies in filings or investor days. Include at least one bottom-up estimate you build yourself from company revenues, labelled "Bottom-up estimate". Cover US, North America and Global where you know them.
+
+For context, the companies already in the database sum to ${fmtM(f.total)} of revenue in this sector across ${f.rows.length} companies.
+${(t.sources || []).length ? `Already listed (don't repeat): ${t.sources.map(x => `${x.source} ${x.year}`).join("; ")}` : ""}
+
+Rate reliability: High = audited or widely cited primary source with a clear definition; Medium = reputable research firm estimate; Low = press-release-grade or unclear scope. Never invent URLs; leave url empty unless you are sure.
+
+Reply with ONLY JSON:
+{"sources":[{"source":"publisher and report","kind":"Research firm | Association | Government | Company filing | Bottom-up estimate","geography":"US | North America | Global","year":2024,"value_usd_m":0,"cagr_pct":0,"reliability":"High | Medium | Low","scope":"what the number includes","url":""}],"view":"two sentences on which figures you trust most for a US-focused definition and why"}`;
+  try {
+    const r = await sample.json(prompt, { modelTier: "complex", cache: false });
+    const got = (r?.sources || []).filter(x => x?.source && num(x.value_usd_m));
+    const have = new Set((t.sources || []).map(x => norm(x.source) + (x.year || "")));
+    const fresh = got.filter(x => !have.has(norm(x.source) + (x.year || ""))).map(x => ({ source: x.source, kind: x.kind || "", geography: GEOS.includes(x.geography) ? x.geography : "Global", year: x.year || "", value_usd_m: num(x.value_usd_m), cagr_pct: num(x.cagr_pct), reliability: LEVELS.includes(x.reliability) && x.reliability !== "Verified" ? x.reliability : "Medium", scope: x.scope || "", url: x.url || "", by: "Claude" }));
+    await saveTam(sid, { sources: [...(t.sources || []), ...fresh], view: r?.view || t.view || "", geo: t.geo || "US", base_year: t.base_year || 2025 });
+    toast(`${fresh.length} market-size source${fresh.length === 1 ? "" : "s"} added`);
+  } catch (e) { if (e?.code === "not_granted" || e?.code === "sampling_disabled") sample = null; toast(ERRMSG[e?.code] || "Couldn't find sources. Try again."); }
+  delete tamBusy[sid]; render();
+}
+async function suggestCompanies(sid) {
+  const sec = sectorById(sid); if (!sample || tamBusy[sid]) return;
+  tamBusy[sid] = "Finding companies to add"; render();
+  const t = tams[sid] || {}, f = foundTam(sid), tam = tamValue(t);
+  const have = f.rows.map(x => x.c.name).slice(0, 200), ment = mentionedNotProfiled(sid).map(x => x.name);
+  const prompt = `You are helping complete a company database for the "${sec.name}" market (North America focus).
+
+Market size: ${tam ? fmtM(tam) + ` (${t.geo || "US"})` : "unknown"}. Companies in the database sum to ${fmtM(f.total)}${tam ? `, so about ${fmtM(Math.max(0, tam - f.total))} of the market is not yet covered` : ""}.
+Already in the database (skip these): ${have.join("; ") || "none"}.
+${ment.length ? `Names already mentioned in profiles but not yet profiled (include them if they belong in this market): ${ment.join("; ")}` : ""}
+
+Suggest up to 25 companies that would close the gap, largest first: leaders missing from the list, then the PE-backed and founder-owned mid-market. Work from what you know; you cannot browse.
+
+Reply with ONLY a JSON array:
+[{"name":"","hq_address":"City, ST","owner_type":"PE-owned | Public | Family/founder-owned | ESOP | Subsidiary of strategic | Other","pe_sponsor":"","business_model":"","total_revenue_usd_m":0,"sector_revenue_usd_m":0,"sector_pct":0,"why":"one line on why it belongs"}]`;
+  try {
+    const rows = await sample.json(prompt, { modelTier: "complex", cache: false });
+    const cur = new Set((t.suggestions || []).map(x => norm(x.name)));
+    const fresh = (Array.isArray(rows) ? rows : []).filter(x => x?.name && !findCompanyByName(x.name) && !cur.has(norm(x.name)));
+    await saveTam(sid, { suggestions: [...fresh, ...(t.suggestions || [])].slice(0, 60) });
+    toast(`${fresh.length} companies suggested`);
+  } catch (e) { if (e?.code === "not_granted" || e?.code === "sampling_disabled") sample = null; toast(ERRMSG[e?.code] || "Couldn't suggest companies. Try again."); }
+  delete tamBusy[sid]; render();
+}
+
+function viewTam() {
+  const sid = ui.sector;
+  if (!sid) {
+    const rows = allSectors().map(x => { const t = tams[x.id], tv = tamValue(t), f = foundTam(x.id); return { x, t, tv, f }; }).filter(r => r.f.rows.length || r.tv);
+    return `<div class="page-h"><div><div class="eyebrow">All sectors</div><h1>Market size</h1><p>Each sector's TAM, triangulated from industry sources, against the revenue of the companies already in Profiler. Pick a sector to see its sources and fill its gaps.</p></div></div>
+    <div class="tw"><table><thead><tr><th>Sector</th><th class="r">TAM</th><th>Geography</th><th class="r">Found in Profiler</th><th class="r">Coverage</th><th class="r">Companies</th><th class="r">Sources</th></tr></thead><tbody>${rows.map(r => `<tr class="link" data-setsector-tam="${esc(r.x.id)}"><td class="cname">${esc(r.x.name)}</td><td class="r num">${fmtM(r.tv)}</td><td class="muted">${esc(r.t?.geo || "")}</td><td class="r num">${fmtM(r.f.total)}</td><td class="r num">${r.tv ? Math.round(r.f.total / r.tv * 100) + "%" : "—"}</td><td class="r num">${r.f.rows.length}</td><td class="r num">${(r.t?.sources || []).length}</td></tr>`).join("") || `<tr><td colspan="7" class="faint">No sectors sized yet.</td></tr>`}</tbody></table></div>`;
+  }
+  const sec = sectorById(sid), t = tams[sid] || {}, tri = triangulate(t), tv = tamValue(t), f = foundTam(sid), busy = tamBusy[sid];
+  const cov = tv ? f.total / tv * 100 : null, top10 = f.rows.slice(0, 10).reduce((s, x) => s + x.r, 0);
+  const canW = writable && db, canC = canEnhance();
+  const srcRows = tri.rows.map(r => `<tr class="${r.inGeo ? "" : "dim"}">
+    ${["source", "kind"].map(k => `<td contenteditable="${canW ? "plaintext-only" : "false"}" data-tam="${sid}" data-r="${r.i}" data-k="${k}" data-t="text">${esc(r[k] || "")}</td>`).join("")}
+    <td><select data-tamsel="geography" data-r="${r.i}" ${canW ? "" : "disabled"}>${GEOS.map(g => `<option ${g === (r.geography || "US") ? "selected" : ""}>${g}</option>`).join("")}</select></td>
+    ${[["year", "text"], ["value_usd_m", "num"], ["cagr_pct", "num"]].map(([k, ty]) => `<td class="${ty === "num" ? "r num" : "num"}" contenteditable="${canW ? "plaintext-only" : "false"}" data-tam="${sid}" data-r="${r.i}" data-k="${k}" data-t="${ty}" data-ph="–">${esc(ty === "num" ? fmtInt(r[k]) : r[k] || "")}</td>`).join("")}
+    <td><select data-tamsel="reliability" data-r="${r.i}" ${canW ? "" : "disabled"}>${["High", "Medium", "Low"].map(g => `<option ${g === (r.reliability || "Medium") ? "selected" : ""}>${g}</option>`).join("")}</select></td>
+    <td class="r num">${r.inGeo ? fmtM(r.adj) : "—"}</td>
+    <td class="r num">${r.inGeo ? (r.outlier ? `<span class="cb cl" title="Far from the median, so it counts a quarter as much">Outlier</span>` : `${Math.round(r.w / (tri.rows.filter(x => x.inGeo).reduce((s, x) => s + x.w, 0) || 1) * 100)}%`) : `<span class="faint">Other geo</span>`}</td>
+    <td class="muted" style="font-size:12px">${esc(r.scope || "")}${r.url ? ` <a href="${esc(r.url)}" target="_blank" rel="noopener">Link</a>` : ""}</td>
+    <td>${canW ? `<button class="x" style="opacity:1" data-act="deltam" data-r="${r.i}" aria-label="Remove source">×</button>` : ""}</td></tr>`).join("");
+  const ment = mentionedNotProfiled(sid), sugg = (t.suggestions || []).filter(x => !findCompanyByName(x.name));
+  return `<div class="page-h"><div><div class="eyebrow">${esc(sec.name)}</div><h1>Market size</h1><p>The TAM is triangulated from the sources below: each is brought forward to ${tri.base} with its growth rate, weighted by reliability, and outliers count for less. Found TAM adds up the ${esc(sec.short)} revenue of the companies already in Profiler.</p></div>
+    <div class="add">${canC ? `<button class="btn enh" data-act="tamsources" ${busy ? "disabled" : ""}>Find market-size sources</button>` : ""}</div></div>
+  ${busy ? `<div class="run" role="status"><span class="spin"></span><span><b>${esc(busy)}.</b> This usually takes a minute or two.</span></div>` : ""}
+  <div class="tiles" style="margin-bottom:22px">
+    ${tile(`TAM ${num(t.override_usd_m) !== null ? `<span class="cb cv">Verified</span>` : tri.n ? `<span class="cb ${tri.n >= 3 ? "ch" : "cm"}">${tri.n} source${tri.n > 1 ? "s" : ""}</span>` : ""}`, `<span class="u">$</span><span contenteditable="${canW ? "plaintext-only" : "false"}" data-tamov="${sid}" data-t="num" data-ph="–" title="Type to set your own TAM">${esc(fmtInt(tv))}</span><span class="u">M</span>`, num(t.override_usd_m) !== null ? `Your figure · triangulated ${fmtM(tri.tam)}` : tri.n ? `Range ${fmtM(tri.lo)}–${fmtM(tri.hi)}` : "Add sources or type a figure", null)}
+    ${tile("Geography & year", `<select id="tamgeo" ${canW ? "" : "disabled"}>${GEOS.map(g => `<option ${g === tri.geo ? "selected" : ""}>${g}</option>`).join("")}</select> <select id="tamyear" ${canW ? "" : "disabled"}>${[2023, 2024, 2025, 2026].map(y => `<option ${y === tri.base ? "selected" : ""}>${y}</option>`).join("")}</select>`, `Growth assumed ${tri.medC.toFixed(1)}% where a source has none`, null, "", true)}
+    ${tile("Found in Profiler", `<span class="u">$</span>${fmtInt(Math.round(f.total))}<span class="u">M</span>`, `${f.rows.length} companies with ${esc(sec.short)} revenue`, null)}
+    ${tile("Coverage", cov !== null ? `${Math.round(cov)}<span class="u">%</span>` : "—", tv ? `Gap ${fmtM(Math.max(0, tv - f.total))}${sid === "water" ? " · includes distributor resale" : ""}` : "Needs a TAM", null)}
+  </div>
+  ${tv ? `<div class="cov"><div class="cov-f" style="width:${Math.min(100, cov).toFixed(1)}%"></div></div><p class="faint" style="font-size:12px;margin:6px 0 22px">Top 10 companies hold ${Math.round(top10 / tv * 100)}% of the TAM.</p>` : ""}
+  ${t.view ? `<div class="take" style="margin-bottom:22px"><div class="eyebrow">Claude's read on the sources</div>${esc(t.view)}</div>` : ""}
+  <div class="sec"><div class="sec-h"><h2>Market-size sources</h2><span class="faint" style="font-size:12px">Values in $M. Edit any cell; reliability and geography change the weighting.</span><span class="sp"></span>${canW ? `<button class="btn sm ghost" data-act="addtam">Add source</button>` : ""}</div>
+    <div class="tw"><table class="tamt"><thead><tr><th>Source</th><th>Type</th><th>Geography</th><th>Year</th><th class="r">Value $M</th><th class="r">CAGR %</th><th>Reliability</th><th class="r">At ${tri.base}</th><th class="r">Weight</th><th>Scope</th><th></th></tr></thead><tbody>${srcRows || `<tr><td colspan="11" class="faint">No sources yet. ${canC ? "Hit Find market-size sources, or add one you have." : "Add one you have."}</td></tr>`}</tbody></table></div></div>
+  <div class="sec grid2">
+    <div><div class="sec-h"><h2>Found TAM by company</h2></div>
+      <div class="panel bars" style="padding:6px">${f.rows.slice(0, 15).map((x, i) => `<div class="brow" data-open="${esc(x.c.id)}" data-tip="${esc(x.c.name)}: ${fmtM(x.r)}${tv ? " · " + (x.r / tv * 100).toFixed(1) + "% of TAM" : ""}"><span class="rk">${i + 1}</span><span class="nm">${esc(x.c.name)}</span><div class="track"><div class="fill" style="width:${(x.r / (f.rows[0]?.r || 1) * 100).toFixed(1)}%"></div></div><span class="v">${fmtM(x.r)}</span></div>`).join("") || `<p class="faint" style="padding:12px">No companies with revenue in this sector yet.</p>`}
+      ${f.rows.length > 15 ? `<p class="faint" style="padding:4px 12px;font-size:12px">+ ${f.rows.length - 15} more companies, ${fmtM(f.rows.slice(15).reduce((s, x) => s + x.r, 0))}</p>` : ""}</div></div>
+    <div>
+      <div class="sec-h"><h2>Names to add</h2><span class="sp"></span>${canC ? `<button class="btn sm enh" data-act="tamsuggest" ${busy ? "disabled" : ""}>Suggest companies</button>` : ""}</div>
+      ${ment.length ? `<div class="eyebrow" style="margin:4px 0 6px">Mentioned in Profiler, not yet profiled</div><div class="panel list-p">${ment.slice(0, 12).map((m, i) => `<div class="li sugg-li"><div><div class="who">${esc(m.name)}</div><div class="muted" style="font-size:12px">Named as ${esc([...m.how].join(", "))} by ${esc([...m.from].slice(0, 3).join(", "))}${m.from.size > 3 ? ` +${m.from.size - 3}` : ""}</div></div>${canW ? `<div class="sugg-a"><button class="btn sm" data-act="addment" data-name="${esc(m.name)}">Add</button><button class="btn sm ghost" data-act="dismissname" data-name="${esc(m.name)}">Hide</button></div>` : ""}</div>`).join("")}</div>` : ""}
+      ${sugg.length ? `<div class="eyebrow" style="margin:14px 0 6px;display:flex;gap:8px;align-items:center">Suggested by Claude <span class="sp" style="flex:1"></span>${canW ? `<button class="btn sm ghost" data-act="addallsugg">Add all ${sugg.length}</button>` : ""}</div><div class="panel list-p">${sugg.slice(0, 25).map(x => `<div class="li sugg-li"><div><div class="who">${esc(x.name)} <span class="faint num" style="font-weight:400">${fmtM(num(x.sector_revenue_usd_m) ?? num(x.total_revenue_usd_m))}</span></div><div class="muted" style="font-size:12px">${esc([x.owner_type, x.pe_sponsor, x.hq_address].filter(Boolean).join(" · "))}${x.why ? " — " + esc(x.why) : ""}</div></div>${canW ? `<div class="sugg-a"><button class="btn sm" data-act="addsugg" data-name="${esc(x.name)}">Add</button><button class="btn sm ghost" data-act="dismissname" data-name="${esc(x.name)}">Hide</button></div>` : ""}</div>`).join("")}</div>` : ""}
+      ${!ment.length && !sugg.length ? `<p class="faint">Nothing to suggest yet. ${canC ? "Hit Suggest companies and Claude proposes names sized to close the coverage gap." : ""}</p>` : ""}
+    </div>
+  </div>`;
 }
 
 function viewCompanies() {
@@ -1677,6 +1854,7 @@ function render() {
   else if (r.view === "precedents") html = viewPrecedents();
   else if (r.view === "endmarkets") html = viewEndMarkets();
   else if (r.view === "sectors") html = viewSectors();
+  else if (r.view === "tam") html = viewTam();
   else html = viewCompanies();
   const active = document.activeElement?.id, selS = document.activeElement?.selectionStart;
   app.innerHTML = html;
@@ -1707,6 +1885,8 @@ app.addEventListener("change", e => {
   if (id === "em") ui.em = e.target.value;
   else if (id === "fscope") { ui.scope = e.target.value; ui.limit = 150; }
   else if (id === "fotype") { ui.otype = e.target.value; ui.limit = 150; }
+  else if (id === "tamgeo" || id === "tamyear") { saveTam(ui.sector, id === "tamgeo" ? { geo: e.target.value } : { base_year: +e.target.value }).then(render); return; }
+  else if (e.target.dataset.tamsel) { const t = tams[ui.sector] || {}, src = (t.sources || []).map(x => ({ ...x })), row = src[+e.target.dataset.r]; if (row) { row[e.target.dataset.tamsel] = e.target.value; saveTam(ui.sector, { sources: src }).then(render); } return; }
   else if (id === "primsel") {
     const c = getC(route().id); if (!c) return;
     const v = e.target.value, secs = sectorsOf(c).map(x => ({ ...x }));
@@ -1754,6 +1934,8 @@ async function createCompany(name, facts = "", sector = "") {
 
 app.addEventListener("click", async e => {
   const t = e.target;
+  const st2 = t.closest("[data-setsector-tam]");
+  if (st2) { setSector(st2.dataset.setsectorTam); render(); return; }
   const ss = t.closest("[data-setsector]");
   if (ss) { e.preventDefault(); setSector(ss.dataset.setsector); if (location.hash !== "#companies") location.hash = "companies"; else render(); return; }
   const sd = t.closest("[data-act=seed]");
@@ -1771,6 +1953,21 @@ app.addEventListener("click", async e => {
   const act = btn.dataset.act, r = route(), c = getC(r.id);
   if (act === "profile-target") { await createCompany(btn.dataset.name); return; }
   if (act === "more") { ui.limit = (ui.limit || 150) + 150; render(); return; }
+  if (r.view === "tam" && ui.sector) {
+    const sid = ui.sector, t = tams[sid] || {};
+    if (act === "tamsources") findTamSources(sid);
+    if (act === "tamsuggest") suggestCompanies(sid);
+    if (act === "addtam") { pendingFocus = `[data-tam="${sid}"][data-r="${(t.sources || []).length}"][data-k="source"]`; await saveTam(sid, { sources: [...(t.sources || []), { source: "", kind: "", geography: t.geo || "US", year: t.base_year || 2025, value_usd_m: null, cagr_pct: null, reliability: "Medium", scope: "", by: "You" }] }); render(); }
+    if (act === "deltam") { const src = [...(t.sources || [])]; src.splice(+btn.dataset.r, 1); await saveTam(sid, { sources: src }); render(); }
+    if (act === "dismissname") { await saveTam(sid, { dismissed: [...(t.dismissed || []), btn.dataset.name], suggestions: (t.suggestions || []).filter(x => norm(x.name) !== norm(btn.dataset.name)) }); render(); }
+    if (act === "addment") { try { await createStarter({ name: btn.dataset.name, why: "Mentioned in other profiles" }, sid, "Added from mentions"); rebuildIndex(); toast(`Added ${btn.dataset.name}`); } catch (err) { handleWriteError(err); } render(); }
+    if (act === "addsugg" || act === "addallsugg") {
+      const pick = (t.suggestions || []).filter(x => !findCompanyByName(x.name) && (act === "addallsugg" || x.name === btn.dataset.name));
+      let n = 0; for (const x of pick) { try { await createStarter(x, sid, "Added from TAM suggestions"); n++; rebuildIndex(); } catch (err) { handleWriteError(err); break; } }
+      toast(`Added ${n} compan${n === 1 ? "y" : "ies"}`); render();
+    }
+    return;
+  }
   if (!c) return;
   if (act === "enhance") enhance(c.id, btn.dataset.k);
   if (act === "enhanceall") enhanceAll(c.id);
@@ -1855,6 +2052,7 @@ render();
   } catch {}
   dbState = writable ? "live" : "readonly";
   db.collection("queue").limit(500).onSnapshot(snap => { queueDocs = snap.docs.map(d => ({ ...d.data(), id: d.id })); if (loaded) render(); }, () => {});
+  db.collection("tam").limit(200).onSnapshot(snap => { tams = {}; snap.docs.forEach(d => tams[d.id] = d.data()); ver++; if (loaded) render(); }, () => {});
   db.doc("meta/sectors").onSnapshot(d => { customSectors = d.exists ? (d.data().custom || []) : []; ver++; if (loaded) render(); }, () => {});
   db.doc("meta/deals").onSnapshot(d => { meta.deals = d.exists ? (d.data().deals || []) : []; ver++; if (loaded) render(); }, () => {});
   db.doc("meta/entities").onSnapshot(d => { meta.entities = d.exists ? (d.data().entities || []) : []; ver++; rebuildIndex(); if (loaded) render(); }, () => {});

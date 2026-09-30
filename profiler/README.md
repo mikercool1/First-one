@@ -26,6 +26,10 @@ In-page deep dives run on Claude's own knowledge (no web browsing). For a web-re
 - Sections depend on each other (deals inform financials, mix, customers, competitors and buyers; end markets inform financials, competitors and buyers; and so on). When a section changes, its dependents are marked out of date and "Update them" refreshes them in order.
 - Enhance all runs one section at a time in dependency order, so each step builds on the last.
 
+## Market size (TAM)
+
+Each sector has a Market size page. Sources (research firms, associations, filings, bottom-up estimates) are listed with geography, year, value, growth and reliability. The TAM is triangulated: each source is rolled forward to the base year at its growth rate, weighted by reliability (High 3, Medium 2, Low 1), and sources more than 2.5x away from the median count a quarter as much. You can type your own TAM to override it. Found TAM sums the sector revenue of companies in Profiler, giving coverage and the gap. "Names to add" lists companies that profiles mention as competitors, buyers or add-on ideas but that have no profile yet, plus Claude suggestions sized to the gap. Stored in `tam/<sector>`.
+
 ## Data
 
 The repository holds the full US Water Treatment Chemicals index (v8 workbook, built 26 Sep 2026): 558 ultimate owners as profiles, 804 add-on deals on their Acquisitions tabs, 148 outside and sponsor deals, and 281 add-on, excluded and duplicate entities for Targets. The 10 September 27 deep dives (P05A/P05B) take precedence over the workbook rows for those companies.
