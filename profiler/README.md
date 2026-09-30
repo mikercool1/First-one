@@ -35,6 +35,10 @@ Each step has its own detailed playbook (goal, what to cover, method, depth, che
 
 With the free Parallel Search connector connected in claude.ai (Settings → Connectors), a build first runs the web research itself: about five searches in parallel (identity and ownership, products and brands, M&A, size/customers/competitors) plus a read of the company's own pages. The results are saved on the profile as a research file (`dossier`, reused for 14 days; "Refresh research" re-runs it). Claude then writes the steps from that file in waves: overview, M&A and products first, then the other eight steps in two parallel calls. Each value cites its source ([S1]…), and cited sources go on the Sources tab. Without the connector, steps run on Claude's own knowledge. It all runs on your Claude plan.
 
+## Chat
+
+Every company page has a Chat button. Ask or tell it anything in plain language ("find their product brands", "did they buy anyone since 2020?", "revenue is $40M per the CIM"). It searches the web, shows what it is searching and reading as it goes, then proposes changes through a `record` tool. Code checks each change before saving: web facts must cite a page actually found in that turn, a weaker source never overwrites a stronger one, and what you tell it is saved as Verified. Each reply lists what was saved and not saved, with Undo. Conversations are kept in `chats/<company>`.
+
 ## How profiles learn
 
 - Every field carries a confidence: **Verified** (you typed it or clicked its badge), **High**, **Medium** or **Low**, with the basis. Profile strength sums this up.
