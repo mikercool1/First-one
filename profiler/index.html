@@ -1245,7 +1245,7 @@ const ERRMSG = {
 
 /* ---------- web search inside the page (Parallel Search connector) ---------- */
 const WEBSRV = "Parallel Search";
-let webOK = false, webIssue = "";
+let webOK = false, webIssue = "", sampleIssue = "";
 const WEB_RULES = `You have web tools: search_web(objective, queries) and read_pages(urls). RESEARCH BEFORE ANSWERING.
 - Start with the company's own website (product, brand, about and history pages), then filings, investor material, press releases and deal announcements, owner or sponsor portfolio pages, distributor listings and trade press.
 - You get only a handful of tool rounds, so run two or three searches at once in the first round, each with 2-3 queries (for example "<company> products", "<company> acquires", "site:<its domain> products"); search excerpts usually answer directly, so read pages only when you need a full product list.
@@ -2373,7 +2373,7 @@ function chatView() {
   const r = route(), onCo = r.view === "company" && getC(r.id) && !!db;
   if (onCo) chat.id = r.id;
   const S0 = onCo ? cst(r.id) : null;
-  chatFab.hidden = !onCo || chat.open || !sample;
+  chatFab.hidden = !onCo || chat.open;
   chatFab.textContent = S0?.busy ? "Chat · working…" : "Chat";
   chatFab.classList.toggle("live", !!S0?.busy);
   document.body.classList.toggle("chat-open", !!(onCo && chat.open));
@@ -2394,7 +2394,9 @@ function chatView() {
   chatEl.hidden = false;
   $("#chatTitle").textContent = c.name;
   $("#chatWeb").textContent = webOK ? "Web on" : "Web off"; $("#chatWeb").className = "pill " + (webOK ? "accent" : "warn");
-  $("#chatHint").textContent = webOK ? "Searches the web, shows its work, and saves what it finds to this profile. Every save can be undone." : "Web search is off (connect Parallel Search). Chat still saves what you tell it.";
+  $("#chatHint").textContent = !sample ? "Claude isn't available on this page right now. Open Profiler inside claude.ai (not a public link), signed in, and allow Claude when asked." + (sampleIssue ? " (" + sampleIssue + ")" : "")
+    : webOK ? "Searches the web, shows its work, and saves what it finds to this profile. Every save can be undone."
+    : "Web search is off" + (webIssue ? " (" + webIssue + ")" : " (connect Parallel Search in claude.ai Settings → Connectors)") + ". Chat still answers and saves what you tell it.";
   $("#chatSend").textContent = cst(c.id).busy ? "Stop" : "Send";
   chatMsgs();
 }
@@ -2473,8 +2475,11 @@ function chatTools(c, seen, msg) {
   return tools;
 }
 async function chatSend(id, text, opts = {}) {
-  const c = getC(id), S = await chatLoad(id); if (!c || !sample || S.busy) return false;
+  const c = getC(id), S = await chatLoad(id); if (!c || S.busy) return false;
+  if (!sample) { S.msgs.push({ role: "user", text, at: now() }, { role: "assistant", text: "", error: "Claude isn't available on this page right now, so I can't answer. Open Profiler inside claude.ai while signed in (not through a public link), and allow Claude when it asks." + (sampleIssue ? " [" + sampleIssue + "]" : ""), at: now() }); chatView(); return false; }
   const ctl = new AbortController(); S.busy = ctl;
+  // Watchdog: a turn that hasn't finished in 5 minutes is stopped and says so, instead of spinning.
+  const dog = setTimeout(() => { ctl.timedOut = true; ctl.abort(); }, 300000);
   const rk = opts.step ? runKey(id, opts.step) : null;
   if (rk) { runs[rk] = { ctl, msg: "Researching in chat…" }; render(); }
   S.msgs.push({ role: "user", text: text.slice(0, 4000), step: opts.step || null, at: now() });
@@ -2500,11 +2505,11 @@ async function chatSend(id, text, opts = {}) {
     msg.text = r.text;
   } catch (e) {
     if (e?.text) msg.text = e.text;
-    msg.error = e?.code === "cancelled" ? "Stopped." : (ERRMSG[e?.code] || "Something went wrong" + (e?.code ? " (" + e.code + ")" : "") + ". Try again.");
-    if (e?.code === "not_granted" || e?.code === "sampling_disabled") sample = null;
+    msg.error = ctl.timedOut ? "This took over 5 minutes, so I stopped it. Anything saved before that stays saved; try again or ask a narrower question." : e?.code === "cancelled" ? "Stopped." : ((ERRMSG[e?.code] || "Something went wrong.") + (e?.code ? " [" + e.code + (e.message ? ": " + String(e.message).slice(0, 120) : "") + "]" : "") + " Try again.");
+    if (e?.code === "not_granted" || e?.code === "sampling_disabled") { sample = null; sampleIssue = e.code; }
     ok = false;
   }
-  msg.pending = false; S.busy = null;
+  clearTimeout(dog); msg.pending = false; S.busy = null;
   if (rk) {
     delete runs[rk];
     // The step counts as built once its turn finishes, even when nothing new turned up.
@@ -2858,7 +2863,7 @@ render();
 (async () => {
   if (!window.claude?.use) { dbState = "off"; render(); return; }
   const [d, s] = await Promise.all([window.claude.use("db").catch(() => null), window.claude.use("sample").catch(() => null)]);
-  db = d; sample = s;
+  db = d; sample = s; if (!s) sampleIssue = "Claude not granted to this view";
   if (!db) { dbState = "off"; render(); return; }
   try {
     const u = await window.claude.use("user").catch(() => null);
