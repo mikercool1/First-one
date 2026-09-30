@@ -1303,8 +1303,14 @@ async function webCall(tool, input, signal) {
     } catch {}
   }
   try {
-    const r = await mcp.callTool(WEBSRV, tool, { ...input, session_id: WEB_SID, model_name: "claude" }, { signal });
+    const tctl = new AbortController(), timer = setTimeout(() => tctl.abort(), 25000);
+    signal?.addEventListener?.("abort", () => tctl.abort(), { once: true });
+    let r;
+    try { r = await mcp.callTool(WEBSRV, tool, { ...input, session_id: WEB_SID, model_name: "claude" }, { signal: tctl.signal }); }
+    catch (e) { if (e?.code === "cancelled" && !signal?.aborted) { webIssue = "search timed out"; return []; } throw e; }
+    finally { clearTimeout(timer); }
     const rs = Array.isArray(r.payload?.results) ? r.payload.results.slice(0, 10).map(x => ({ url: x.url, title: String(x.title || "").slice(0, 200), publish_date: x.publish_date || "", excerpts: [(x.excerpts || []).join("\n").slice(0, 3000)] })) : [];
+    if (webIssue === "search timed out") webIssue = "";
     if (rs.length) { webMem.set(key, rs); if (db && writable) db.doc("webcache/" + key).set({ tool, q: clip(input.search_queries || input.urls || [], 400), at: now(), results: rs }).catch(() => {}); }
     return rs;
   }
@@ -2347,7 +2353,14 @@ async function chatLoad(id) {
   if (chat.id === id) chatMsgs();
   return S;
 }
-const chatSave = id => db.doc("chats/" + id).set({ messages: clean(cst(id).msgs.slice(-40).map(m => ({ ...m, pending: false, text: String(m.text || "").slice(0, 6000) }))), updated_at: now() }).catch(() => {});
+// Saved chats stay well under the 256 KB document limit: undo is kept for the latest replies only, and the
+// oldest messages drop off first.
+function chatSave(id) {
+  const all = cst(id).msgs.slice(-40), n = all.length;
+  let msgs = all.map((m, i) => { const o = { ...m, pending: false, text: String(m.text || "").slice(0, 6000), activity: (m.activity || []).slice(-12) }; if (i < n - 6) delete o.undo; return o; });
+  while (msgs.length > 2 && JSON.stringify(msgs).length > 180000) msgs = msgs.slice(2);
+  return db.doc("chats/" + id).set({ messages: clean(msgs), updated_at: now() }).catch(e => console.warn("chat save", e));
+}
 const chatEl = $("#chat"), chatFab = $("#chatFab");
 function mdLite(t) {
   let h = esc(String(t || ""));
@@ -2434,7 +2447,7 @@ function chatTools(c, seen, msg) {
   const tools = [];
   if (webOK) tools.push(
     { name: "search_web", description: "Search the web. Returns up to 8 results with title, URL, date and excerpts that usually answer directly.", inputSchema: { type: "object", properties: { objective: { type: "string" }, queries: { type: "array", items: { type: "string" }, description: "2-3 keyword queries, 3-6 words each" } }, required: ["objective", "queries"] },
-      execute: async (i, ctx) => { const qs = [].concat(i.queries || []).map(String).filter(Boolean).slice(0, 3); act("Searching: " + (qs.join(" · ") || i.objective)); const rs = await webCall("web_search", { objective: String(i.objective || qs[0] || "").slice(0, 300), search_queries: qs.length ? qs : [String(i.objective).slice(0, 60)] }, ctx.signal); act(rs.length ? `Found ${rs.length} results${rs.cached ? " (saved earlier, no search used)" : ""}` : "No results (or the free search limit is reached)"); return clip(slim(rs), 14000); } },
+      execute: async (i, ctx) => { const qs = [].concat(i.queries || []).map(String).filter(Boolean).slice(0, 3); act("Searching: " + (qs.join(" · ") || i.objective)); const rs = await webCall("web_search", { objective: String(i.objective || qs[0] || "").slice(0, 300), search_queries: qs.length ? qs : [String(i.objective).slice(0, 60)] }, ctx.signal); act(rs.length ? `Found ${rs.length} results${rs.cached ? " (saved earlier, no search used)" : ""}` : webIssue === "search timed out" ? "Search timed out; carrying on with what we have" : "No results (or the free search limit is reached)"); return clip(slim(rs), 14000); } },
     { name: "read_pages", description: "Read up to 3 web pages and return the parts relevant to the objective.", inputSchema: { type: "object", properties: { urls: { type: "array", items: { type: "string" } }, objective: { type: "string" } }, required: ["urls"] },
       execute: async (i, ctx) => { const us = [].concat(i.urls || []).map(String).filter(u => /^https?:\/\//.test(u)).slice(0, 3); if (!us.length) throw new Error("Give full http(s) URLs."); act("Reading: " + us.map(u => domainOf(u) + u.replace(/^https?:\/\/[^/]+/, "").slice(0, 30)).join(", ")); const rs = await webCall("web_fetch", { urls: us, objective: String(i.objective || "").slice(0, 200) || null }, ctx.signal); return clip(slim(rs), 14000); } });
   tools.push({ name: "record", description: "Save changes to this company's profile. Call once per turn with every change. Returns what was saved and what was refused and why.",
@@ -2469,12 +2482,21 @@ async function chatSend(id, text, opts = {}) {
   chatView();
   if (webOK) await webSetup();
   const seen = new Set((c.dossier?.items || []).map(x => x.url));
-  const hist = S.msgs.slice(0, -2).filter(m => m.text).slice(-10).map(m => ({ role: m.role, content: m.text.slice(0, 3000) }));
+  const hist = S.msgs.slice(0, -2).filter(m => m.text).slice(opts.step ? -6 : -10).map(m => ({ role: m.role, content: m.text.slice(0, opts.step ? 1500 : 3000) }));
   while (hist.length && hist[0].role !== "user") hist.shift();
   const turn = `${CHAT_RULES}\n\n${chatContext(c)}\n\n${opts.brief ? opts.brief + "\n\n" : ""}USER: ${text}`;
   let ok = true;
   try {
-    const r = await sample([...hist, { role: "user", content: turn }], { modelTier: "default", signal: ctl.signal, tools: chatTools(c, seen, msg), onText: ({ text }) => { msg.text = text; chatMsgs(); } });
+    const run = () => sample([...hist, { role: "user", content: turn }], { modelTier: "default", signal: ctl.signal, tools: chatTools(c, seen, msg), onText: ({ text }) => { msg.text = text; chatMsgs(); } });
+    let r;
+    try { r = await run(); }
+    catch (e) {
+      // A dropped connection mid-turn: try once more. Anything already saved stays saved, and lists merge.
+      if (!["upstream_error", "unavailable", "server_unavailable", "timeout"].includes(e?.code) || ctl.signal.aborted) throw e;
+      msg.activity = [...(msg.activity || []), "Connection dropped; retrying once"]; msg.text = ""; chatMsgs();
+      await new Promise(res => setTimeout(res, 2500));
+      r = await run();
+    }
     msg.text = r.text;
   } catch (e) {
     if (e?.text) msg.text = e.text;
@@ -2589,7 +2611,7 @@ async function applyChat(id, actions, seen) {
   if (!saved.length) return { saved, rejected };
   if (patch.acquisitions) patch.acquisitions.sort((a, b) => dateKey(b.date) - dateKey(a.date));
   if (patch.products) { remember("revenue_by_product"); patch.revenue_by_product = productRollup({ ...cur, products: patch.products }); }
-  remember("history"); remember("evidence"); remember("section_meta"); remember("locked");
+  remember("section_meta"); remember("locked");
   patch.conf = conf;
   patch.history = [...hist, ...(cur.history || [])].slice(0, 200);
   if (ev.length) patch.evidence = [...ev, ...(cur.evidence || [])].slice(0, 300);
@@ -2628,7 +2650,7 @@ async function applySteps(id, acts, seen, msg) {
     if (src === "web" && !urls.length) { rejected.push(`${sec.label}: no source page found this turn`); continue; }
     const v = mergeLists(c, clean(a.value));
     if (src === "knowledge") v.confidence = Object.fromEntries(sec.fields.map(f => [f, "Low"]));
-    for (const f of [...sec.fields, "conf", "section_meta", "suggestions", "history", "evidence", "runs", "revenue_by_product", EM_FIELD, "ebitda_margin_pct", "status"]) if (!(f in before)) before[f] = c[f] === undefined ? null : clean(c[f]);
+    for (const f of [...sec.fields, "conf", "section_meta", "suggestions", "revenue_by_product", EM_FIELD, "ebitda_margin_pct", "status"]) if (!(f in before)) before[f] = c[f] === undefined ? null : clean(c[f]);
     try {
       await applyResult(id, key, v, { by: "Chat", web: urls.length > 0, sources: urls.map(u => ({ url: u, title: domainOf(u), publisher: domainOf(u), supports: sec.label })) });
       saved.push(`${sec.label} step (${src === "web" ? urls.length + " source" + (urls.length > 1 ? "s" : "") : src === "user" ? "from you" : "from memory, rated Low"})`);
