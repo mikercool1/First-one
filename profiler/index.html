@@ -201,9 +201,9 @@ td.warnc{color:var(--warn);font-weight:600}
 .ph.compact h1{font-size:44px;margin:0}
 .ph-name{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .ph.compact .sub{max-width:900px}
-.tabs{position:sticky;top:calc(env(safe-area-inset-top,0px) + 57px);z-index:15;background:var(--bg);display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:8px 0;margin:10px 0 18px;border-bottom:1px solid var(--line)}
+.tabs{position:sticky;top:calc(env(safe-area-inset-top,0px) + 57px);z-index:15;background:var(--bg);display:flex;flex-wrap:wrap;gap:6px;padding:10px 0;margin:10px 0 18px;border-bottom:1px solid var(--line)}
 .tabs::-webkit-scrollbar{display:none}
-.tabs a{flex:0 0 auto;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);white-space:nowrap;text-decoration:none;color:var(--ink-2);font-size:14px}
+.tabs a{flex:0 0 auto;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);white-space:nowrap;text-decoration:none;color:var(--ink-2);font-size:14px}
 .tabs a[aria-current="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .tabs a[aria-current="true"] .n{color:var(--bg);opacity:.7}
 .tabs a{font-weight:500}
@@ -218,10 +218,10 @@ a.xbtn:hover{border-color:var(--accent);box-shadow:0 2px 10px rgba(15,27,36,.08)
 @media (max-width:700px){
   .top{position:static}
   .top-in{gap:8px;padding-block:6px}
-  .nav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;width:100%}
-  .nav::-webkit-scrollbar{display:none}
-  .nav a{flex:0 0 auto}
-  .tabs{top:env(safe-area-inset-top,0px)}
+  .nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;width:100%}
+  .nav a{text-align:center;padding:7px 2px;font-size:13px;border:1px solid var(--line);background:var(--surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tabs{position:static;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .tabs a{text-align:center;padding:9px 6px}
 }
 /* tables become cards on phones: no sideways scrolling */
 @media (max-width:700px){
@@ -441,7 +441,7 @@ tr:hover .rowx{opacity:1}
       <a href="#precedents" data-v="precedents">Precedents</a>
       <a href="#endmarkets" data-v="endmarkets">End markets</a>
       <a href="#tam" data-v="tam">Market size</a>
-      <a href="#sponsors" data-v="sponsors">Sponsor owned</a>
+      <a href="#sponsors" data-v="sponsors">PE owned</a>
       <a href="#inmarket" data-v="inmarket">In market</a>
     </nav>
     <div class="live" id="live"><span class="dot"></span><span>Connecting</span></div>
