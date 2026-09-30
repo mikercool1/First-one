@@ -770,6 +770,13 @@ function dropped(old, patch) {
   const out = {}; for (const [k, v] of Object.entries(patch)) if (lostKeys(old?.[k], v)) out[k] = null;
   return Object.keys(out).length ? out : null;
 }
+const clean = o => JSON.parse(JSON.stringify(o));
+let lastSaveError = "";
+// One retry for transient store conditions; anything else is a real error.
+async function put(ref, data) {
+  try { await ref.update(data); }
+  catch (e) { if (e?.code !== "unavailable" && e?.code !== "resource_exhausted") throw e; await new Promise(r => setTimeout(r, 600 + Math.random() * 600)); await ref.update(data); }
+}
 async function save(id, patch, lockFields = [], quiet = false) {
   const c = companies.get(id); if (!c || !db) return;
   const locked = new Set(c.locked || []);
@@ -788,15 +795,19 @@ async function save(id, patch, lockFields = [], quiet = false) {
   try {
     // update() merges nested objects, so keys dropped from a map (a cleared "out of date" flag, a dismissed
     // suggestion, a product gone from the mix) would linger. Null those maps out first, then write them whole.
-    const clearS = dropped(c, sum), clearD = dropped(details[id] ? { ...c, ...details[id] } : c, det);
-    if (clearS) await db.doc("companies/" + id).update(clearS);
-    await db.doc("companies/" + id).update(sum);
-    if (Object.keys(det).length) {
-      try { if (clearD) await db.doc("details/" + id).update(clearD); await db.doc("details/" + id).update(det); }
-      catch (e) { if (e?.code === "not_granted" || e?.code === "revoked" || e?.code === "quota_exceeded") throw e; await db.doc("details/" + id).set({ ...(details[id] || {}), ...det }); }
+    // Details go first: a step is only marked done once its content has actually saved.
+    const S = clean(sum), D = clean(det);
+    if (Object.keys(D).length) {
+      const clearD = dropped(details[id] ? { ...c, ...details[id] } : c, D), ref = db.doc("details/" + id);
+      try { if (clearD) await put(ref, clearD); await put(ref, D); }
+      catch (e) { if (e?.code !== "invalid_argument" || details[id] && Object.keys(details[id]).length) throw e; await ref.set({ ...(details[id] || {}), ...D }); }   // no details doc yet
     }
+    const clearS = dropped(c, S), cref = db.doc("companies/" + id);
+    if (clearS) await put(cref, clearS);
+    await put(cref, S);
     if (!quiet) toast("Saved");
-  } catch (e) { handleWriteError(e); }
+    return true;
+  } catch (e) { console.warn("save failed", id, e); lastSaveError = (e?.code || "") + (e?.message ? ": " + String(e.message).slice(0, 120) : ""); handleWriteError(e); return false; }
 }
 function handleWriteError(e) {
   if (e?.code === "not_granted" || e?.code === "revoked") { writable = false; dbState = "readonly"; setLive(); toast("You can view this repository but not edit it."); render(); return; }
@@ -1195,6 +1206,7 @@ const ERRMSG = {
   invalid_json: "Claude's answer came back incomplete. Try again.",
   prompt_too_large: "This profile is too large to send. Trim your notes and try again.",
   refused: "Claude declined this request. Rephrase your facts and try again.",
+  save_failed: "Claude answered but the result didn't save. Try again; if it keeps failing, tell Claude in chat what this says.",
 };
 
 async function enhance(id, key) {
@@ -1258,14 +1270,14 @@ async function enhance(id, key) {
     patch.runs = [...(cur.runs || []), { at: now(), kind: "Enhanced: " + sec.label, summary: summary + (suggested ? ` ${suggested} suggestion${suggested > 1 ? "s" : ""} held for your overrides.` : "") + (held ? ` ${held} weaker answer${held > 1 ? "s" : ""} held as suggestions because the current value is better supported.` : "") }].slice(-60);
     if (cur.status === "empty" || cur.status === "researching") patch.status = "ready";
     delete runs[runKey(id, key)];
-    await save(id, patch, [], true);
+    if (!await save(id, patch, [], true)) throw { code: "save_failed", message: lastSaveError };
     const deps = material.length ? (DEPS[key] || []).length : 0;
     toast(`${sec.label}: ${sec.append ? (added ? `${added} new deal${added > 1 ? "s" : ""} added` : "no new deals") : changed.length ? "updated" : (suggested || held) ? "suggestion held for review" : "no change"}${deps && !quietCascade ? ` · ${deps} related section${deps > 1 ? "s" : ""} now out of date` : ""}`);
   } catch (e) {
     delete runs[runKey(id, key)];
     if (e?.code === "cancelled") { render(); return; }
     if (e?.code === "not_granted" || e?.code === "sampling_disabled") sample = null;
-    runs[runKey(id, key)] = { error: ERRMSG[e?.code] || `${sec.label} didn't finish${e?.code || e?.message ? " (" + String(e.code || e.message).slice(0, 80) + ")" : ""}. Try again.` }; console.warn("enhance", key, e);
+    runs[runKey(id, key)] = { error: ERRMSG[e?.code] ? ERRMSG[e.code] + (e.code === "save_failed" && e.message ? " (" + e.message + ")" : "") : `${sec.label} didn't finish${e?.code || e?.message ? " (" + String(e.code || e.message).slice(0, 80) + ")" : ""}. Try again.` }; console.warn("enhance", key, e);
     render();
   }
 }
