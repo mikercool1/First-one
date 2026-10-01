@@ -86,7 +86,7 @@ sheet(ws, header, rows, widths, wrap=[17 + 4 * j + 4 for j in range(len(TESTS))]
 # ---- one row per brand: its owner's DNA plus the checks the scrape can answer for the brand itself
 ws = wb.create_sheet("DNA by brand")
 header = ["Brand ID", "Brand", "Owner ID", "Owner", "Owner status", "Ownership", "Owner DNA score", "Owner DNA band", "Owner out of scope",
-          "Product category", "SKUs scraped", "Handheld share", "Fits in your hand (brand)", "Pro distributors", "Pro-channel SKU share",
+          "Segment", "Category (normalized)", "SKUs scraped", "Handheld share", "Fits in your hand (brand)", "Pro distributors", "Pro-channel SKU share",
           "Sold through pro distributors (brand)", "Consumable share", "Used up and re-bought (brand)", "Brand data points (of 40)",
           "Triage bucket", "Top competitors (ownership)"]
 rows = []
@@ -107,13 +107,13 @@ for bid, b in out_br.items():
     rv = "; ".join(f"{out_br[x]['name']} ({OWN.get(out_br[x].get('oclass'), 'Unknown')})" for x in b.get("rv", [])[:5])
     rows.append([ids["brands"].get(bid, ""), b["name"], oid if not oid.startswith("prior:") else "Not in Master", b.get("owner", ""), status,
                  OWN.get((c or b).get("oclass"), "Unknown"), c["score"] if c else None, BAND[c["band"]] if c else "Not rated",
-                 ("Y" if c["out"] else "N") if c else None, b.get("cat", ""), n,
+                 ("Y" if c["out"] else "N") if c else None, g["SEG_OF"].get(g["CATS"][b["nc"]], "Unclassified") if "nc" in b else "", g["CATS"][b["nc"]] if "nc" in b else b.get("cat", ""), n,
                  None if hand is None else round(hand, 3), RES[vh] if vh is not None else "", ndp, None if pro is None else round(pro, 3),
                  RES[vd] if vd is not None else "", None if cons is None else round(cons, 3), RES[vc] if vc is not None else "", pts,
                  TRI.get(b.get("tri"), ""), rv])
 rows.sort(key=lambda r: (-(r[6] if r[6] is not None else -1), r[1].lower()))
-sheet(ws, header, rows, [9, 26, 9, 30, 20, 11, 9, 9, 8, 26, 8, 9, 10, 9, 9, 11, 9, 10, 9, 14, 60])
-for col in "LOQ":
+sheet(ws, header, rows, [9, 26, 9, 30, 20, 11, 9, 9, 8, 18, 26, 8, 9, 10, 9, 9, 11, 9, 10, 9, 14, 60])
+for col in "MPR":
     for cell in ws[col][1:]:
         cell.number_format = "0%"
 

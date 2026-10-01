@@ -28,7 +28,7 @@ VERSION = re.search(r"v\d+", os.path.basename(SRC))
 SEEDED = f"Professional Brands Market Map {VERSION.group(0) if VERSION else ''} (1 Oct 2026)".replace("  ", " ")
 
 wb = openpyxl.load_workbook(SRC, data_only=True)
-FIRST_COL = {"Rank", "ID", "Brand ID", "Year", "#", "Product name"}
+FIRST_COL = {"Rank", "ID", "Brand ID", "Year", "#", "Product name", "Segment", "Distributor"}
 
 
 def table(name):
@@ -334,6 +334,28 @@ for p in products:
     if s(p.get("Brand")):
         prod_by_brand[s(p["Brand"])].append(p)
 
+# ---- categories (v12+): the workbook gives each brand one normalized category in a segment. A brand's SKUs often
+# span several, so each SKU's raw category is mapped to the normalized category most brands using that raw label
+# sit in; a brand then counts in every category it has product in, not only its primary one.
+comp_rows = [r for r in table("Competition") if s(r.get("Category (normalized)")) and not s(r["Category (normalized)"]).startswith("Total")] \
+    if "Competition" in wb.sheetnames else []
+SEG_OF = {s(r["Category (normalized)"]): s(r.get("Segment")) or "Unclassified" for r in comp_rows}
+brand_ncat = {s(b["Brand"]): s(b.get("Category (normalized)")) for b in brands}
+rawmap = collections.defaultdict(collections.Counter)
+for p in products:
+    nc = brand_ncat.get(s(p.get("Brand")))
+    if nc and nc != "Unclassified" and s(p.get("Product category")):
+        rawmap[s(p["Product category"]).lower()][nc] += 1
+
+
+def sku_ncat(p, fallback):
+    c = rawmap.get(s(p.get("Product category")).lower())
+    if c:
+        (top, k), tot = c.most_common(1)[0], sum(c.values())
+        if tot >= 2 and k / tot >= 0.5:
+            return top
+    return fallback or "Unclassified"
+
 REV_MIX = {"trade": ["% Industrial MRO", "% Plumbing", "% HVAC/R", "% Electrical", "% Construction & Contractor", "% Facilities & Janitorial",
                      "% Automotive & Fleet", "% Welding & Fabrication", "% Water & Wastewater"],
            "fmt": ["% Aerosol", "% Squeeze tube", "% Cartridge", "% Bottle/Liquid", "% Wipe", "% Marker/Paint stick", "% Paste/Can"]}
@@ -352,7 +374,7 @@ for oid, o in owners.items():
     if oclass == "private" and s(m.get("PE-backed")) == "Y":
         oclass = "pe"
 
-    fmt, mkt, dst, fam, brd = (collections.Counter() for _ in range(5))
+    fmt, mkt, dst, fam, brd, seg = (collections.Counter() for _ in range(6))
     hand = cons = pro = 0
     brand_rows, max_bd = [], 0
     for b in bs:
@@ -364,13 +386,15 @@ for oid, o in owners.items():
             fmt[s(p.get("Form factor")) or "Other"] += 1
             mkt[market(d)] += 1
             dst[d] += 1
-            fam[FAMILY[cat_sector(s(p.get("Product category")) or s(b.get("Primary product category")))]] += 1
+            nc = sku_ncat(p, s(b.get("Category (normalized)")))
+            fam[nc] += 1
+            seg[SEG_OF.get(nc, "Unclassified")] += 1
             brd[s(b["Brand"])] += 1
             hand += handheld(p)
             cons += consumable(p)
             pro += channel(d) != "retail"
         brand_rows.append({"name": s(b["Brand"]), "cat": s(b.get("Primary product category")), "hero": s(b.get("Known for (hero product)"), 140),
-                           "form": s(b.get("Primary form factor")), "skus": len(ps), "family": FAMILY[cat_sector(s(b.get("Primary product category")))],
+                           "form": s(b.get("Primary form factor")), "skus": len(ps), "ncat": s(b.get("Category (normalized)")),
                            "dists": [d for d, _ in bd.most_common()], "mkts": sorted({market(d) for d in bd}),
                            "verified": not b.get("_prior")})
     skus = sum(fmt.values())
@@ -391,7 +415,8 @@ for oid, o in owners.items():
         "category": s(m.get("Primary product category")) or (s(bs[0].get("Primary product category")) if bs else ""),
         "blunt": blunt, "hq": ", ".join(x for x in [s(c.get("HQ city")), s(c.get("HQ state")) or s(m.get("HQ state"))] if x),
         "web": s(c.get("Website")), "rev": r1(rev), "rev_year": s(c.get("Revenue year")), "rev_basis": s(c.get("Revenue basis / evidence"), 200),
-        "emp": r1(n(c.get("Employees (total)")), 0),
+        "emp": r1(n(c.get("Employees (total)")), 0), "emp_band": s(c.get("Employees band")), "size_basis": s(c.get("Size basis")),
+        "size_conf": s(c.get("Size confidence")), "linkedin": s(c.get("LinkedIn URL")), "li_emp": r1(n(c.get("LinkedIn employees (baseline Oct-2026)")), 0),
         "pro_rev": r1(n(c.get("Pro brand rev ($M, US)")) or n(m.get("PRO BRAND REV ($M, pro forma)"))),
         "ebitda": r1(n(c.get("EBITDA reported ($M)")) or n(m.get("PLATFORM EBITDA ($M)"))), "margin": r1(n(m.get("EBITDA margin")), 3),
         "rev_mix": {g: {k[2:]: r1(n(m.get(k)) * (100 if n(m.get(k)) <= 1 else 1)) for k in ks if n(m.get(k))} for g, ks in REV_MIX.items()
@@ -399,7 +424,7 @@ for oid, o in owners.items():
         "conf": s(m.get("Confidence")) or "Low",
         "brands": [x["name"] for x in brand_rows] or [b.strip() for b in s(m.get("Hero brands")).split(",") if b.strip()],
         "skus": skus, "acq": len(acq.get(oid, [])), "rolled": [s(x["Company"]) for x in rolled],
-        "mix": {"fmt": dict(fmt), "mkt": dict(mkt), "dist": dict(dst.most_common(15)), "fam": dict(fam), "brand": dict(brd.most_common(15))},
+        "mix": {"fmt": dict(fmt), "mkt": dict(mkt), "dist": dict(dst.most_common(15)), "cat": dict(fam), "seg": dict(seg), "brand": dict(brd.most_common(15))},
         "m": {"hand": r1(hand / skus, 3) if skus else None, "cons": r1(cons / skus, 3) if skus else None, "pro": r1(pro / skus, 3) if skus else None,
               "nd": len(dst), "ndp": nd_pro, "maxbd": max_bd,
               "broad": r1(sum(v for d, v in dst.items() if channel(d) == "broadline") / skus, 3) if skus else None},
@@ -407,7 +432,7 @@ for oid, o in owners.items():
     summary = {k: v for k, v in summary.items() if v not in ("", None, [], {})}
     out_co[cid] = summary
     out_dt[cid] = {k: v for k, v in {
-        "what": what, "profile": "\n\n".join(paras[1:]) if paras and paras[0].startswith("# ") else ptxt,
+        "what": what, "size_note": s(c.get("Size sources / note"), 600), "profile": "\n\n".join(paras[1:]) if paras and paras[0].startswith("# ") else ptxt,
         "brands": brand_rows, "acq": acq.get(oid, []),
         "evidence": [e for x in [c] + rolled for e in ev_by_co.get(s(x.get("ID")), [])][:30],
     }.items() if v not in ("", None, [])}
@@ -451,6 +476,21 @@ for p in products:
     if s(p.get("Manufacturer as listed")):
         maker[s(p.get("Brand"))][re.sub(r"[®™]", "", s(p["Manufacturer as listed"]))] += 1
 out_br, out_sku, wb_brand_id = {}, {}, {}
+
+
+def parse_competitors(txt):
+    """'Weld-On (IPS) (PE: Centerbridge Partners); Spears (Family)' -> [["Weld-On (IPS)", "PE: Centerbridge Partners"], ["Spears", "Family"]]"""
+    out = []
+    for x in (txt or "").split(";"):
+        x = x.strip()
+        if not x:
+            continue
+        if x.endswith(")") and " (" in x:
+            out.append([x[:x.rfind(" (")].strip(), x[x.rfind(" (") + 2:-1].strip()])
+        else:
+            out.append([x, ""])
+    return out
+
 # v9 added a triage pass on every brand (bucket, owner guess, owner type, confidence)
 TRIAGE = {"ACTIONABLE_CANDIDATE": "actionable", "UNKNOWN_BRAND": "unknown", "SUBSIDIARY_KNOWN": "sub_known",
           "SUBSIDIARY_PUBLIC": "sub_public", "OUT_OF_SCOPE_OTHER": "out", "NOT_CHEMICAL": "not_chem",
@@ -464,7 +504,20 @@ for b in brands:
     ps = prod_by_brand.get(name, [])
     bd = collections.Counter(s(p.get("Distributor")) for p in ps if s(p.get("Distributor")))
     fm = collections.Counter(s(p.get("Form factor")) or "Other" for p in ps)
-    rec = {"name": name, "cat": s(b.get("Primary product category")), "family": FAMILY[cat_sector(s(b.get("Primary product category")))],
+    ncat = s(b.get("Category (normalized)")) or "Unclassified"
+    cats = collections.Counter(sku_ncat(p, ncat) for p in ps)
+    rec = {"name": name, "cat": s(b.get("Primary product category")), "ncat": ncat, "seg": s(b.get("Segment")) or SEG_OF.get(ncat, "Unclassified"),
+           "cats": dict(cats.most_common()) if len(cats) > 1 else {},
+           "wc": parse_competitors(s(b.get("Top competitors - same category, ranked by distributor reach (owner type; ? = unverified)"))),
+           "wcmix": s(b.get("Competitor owner mix (top 10: PE / family+ESOP / public+public sub / other)")),
+           "price": {k: v for k, v in {"pos": s(b.get("Price position")), "idx": r1(n(b.get("Price index vs category")), 2),
+                     "ppo": r1(n(b.get("Avg $/oz - brand (main category)")), 3), "cpo": r1(n(b.get("Avg $/oz - category")), 3),
+                     "n": r1(n(b.get("# priced items (main category)")), 0)}.items() if v not in ("", None)},
+           "review": {k: v for k, v in {"site": s(b.get("Review site")), "prod": s(b.get("Most-reviewed product"), 140),
+                      "n": r1(n(b.get("# reviews (that product)")), 0), "rating": r1(n(b.get("Avg rating (that product)")), 2),
+                      "url": s(b.get("Review URL"), 300), "note": s(b.get("Review note"), 200)}.items() if v not in ("", None)},
+           "wb_owner": s(b.get("Owner / sponsor (best available)")), "wb_otype": s(b.get("Owner type (best available)")),
+           "wb_basis": s(b.get("Owner basis")),
            "hero": s(b.get("Known for (hero product)"), 160), "form": s(b.get("Primary form factor")), "fmt": dict(fm), "skus": len(ps),
            "dists": [d for d, _ in bd.most_common()], "mkts": sorted({market(d) for d in bd}), "scope": s(b.get("Scope flag")),
            "maker": [m for m, _ in maker[name].most_common(2)], "tri": TRIAGE.get(s(b.get("Triage bucket (single-source)"))),
@@ -489,6 +542,53 @@ for b in brands:
     wb_brand_id[bid] = s(b["Brand ID"])
     out_sku[bid] = [[s(p.get("Product name"), 140), s(p.get("Form factor")), s(p.get("Size / pack"), 40), s(p.get("Distributor")),
                      s(p.get("Product URL"), 300), s(p.get("Product category"), 60), s(p.get("List price ($)")), s(p.get("Mfr part #"), 40)] for p in ps]
+
+# ---- workbook competitor lists: link names to brand pages
+bid_by_name = {}
+for bid, r in out_br.items():
+    bid_by_name.setdefault(key(r["name"]) or r["name"].lower(), bid)
+for r in out_br.values():
+    for e in r.get("wc", []):
+        hit = bid_by_name.get(key(e[0]) or e[0].lower()) or bid_by_name.get(key(re.sub(r"\s*\(.*\)$", "", e[0])) or "")
+        if hit:
+            e.append(hit)
+
+
+# ---- where Claude's owner guess and the workbook's triage guess name different companies: a verification worklist
+def same_owner(a, b):
+    a, b = key(a or ""), key(b or "")
+    return bool(a and b and (a in b or b in a or a[:6] == b[:6]))
+
+
+for r in out_br.values():
+    w = r.get("wb_owner", "")
+    if r.get("status") == "guess" and r.get("src") != "triage" and r.get("wb_basis", "").startswith("Triage") and w \
+            and not re.match(r"unknown|n/a|none", w, re.I) and not same_owner(r.get("owner"), w) and not same_owner(r.get("parent"), w):
+        r["odis"] = 1
+print("owner disagreements (Claude guess vs workbook triage):", sum(1 for r in out_br.values() if r.get("odis")))
+
+# ---- prices captured from distributor sites, per brand (loaded with the brand page)
+out_q = collections.defaultdict(list)
+if "Prices" in wb.sheetnames:
+    for q in table("Prices"):
+        bid = bid_by_name.get(key(s(q.get("Brand (mapped)"))) or s(q.get("Brand (mapped)")).lower())
+        if bid:
+            out_q[bid].append([s(q.get("Product"), 140), s(q.get("Size"), 30), r1(n(q.get("Pack qty")), 0), r1(n(q.get("Price ($)")), 2),
+                               s(q.get("Price unit"), 12), r1(n(q.get("$ per oz")), 3), s(q.get("Use (Y/N)")) == "Y",
+                               s(q.get("Excluded because"), 40), s(q.get("Distributor")), s(q.get("Product URL"), 300) or s(q.get("Source page"), 300),
+                               s(q.get("Category (normalized)"))])
+
+# ---- the Competition tab: one row per normalized category
+cats_out = [{k: v for k, v in {
+    "seg": s(r.get("Segment")), "cat": s(r["Category (normalized)"]), "n": r1(n(r.get("# core brands")), 0),
+    "mix": {"pe": r1(n(r.get("PE-backed")), 0), "family": r1(n(r.get("Founder / family")), 0), "esop": r1(n(r.get("ESOP / employee")), 0),
+            "sub_private": r1(n(r.get("Sub. of private co")), 0), "public": r1(n(r.get("Public / sub. of public")), 0),
+            "other": r1(n(r.get("Unknown / house brand / other")), 0)},
+    "pct_pe": r1(n(r.get("% PE-backed")), 3), "pct_priv": r1(n(r.get("% private (PE+family+ESOP+private sub)")), 3),
+    "skus": r1(n(r.get("# SKUs (core brands)")), 0), "top": s(r.get("Top 10 brands by distributor reach in this category (owner type)")),
+    "pe_players": s(r.get("PE-backed players")), "fam_players": s(r.get("Family / ESOP players (roll-up candidates)")), "notes": s(r.get("Notes")),
+    "npriced": r1(n(r.get("# priced items")), 0), "cpo": r1(n(r.get("Avg $/oz (category)")), 3), "nrev": r1(n(r.get("# brands with reviews")), 0),
+}.items() if v not in ("", None)} for r in comp_rows]
 
 # ---- competitors: brands selling the same kind of product, by TF-IDF over product categories and SKU names,
 # nudged up when they sit on the same distributors' shelves. Brands under the same owner are left out.
@@ -576,10 +676,37 @@ where = shard({k: v for k, v in out_sku.items() if v}, "p", "skus", folder="sku"
 for bid, rec in out_br.items():
     if bid in where:
         rec["p"] = where[bid]
+# ---- compact the brand records: every brand loads at start-up, so repeated strings become indexes
+CATS = [c["cat"] for c in cats_out] + [c for c in sorted({r.get("ncat") for r in out_br.values()} | {k for r in out_br.values() for k in r.get("cats", {})})
+                                       if c and c not in {x["cat"] for x in cats_out}]
+CAT_IX = {c: i for i, c in enumerate(CATS)}
+BASIS = {"Verified": "v", "Triage guess (unverified)": "t", "Prior knowledge (unverified)": "p"}
+for r in out_br.values():
+    r["nc"] = CAT_IX[r.pop("ncat")]
+    r.pop("seg", None)
+    if r.get("cats"):
+        r["cats"] = {CAT_IX[k]: v for k, v in r["cats"].items()}
+    r["wc"] = [e[2] if len(e) > 2 else e[:2] for e in r.get("wc", [])]  # linked rivals by id; the rest by name and label
+    if not r["wc"]:
+        r.pop("wc")
+    r["rv"] = r.get("rv", [])[:8]
+    if not r["rv"]:
+        r.pop("rv")
+    b = r.pop("wb_basis", "")
+    w, wt = r.pop("wb_owner", ""), r.pop("wb_otype", "")
+    if b and b != "Verified" and w and not same_owner(r.get("owner"), w):
+        r["wb"] = [w, wt, BASIS.get(b, b)]  # the workbook's best-available owner, when it says something different
+for c in cats_out:
+    c["i"] = CAT_IX[c["cat"]]
+print("brand data KB", len(json.dumps(out_br)) // 1024)
+qwhere = shard(dict(out_q), "q", "prices", folder="sku")  # prices load with the brand page, like SKUs
+for bid, i in qwhere.items():
+    out_br[bid]["q"] = i
 nbr = len(set(shard(out_br, "br", "brands").values()))
+json.dump({"cats": cats_out, "names": CATS, "segs": {c: SEG_OF.get(c, "Unclassified") for c in CATS}, "updated_at": NOW}, open(f"{OUT}/data/cats.json", "w"), separators=(",", ":"))
 json.dump({"deals": deals_out, "updated_at": NOW}, open(f"{OUT}/data/deals.json", "w"), separators=(",", ":"))
 json.dump({"list": dist_out, "updated_at": NOW}, open(f"{OUT}/data/dists.json", "w"), separators=(",", ":"))
-json.dump({"source": SEEDED, "updated_at": NOW, "co": nco, "dt": ndt, "br": nbr, "sku": len(set(where.values()))}, open(f"{OUT}/data/index.json", "w"))
+json.dump({"source": SEEDED, "updated_at": NOW, "co": nco, "dt": ndt, "br": nbr, "sku": len(set(where.values())), "q": len(set(qwhere.values()))}, open(f"{OUT}/data/index.json", "w"))
 # the workbook's own IDs, so exports (the DNA workbook) can be joined back to the Master and Brands tabs
 json.dump({"owners": {cid: oid for oid, cid in ids.items()}, "merged": {d: ids.get(c) for d, c in dupes.items()}, "brands": wb_brand_id},
           open(f"{OUT}/ids.json", "w"), indent=0)

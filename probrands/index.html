@@ -216,6 +216,12 @@ td.rv{font-size:13px;line-height:1.5;white-space:nowrap}
 /* ---- misc ---- */
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--accent);color:var(--accent-ink);font:700 13px var(--f-mono);padding:10px 16px;z-index:50;text-transform:uppercase;letter-spacing:.06em}
 .note{border-left:4px solid var(--accent);background:var(--panel);padding:10px 14px;margin-bottom:16px;color:var(--ink-2);font-size:14px}
+.note.warn{border-left-color:var(--mid)}
+.obar{display:flex;height:12px;min-width:120px;background:var(--sunk);border:1px solid var(--line)}
+.obar i{display:block;height:100%}
+.olegend{display:flex;flex-wrap:wrap;gap:4px 14px;font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2)}
+.olegend i{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px}
+.players{margin:0;padding-left:18px}.players li{margin:3px 0}
 .skel{padding:80px 0;color:var(--ink-3);font:600 13px var(--f-mono);text-transform:uppercase;letter-spacing:.12em}
 
 /* ---- phone ---- */
@@ -250,6 +256,7 @@ td.rv{font-size:13px;line-height:1.5;white-space:nowrap}
     <nav class="nav" id="nav">
       <a href="#screen" data-v="screen">The screen<small id="nScreen"></small></a>
       <a href="#brands" data-v="brands">Brands<small id="nBrands"></small></a>
+      <a href="#cats" data-v="cats">Categories<small id="nCats"></small></a>
       <a href="#consolidators" data-v="consolidators">Consolidators</a>
       <a href="#web" data-v="web">The web</a>
       <a href="#mix" data-v="mix">SKU mix</a>
@@ -283,11 +290,13 @@ const store = { get(k, d) { try { const v = localStorage.getItem("probrands2." +
 let db = null, sample = null, writable = false, dbState = "connecting";
 const CO = new Map(), DT = new Map(), DNA = new Map(), BR = new Map(), SKU = new Map(), skuLoading = new Set();
 let brandByName = new Map();
+let CATS = [], CATNAMES = [], SEGOF = {};
+const PRICES = new Map(), priceLoading = new Set();
 let DEALS = [], DISTS = [], SRC = "", loaded = false, ver = 0;
 const OWN = [["pe", "PE"], ["family", "Family"], ["esop", "ESOP"], ["private", "Private"], ["corp", "Corporate"]];
 const ownKey = c => c.oclass === "public" || c.oclass === "sub_private" ? "corp" : c.oclass;
-const ui = { own: new Set(store.get("own", ["pe", "family"])), q: "", fam: "", mkt: "", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
-  b: { q: "", status: "", tri: "", own: "", fam: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
+const ui = { own: new Set(store.get("own", ["pe", "family"])), q: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "n", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
+  b: { q: "", status: "", tri: "", own: "", fam: "", seg: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
 
 /* ---------- DNA ---------- */
 // Seven checks. Data checks come from the SKU scrape; judgment checks come from Claude, and you can override any of them.
@@ -345,6 +354,16 @@ const inOwn = c => ui.own.has(ownKey(c));
 /* ---------- data helpers ---------- */
 const list = () => [...CO.values()];
 const visible = () => list().filter(inOwn);
+/* categories: the market map's normalized categories. A brand counts in its primary category and in any other
+   category where it has 2+ SKUs, so a category's list is as wide as what's actually on the shelf. */
+const catHref = name => "#cat." + CATNAMES.indexOf(name);
+const catLink = name => CATNAMES.includes(name) ? `<a href="${catHref(name)}">${esc(name)}</a>` : esc(name);
+const md1 = s => esc(s).replace(/https?:\/\/[^\s;]+/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]}</a>`);
+const plays = (b, cat) => b.ncat === cat || (b.allc?.[cat] || 0) >= 2;
+const segments = () => [...new Set(CATS.map(c => c.seg).concat(Object.values(SEGOF)))].filter(Boolean);
+const catsIn = seg => CATNAMES.filter(c => !seg || SEGOF[c] === seg);
+const REVB = [["", "Any revenue"], ["s", "Under $10M"], ["m", "$10–50M"], ["l", "$50–250M"], ["x", "$250M–1B"], ["xx", "Over $1B"], ["u", "Revenue not known"]];
+const revBand = c => { const r = num(c.rev); return r === null ? "u" : r < 10 ? "s" : r < 50 ? "m" : r < 250 ? "l" : r < 1000 ? "x" : "xx"; };
 function families() { const s = new Set(); for (const c of list()) for (const f of Object.keys(c.mix?.fam || {})) s.add(f); return [...s].sort(); }
 function markets() { const s = new Set(); for (const c of list()) for (const f of Object.keys(c.mix?.mkt || {})) s.add(f); return [...s].sort(); }
 const topKey = o => Object.entries(o || {}).sort((a, b) => b[1] - a[1])[0]?.[0] || "";
@@ -398,14 +417,16 @@ function route() {
   if (h.startsWith("c.")) return { v: "company", id: h.slice(2) };
   if (h.startsWith("b.")) return { v: "brand", id: h.slice(2) };
   if (h.startsWith("web")) return { v: "web", id: h.split(".")[1] || null };
-  if (["screen", "consolidators", "mix", "brands"].includes(h)) return { v: h };
+  if (h.startsWith("cat.")) return { v: "cat", id: h.slice(4) };
+  if (["screen", "consolidators", "mix", "brands", "cats"].includes(h)) return { v: h };
   return { v: "screen" };
 }
 function chrome(r) {
-  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v) ? "page" : "false"));
+  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v === "cat" ? "cats" : r.v) ? "page" : "false"));
   const counts = {}; for (const c of list()) counts[ownKey(c)] = (counts[ownKey(c)] || 0) + 1;
   $("#ownChips").innerHTML = OWN.map(([k, l]) => `<button class="chip" type="button" data-own="${k}" aria-pressed="${ui.own.has(k)}">${l}<small>${counts[k] || 0}</small></button>`).join("");
   $("#nBrands").textContent = BR.size || "";
+  $("#nCats").textContent = CATS.length || "";
   $("#nScreen").textContent = loaded ? visible().filter(c => ui.showOut || !dnaOf(c).out).length : "";
   const live = { connecting: ["", "Connecting"], live: ["on", "Live · " + CO.size + " owners"], readonly: ["on", "View only · " + CO.size + " owners"], off: ["", "Not connected"] }[dbState];
   $("#live").innerHTML = `<span class="dot ${live[0]}"></span>${esc(live[1])}`;
@@ -417,17 +438,18 @@ function chrome(r) {
 function viewScreen() {
   const q = norm(ui.q);
   const base = visible();
-  let rows = base.filter(c => (!ui.fam || topKey(c.mix?.fam) === ui.fam || (c.mix?.fam?.[ui.fam] || 0) / (c.skus || 1) >= 0.3)
+  let rows = base.filter(c => (!ui.seg || topKey(c.mix?.seg) === ui.seg || (c.mix?.seg?.[ui.seg] || 0) >= 2)
+    && (!ui.fam || topKey(c.mix?.cat) === ui.fam || (c.mix?.cat?.[ui.fam] || 0) >= 2) && (!ui.rev || revBand(c) === ui.rev)
     && (!ui.mkt || (c.mix?.mkt?.[ui.mkt] || 0) / (c.skus || 1) >= 0.25)
     && (!q || norm([c.name, ...(c.brands || []), c.sponsor, c.parent, c.category].join(" ")).includes(q)));
   const outN = rows.filter(c => dnaOf(c).out).length;
   const inScope = rows.filter(c => !dnaOf(c).out), outRows = rows.filter(c => dnaOf(c).out);
-  const key = { dna: c => dnaOf(c).score, skus: c => c.skus || 0, brands: c => (c.brands || []).length, name: c => c.name.toLowerCase(), dist: c => c.m?.ndp || 0 }[ui.sort];
+  const key = { dna: c => dnaOf(c).score, skus: c => c.skus || 0, brands: c => (c.brands || []).length, name: c => c.name.toLowerCase(), dist: c => c.m?.ndp || 0, rev: c => num(c.rev) ?? -1 }[ui.sort];
   const cmp = (a, b) => { const x = key(a), y = key(b); return (x < y ? -1 : x > y ? 1 : 0) * ui.dir || dnaOf(b).score - dnaOf(a).score; };
   inScope.sort(cmp); outRows.sort(cmp);
   const shown = inScope.slice(0, ui.limit);
   const band = b => inScope.filter(c => dnaOf(c).band === b).length;
-  const fams = families(), mkts = markets();
+  const mkts = markets();
   const sortBtn = (k, label, cls = "") => `<button type="button" class="${cls}" data-sort="${k}" ${ui.sort === k ? `aria-sort="${ui.dir < 0 ? "descending" : "ascending"}"` : ""}>${label}${ui.sort === k ? (ui.dir < 0 ? " ▼" : " ▲") : ""}</button>`;
   const row = c => {
     const d = dnaOf(c);
@@ -436,7 +458,7 @@ function viewScreen() {
       <span class="score ${d.band} num">${d.score}</span>
       ${dnaStrip(d)}
       <span class="co"><b>${esc(c.name)}${c.verified ? "" : ` <span class="unv">owner unverified</span>`}</b><small>${ownerLine(c)}</small></span>
-      <span class="hide-m mod"><span class="brs">${esc((c.brands || []).slice(0, 4).join(", "))}</span><small class="faint" style="display:block;font-size:12.5px">${esc(c.model || "Business model not mapped")}</small></span>
+      <span class="hide-m mod"><span class="brs">${esc((c.brands || []).slice(0, 4).join(", "))}</span><small class="faint" style="display:block;font-size:12.5px">${esc(c.model || "Business model not mapped")}${c.rev ? ` · ${fmtM(c.rev)} rev.` : ""}${c.emp_band || c.emp ? ` · ${esc(c.emp_band || Math.round(c.emp).toLocaleString())} staff` : ""}</small></span>
       <span class="num r">${c.skus || 0}</span>
       <span class="num r">${c.m?.ndp || 0}</span>
       <span class="num r hide-m">${pct(c.m?.hand)}</span>
@@ -455,11 +477,13 @@ function viewScreen() {
   </div>
   <div class="bar">
     <input class="search" id="q" type="search" placeholder="Search companies, brands, sponsors…" value="${esc(ui.q)}" aria-label="Search">
-    <select id="fam" aria-label="Product family"><option value="">All product families</option>${fams.map(f => `<option ${f === ui.fam ? "selected" : ""}>${esc(f)}</option>`).join("")}</select>
+    <select id="seg" aria-label="Segment"><option value="">All segments</option>${segments().map(f => `<option ${f === ui.seg ? "selected" : ""}>${esc(f)}</option>`).join("")}</select>
+    <select id="fam" aria-label="Category"><option value="">All categories</option>${catsIn(ui.seg).map(f => `<option ${f === ui.fam ? "selected" : ""}>${esc(f)}</option>`).join("")}</select>
+    <select id="rev" aria-label="Revenue">${REVB.map(([k, l]) => `<option value="${k}" ${k === ui.rev ? "selected" : ""}>${l}</option>`).join("")}</select>
     <select id="mkt" aria-label="End market"><option value="">All end markets</option>${mkts.map(f => `<option ${f === ui.mkt ? "selected" : ""}>${esc(f)}</option>`).join("")}</select>
   </div>
   <div class="rows" role="list">
-    <div class="rhead"><span></span>${sortBtn("dna", "DNA")}<span class="lbl">7 checks</span>${sortBtn("name", "Company · owner")}<span class="hide-m lbl">Brands · model</span>${sortBtn("skus", "SKUs", "r")}${sortBtn("dist", "Dist.", "r")}<span class="lbl r hide-m">Hand</span></div>
+    <div class="rhead"><span></span>${sortBtn("dna", "DNA")}<span class="lbl">7 checks</span>${sortBtn("name", "Company · owner")}<span class="hide-m">${sortBtn("rev", "Brands · model · size")}</span>${sortBtn("skus", "SKUs", "r")}${sortBtn("dist", "Dist.", "r")}<span class="lbl r hide-m">Hand</span></div>
     ${shown.map(row).join("") || `<div class="empty">Nothing matches. Widen the ownership filter or clear the search.</div>`}
     ${inScope.length > shown.length ? `<button class="more" type="button" data-act="more">Show ${Math.min(80, inScope.length - shown.length)} more of ${inScope.length - shown.length}</button>` : ""}
     ${outN ? `<div class="cut"><b>Out of scope · ${outN}</b><span class="muted">Pro brands are a small slice of these companies' sales.</span><span style="flex:1"></span><button class="tog" type="button" data-act="out" aria-pressed="${ui.showOut}">${ui.showOut ? "Hide" : "Show"} them</button></div>${ui.showOut ? outRows.map(row).join("") : ""}` : ""}
@@ -475,8 +499,9 @@ function viewCompany(id) {
   const specs = [
     ["Owner", c.otype + (c.oclass === "pe" && c.sponsor ? " · " + c.sponsor : "")], c.pe_year ? ["Entry", `${c.pe_year}${hy !== null ? ` (${hy} yr hold)` : ""}${c.pe_ev ? " · EV " + fmtM(c.pe_ev) : ""}`] : null,
     c.parent && c.oclass !== "pe" ? ["Parent", c.parent] : null, ["Model", c.model || "Not mapped"], ["Trade", c.trade], c.hq ? ["HQ", c.hq] : null,
-    c.rev ? ["Revenue", `${fmtM(c.rev)}${c.rev_year ? " (" + c.rev_year + ")" : ""}`] : null, c.emp ? ["Employees", Math.round(c.emp).toLocaleString()] : null,
-    c.pro_rev ? ["Pro brand revenue", fmtM(c.pro_rev)] : null, c.ebitda ? ["EBITDA", fmtM(c.ebitda) + (c.margin ? ` (${Math.round(c.margin * 100)}% margin)` : "")] : c.margin ? ["EBITDA margin", Math.round(c.margin * 100) + "%"] : null,
+    c.rev ? ["Revenue", `${fmtM(c.rev)}${c.rev_year ? " (" + c.rev_year + ")" : ""}${c.size_conf ? " · " + c.size_conf + " confidence" : ""}`] : null,
+    c.emp || c.emp_band ? ["Employees", `${c.emp ? Math.round(c.emp).toLocaleString() : ""}${c.emp_band && c.emp ? " · " : ""}${c.emp_band && (!c.emp || !String(c.emp_band).includes(String(Math.round(c.emp)))) ? c.emp_band + " band" : ""}${c.li_emp ? ` · ${c.li_emp} on LinkedIn` : ""}`] : null,
+    c.pro_rev ? ["Pro brand revenue", fmtM(c.pro_rev)] : null, c.ebitda ? ["EBITDA (est.)", fmtM(c.ebitda) + (c.margin ? ` · assumes ${Math.round(c.margin * 100)}% margin` : "")] : null,
   ].filter(Boolean);
   const total = c.skus || 0, mix = c.mix || {};
   const rows = o => Object.entries(o || {}).sort((a, b) => b[1] - a[1]);
@@ -501,14 +526,15 @@ function viewCompany(id) {
       ${c.judge?.pro_pct !== undefined && c.judge?.pro_pct !== null ? `<div class="test"><div class="why">Claude's rough estimate: <b>${esc(c.judge.pro_pct)}%</b> of revenue is small-format pro products. Judgment calls come from Claude's knowledge and the workbook, not new research.</div></div>` : ""}
     </section>
     <section class="panel"><header><h2>SKU mix</h2><span class="sp"></span><span class="lbl">${total} SKUs scraped · ${c.m?.nd || 0} distributors</span></header>
-      <div class="body mixes">${mixBlock("Package format", rows(mix.fmt), total)}${mixBlock("End market", rows(mix.mkt), total)}${mixBlock("Brand", rows(mix.brand), total, 7)}${mixBlock("Distributor", rows(mix.dist), total, 7)}</div>
+      <div class="body mixes">${mixBlock("Package format", rows(mix.fmt), total)}${mixBlock("End market", rows(mix.mkt), total)}${mixBlock("Category", rows(mix.cat), total, 7)}${mixBlock("Brand", rows(mix.brand), total, 7)}${mixBlock("Distributor", rows(mix.dist), total, 7)}</div>
     </section>
   </div>
   <section class="panel"><header><h2>Brands</h2><span class="sp"></span><span class="lbl">${brands.length} in the map</span></header>
     <div class="tw"><table><thead><tr><th>Brand</th><th>What it is</th><th>Hero product</th><th>Format</th><th class="r">SKUs</th><th>Who carries it</th></tr></thead><tbody>
-    ${brands.map(b => `<tr><td><b>${brandLink(b.name)}</b>${b.verified ? "" : `<br><span class="unv">owner unverified</span>`}</td><td>${esc(b.cat || b.family)}</td><td class="muted">${esc(b.hero)}</td><td>${esc(b.form)}</td><td class="r num">${b.skus}</td>
+    ${brands.map(b => `<tr><td><b>${brandLink(b.name)}</b>${b.verified ? "" : `<br><span class="unv">owner unverified</span>`}</td><td>${b.ncat ? catLink(b.ncat) : esc(b.cat || b.family || "")}</td><td class="muted">${esc(b.hero)}</td><td>${esc(b.form)}</td><td class="r num">${b.skus}</td>
       <td>${(b.dists || []).slice(0, 6).map(x => `<span class="tag">${esc(x.replace(/\s*\(.*\)$/, ""))}</span>`).join("")}${(b.dists || []).length > 6 ? `<span class="faint">+${b.dists.length - 6}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="6" class="faint">No brands linked in the map.</td></tr>`}
     </tbody></table></div></section>
+  ${dt.size_note || c.size_basis ? `<div class="note">Size: ${esc(c.size_basis || "")}${c.size_basis && dt.size_note ? ". " : ""}${md1(dt.size_note || "")}${c.linkedin ? ` · <a href="${esc(c.linkedin)}" target="_blank" rel="noopener">LinkedIn</a>` : ""}. EBITDA is revenue times the market map's assumed margin for the business model, not a reported figure.</div>` : ""}
   ${companyRivals(id)}
   ${likelyOf(id)}
   ${c.rev_mix ? `<section class="panel"><header><h2>Revenue mix</h2><span class="sp"></span><span class="lbl">From the market map</span></header><div class="body mixes">${c.rev_mix.trade ? mixBlock("By trade", rows(c.rev_mix.trade), 100) : ""}${c.rev_mix.fmt ? mixBlock("By package format", rows(c.rev_mix.fmt), 100) : ""}</div></section>` : ""}
@@ -619,7 +645,7 @@ function viewWeb(focus) {
   <div class="focus-list">${f ? `<section class="panel"><header><h2>${esc(f.c.name)}</h2><span class="sp"></span><a class="btn" href="#c.${esc(f.id)}">Open company</a><button class="btn" type="button" data-act="unfocus">Clear</button></header>
     <div class="body" style="padding-bottom:4px"><div>${ownerLine(f.c)}</div><p class="muted" style="margin:6px 0 10px">${esc((fdt.what || f.c.blunt || "").slice(0, 300))}</p></div>
     <div class="tw"><table><thead><tr><th>Brand</th><th>What it does</th><th>Hero product</th><th>Format</th><th class="r">SKUs</th><th class="r">Dist.</th></tr></thead><tbody>
-    ${(fdt.brands || []).map(b => `<tr><td><b>${brandLink(b.name)}</b></td><td>${esc(b.cat || b.family)}</td><td class="muted">${esc(b.hero)}</td><td>${esc(b.form)}</td><td class="r num">${b.skus}</td><td class="r num">${(b.dists || []).length}</td></tr>`).join("")}
+    ${(fdt.brands || []).map(b => `<tr><td><b>${brandLink(b.name)}</b></td><td>${b.ncat ? catLink(b.ncat) : esc(b.cat || b.family || "")}</td><td class="muted">${esc(b.hero)}</td><td>${esc(b.form)}</td><td class="r num">${b.skus}</td><td class="r num">${(b.dists || []).length}</td></tr>`).join("")}
     </tbody></table></div>
     ${f.r.deals.length ? `<div class="body"><div class="lbl" style="margin-bottom:6px">Acquisitions</div>${f.r.deals.map(x => `<div style="padding:4px 0;border-bottom:1px dashed var(--line)"><span class="num faint">${esc(x.date)}</span> <b>${esc(x.target)}</b> <span class="muted">${esc(x.type)}</span></div>`).join("")}</div>` : ""}
   </section>` : `<div class="note">Click a hub in the web to list its brands here.</div>`}</div>`;
@@ -647,18 +673,26 @@ function ownerCell(b) {
 }
 /* ---------- competitors: brands selling the same kind of product (matched on product categories and SKU names, nudged by shared shelves) ---------- */
 const ownBadge = b => `<span class="own ${b.oclass === "pe" ? "pe" : b.oclass === "family" ? "family" : ""}">${OCLS[b.oclass] || "Unknown"}</span>`;
-const rivalsOf = b => (b.rv || []).map(id => BR.get(id)).filter(Boolean);
+const wbRivals = b => (b.wc || []).map(e => typeof e === "string" ? BR.get(e) : { name: e[0], label: e[1], ext: true }).filter(Boolean);
+const rivalsOf = b => { const seen = new Set(), out = []; for (const x of [...wbRivals(b).filter(x => !x.ext), ...(b.rv || []).map(id => BR.get(id)).filter(Boolean)]) if (!seen.has(x.id)) { seen.add(x.id); out.push(x); } return out; };
 function ownMix(xs) {
   const m = {}; for (const x of xs) { const k = OCLS[x.oclass] || "Unknown"; m[k] = (m[k] || 0) + 1; }
   return ["PE", "Family", "ESOP", "Private", "Corporate", "Unknown"].filter(k => m[k]).map(k => `<span class="tag">${k} ${m[k]}</span>`).join("");
 }
 function rivalsPanel(b) {
-  const xs = rivalsOf(b); if (!xs.length) return "";
+  const wb = wbRivals(b), wbIds = new Set(wb.filter(x => !x.ext).map(x => x.id));
+  const shelf = (b.rv || []).map(id => BR.get(id)).filter(x => x && !wbIds.has(x.id));
+  if (!wb.length && !shelf.length) return "";
   const mine = new Set(b.dists || []);
-  return `<section class="panel"><header><h2>Competes with</h2><span class="sp"></span><span class="lbl">Matched on what's on the shelf · ${ownMix(xs)}</span></header>
-  <div class="tw"><table><thead><tr><th>Brand</th><th>Owner</th><th>What it is</th><th class="r">Shared distributors</th><th class="r">SKUs</th></tr></thead><tbody>
-  ${xs.map(x => `<tr><td><b><a href="#b.${esc(x.id)}">${esc(x.name)}</a></b></td><td>${ownerCell(x)}</td><td>${esc(x.cat || x.family || "")}${x.hero ? `<br><span class="faint">${esc(x.hero)}</span>` : ""}</td>
-    <td class="r num">${(x.dists || []).filter(d => mine.has(d)).length}</td><td class="r num">${x.skus || 0}</td></tr>`).join("")}</tbody></table></div></section>`;
+  const tr = x => x.ext ? `<tr><td><b>${esc(x.name)}</b></td><td><span class="own">${esc(x.label.replace(/\?$/, "") || "Unknown")}</span>${/\?$/.test(x.label) ? `<br><span class="st st-guess">Unverified</span>` : ""}</td><td class="faint">Not in the brand list</td><td class="r num">—</td><td class="r num">—</td></tr>`
+    : `<tr><td><b><a href="#b.${esc(x.id)}">${esc(x.name)}</a></b></td><td>${ownerCell(x)}</td><td>${catLink(x.ncat)}${x.hero ? `<br><span class="faint">${esc(x.hero)}</span>` : ""}</td>
+    <td class="r num">${(x.dists || []).filter(d => mine.has(d)).length}</td><td class="r num">${x.skus || 0}</td></tr>`;
+  const head = `<thead><tr><th>Brand</th><th>Owner</th><th>What it is</th><th class="r">Shared distributors</th><th class="r">SKUs</th></tr></thead>`;
+  const mixTxt = b.wcmix ? (([pe, fam, pub, oth]) => ` · top 10 in the category: PE ${pe}, family/ESOP ${fam}, public ${pub}, other ${oth}`)(b.wcmix.split("/").map(s => s.trim())) : "";
+  return `${wb.length ? `<section class="panel"><header><h2>Competes with</h2><span class="sp"></span><span class="lbl">Market map: ${esc(b.ncat)}, by distributor reach${esc(mixTxt)}</span></header>
+  <div class="tw"><table>${head}<tbody>${wb.map(tr).join("")}</tbody></table></div></section>` : ""}
+  ${shelf.length ? `<section class="panel"><header><h2>${wb.length ? "Also on the same shelves" : "Competes with"}</h2><span class="sp"></span><span class="lbl">Claude's match on product categories and SKU names · ${ownMix(shelf)}</span></header>
+  <div class="tw"><table>${head}<tbody>${shelf.map(tr).join("")}</tbody></table></div></section>` : ""}`;
 }
 function companyRivals(id) {
   const mine = [...BR.values()].filter(x => x.owner_id === id && x.status !== "guess");
@@ -679,11 +713,11 @@ function companyRivals(id) {
 function viewBrands() {
   const f = ui.b, q = norm(f.q);
   const all = [...BR.values()];
-  const dists = [...new Set(all.flatMap(b => b.dists || []))].sort(), fams = [...new Set(all.map(b => b.family).filter(Boolean))].sort();
+  const dists = [...new Set(all.flatMap(b => b.dists || []))].sort(), fams = catsIn(f.seg);
   const mkts = [...new Set(all.flatMap(b => b.mkts || []))].sort(), fmts = [...new Set(all.flatMap(b => Object.keys(b.fmt || {})))].sort();
-  let rows = all.filter(b => (!f.tri || b.tri === f.tri) && (!f.status || b.status === f.status) && (!f.own || OCLS[b.oclass] === f.own) && (!f.fam || b.family === f.fam)
+  let rows = all.filter(b => (!f.tri || b.tri === f.tri) && (!f.status || (f.status === "disagree" ? b.odis : b.status === f.status)) && (!f.own || OCLS[b.oclass] === f.own) && (!f.seg || b.seg === f.seg || Object.entries(b.allc || {}).some(([c, n]) => SEGOF[c] === f.seg && n >= 2)) && (!f.fam || plays(b, f.fam))
     && (!f.dist || (b.dists || []).includes(f.dist)) && (!f.mkt || (b.mkts || []).includes(f.mkt)) && (!f.fmt || (b.fmt || {})[f.fmt])
-    && (!q || norm([b.name, b.owner, b.parent, b.tri_owner, b.cat, b.hero, ...(b.maker || []), ...(b.dists || [])].join(" ")).includes(q)));
+    && (!q || norm([b.name, b.owner, b.parent, b.tri_owner, b.ncat, b.cat, b.hero, ...(b.maker || []), ...(b.dists || [])].join(" ")).includes(q)));
   const key = { skus: b => b.skus || 0, dists: b => (b.dists || []).length, name: b => b.name.toLowerCase(), owner: b => (b.owner || "~").toLowerCase() }[f.sort];
   rows.sort((a, c) => { const x = key(a), y = key(c); return (x < y ? -1 : x > y ? 1 : 0) * f.dir || (c.skus || 0) - (a.skus || 0); });
   const cnt = st => all.filter(b => b.status === st).length;
@@ -697,18 +731,44 @@ function viewBrands() {
   <div class="bar"><input class="search" id="bq" type="search" placeholder="Search brands, owners, products, makers, distributors…" value="${esc(f.q)}" aria-label="Search brands"></div>
   <div class="bar">
     <select id="btri" aria-label="Workbook triage"><option value="">Any triage bucket</option>${Object.entries(TRI).map(([k, v]) => `<option value="${k}" ${k === f.tri ? "selected" : ""}>${v} (${all.filter(b => b.tri === k).length})</option>`).join("")}</select>
-    <select id="bstatus" aria-label="Owner status"><option value="">Any owner status</option>${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === f.status ? "selected" : ""}>${v[0]}</option>`).join("")}</select>
+    <select id="bstatus" aria-label="Owner status"><option value="">Any owner status</option>${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === f.status ? "selected" : ""}>${v[0]}</option>`).join("")}<option value="disagree" ${f.status === "disagree" ? "selected" : ""}>Claude and the market map disagree (${all.filter(b => b.odis).length})</option></select>
     ${sel("bown", "Any owner type", ["PE", "Family", "ESOP", "Private", "Corporate", "Unknown"], f.own)}
-    ${sel("bfam", "All product families", fams, f.fam)}${sel("bfmt", "All formats", fmts, f.fmt)}${sel("bmkt", "All end markets", mkts, f.mkt)}${sel("bdist", "All distributors", dists, f.dist)}
+    ${sel("bseg", "All segments", segments(), f.seg)}${sel("bfam", "All categories", fams, f.fam)}${sel("bfmt", "All formats", fmts, f.fmt)}${sel("bmkt", "All end markets", mkts, f.mkt)}${sel("bdist", "All distributors", dists, f.dist)}
   </div>
   <section class="panel"><div class="tw"><table class="btable"><thead><tr><th>${sortBtn("name", "Brand")}</th><th>${sortBtn("owner", "Owner")}</th><th>What it is</th><th>Competes with</th><th>Format</th><th class="r">${sortBtn("skus", "SKUs", "r")}</th><th>${sortBtn("dists", "Who carries it")}</th></tr></thead><tbody>
     ${rows.slice(0, f.limit).map(b => `<tr class="cons-row" data-go="b.${esc(b.id)}"><td><b><a href="#b.${esc(b.id)}">${esc(b.name)}</a></b>${b.tri === "actionable" ? `<br><span class="tag tri">Actionable</span>` : ""}${b.scope && b.scope !== "Core" ? `<br><span class="tag">${esc(b.scope)}</span>` : ""}</td>
-      <td>${ownerCell(b)}</td><td>${esc(b.cat || b.family || "")}${b.hero ? `<br><span class="faint">${esc(b.hero)}</span>` : ""}</td>
+      <td>${ownerCell(b)}</td><td>${esc(b.ncat)}${b.hero ? `<br><span class="faint">${esc(b.hero)}</span>` : ""}</td>
       <td class="rv">${rivalsOf(b).slice(0, 3).map(x => `<a href="#b.${esc(x.id)}">${esc(x.name)}</a> <span class="faint">${OCLS[x.oclass] || "Unknown"}</span>`).join("<br>") || `<span class="faint">None matched</span>`}</td>
       <td>${esc(b.form || "")}</td><td class="r num">${b.skus || 0}</td>
       <td>${(b.dists || []).slice(0, 3).map(x => `<span class="tag">${esc(x.replace(/\s*\(.*\)$/, ""))}</span>`).join("")}${(b.dists || []).length > 3 ? `<span class="faint">+${b.dists.length - 3}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="7" class="empty">No brands match.</td></tr>`}
   </tbody></table></div>
   ${rows.length > f.limit ? `<button class="more" type="button" data-act="bmore">Show ${Math.min(100, rows.length - f.limit)} more of ${rows.length - f.limit}</button>` : ""}</section>`;
+}
+function loadPrices(b) {
+  if (b.q === undefined || PRICES.has(b.q) || priceLoading.has(b.q) || !db) return;
+  priceLoading.add(b.q);
+  db.doc("sku/q-" + b.q).get().then(d => { PRICES.set(b.q, d.exists ? d.data().prices || {} : {}); }).catch(() => PRICES.set(b.q, {})).finally(() => { priceLoading.delete(b.q); render(); });
+}
+function brandMarket(b) {
+  const also = Object.entries(b.allc || {}).filter(([c, n]) => c !== b.ncat && n >= 2).sort((x, y) => y[1] - x[1]);
+  const p = b.price || {}, r = b.review || {};
+  const thin = p.n !== undefined && p.n < 3;
+  const bits = [];
+  if (p.pos || p.ppo) bits.push(`<div><span class="lbl">Price vs category</span><p style="margin:4px 0 0"><b>${esc((p.pos || "").replace(/\s*\(n<3\)/, "")) || "Priced"}</b>${p.ppo ? ` · $${p.ppo.toFixed(2)}/oz` : ""}${p.cpo ? ` vs $${p.cpo.toFixed(2)}/oz for ${esc(b.ncat)}` : ""}${p.idx ? ` (${p.idx.toFixed(2)}×)` : ""}${p.n ? ` · ${p.n} priced item${p.n === 1 ? "" : "s"}` : ""}${thin ? ` <span class="st st-guess">Thin: under 3 items</span>` : ""}</p></div>`);
+  else if (p.cpo) bits.push(`<div><span class="lbl">Price vs category</span><p class="faint" style="margin:4px 0 0">Not priced yet. ${esc(b.ncat)} averages $${p.cpo.toFixed(2)}/oz.</p></div>`);
+  if (r.prod || r.n) bits.push(`<div><span class="lbl">Reviews</span><p style="margin:4px 0 0">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.prod || "Top product")}</a>` : esc(r.prod || "")}${r.rating ? ` · <b>${r.rating}★</b>` : ""}${r.n ? ` from ${r.n.toLocaleString()} review${r.n === 1 ? "" : "s"}` : ""}${r.site ? ` on ${esc(r.site)}` : ""}${r.note ? `<br><span class="faint">${esc(r.note)}</span>` : ""}</p></div>`);
+  if (also.length) bits.push(`<div><span class="lbl">Also sells in</span><p style="margin:4px 0 0">${also.map(([c, n]) => `<a class="tag" style="text-decoration:none" href="${catHref(c)}">${esc(c)} · ${n}</a>`).join("")}</p></div>`);
+  return bits.length ? `<section class="panel"><header><h2>In the market</h2><span class="sp"></span><span class="lbl">${esc(b.seg)} · ${esc(b.ncat)}</span></header><div class="body" style="display:grid;gap:14px">${bits.join("")}</div></section>` : "";
+}
+function pricesPanel(b) {
+  if (b.q === undefined) return "";
+  loadPrices(b);
+  const rows = PRICES.has(b.q) ? PRICES.get(b.q)[b.id] || [] : null;
+  if (rows && !rows.length) return "";
+  return `<section class="panel"><header><h2>Prices captured</h2><span class="sp"></span><span class="lbl">Public list prices, Oct 2026${rows ? ` · ${rows.filter(r => r[6]).length} of ${rows.length} used for $/oz` : ""}</span></header>
+  ${rows === null ? `<div class="body faint">Loading prices…</div>` : `<div class="tw"><table><thead><tr><th>Product</th><th>Size</th><th class="r">Pack</th><th class="r">Price</th><th class="r">$/oz</th><th>Distributor</th><th>Used?</th></tr></thead><tbody>
+  ${rows.map(r => `<tr><td>${r[9] ? `<a href="${esc(r[9])}" target="_blank" rel="noopener">${esc(r[0])}</a>` : esc(r[0])}</td><td class="num">${esc(r[1])}</td><td class="r num">${r[2] ?? ""}</td><td class="r num">${r[3] !== null ? "$" + r[3].toFixed(2) : ""}${r[4] && r[4] !== "each" ? ` <span class="faint">/${esc(r[4])}</span>` : ""}</td><td class="r num">${r[5] !== null ? "$" + r[5].toFixed(2) : "—"}</td><td>${esc(r[8])}</td><td class="${r[6] ? "" : "faint"}">${r[6] ? "Yes" : esc(r[7] || "No")}</td></tr>`).join("")}
+  </tbody></table></div>`}</section>`;
 }
 function loadSkus(b) {
   if (b.p === undefined || SKU.has(b.p) || skuLoading.has(b.p) || !db) return;
@@ -728,7 +788,7 @@ function viewBrand(id) {
   const chLine = chT ? `<p class="muted" style="margin:0 0 10px">Broadline MRO <b>${Math.round(ch.broadline / chT * 100)}%</b> · Trade specialty <b>${Math.round(ch.specialty / chT * 100)}%</b> · Retail-leaning <b>${Math.round(ch.retail / chT * 100)}%</b> of SKUs</p>` : "";
   return `<a class="back" href="#brands">← Brands</a>
   <section class="nameplate"><div>
-    <div><span class="lbl">${esc(b.family || "")}${b.scope ? " · " + esc(b.scope) : ""}</span></div>
+    <div><span class="lbl">${esc(b.seg)} · ${catLink(b.ncat)}${b.scope ? " · " + esc(b.scope) : ""}</span></div>
     <h1>${esc(b.name)}</h1>
     <p class="what">${esc(b.cat || "")}${b.hero ? ` · known for <b style="color:var(--ink)">${esc(b.hero)}</b>` : ""}</p>
     <div class="specs"><span>Owner <b>${b.owner ? esc(b.owner) : "Not identified"}</b></span>${b.parent ? `<span>Parent <b>${esc(b.parent)}</b></span>` : ""}${b.sponsor ? `<span>Sponsor <b>${esc(b.sponsor)}</b></span>` : ""}${b.rev ? `<span>Est. revenue <b>${fmtM(b.rev)}</b></span>` : ""}
@@ -736,17 +796,20 @@ function viewBrand(id) {
     <p class="faint" style="margin:10px 0 0;font-size:13px">${b.src === "triage" ? "The market map's triage pass named this owner; not verified" : esc(STATUS[b.status][1])}${b.note && b.src !== "triage" ? ". Claude's note: " + esc(b.note) : ""}.</p></div>
     <div class="dial">${co ? `<b class="${dnaOf(co).band}">${dnaOf(co).score}</b><span class="lbl">Owner DNA</span>` : `<b style="color:var(--ink-3)">${b.skus || 0}</b><span class="lbl">SKUs scraped</span>`}</div>
   </section>
+  ${b.wb ? `<div class="note${b.odis ? " warn" : ""}">${b.odis ? "<b>Claude and the market map disagree.</b> " : ""}The market map's best owner: <b>${esc(b.wb[0])}</b>${b.wb[1] ? " · " + esc(b.wb[1]) : ""} (${{ t: "triage guess, unverified", p: "prior knowledge, unverified", v: "verified" }[b.wb[2]] || esc(b.wb[2])}).</div>` : ""}
   ${co ? `<div class="note">Owned by <a href="#c.${esc(co.id)}"><b>${esc(co.name)}</b></a> · ${ownerLine(co)}${b.status === "guess" ? ` · <span class="st st-guess">${esc(stLabel(b))}, not verified</span>` : ""}</div>` : ""}
   <div class="grid2">
     <section class="panel"><header><h2>Where it's sold</h2><span class="sp"></span><span class="lbl">${(b.dists || []).length} distributors</span></header><div class="body">${chLine}${distRows.length ? hbars(distRows, b.skus || 0) : `<p class="faint">Not found on a scraped distributor.</p>`}
       ${(b.mkts || []).length ? `<div class="lbl" style="margin:12px 0 6px">End markets</div>${b.mkts.map(m => `<span class="tag">${esc(m)}</span>`).join("")}` : ""}</div></section>
     <section class="panel"><header><h2>Package formats</h2></header><div class="body">${mixBlock("By SKU", Object.entries(b.fmt || {}).sort((a, c) => c[1] - a[1]), b.skus || 0)}${b.hand !== undefined ? `<p class="muted" style="margin:10px 0 0">${pct(b.hand)} of SKUs are hand-sized packs.</p>` : ""}</div></section>
   </div>
+  ${brandMarket(b)}
+  ${rivalsPanel(b)}
   <section class="panel"><header><h2>Products</h2><span class="sp"></span><span class="lbl">${b.skus || 0} SKUs on distributor shelves</span></header>
     ${skus === null ? `<div class="body faint">Loading products…</div>` : `<div class="tw"><table><thead><tr><th>Product</th><th>Part #</th><th>Format</th><th>Size</th><th>Category</th><th>Distributor</th><th class="r">List $</th></tr></thead><tbody>
     ${skus.map(s => `<tr><td>${s[4] ? `<a href="${esc(s[4])}" target="_blank" rel="noopener">${esc(s[0] || "(unnamed)")}</a>` : esc(s[0] || "(unnamed)")}</td><td class="num muted">${esc(s[7] || "")}</td><td>${esc(s[1])}</td><td class="num">${esc(s[2])}</td><td class="muted">${esc(s[5])}</td><td>${esc(String(s[3]).replace(/\s*\(.*\)$/, ""))}</td><td class="r num">${esc(s[6])}</td></tr>`).join("") || `<tr><td colspan="7" class="faint">No products scraped.</td></tr>`}
     </tbody></table></div>`}</section>
-  ${rivalsPanel(b)}
+  ${pricesPanel(b)}
   ${sibs.length ? `<section class="panel"><header><h2>Same owner's other brands</h2><span class="sp"></span><span class="lbl">${sibs.length}</span></header><div class="body">${sibs.map(x => `<a class="tag" style="text-decoration:none" href="#b.${esc(x.id)}">${esc(x.name)} · ${x.skus || 0}</a>`).join("")}</div></section>` : ""}`;
 }
 function likelyOf(id) {
@@ -756,11 +819,86 @@ function likelyOf(id) {
     ${xs.map(b => `<tr><td><b><a href="#b.${esc(b.id)}">${esc(b.name)}</a></b></td><td>${esc(b.cat || "")}</td><td>${esc(b.conf || "")}</td><td class="r num">${b.skus || 0}</td></tr>`).join("")}</tbody></table></div></section>`;
 }
 
+/* ---------- view: categories (the market map's Competition tab, widened to every brand with product in the category) ---------- */
+const OMIX = [["pe", "PE", "var(--c1)"], ["family", "Family", "var(--c3)"], ["esop", "ESOP", "var(--c7)"], ["sub_private", "Sub. of private", "var(--c2)"], ["public", "Public", "var(--c5)"], ["other", "Unknown / house / other", "var(--c0)"]];
+const obar = mix => { const tot = OMIX.reduce((a, [k]) => a + (mix?.[k] || 0), 0) || 1; return `<span class="obar" title="${OMIX.map(([k, l]) => `${l} ${mix?.[k] || 0}`).join(" · ")}">${OMIX.map(([k, , c]) => mix?.[k] ? `<i style="width:${(mix[k] / tot * 100).toFixed(1)}%;background:${c}"></i>` : "").join("")}</span>`; };
+const olegend = () => `<div class="olegend">${OMIX.map(([, l, c]) => `<span><i style="background:${c}"></i>${l}</span>`).join("")}</div>`;
+const splitPlayers = s => (s || "").split(/;\s*/).map(x => x.trim()).filter(Boolean);
+function playerLine(p) {  // "Nu-Calgon: Nu-Calgon, Alki-Foam" -> owner link + brand links
+  const i = p.indexOf(": "); if (i < 0) return esc(p);
+  const owner = p.slice(0, i), brands = p.slice(i + 2).split(/,\s*/);
+  const co = [...CO.values()].find(c => norm(c.name) === norm(owner.replace(/\s*\(.*\)$/, "").replace(/\?$/, "")) || norm(c.name) === norm(owner));
+  return `${co ? `<a href="#c.${esc(co.id)}"><b>${esc(owner)}</b></a>` : `<b>${esc(owner)}</b>`}: ${brands.map(x => brandLink(x)).join(", ")}`;
+}
+let catPlay = { v: -1, m: new Map() };
+function catPlayers() {  // brands with product in each category, primary or not
+  if (catPlay.v === ver) return catPlay.m;
+  const m = new Map(CATNAMES.map(c => [c, []]));
+  for (const b of BR.values()) for (const c of Object.keys(b.allc || {})) if (plays(b, c)) (m.get(c) || m.set(c, []).get(c)).push(b);
+  return (catPlay = { v: ver, m }).m;
+}
+function viewCats() {
+  const pm = catPlayers();
+  const rows = CATS.filter(c => !ui.cseg || c.seg === ui.cseg).map(c => ({ ...c, play: (pm.get(c.cat) || []).length, fams: splitPlayers(c.fam_players).length, pes: splitPlayers(c.pe_players).length }));
+  const key = { n: c => c.n || 0, play: c => c.play, pe: c => c.pct_pe || 0, priv: c => c.pct_priv || 0, fams: c => c.fams, cpo: c => c.cpo || 0, name: c => c.cat }[ui.csort] || (c => c.n || 0);
+  rows.sort((a, b) => ui.csort === "name" ? a.cat.localeCompare(b.cat) : key(b) - key(a));
+  const segs = segments();
+  return `<div class="page-h"><div class="grow"><div class="lbl">The market map's Competition tab · ${CATS.length} categories in ${segs.length} segments</div><h1>Categories</h1>
+    <p>Who owns each product category. "Core brands" is the market map's count, by each brand's primary category. "Brands selling" is wider: every brand with 2 or more SKUs in the category, so a brand like CRC counts in lubricants and penetrants as well as cleaners. The family and ESOP owners in each category are the roll-up candidates.</p></div></div>
+  <div class="gauges"><div class="gauge"><b>${CATS.length}</b><span class="lbl">Categories</span></div><div class="gauge"><b>${segs.length}</b><span class="lbl">Segments</span></div>
+    <div class="gauge"><b>${CATS.reduce((a, c) => a + (c.n || 0), 0).toLocaleString()}</b><span class="lbl">Core brands</span></div>
+    <div class="gauge"><b>${CATS.reduce((a, c) => a + splitPlayers(c.pe_players).length, 0)}</b><span class="lbl">PE players</span></div>
+    <div class="gauge g"><b>${CATS.reduce((a, c) => a + splitPlayers(c.fam_players).length, 0)}</b><span class="lbl">Roll-up candidates</span></div></div>
+  <div class="bar"><select id="cseg" aria-label="Segment"><option value="">All segments</option>${segs.map(s => `<option ${s === ui.cseg ? "selected" : ""}>${esc(s)}</option>`).join("")}</select>
+    <select id="csort" aria-label="Sort">${[["n", "Most core brands"], ["play", "Most brands selling"], ["pe", "Most PE-backed"], ["priv", "Most privately owned"], ["fams", "Most roll-up candidates"], ["cpo", "Highest $/oz"], ["name", "Name"]].map(([k, l]) => `<option value="${k}" ${k === ui.csort ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select>
+    <span style="flex:1"></span>${olegend()}</div>
+  <section class="panel"><div class="tw"><table><thead><tr><th>Category</th><th class="r">Core brands</th><th class="r">Brands selling</th><th>Ownership of core brands</th><th class="r">PE</th><th class="r">Private</th><th>Roll-up candidates</th><th class="r">$/oz</th></tr></thead><tbody>
+  ${rows.map(c => `<tr class="cons-row" data-go="cat.${c.i}"><td><b><a href="#cat.${c.i}">${esc(c.cat)}</a></b><br><span class="faint" style="font-size:12.5px">${esc(c.seg)}</span></td><td class="r num">${c.n || 0}</td><td class="r num">${c.play}</td>
+    <td>${obar(c.mix)}</td><td class="r num">${pct(c.pct_pe)}${c.pes ? `<br><span class="faint">${c.pes} player${c.pes === 1 ? "" : "s"}</span>` : ""}</td><td class="r num">${pct(c.pct_priv)}</td>
+    <td style="font-size:13px"><b class="num">${c.fams || "—"}</b>${c.fams ? ` <span class="muted">${splitPlayers(c.fam_players).slice(0, 2).map(p => esc(p.split(": ")[0])).join(", ")}${c.fams > 2 ? "…" : ""}</span>` : ""}</td>
+    <td class="r num">${c.cpo ? "$" + c.cpo.toFixed(2) : "—"}</td></tr>`).join("")}
+  </tbody></table></div></section>`;
+}
+function viewCat(i) {
+  const c = CATS.find(x => String(x.i) === String(i)) || (CATNAMES[i] ? { cat: CATNAMES[i], seg: SEGOF[CATNAMES[i]] } : null);
+  if (!c) return `<a class="back" href="#cats">← Categories</a><div class="empty">No such category.</div>`;
+  const bs = (catPlayers().get(c.cat) || []).slice().sort((a, b) => (b.ncat === c.cat) - (a.ncat === c.cat) || (b.dists || []).length - (a.dists || []).length);
+  const owners = new Map();
+  for (const b of bs) {
+    const k = b.owner_id || (b.owner ? "n:" + norm(b.owner) : "u:" + b.id);
+    const o = owners.get(k) || owners.set(k, { x: b, brands: [], skus: 0, known: !!b.owner }).get(k);
+    o.brands.push(b); o.skus += b.allc?.[c.cat] || 0;
+  }
+  const orows = [...owners.values()].filter(o => o.known).sort((a, b) => b.brands.length - a.brands.length || b.skus - a.skus);
+  const live = {}; for (const o of orows) { const k = OCLS[o.x.oclass] || "Unknown"; live[k] = (live[k] || 0) + 1; }
+  return `<a class="back" href="#cats">← Categories</a>
+  <div class="page-h"><div class="grow"><div class="lbl">${esc(c.seg || "")}</div><h1>${esc(c.cat)}</h1>
+    <p>${bs.length} brands sell here (${c.n || 0} with it as their primary category), from ${orows.length} known owners${bs.length - bs.filter(b => b.owner).length ? ` plus ${bs.length - bs.filter(b => b.owner).length} brands with no owner identified` : ""}.</p></div></div>
+  <div class="gauges"><div class="gauge"><b>${c.n || 0}</b><span class="lbl">Core brands</span></div><div class="gauge"><b>${bs.length}</b><span class="lbl">Brands selling</span></div>
+    <div class="gauge"><b>${pct(c.pct_pe)}</b><span class="lbl">PE-backed</span></div><div class="gauge"><b>${pct(c.pct_priv)}</b><span class="lbl">Privately owned</span></div>
+    <div class="gauge"><b>${(c.skus || 0).toLocaleString()}</b><span class="lbl">SKUs (core)</span></div><div class="gauge"><b>${c.cpo ? "$" + c.cpo.toFixed(2) : "—"}</b><span class="lbl">Avg $/oz${c.npriced ? ` · ${c.npriced} priced` : ""}</span></div></div>
+  ${c.mix ? `<section class="panel"><header><h2>Who owns the core brands</h2><span class="sp"></span>${olegend()}</header><div class="body">${obar(c.mix)}</div></section>` : ""}
+  <div class="grid2">
+    <section class="panel"><header><h2>PE players</h2><span class="sp"></span><span class="lbl">${splitPlayers(c.pe_players).length}</span></header><div class="body">${splitPlayers(c.pe_players).length ? `<ul class="players">${splitPlayers(c.pe_players).map(p => `<li>${playerLine(p)}</li>`).join("")}</ul>` : `<p class="faint">None in the market map.</p>`}</div></section>
+    <section class="panel"><header><h2>Roll-up candidates</h2><span class="sp"></span><span class="lbl">Family and ESOP owners</span></header><div class="body">${splitPlayers(c.fam_players).length ? `<ul class="players">${splitPlayers(c.fam_players).map(p => `<li>${playerLine(p)}</li>`).join("")}</ul>` : `<p class="faint">None in the market map.</p>`}</div></section>
+  </div>
+  ${c.top ? `<div class="note">Top 10 by distributor reach (market map): ${esc(c.top)}</div>` : ""}
+  <section class="panel"><header><h2>Owners selling here</h2><span class="sp"></span><span class="lbl">${ownMix(orows.map(o => o.x))}</span></header>
+  <div class="tw"><table><thead><tr><th>Owner</th><th class="r">Brands here</th><th class="r">SKUs here</th><th>Brands</th></tr></thead><tbody>
+  ${orows.slice(0, 60).map(o => `<tr><td>${ownerCell(o.x)}</td><td class="r num">${o.brands.length}</td><td class="r num">${o.skus}</td><td>${o.brands.slice(0, 6).map(b => `<a href="#b.${esc(b.id)}">${esc(b.name)}</a>`).join(", ")}${o.brands.length > 6 ? ` <span class="faint">+${o.brands.length - 6}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="4" class="faint">No owners identified.</td></tr>`}
+  </tbody></table></div></section>
+  <section class="panel"><header><h2>Brands</h2><span class="sp"></span><span class="lbl">${bs.length}</span></header>
+  <div class="tw"><table><thead><tr><th>Brand</th><th>Owner</th><th>Here as</th><th class="r">SKUs here</th><th class="r">Distributors</th><th>Price</th></tr></thead><tbody>
+  ${bs.map(b => `<tr><td><b><a href="#b.${esc(b.id)}">${esc(b.name)}</a></b>${b.hero ? `<br><span class="faint">${esc(b.hero)}</span>` : ""}</td><td>${ownerCell(b)}</td><td>${b.ncat === c.cat ? "Primary" : `<span class="muted">Also sells · main: ${catLink(b.ncat)}</span>`}</td>
+    <td class="r num">${b.allc?.[c.cat] || 0}</td><td class="r num">${(b.dists || []).length}</td><td>${b.price?.pos ? esc(b.price.pos) : ""}</td></tr>`).join("")}
+  </tbody></table></div></section>`;
+}
+
 /* ---------- view: SKU mix ---------- */
 function viewMix() {
   const cos = visible().filter(c => ui.showOut || !dnaOf(c).out);
   const total = cos.reduce((a, c) => a + (c.skus || 0), 0);
-  const fmt = agg(cos, "fmt"), mkt = agg(cos, "mkt"), dist = agg(cos, "dist", 20), fam = agg(cos, "fam");
+  const fmt = agg(cos, "fmt"), mkt = agg(cos, "mkt"), dist = agg(cos, "dist", 20), fam = agg(cos, "cat"), seg = agg(cos, "seg");
   const brand = agg(cos, "brand", 25);
   const chan = { broadline: 0, specialty: 0, retail: 0 }; const dmap = new Map(DISTS.map(d => [d.name, d]));
   for (const [k, v] of agg(cos, "dist")) chan[dmap.get(k)?.channel || "specialty"] += v;
@@ -770,7 +908,8 @@ function viewMix() {
     <button class="tog" type="button" data-act="out" aria-pressed="${ui.showOut}">Include out of scope</button></div>
   <div class="gauges"><div class="gauge"><b>${total.toLocaleString()}</b><span class="lbl">SKUs</span></div><div class="gauge"><b>${cos.length}</b><span class="lbl">Owners</span></div>
     <div class="gauge"><b>${chanSum ? Math.round(chan.broadline / chanSum * 100) : 0}%</b><span class="lbl">Broadline MRO</span></div><div class="gauge"><b>${chanSum ? Math.round(chan.specialty / chanSum * 100) : 0}%</b><span class="lbl">Trade specialty</span></div><div class="gauge"><b>${chanSum ? Math.round(chan.retail / chanSum * 100) : 0}%</b><span class="lbl">Retail-leaning</span></div></div>
-  <section class="panel"><div class="body mixes">${mixBlock("Package format", fmt, total, 10)}${mixBlock("End market", mkt, total, 10)}${mixBlock("Product family", fam, total, 10)}</div></section>
+  <section class="panel"><div class="body mixes">${mixBlock("Package format", fmt, total, 10)}${mixBlock("End market", mkt, total, 10)}${mixBlock("Segment", seg, total, 10)}</div></section>
+  <section class="panel"><header><h2>Categories</h2><span class="sp"></span><span class="lbl">SKUs by the market map's normalized category · click through on the Categories page</span></header><div class="body">${hbars(fam.slice(0, 25), total)}</div></section>
   <div class="grid2">
     <section class="panel"><header><h2>Distributors</h2><span class="sp"></span><span class="lbl">Top 20 by SKUs</span></header><div class="body">${hbars(dist.map(([k, v]) => [k.replace(/\s*\(.*\)$/, ""), v]), total)}</div></section>
     <section class="panel"><header><h2>Brands</h2><span class="sp"></span><span class="lbl">Top 25 by SKUs</span></header><div class="body">${hbars(brand, total)}</div></section>
@@ -784,7 +923,7 @@ function render() {
   chrome(r);
   if (!loaded) { if (dbState === "off") app.innerHTML = `<div class="empty"><h2>Not connected</h2><p>Probrands keeps the market map in a shared database that loads when this page is opened in Claude while signed in.</p></div>`; return; }
   const y = scrollY;
-  app.innerHTML = r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
+  app.innerHTML = r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
   if (render.last === location.hash) scrollTo(0, y); else scrollTo(0, 0);
   render.last = location.hash;
   if (r.v === "web") bindWeb();
@@ -869,7 +1008,11 @@ document.addEventListener("input", e => {
 });
 document.addEventListener("change", e => {
   if (e.target.id === "fam") { ui.fam = e.target.value; render(); }
-  const bmap = { btri: "tri", bstatus: "status", bown: "own", bfam: "fam", bdist: "dist", bmkt: "mkt", bfmt: "fmt" };
+  if (e.target.id === "seg") { ui.seg = e.target.value; if (ui.fam && SEGOF[ui.fam] !== ui.seg) ui.fam = ""; render(); }
+  if (e.target.id === "rev") { ui.rev = e.target.value; render(); }
+  if (e.target.id === "cseg") { ui.cseg = e.target.value; render(); }
+  if (e.target.id === "csort") { ui.csort = e.target.value; render(); }
+  const bmap = { btri: "tri", bstatus: "status", bown: "own", bfam: "fam", bseg: "seg", bdist: "dist", bmkt: "mkt", bfmt: "fmt" };
   if (bmap[e.target.id]) { ui.b[bmap[e.target.id]] = e.target.value; ui.b.limit = 100; render(); }
   if (e.target.id === "mkt") { ui.mkt = e.target.value; render(); }
 });
@@ -911,7 +1054,12 @@ render();
       else if (x.id === "deals") DEALS = v.deals || [];
       else if (x.id === "dists") DISTS = v.list || [];
       else if (x.id === "index") SRC = v.source || "";
+      else if (x.id === "cats") { CATS = v.cats || []; CATNAMES = v.names || []; SEGOF = v.segs || {}; }
     });
+    for (const b of BR.values()) {  // categories arrive as indexes into the Competition tab's list
+      b.ncat = CATNAMES[b.nc] || "Unclassified"; b.seg = SEGOF[b.ncat] || "Unclassified";
+      b.allc = b.cats ? Object.fromEntries(Object.entries(b.cats).map(([i, n]) => [CATNAMES[i] || "Unclassified", n])) : { [b.ncat]: b.skus || 0 };
+    }
     brandByName = new Map([...BR.values()].map(b => [norm(b.name), b.id]));
     loaded = true; ver++; render();
   }, err => { dbState = "off"; render(); });
