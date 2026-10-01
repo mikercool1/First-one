@@ -17,7 +17,7 @@ Owners come from the Master tab (verified ownership, with facts from Companies, 
 Sources). Brands that only carry Claude's unverified "Likely owner (PRIOR)" join a Master owner
 when the names match, and otherwise become owners of their own with ownership marked unverified.
 """
-import collections, glob, json, os, re, sys, unicodedata
+import collections, glob, json, math, os, re, sys, unicodedata
 
 import openpyxl
 
@@ -334,6 +334,9 @@ for p in products:
     if s(p.get("Brand")):
         prod_by_brand[s(p["Brand"])].append(p)
 
+REV_MIX = {"trade": ["% Industrial MRO", "% Plumbing", "% HVAC/R", "% Electrical", "% Construction & Contractor", "% Facilities & Janitorial",
+                     "% Automotive & Fleet", "% Welding & Fabrication", "% Water & Wastewater"],
+           "fmt": ["% Aerosol", "% Squeeze tube", "% Cartridge", "% Bottle/Liquid", "% Wipe", "% Marker/Paint stick", "% Paste/Can"]}
 OWNER_CLASS = {"PE-backed": "pe", "Founder / family": "family", "Private (family)": "family", "ESOP / employee": "esop",
                "Subsidiary of private co": "sub_private", "Subsidiary of public co": "public", "Public": "public",
                "Unknown": "private", "Private": "private", "PE": "pe"}
@@ -388,7 +391,12 @@ for oid, o in owners.items():
         "category": s(m.get("Primary product category")) or (s(bs[0].get("Primary product category")) if bs else ""),
         "blunt": blunt, "hq": ", ".join(x for x in [s(c.get("HQ city")), s(c.get("HQ state")) or s(m.get("HQ state"))] if x),
         "web": s(c.get("Website")), "rev": r1(rev), "rev_year": s(c.get("Revenue year")), "rev_basis": s(c.get("Revenue basis / evidence"), 200),
-        "emp": r1(n(c.get("Employees (total)")), 0), "conf": s(m.get("Confidence")) or "Low",
+        "emp": r1(n(c.get("Employees (total)")), 0),
+        "pro_rev": r1(n(c.get("Pro brand rev ($M, US)")) or n(m.get("PRO BRAND REV ($M, pro forma)"))),
+        "ebitda": r1(n(c.get("EBITDA reported ($M)")) or n(m.get("PLATFORM EBITDA ($M)"))), "margin": r1(n(m.get("EBITDA margin")), 3),
+        "rev_mix": {g: {k[2:]: r1(n(m.get(k)) * (100 if n(m.get(k)) <= 1 else 1)) for k in ks if n(m.get(k))} for g, ks in REV_MIX.items()
+                    if any(n(m.get(k)) for k in ks)},
+        "conf": s(m.get("Confidence")) or "Low",
         "brands": [x["name"] for x in brand_rows] or [b.strip() for b in s(m.get("Hero brands")).split(",") if b.strip()],
         "skus": skus, "acq": len(acq.get(oid, [])), "rolled": [s(x["Company"]) for x in rolled],
         "mix": {"fmt": dict(fmt), "mkt": dict(mkt), "dist": dict(dst.most_common(15)), "fam": dict(fam), "brand": dict(brd.most_common(15))},
@@ -396,7 +404,7 @@ for oid, o in owners.items():
               "nd": len(dst), "ndp": nd_pro, "maxbd": max_bd,
               "broad": r1(sum(v for d, v in dst.items() if channel(d) == "broadline") / skus, 3) if skus else None},
     }
-    summary = {k: v for k, v in summary.items() if v not in ("", None, [])}
+    summary = {k: v for k, v in summary.items() if v not in ("", None, [], {})}
     out_co[cid] = summary
     out_dt[cid] = {k: v for k, v in {
         "what": what, "profile": "\n\n".join(paras[1:]) if paras and paras[0].startswith("# ") else ptxt,
@@ -460,7 +468,7 @@ for b in brands:
            "hero": s(b.get("Known for (hero product)"), 160), "form": s(b.get("Primary form factor")), "fmt": dict(fm), "skus": len(ps),
            "dists": [d for d, _ in bd.most_common()], "mkts": sorted({market(d) for d in bd}), "scope": s(b.get("Scope flag")),
            "maker": [m for m, _ in maker[name].most_common(2)], "tri": TRIAGE.get(s(b.get("Triage bucket (single-source)"))),
-           "tri_owner": s(b.get("Triage owner guess")), "tri_type": s(b.get("Triage owner type guess")), "tri_conf": s(b.get("Triage confidence")),
+           "tri_owner": s(b.get("Triage owner guess")), "tri_type": s(b.get("Triage owner type guess")), "tri_conf": s(b.get("Triage confidence")), "rev": r1(n(b.get("Est. brand rev ($M)"))),
            "hand": r1(sum(handheld(p) for p in ps) / len(ps), 2) if ps else None}
     oid, status = brand_owner.get(s(b["Brand ID"]), (None, "unknown"))
     if oid:
@@ -479,7 +487,56 @@ for b in brands:
             rec.update(status="unknown", oclass="unknown")
     out_br[bid] = {k: v for k, v in rec.items() if v not in ("", None, [], {})}
     out_sku[bid] = [[s(p.get("Product name"), 140), s(p.get("Form factor")), s(p.get("Size / pack"), 40), s(p.get("Distributor")),
-                     s(p.get("Product URL"), 300), s(p.get("Product category"), 60), s(p.get("List price ($)"))] for p in ps]
+                     s(p.get("Product URL"), 300), s(p.get("Product category"), 60), s(p.get("List price ($)")), s(p.get("Mfr part #"), 40)] for p in ps]
+
+# ---- competitors: brands selling the same kind of product, by TF-IDF over product categories and SKU names,
+# nudged up when they sit on the same distributors' shelves. Brands under the same owner are left out.
+NOISE_CAT = re.compile(r"directory|supplier|manufacturer list|not observed|catalog", re.I)
+STOP = set("and or the of for with to in a an by on oz fl gal lb lbs ml l kg g ct pk pack case each ea in. x w per qt pt pint quart gallon can "
+           "bottle tube cartridge aerosol spray black white red blue clear gray grey green yellow orange new size pc pcs".split())
+def toks(text, own):
+    w = [x[:-1] if len(x) > 4 and x.endswith("s") and not x.endswith("ss") else x for x in re.findall(r"[a-z][a-z\-]+", text.lower())]
+    w = [x for x in w if x not in STOP and x not in own and len(x) > 2]
+    return w + [a + " " + b for a, b in zip(w, w[1:])]
+vec = {}
+for bid, r in out_br.items():
+    own = set(re.findall(r"[a-z]+", r["name"].lower()))
+    tf = collections.Counter()
+    for x in toks(r.get("cat", ""), own) + toks(r.get("hero", ""), own):
+        tf[x] += 2
+    for p in prod_by_brand.get(r["name"], []):
+        c = s(p.get("Product category"))
+        if c and not NOISE_CAT.search(c):
+            for x in toks(c, own): tf[x] += 1
+        for x in toks(s(p.get("Product name")), own): tf[x] += 0.5
+    vec[bid] = tf
+df = collections.Counter(x for tf in vec.values() for x in tf)
+N = len(vec)
+idf = {x: math.log(N / d) for x, d in df.items() if 1 < d < N * 0.2}
+post = collections.defaultdict(list)
+for bid, tf in vec.items():
+    v = {x: math.log1p(c) * idf[x] for x, c in tf.items() if x in idf}
+    norm_ = math.sqrt(sum(w * w for w in v.values())) or 1
+    vec[bid] = {x: w / norm_ for x, w in v.items()}
+    for x, w in vec[bid].items(): post[x].append((bid, w))
+def owner_of(r):
+    return r.get("owner_id") or key(r.get("owner") or "") or None
+for bid, r in out_br.items():
+    sim = collections.Counter()
+    for x, w in vec[bid].items():
+        for o, w2 in post[x]: sim[o] += w * w2
+    mine, dset = owner_of(r), set(r.get("dists", []))
+    scored = []
+    for o, cs in sim.items():
+        if o == bid or cs < 0.12 or (mine and owner_of(out_br[o]) == mine):
+            continue
+        od = set(out_br[o].get("dists", []))
+        jac = len(dset & od) / len(dset | od) if dset | od else 0
+        scored.append((cs * (1 + 0.6 * jac), o))
+    scored.sort(reverse=True)
+    if scored:
+        r["rv"] = [o for _, o in scored[:10]]
+print("competitors: brands with rivals", sum(1 for r in out_br.values() if r.get("rv")), "of", len(out_br))
 
 # ---- judgments (Claude's read on the tests the data can't answer), merged when present
 JF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "judgments.json")

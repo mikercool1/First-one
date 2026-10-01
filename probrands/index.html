@@ -163,6 +163,7 @@ tr:last-child td{border-bottom:0}
 td.r,th.r{text-align:right}
 td b{font-weight:700}
 .tag{display:inline-block;font:600 10px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;padding:1px 5px;border:1px solid var(--line-2);color:var(--ink-2);margin:1px 3px 1px 0;white-space:nowrap}
+td.rv{font-size:13px;line-height:1.5;white-space:nowrap}
 .tag.tri{border-color:var(--good);color:var(--good)}
 .mixes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px}
 .mix h3{margin-bottom:8px}
@@ -475,6 +476,7 @@ function viewCompany(id) {
     ["Owner", c.otype + (c.oclass === "pe" && c.sponsor ? " · " + c.sponsor : "")], c.pe_year ? ["Entry", `${c.pe_year}${hy !== null ? ` (${hy} yr hold)` : ""}${c.pe_ev ? " · EV " + fmtM(c.pe_ev) : ""}`] : null,
     c.parent && c.oclass !== "pe" ? ["Parent", c.parent] : null, ["Model", c.model || "Not mapped"], ["Trade", c.trade], c.hq ? ["HQ", c.hq] : null,
     c.rev ? ["Revenue", `${fmtM(c.rev)}${c.rev_year ? " (" + c.rev_year + ")" : ""}`] : null, c.emp ? ["Employees", Math.round(c.emp).toLocaleString()] : null,
+    c.pro_rev ? ["Pro brand revenue", fmtM(c.pro_rev)] : null, c.ebitda ? ["EBITDA", fmtM(c.ebitda) + (c.margin ? ` (${Math.round(c.margin * 100)}% margin)` : "")] : c.margin ? ["EBITDA margin", Math.round(c.margin * 100) + "%"] : null,
   ].filter(Boolean);
   const total = c.skus || 0, mix = c.mix || {};
   const rows = o => Object.entries(o || {}).sort((a, b) => b[1] - a[1]);
@@ -507,7 +509,9 @@ function viewCompany(id) {
     ${brands.map(b => `<tr><td><b>${brandLink(b.name)}</b>${b.verified ? "" : `<br><span class="unv">owner unverified</span>`}</td><td>${esc(b.cat || b.family)}</td><td class="muted">${esc(b.hero)}</td><td>${esc(b.form)}</td><td class="r num">${b.skus}</td>
       <td>${(b.dists || []).slice(0, 6).map(x => `<span class="tag">${esc(x.replace(/\s*\(.*\)$/, ""))}</span>`).join("")}${(b.dists || []).length > 6 ? `<span class="faint">+${b.dists.length - 6}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="6" class="faint">No brands linked in the map.</td></tr>`}
     </tbody></table></div></section>
+  ${companyRivals(id)}
   ${likelyOf(id)}
+  ${c.rev_mix ? `<section class="panel"><header><h2>Revenue mix</h2><span class="sp"></span><span class="lbl">From the market map</span></header><div class="body mixes">${c.rev_mix.trade ? mixBlock("By trade", rows(c.rev_mix.trade), 100) : ""}${c.rev_mix.fmt ? mixBlock("By package format", rows(c.rev_mix.fmt), 100) : ""}</div></section>` : ""}
   ${deals.length ? `<section class="panel"><header><h2>Deals</h2></header><div class="tw"><table><thead><tr><th>Year</th><th>Buyer</th><th>Target</th><th>Type</th><th class="r">Value</th></tr></thead><tbody>
     ${deals.map(x => `<tr><td class="num">${esc(x.date || "")}</td><td>${x.acq_id && x.acq_id !== id && CO.has(x.acq_id) ? `<a href="#c.${esc(x.acq_id)}">${esc(x.acquirer)}</a>` : esc(x.acquirer)}</td><td><b>${esc(x.target)}</b>${x.brands ? `<br><span class="faint">${esc(x.brands)}</span>` : ""}</td><td class="muted">${esc(x.type)}</td><td class="r num">${x.value ? fmtM(x.value) : "—"}</td></tr>`).join("")}
   </tbody></table></div></section>` : ""}
@@ -641,6 +645,37 @@ function ownerCell(b) {
   const st = b.status === "verified" ? "" : `<br><span class="st st-${b.status}">${esc(stLabel(b))}${b.conf ? " · " + esc(b.conf) : ""}</span>`;
   return `${badge}${name}${b.parent && b.parent !== b.owner ? `<span class="faint"> · ${esc(b.parent)}</span>` : ""}${st}`;
 }
+/* ---------- competitors: brands selling the same kind of product (matched on product categories and SKU names, nudged by shared shelves) ---------- */
+const ownBadge = b => `<span class="own ${b.oclass === "pe" ? "pe" : b.oclass === "family" ? "family" : ""}">${OCLS[b.oclass] || "Unknown"}</span>`;
+const rivalsOf = b => (b.rv || []).map(id => BR.get(id)).filter(Boolean);
+function ownMix(xs) {
+  const m = {}; for (const x of xs) { const k = OCLS[x.oclass] || "Unknown"; m[k] = (m[k] || 0) + 1; }
+  return ["PE", "Family", "ESOP", "Private", "Corporate", "Unknown"].filter(k => m[k]).map(k => `<span class="tag">${k} ${m[k]}</span>`).join("");
+}
+function rivalsPanel(b) {
+  const xs = rivalsOf(b); if (!xs.length) return "";
+  const mine = new Set(b.dists || []);
+  return `<section class="panel"><header><h2>Competes with</h2><span class="sp"></span><span class="lbl">Matched on what's on the shelf · ${ownMix(xs)}</span></header>
+  <div class="tw"><table><thead><tr><th>Brand</th><th>Owner</th><th>What it is</th><th class="r">Shared distributors</th><th class="r">SKUs</th></tr></thead><tbody>
+  ${xs.map(x => `<tr><td><b><a href="#b.${esc(x.id)}">${esc(x.name)}</a></b></td><td>${ownerCell(x)}</td><td>${esc(x.cat || x.family || "")}${x.hero ? `<br><span class="faint">${esc(x.hero)}</span>` : ""}</td>
+    <td class="r num">${(x.dists || []).filter(d => mine.has(d)).length}</td><td class="r num">${x.skus || 0}</td></tr>`).join("")}</tbody></table></div></section>`;
+}
+function companyRivals(id) {
+  const mine = [...BR.values()].filter(x => x.owner_id === id && x.status !== "guess");
+  const agg = new Map();
+  for (const b of mine) for (const x of rivalsOf(b)) {
+    if (!x.owner || x.owner_id === id) continue;
+    const k = x.owner_id || "n:" + norm(x.owner);
+    const a = agg.get(k) || agg.set(k, { x, meet: new Set(), theirs: new Set() }).get(k);
+    a.meet.add(b.name); a.theirs.add(x.name);
+  }
+  const rows = [...agg.values()].sort((a, c) => c.meet.size - a.meet.size || c.theirs.size - a.theirs.size).slice(0, 15);
+  if (!rows.length) return "";
+  return `<section class="panel"><header><h2>Who it competes with</h2><span class="sp"></span><span class="lbl">Owners of rival brands · ${ownMix(rows.map(r => r.x))}</span></header>
+  <div class="tw"><table><thead><tr><th>Rival owner</th><th>Their brands</th><th>Against our</th></tr></thead><tbody>
+  ${rows.map(r => `<tr><td>${ownerCell(r.x)}</td><td>${[...r.theirs].slice(0, 5).map(n => brandLink(n)).join(", ")}</td><td class="muted">${[...r.meet].slice(0, 5).map(esc).join(", ")}${r.meet.size > 5 ? ` +${r.meet.size - 5}` : ""}</td></tr>`).join("")}
+  </tbody></table></div></section>`;
+}
 function viewBrands() {
   const f = ui.b, q = norm(f.q);
   const all = [...BR.values()];
@@ -666,10 +701,12 @@ function viewBrands() {
     ${sel("bown", "Any owner type", ["PE", "Family", "ESOP", "Private", "Corporate", "Unknown"], f.own)}
     ${sel("bfam", "All product families", fams, f.fam)}${sel("bfmt", "All formats", fmts, f.fmt)}${sel("bmkt", "All end markets", mkts, f.mkt)}${sel("bdist", "All distributors", dists, f.dist)}
   </div>
-  <section class="panel"><div class="tw"><table class="btable"><thead><tr><th>${sortBtn("name", "Brand")}</th><th>${sortBtn("owner", "Owner")}</th><th>What it is</th><th>Format</th><th class="r">${sortBtn("skus", "SKUs", "r")}</th><th>${sortBtn("dists", "Who carries it")}</th></tr></thead><tbody>
+  <section class="panel"><div class="tw"><table class="btable"><thead><tr><th>${sortBtn("name", "Brand")}</th><th>${sortBtn("owner", "Owner")}</th><th>What it is</th><th>Competes with</th><th>Format</th><th class="r">${sortBtn("skus", "SKUs", "r")}</th><th>${sortBtn("dists", "Who carries it")}</th></tr></thead><tbody>
     ${rows.slice(0, f.limit).map(b => `<tr class="cons-row" data-go="b.${esc(b.id)}"><td><b><a href="#b.${esc(b.id)}">${esc(b.name)}</a></b>${b.tri === "actionable" ? `<br><span class="tag tri">Actionable</span>` : ""}${b.scope && b.scope !== "Core" ? `<br><span class="tag">${esc(b.scope)}</span>` : ""}</td>
-      <td>${ownerCell(b)}</td><td>${esc(b.cat || b.family || "")}${b.hero ? `<br><span class="faint">${esc(b.hero)}</span>` : ""}</td><td>${esc(b.form || "")}</td><td class="r num">${b.skus || 0}</td>
-      <td>${(b.dists || []).slice(0, 3).map(x => `<span class="tag">${esc(x.replace(/\s*\(.*\)$/, ""))}</span>`).join("")}${(b.dists || []).length > 3 ? `<span class="faint">+${b.dists.length - 3}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="6" class="empty">No brands match.</td></tr>`}
+      <td>${ownerCell(b)}</td><td>${esc(b.cat || b.family || "")}${b.hero ? `<br><span class="faint">${esc(b.hero)}</span>` : ""}</td>
+      <td class="rv">${rivalsOf(b).slice(0, 3).map(x => `<a href="#b.${esc(x.id)}">${esc(x.name)}</a> <span class="faint">${OCLS[x.oclass] || "Unknown"}</span>`).join("<br>") || `<span class="faint">None matched</span>`}</td>
+      <td>${esc(b.form || "")}</td><td class="r num">${b.skus || 0}</td>
+      <td>${(b.dists || []).slice(0, 3).map(x => `<span class="tag">${esc(x.replace(/\s*\(.*\)$/, ""))}</span>`).join("")}${(b.dists || []).length > 3 ? `<span class="faint">+${b.dists.length - 3}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="7" class="empty">No brands match.</td></tr>`}
   </tbody></table></div>
   ${rows.length > f.limit ? `<button class="more" type="button" data-act="bmore">Show ${Math.min(100, rows.length - f.limit)} more of ${rows.length - f.limit}</button>` : ""}</section>`;
 }
@@ -694,7 +731,7 @@ function viewBrand(id) {
     <div><span class="lbl">${esc(b.family || "")}${b.scope ? " · " + esc(b.scope) : ""}</span></div>
     <h1>${esc(b.name)}</h1>
     <p class="what">${esc(b.cat || "")}${b.hero ? ` · known for <b style="color:var(--ink)">${esc(b.hero)}</b>` : ""}</p>
-    <div class="specs"><span>Owner <b>${b.owner ? esc(b.owner) : "Not identified"}</b></span>${b.parent ? `<span>Parent <b>${esc(b.parent)}</b></span>` : ""}${b.sponsor ? `<span>Sponsor <b>${esc(b.sponsor)}</b></span>` : ""}
+    <div class="specs"><span>Owner <b>${b.owner ? esc(b.owner) : "Not identified"}</b></span>${b.parent ? `<span>Parent <b>${esc(b.parent)}</b></span>` : ""}${b.sponsor ? `<span>Sponsor <b>${esc(b.sponsor)}</b></span>` : ""}${b.rev ? `<span>Est. revenue <b>${fmtM(b.rev)}</b></span>` : ""}
       <span>Status <b>${esc(stLabel(b))}${b.conf ? " · " + esc(b.conf) + " confidence" : ""}</b></span>${b.tri ? `<span>Workbook triage <b>${esc(TRI[b.tri] || b.tri)}${b.tri_owner && norm(b.tri_owner) !== norm(b.owner) ? " · guesses " + esc(b.tri_owner) : ""}${b.tri_conf ? " · " + esc(b.tri_conf) : ""}</b></span>` : ""}${(b.maker || []).length ? `<span>Maker on listings <b>${esc(b.maker.join(", "))}</b></span>` : ""}</div>
     <p class="faint" style="margin:10px 0 0;font-size:13px">${b.src === "triage" ? "The market map's triage pass named this owner; not verified" : esc(STATUS[b.status][1])}${b.note && b.src !== "triage" ? ". Claude's note: " + esc(b.note) : ""}.</p></div>
     <div class="dial">${co ? `<b class="${dnaOf(co).band}">${dnaOf(co).score}</b><span class="lbl">Owner DNA</span>` : `<b style="color:var(--ink-3)">${b.skus || 0}</b><span class="lbl">SKUs scraped</span>`}</div>
@@ -706,9 +743,10 @@ function viewBrand(id) {
     <section class="panel"><header><h2>Package formats</h2></header><div class="body">${mixBlock("By SKU", Object.entries(b.fmt || {}).sort((a, c) => c[1] - a[1]), b.skus || 0)}${b.hand !== undefined ? `<p class="muted" style="margin:10px 0 0">${pct(b.hand)} of SKUs are hand-sized packs.</p>` : ""}</div></section>
   </div>
   <section class="panel"><header><h2>Products</h2><span class="sp"></span><span class="lbl">${b.skus || 0} SKUs on distributor shelves</span></header>
-    ${skus === null ? `<div class="body faint">Loading products…</div>` : `<div class="tw"><table><thead><tr><th>Product</th><th>Format</th><th>Size</th><th>Category</th><th>Distributor</th><th class="r">List $</th></tr></thead><tbody>
-    ${skus.map(s => `<tr><td>${s[4] ? `<a href="${esc(s[4])}" target="_blank" rel="noopener">${esc(s[0] || "(unnamed)")}</a>` : esc(s[0] || "(unnamed)")}</td><td>${esc(s[1])}</td><td class="num">${esc(s[2])}</td><td class="muted">${esc(s[5])}</td><td>${esc(String(s[3]).replace(/\s*\(.*\)$/, ""))}</td><td class="r num">${esc(s[6])}</td></tr>`).join("") || `<tr><td colspan="6" class="faint">No products scraped.</td></tr>`}
+    ${skus === null ? `<div class="body faint">Loading products…</div>` : `<div class="tw"><table><thead><tr><th>Product</th><th>Part #</th><th>Format</th><th>Size</th><th>Category</th><th>Distributor</th><th class="r">List $</th></tr></thead><tbody>
+    ${skus.map(s => `<tr><td>${s[4] ? `<a href="${esc(s[4])}" target="_blank" rel="noopener">${esc(s[0] || "(unnamed)")}</a>` : esc(s[0] || "(unnamed)")}</td><td class="num muted">${esc(s[7] || "")}</td><td>${esc(s[1])}</td><td class="num">${esc(s[2])}</td><td class="muted">${esc(s[5])}</td><td>${esc(String(s[3]).replace(/\s*\(.*\)$/, ""))}</td><td class="r num">${esc(s[6])}</td></tr>`).join("") || `<tr><td colspan="7" class="faint">No products scraped.</td></tr>`}
     </tbody></table></div>`}</section>
+  ${rivalsPanel(b)}
   ${sibs.length ? `<section class="panel"><header><h2>Same owner's other brands</h2><span class="sp"></span><span class="lbl">${sibs.length}</span></header><div class="body">${sibs.map(x => `<a class="tag" style="text-decoration:none" href="#b.${esc(x.id)}">${esc(x.name)} · ${x.skus || 0}</a>`).join("")}</div></section>` : ""}`;
 }
 function likelyOf(id) {
