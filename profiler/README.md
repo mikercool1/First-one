@@ -93,3 +93,12 @@ Cross-links (`cross` on a company: `[{sector, why, conf}]`) put a company into s
 ## Private equity
 
 `#pe` is a directory of every PE firm, across all verticals: firms that own a company in Home Base (lead sponsor or co-investor, parsed from `pe_sponsor`), firms named as sponsor buyers in the deal book, and firms saved in `sponsors/<slug>`. Firm names are normalised so spellings like "Bain Capital" and "Bain Capital Private Equity" share one page. Each firm's page (`#s.<slug>`) shows portfolio by vertical and group (with a jump into each industry), likely exits (4+ year holds), campaign and in-market names, deals by the firm and its platforms in every vertical, firm details, and a relationship panel (last contact with red/yellow/green, lead, next step, notes). Saving a PE-owned company creates its firm's record automatically. Each industry's "PE owned" tab still shows only that vertical and links here.
+
+### Sponsor lens (worked example: Bain Capital)
+
+A firm page has tabs: Overview, Funds, Portfolio, Exit pipeline, Deal team, Add-on ideas, Activity, Firm & relationship (`#s.<slug>.<tab>`). It reads `sponsors/<slug>`:
+- `funds[]`: name, strategy, region, vintage, size, target, final close, status, platforms attributed, `deployed_pct_est` + basis, `dry_powder_usd_bn_est`, sources. Sizes and closes are sourced; deployment and dry powder are estimates.
+- `fundraising`: last final close, fund in market now, next flagship (estimate).
+- `portfolio[]`: every current holding with sector, subsector, year, region, ownership status, publicly named people, the fund it was most likely bought from (inferred from region and year unless sourced) and `hb_id`, the Home Base company it links to.
+- `exits[]`, `pending[]`.
+Each holding is also a Home Base company (`sponsor_stakes` carries fund, year, people), so it shows in its industry pages. The exit pipeline scores hold length, fund age, listed stakes, signed sales and in-market flags. Add-on ideas list smaller Home Base companies in the same sectors as each holding.
