@@ -57,6 +57,13 @@ body.mod-pe .top{border-bottom-color:color-mix(in srgb,var(--accent) 40%,var(--l
 .sptl{overflow:hidden}.sptl-row{display:flex;align-items:center;height:24px}.sptl-l{width:190px;flex:0 0 190px;font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sptl-t{position:relative;flex:1;height:12px}.sptl-t b{position:absolute;height:12px;border-radius:6px;background:var(--accent-soft);border:1px solid var(--accent)}.sptl-t b.hv{background:var(--ink-3);border-color:var(--ink-3)}.sptl-t b.fr{background:var(--accent)}
 .spvint{display:flex;align-items:flex-end;gap:6px;height:170px;padding:14px 14px 8px}.spv{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px}.spv span{display:block;width:70%;background:var(--accent);border-radius:4px 4px 0 0;min-height:1px}.spv b{font-weight:600;margin-top:3px}.spv small{color:var(--ink-3)}
 table.heat td{min-width:70px}
+.pgrid.sppies{grid-template-columns:repeat(3,minmax(0,1fr))}
+.sppies .pie-body{flex-direction:column;align-items:stretch}.sppies .pie svg{align-self:center;width:150px;height:150px;flex-basis:150px}.sppies .legend{display:block;columns:2;column-gap:16px}.sppies .legend li{break-inside:avoid}
+@media (max-width:900px){.pgrid.sppies{grid-template-columns:1fr}}
+.pie path.sl.on{stroke:var(--ink);stroke-width:2.5}
+.pie .legend li.on{font-weight:700}
+.pie .legend li[data-pk]:hover,.pie path[data-pk]:hover{opacity:.8}
+.spdrill{margin-top:12px;border-color:var(--accent)}
 .sptabs td small{display:block;color:var(--ink-3);font-size:12px;font-weight:400;margin-top:2px}
 @media (max-width:600px){.sptl-ax{margin-left:110px}.sptl-l{width:110px;flex-basis:110px}}
 table.pet td{vertical-align:middle}
@@ -1066,10 +1073,11 @@ const SLOTS = 8;
 function donut(id, title, items, opts = {}) {
   let rows = items.filter(i => (num(i.value) ?? num(i.pct) ?? 0) > 0);
   const key = rows.some(r => num(r.value) !== null) && !opts.pctOnly ? "value" : "pct";
-  rows = rows.map(r => ({ ...r, w: num(r[key]) || 0 })).sort((a, b) => b.w - a.w);
-  if (rows.length > SLOTS) {
-    const keep = rows.slice(0, SLOTS - 1), rest = rows.slice(SLOTS - 1);
-    keep.push({ label: `Other (${rest.length})`, w: rest.reduce((s, r) => s + r.w, 0), value: rest.reduce((s, r) => s + (num(r.value) || 0), 0), other: true });
+  rows = rows.map(r => ({ ...r, w: num(r[key]) || 0 })).sort((a, b) => opts.order ? opts.order(a, b) : b.w - a.w);
+  const SL = opts.slots || SLOTS;
+  if (rows.length > SL) {
+    const keep = rows.slice(0, SL - 1), rest = rows.slice(SL - 1);
+    keep.push({ label: `Other (${rest.length})`, w: rest.reduce((s, r) => s + r.w, 0), value: rest.reduce((s, r) => s + (num(r.value) || 0), 0), other: true, keys: rest.map(r => r.key ?? r.label) });
     rows = keep;
   }
   const total = rows.reduce((s, r) => s + r.w, 0);
@@ -1079,20 +1087,22 @@ function donut(id, title, items, opts = {}) {
   let a0 = -Math.PI / 2, paths = "";
   rows.forEach((r, i) => {
     const frac = r.w / total, a1 = a0 + frac * Math.PI * 2;
-    const col = r.other ? "var(--s0)" : `var(--s${i + 1})`;
+    const col = r.other ? "var(--s0)" : i < SLOTS ? `var(--s${i + 1})` : `color-mix(in srgb,var(--s${(i % SLOTS) + 1}) 50%,var(--surface))`;
     const pctTxt = (frac * 100).toFixed(frac < .1 ? 1 : 0) + "%";
-    const tipTxt = `${r.label}: ${pctTxt}${num(r.value) !== null && key === "value" ? " · " + fmtM(r.value) : (opts.rev ? " · " + fmtM(frac * opts.rev) : "")}`;
+    const pk = opts.pick ? ` data-pk="${esc(id)}" data-pkv="${esc(r.other ? "__other__:" + JSON.stringify(r.keys) : (r.key ?? r.label))}" style="cursor:pointer"` : "";
+    const on = opts.picked !== undefined && opts.picked === (r.other ? "__other__:" + JSON.stringify(r.keys) : (r.key ?? r.label));
+    const tipTxt = opts.count ? `${r.label}: ${r.value} (${pctTxt})` : `${r.label}: ${pctTxt}${num(r.value) !== null && key === "value" ? " · " + fmtM(r.value) : (opts.rev ? " · " + fmtM(frac * opts.rev) : "")}`;
     if (frac >= 0.9999) {
-      paths += `<circle cx="${C}" cy="${C}" r="${(R + r0) / 2}" fill="none" stroke="${col}" stroke-width="${R - r0}" data-tip="${esc(tipTxt)}" data-li="${id}-${i}"></circle>`;
+      paths += `<circle cx="${C}" cy="${C}" r="${(R + r0) / 2}" fill="none" stroke="${col}" stroke-width="${R - r0}" data-tip="${esc(tipTxt)}" data-li="${id}-${i}"${pk}></circle>`;
     } else {
       const p = (a, rad) => [C + rad * Math.cos(a), C + rad * Math.sin(a)].map(n => n.toFixed(2)).join(" ");
       const large = a1 - a0 > Math.PI ? 1 : 0;
-      paths += `<path class="sl" d="M ${p(a0, R)} A ${R} ${R} 0 ${large} 1 ${p(a1, R)} L ${p(a1, r0)} A ${r0} ${r0} 0 ${large} 0 ${p(a0, r0)} Z" fill="${col}" stroke="var(--surface)" stroke-width="2" stroke-linejoin="round" data-tip="${esc(tipTxt)}" data-li="${id}-${i}"></path>`;
+      paths += `<path class="sl" d="M ${p(a0, R)} A ${R} ${R} 0 ${large} 1 ${p(a1, R)} L ${p(a1, r0)} A ${r0} ${r0} 0 ${large} 0 ${p(a0, r0)} Z" fill="${col}" stroke="var(--surface)" stroke-width="2" stroke-linejoin="round" data-tip="${esc(tipTxt)}" data-li="${id}-${i}"${pk}${on ? ' class="sl on"' : ""}></path>`;
     }
-    r.pctTxt = pctTxt; r.col = col; a0 = a1;
+    r.pctTxt = pctTxt; r.col = col; r.pk = pk; r.on = on; a0 = a1;
   });
   const center = opts.center ? `<text x="${C}" y="${C - 2}" text-anchor="middle" font-family="var(--f-mono)" font-size="15" font-weight="500" fill="var(--ink)">${esc(opts.center)}</text><text x="${C}" y="${C + 14}" text-anchor="middle" font-size="9" letter-spacing="1" fill="var(--ink-3)">${esc(opts.centerSub || "")}</text>` : "";
-  const legend = rows.map((r, i) => `<li id="${id}-${i}" data-tip="${esc(r.label)}"><span class="sw" style="background:${r.col}"></span><span class="lb">${esc(r.label)}</span><span class="pv">${r.pctTxt}</span></li>`).join("");
+  const legend = rows.map((r, i) => `<li id="${id}-${i}" data-tip="${esc(r.label)}"${r.pk || ""}${r.on ? ' class="on"' : ""}><span class="sw" style="background:${r.col}"></span><span class="lb">${esc(r.label)}</span><span class="pv">${opts.count ? r.value : r.pctTxt}</span></li>`).join("");
   return `<div class="panel pie"><h3>${esc(title)} ${lock}</h3><div class="pie-body"><svg viewBox="0 0 132 132" role="img" aria-label="${esc(title)} breakdown">${paths}${center}</svg><ul class="legend">${legend}</ul></div></div>`;
 }
 
@@ -3033,6 +3043,26 @@ function viewSponsor(id) {
   </div>${tabs}`;
   return head + `<div class="sptabs">` + spTab(tab, { slug, doc, name, H, funds, deals, cand, coLink, W, yr }) + `</div>`;
 }
+// Holdings by fund, vintage and industry. Click a slice (or its legend row) to list the companies in it.
+const SP_DIMS = [["fund", "By fund", h => (h.fund_name || "Fund not attributed").replace(/^Bain Capital /, "")], ["year", "By vintage year", h => String(h.year || "Not known")], ["industry", "By industry", h => h.hbGroup ? (verticalById(h.hbGroup.split("/")[0])?.name || h.hbGroup) : (h.sector || "Not mapped")]];
+function spPies(slug, H) {
+  if (!H.length) return "";
+  const pick = ui.spPick && ui.spPick.slug === slug ? ui.spPick : null;
+  const pies = SP_DIMS.map(([dim, title, fn]) => {
+    const m = new Map(); for (const h of H) { const k = fn(h); m.set(k, (m.get(k) || 0) + 1); }
+    const items = [...m].map(([k, n]) => ({ label: k, key: k, value: n }));
+    return donut("spp-" + dim, title, items, { pick: true, count: true, slots: dim === "year" ? 16 : 10, order: dim === "year" ? (a, b) => String(b.label).localeCompare(String(a.label)) : undefined, picked: pick && pick.dim === dim ? pick.key : undefined, center: String(H.length), centerSub: "HOLDINGS" });
+  }).join("");
+  let drill = "";
+  if (pick) {
+    const fn = SP_DIMS.find(d => d[0] === pick.dim)[2], keys = pick.key.startsWith("__other__:") ? JSON.parse(pick.key.slice(10)) : [pick.key];
+    const hs = H.filter(h => keys.includes(fn(h))).sort((a, b) => (b.year || 0) - (a.year || 0));
+    const label = keys.length > 1 ? `Other (${keys.join(", ")})` : keys[0];
+    drill = `<div class="panel spdrill"><div class="sec-h" style="margin:0 0 8px"><h2 style="margin:0">${esc(label)}</h2><span class="faint" style="font-size:12px">${hs.length} holding${hs.length === 1 ? "" : "s"} · ${esc(SP_DIMS.find(d => d[0] === pick.dim)[1].toLowerCase())}</span><span class="sp"></span><button class="btn sm ghost" data-act="sppickclear">Close</button></div>
+    <div class="tw sptabs"><table><thead><tr><th>Company</th><th class="r k">Year</th><th class="r">Hold</th><th>Fund</th><th>Industry</th><th>People</th></tr></thead><tbody>${hs.map(h => `<tr${h.c ? ` data-open="${esc(h.c.id)}" class="link"` : ""}><td>${h.c ? `<a href="#c.${esc(h.c.id)}"><b>${esc(h.company)}</b></a>` : `<b>${esc(h.company)}</b>`}<small>${esc(h.subsector || h.what || "")}</small></td><td class="r num">${h.year || "—"}</td><td class="r num ${h.hold >= 5 ? "warnc" : ""}">${h.hold ?? "—"}</td><td class="muted">${esc((h.fund_name || "—").replace(/^Bain Capital /, ""))}</td><td class="muted">${esc(h.hbGroup ? groupByKey(h.hbGroup)?.name || "" : h.sector || "")}</td><td>${esc(h.people || "")}</td></tr>`).join("")}</tbody></table></div></div>`;
+  }
+  return `<div class="sec"><div class="sec-h"><h2>Current holdings</h2><span class="faint" style="font-size:12px">Click a slice to see the companies in it</span></div><div class="pgrid sppies">${pies}</div>${drill}</div>`;
+}
 function spBar(pct, cls = "") { const p = Math.max(0, Math.min(100, pct || 0)); return `<span class="spbar ${cls}" title="${p}%"><span style="width:${p}%"></span></span>`; }
 function spFundTable(funds) {
   return `<div class="tw"><table><thead><tr><th>Fund</th><th>Strategy</th><th class="r">Vintage</th><th class="r k">Size</th><th>Final close</th><th>Status</th><th class="r">Platforms</th><th class="k">Deployed (est.)</th><th class="r">Dry powder (est.)</th></tr></thead><tbody>${funds.map(f => `<tr><td><b>${esc(f.name)}</b>${f.note ? `<small>${esc(f.note)}</small>` : ""}</td><td class="muted">${esc(f.strategy || "")}<small>${esc(f.region || "")}</small></td><td class="r num">${esc(f.vintage || "")}</td><td class="r num">${fmtBn(f.size_usd_bn)}${f.size_local ? `<small>${esc(f.size_local)}</small>` : ""}${num(f.target_usd_bn) ? `<small>target ${fmtBn(f.target_usd_bn)}</small>` : ""}</td><td class="num">${esc(f.final_close || "—")}</td><td><span class="pill ${/fundrais/i.test(f.status) ? "accent" : /early|^investing$/i.test(f.status) ? "" : ""}">${esc(f.status || "")}</span></td><td class="r num">${f.platforms_attributed ?? ""}</td><td title="${esc(f.deployed_basis || "")}">${f.deployed_pct_est != null ? `${spBar(f.deployed_pct_est, f.deployed_pct_est >= 80 ? "hi" : "")} <span class="num">${f.deployed_pct_est}%</span>` : "—"}</td><td class="r num">${f.dry_powder_usd_bn_est != null ? "~" + fmtBn(f.dry_powder_usd_bn_est) : "—"}</td></tr>`).join("")}</tbody></table></div>`;
@@ -3051,7 +3081,7 @@ function spTab(tab, x) {
   const candRow = ({ h, why }) => `<tr><td>${coLink(h)}<small>${esc(h.subsector || "")}</small></td><td class="num">${h.year || "—"}</td><td class="muted">${esc(h.fund_name ? h.fund_name.replace(/^Bain Capital /, "") : "—")}</td><td>${why.map(w => `<span class="pill">${esc(w)}</span>`).join(" ")}</td><td class="muted">${esc(h.people || "")}</td></tr>`;
   if (tab === "overview") {
     const recent = H.filter(h => h.year >= yr - 1).sort((a, b) => b.year - a.year);
-    return `${clock}
+    return `${spPies(slug, H)}${clock}
     ${funds.length ? `<div class="sec"><div class="sec-h"><h2>Funds</h2><a class="btn sm ghost" href="#s.${esc(slug)}.funds">All funds</a></div>${spFundTable(funds.filter(f => !/harvest|late life/i.test(f.status)))}</div>` : ""}
     <div class="sec"><div class="sec-h"><h2>Where they own in Home Base</h2><span class="faint" style="font-size:12px">Click to open that industry</span></div>${where || `<p class="faint">No holdings mapped.</p>`}</div>
     <div class="hgrid" style="margin:10px 0 24px">
@@ -4031,6 +4061,7 @@ app.addEventListener("click", async e => {
   if (psTh) { const k = psTh.dataset.psort; if (ui.psort === k) ui.pdir *= -1; else { ui.psort = k; ui.pdir = ["target", "acquirer"].includes(k) ? 1 : -1; } render(); return; }
   const cf = t.closest("[data-ctwf]"); if (cf) { ui.ctwFilter = cf.dataset.ctwf; render(); return; }
   const cr = t.closest("table.cmp tr"); if (cr && cr.parentElement.tagName === "TBODY" && !cr.dataset.open && !cr.dataset.href && !t.closest("a,button,input,select") && matchMedia("(max-width:700px)").matches) { cr.classList.toggle("open"); return; }
+  const pkEl = t.closest("[data-pk]"); if (pkEl && pkEl.dataset.pk.startsWith("spp-") && route().view === "sponsor") { const dim = pkEl.dataset.pk.slice(4), key = pkEl.dataset.pkv, slug = route().id; ui.spPick = ui.spPick && ui.spPick.slug === slug && ui.spPick.dim === dim && ui.spPick.key === key ? null : { slug, dim, key }; render(); setTimeout(() => document.querySelector(".spdrill")?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50); return; }
   const pf = t.closest("[data-pef]"); if (pf) { ui.pef = pf.dataset.pef; render(); return; }
   const hr = t.closest("tr[data-href]"); if (hr && !t.closest("a")) { location.hash = hr.dataset.href.slice(1); return; }
   const ts = t.closest("[data-tsel]"); if (ts) { ui.tsel = ts.dataset.tsel; render(); return; }
@@ -4045,6 +4076,7 @@ app.addEventListener("click", async e => {
   if (act === "ctwlogrow") { await logContact(btn.dataset.id); return; }
   if (act === "demodel") { const ds = list().filter(x => x.demo); if (!confirm(`Delete all ${ds.length} demo companies? Real companies are not touched.`)) return; for (const x of ds) { await deleteCompany(x.id); db.doc("chats/" + x.id).delete().catch(() => {}); } toast(`Removed ${ds.length} demo companies`); render(); return; }
   if (act === "newdeal") { const id = "deal-" + Date.now().toString(36); await saveDeal(id, { target: "New deal", status: "Closed", origin: ["added by hand"], edited: true, ws: groupByKey(WS) ? WS : DEFAULT_WS }); location.hash = "d." + id; return; }
+  if (act === "sppickclear") { ui.spPick = null; render(); return; }
   if (act === "splogrow") { const k = btn.dataset.slug, d = sponsorDocs.get(k) || {}; try { await db.doc("sponsors/" + k).set(clean({ ...d, name: d.name || knownSponsors().get(k) || k, last_contact: todayISO(), updated_at: now() })); toast("Logged a call with " + (d.name || k)); } catch (err) { handleWriteError(err); } return; }
   if (r.view === "sponsor" && act === "spresearch") { researchSponsor(r.id); return; }
   if (r.view === "sponsor" && act === "splog") { const k = r.id, d = sponsorDocs.get(k) || {}; try { await db.doc("sponsors/" + k).set(clean({ ...d, name: d.name || knownSponsors().get(k) || k, last_contact: todayISO(), updated_at: now() })); toast("Logged contact today"); } catch (err) { handleWriteError(err); } return; }
