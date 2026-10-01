@@ -79,3 +79,11 @@ To rebuild the import from a new workbook version: `python3 profiler/import/buil
 - `index.html`: the app (single file, published as a claude.ai artifact).
 - `import/build_import.py`: converts the workbook into database documents.
 - `seed/*.json`: the 10 profiles imported from the WTC deep-dive batches P05A and P05B. Customers, competitors and buyers on these were added from the deep-dive text.
+
+## Verticals
+
+Companies sit in a vertical, then a group, then a sector: Industrials › Chemicals › Water treatment. Industrials also has Distribution, Aerospace & defense, Building products, Water & flow control, Industrial technology, Diversified / capital goods, Transportation & automotive, Industrial services and Packaging. Healthcare, Consumer & retail, Technology, Business services, Financial services and Energy & power each have their own groups and sectors.
+
+You work inside one vertical at a time. The button next to the Home Base name shows where you are; click it to switch. The choice is remembered in your browser, so the app reopens where you left it (Chemicals by default). Every page (home, companies, deals, sponsors, in market, campaign, market size) shows only that vertical. Pick "All industrials" to work across every industrial group; the sector menu then lists each group.
+
+A company's group comes from its `group` field, or else from its primary sector; everything that existed before verticals is Chemicals. Move a company with the Vertical menu on its Peers tab. Deals follow the companies they link to; a deal added by hand is tagged with the vertical you are in (`ws`). Search also finds companies in other verticals and labels them.

@@ -41,6 +41,28 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 .top-in{max-width:1180px;margin:0 auto;padding-inline:16px;display:flex;align-items:center;gap:20px;min-height:56px;flex-wrap:wrap}
 .brand{font:400 26px/1 var(--f-display);letter-spacing:-.01em;display:flex;align-items:baseline;gap:8px;text-decoration:none;color:var(--ink)}
 .brand small{font:500 10px/1 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.wsw{position:relative;margin-left:-8px}
+.top:has(.wsmenu:not([hidden])){z-index:60}
+.wsbtn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:5px 26px 5px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);cursor:pointer;position:relative;font:inherit;text-align:left}
+.wsbtn:hover{border-color:var(--ink-3)}
+.wsbtn small{font:500 9px/1 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.wsbtn b{font-size:13px;line-height:1.1;font-weight:600;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wsbtn span{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--ink-3)}
+.wsmenu{position:absolute;left:0;top:calc(100% + 6px);z-index:40;width:min(680px,calc(100vw - 32px));max-height:min(70vh,640px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.18);padding:14px}
+.wsmenu .wsh{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0 2px 10px}
+.wsmenu .wsh b{font-size:15px}
+.wsmenu .wsh span{font-size:12px;color:var(--ink-3)}
+.wsv{border-top:1px solid var(--line);padding:10px 2px}
+.wsv:first-of-type{border-top:0}
+.wsv h3{margin:0 0 8px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.wsv .wsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px}
+.wsv button{font:inherit;text-align:left;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);cursor:pointer;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.wsv button:hover{border-color:var(--ink-3)}
+.wsv button small{color:var(--ink-3);font-size:11px}
+.wsv button[aria-current="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.wsv button[aria-current="true"] small{color:inherit;opacity:.7}
+.wsv h3 button{padding:3px 8px;font-size:11px;letter-spacing:0;text-transform:none}
+@media (max-width:600px){.wsw{margin-left:0}.wsmenu{position:fixed;left:16px;right:16px;top:64px;width:auto}}
 .nav{display:flex;gap:2px;flex-wrap:wrap}
 .nav a{padding:7px 12px;border-radius:999px;color:var(--ink-2);text-decoration:none;font-weight:500}
 .nav a:hover{color:var(--ink);background:var(--sunk)}
@@ -219,6 +241,7 @@ a.xbtn:hover{border-color:var(--accent);box-shadow:0 2px 10px rgba(15,27,36,.08)
 @media (max-width:900px){.grid3{grid-template-columns:1fr}.ph.compact h1{font-size:34px}}
 @media (max-width:700px){
   .top{position:static}
+  .top:has(.wsmenu:not([hidden])){position:relative}
   .top-in{gap:8px;padding-block:6px}
   .nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;width:100%}
   .nav a{text-align:center;padding:7px 2px;font-size:13px;border:1px solid var(--line);background:var(--surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -513,7 +536,8 @@ tr:hover .rowx{opacity:1}
 
 <header class="top">
   <div class="top-in">
-    <a class="brand" href="#home">Home Base <small>Chemicals repository</small></a>
+    <a class="brand" href="#home">Home Base</a>
+    <div class="wsw"><button class="wsbtn" id="wsbtn" type="button" aria-haspopup="true" aria-expanded="false" title="Switch vertical"><small id="wsv">Industrials</small><b id="wsg">Chemicals</b><span aria-hidden="true">▾</span></button><div class="wsmenu" id="wsmenu" hidden></div></div>
     <label class="secsel"><span class="sr">Sector</span><select id="secsel" aria-label="Sector"></select></label>
     <nav class="nav" id="nav">
       <a href="#home" data-v="home">Home</a>
@@ -633,6 +657,16 @@ const OTHER_SECTORS = VERTICALS.flatMap(v => v.groups.flatMap(g => g.sectors || 
 const allSectors = () => [...BASE_SECTORS, ...OTHER_SECTORS, ...customSectors.map(x => ({ ...x, g: x.g || DEFAULT_WS }))];
 // Sectors of the workspace you are in.
 const wsSectors = () => allSectors().filter(x => wsHas(WS, x.g));
+// Sector ids of one company's group, for prompts.
+const groupSectorIds = c => allSectors().filter(x => x.g === groupOf(c)).map(x => `${x.id} (${x.name})`).join(", ");
+// Default sector for a new company in this workspace.
+const defSector = () => (ui.sector && !ui.sector.startsWith("grp:") ? ui.sector : null) || (WS === DEFAULT_WS ? "specialty" : wsSectors()[0]?.id || "specialty");
+// <option>s for a sector picker, grouped when they span several groups.
+function sectorOptions(secs, sel) {
+  const by = new Map(); for (const x of secs) { if (!by.has(x.g)) by.set(x.g, []); by.get(x.g).push(x); }
+  const opt = x => `<option value="${esc(x.id)}" ${x.id === sel ? "selected" : ""} title="${esc(x.name)}">${esc(x.short)}</option>`;
+  return by.size < 2 ? secs.map(opt).join("") : [...by].map(([g, xs]) => `<optgroup label="${esc(groupByKey(g)?.name || g)}">${xs.map(opt).join("")}</optgroup>`).join("");
+}
 const sectorById = id => allSectors().find(s => s.id === id) || (id ? { id, name: id.replace(/-/g, " "), short: id.replace(/-/g, " ") } : null);
 function sectorFromName(n) {
   const k = norm(n); if (!k) return null;
@@ -721,8 +755,13 @@ let loaded = false, dbState = "connecting", writable = true;
 const runs = {};                       // id -> {phase, ctl, error}
 const ui = { ac: -1, acOpen: false, sort: "secrev", dir: -1, q: "", scope: "", otype: "", emTax: "broad", tq: "", tsel: null, pq: "", psort: "year", pdir: -1, em: "Municipal drinking water", emMode: "pct", editMd: false, confirmDel: false };
 let pendingRender = false, pendingFocus = null;
-try { ui.sector = localStorage.getItem("profiler.sector") ?? "water"; } catch { ui.sector = "water"; }
-function setSector(id) { ui.sector = id || ""; ui.limit = 150; ui.tsel = null; try { localStorage.setItem("profiler.sector", ui.sector); } catch {} ver++; }
+// The sector filter is remembered per workspace.
+const secKey = () => WS === DEFAULT_WS ? "profiler.sector" : "homebase.sector." + WS;
+function loadSector() { let v = null; try { v = localStorage.getItem(secKey()); } catch {} if (v === null) v = WS === DEFAULT_WS ? "water" : ""; ui.sector = v && (v.startsWith("grp:") ? wsHas(WS, v.slice(4)) && WS !== v.slice(4) : wsHas(WS, sectorById(v)?.g || DEFAULT_WS)) ? v : ""; }
+loadSector();
+function setSector(id) { ui.sector = id || ""; ui.limit = 150; ui.tsel = null; try { localStorage.setItem(secKey(), ui.sector); } catch {} ver++; }
+// Switching vertical is its own action. It is remembered, so the app reopens where you left it.
+function setWs(w) { if (!(groupByKey(w) || verticalById(w))) return; WS = w; try { localStorage.setItem("homebase.ws", w); } catch {} loadSector(); ui.limit = 150; ui.tsel = null; ui.addFlow = null; ui.wsOpen = false; ver++; }
 const seeding = {};
 
 function route() {
@@ -865,7 +904,7 @@ const dealShard = id => { let h = 5381; for (let i = 0; i < id.length; i++) h = 
 // The deal-book record for a row on a company's M&A tab, if there is one.
 const dealHref = (target, date) => { const id = dealKey(target, date); return dealbook.has(id) ? "#d." + encodeURIComponent(id) : ""; };
 function dealRow(d) {
-  return { id: d.id, date: d.date || "", year: yearOf(d.date), target: d.target, targetId: d.target_id || undefined, acquirer: d.acquirer || "", acquirerId: d.acquirer_id || undefined, what: d.what || d.what_it_added || "", rev: num(d.revenue_usd_m), value: num(d.ev_usd_m), ebitda: num(d.ebitda_usd_m), evx: num(d.ev_ebitda_x), url: d.source_url || "", water: (d.origin || []).some(o => /water index/.test(o)), status: d.status || "", type: d.deal_type || "", btype: d.buyer_type || "", flags: d.flags || [] };
+  return { id: d.id, ws: d.ws, date: d.date || "", year: yearOf(d.date), target: d.target, targetId: d.target_id || undefined, acquirer: d.acquirer || "", acquirerId: d.acquirer_id || undefined, what: d.what || d.what_it_added || "", rev: num(d.revenue_usd_m), value: num(d.ev_usd_m), ebitda: num(d.ebitda_usd_m), evx: num(d.ev_ebitda_x), url: d.source_url || "", water: (d.origin || []).some(o => /water index/.test(o)), status: d.status || "", type: d.deal_type || "", btype: d.buyer_type || "", flags: d.flags || [] };
 }
 async function saveDeal(id, patch) {
   if (!db || !writable) return false;
@@ -898,7 +937,15 @@ async function syncDeals(c) {
   for (const [sh, deals] of per) { try { await db.doc("dealbook/" + sh).update({ deals }); } catch (e) { if (e?.code === "invalid_argument") await db.doc("dealbook/" + sh).set({ deals, updated_at: now() }).catch(() => {}); } }
   if (per.size) ver++;
 }
-function allDeals() { return memod("deals", allDealsRaw); }
+// Deals in the workspace: linked to a company in it, or tagged with it. Untagged, unlinked deals are chemicals.
+function dealWsKeys(d) {
+  const ks = [d.acquirerId, d.targetId].filter(x => x && companies.has(x)).map(x => groupOf(companies.get(x)));
+  return ks.length ? ks : [d.ws || DEFAULT_WS];
+}
+const dealInWs = d => dealWsKeys(d).some(k => wsHas(WS, k));
+function allDeals() { return memod("deals", () => allDealsRaw().filter(dealInWs)); }
+// Deal-book records (not rows) in the workspace.
+const wsDealRecs = () => memod("dealrecs", () => [...dealbook.values()].filter(d => d && d.target && dealInWs(dealRow(d))));
 function allDealsRaw() {
   if (dealbook.size) return [...dealbook.values()].filter(d => d && d.target).map(dealRow);
   const out = [];
@@ -1268,9 +1315,9 @@ STRUCTURE: category (for example "Industrial gear oils", "Food-grade greases", "
 DEPTH: a mid-size company should have 8 to 25 lines across 3 to 8 categories. Use the company's own brand names where you know them. Put services (testing, lab, route service) and equipment in their own categories. Include product lines that came with acquisitions.
 CHECK: shares sum to about 100; the categories match the overview and the M&A history.
 DON'T: write "specialty chemicals" or other generic filler. If you don't know a brand name, describe the line plainly and rate it Low. Never invent brand names.`,
-  sectors: `GOAL: map the product catalog onto chemical sectors so the company shows up in the right markets.
+  sectors: `GOAL: map the product catalog onto sectors so the company shows up in the right markets.
 METHOD: assign each product category to one sector, then add up the category shares by sector. Say which categories and brands sit in each sector.
-Sector ids to use where they fit: ${BASE_SECTORS.map(x => `${x.id} (${x.name})`).join(", ")}. If nothing fits, use a short new lowercase id with hyphens. pct values sum to 100. primary_sector is the largest.`,
+Sector ids to use where they fit: {SECTOR_IDS}. If nothing fits, use a short new lowercase id with hyphens. pct values sum to 100. primary_sector is the largest.`,
   endmarkets: `GOAL: build the end-market mix bottom-up from where each product category is sold.
 METHOD: for every category in the product catalog, split it across the end markets it is sold into (pct of that category, summing to 100 per category), and name the typical customer types. Home Base weights these by each category's share of revenue to get the company's end-market mix, so be precise category by category. Use the applications, customers and deals already known.
 END-MARKET NAMES: use these where they fit: {EM_NAMES}.
@@ -1383,11 +1430,11 @@ function sectionPrompt(c, key, opts = {}) {
   const sname = sectorById(primarySector(c))?.name || primarySector(c);
   const emNames = water ? END_MARKETS.join(", ") : GENERIC_EM.join(", ");
   const cats = [...categoryShares(c).keys()];
-  let play = PLAYBOOK[key].replace("{EM_NAMES}", emNames);
+  let play = PLAYBOOK[key].replace("{EM_NAMES}", emNames).replace("{SECTOR_IDS}", groupSectorIds(c));
   if (key === "endmarkets") play += cats.length ? `\nCATALOG CATEGORIES TO COVER: ${cats.join("; ")}` : `\nThere is no product catalog yet; use the categories implied by the overview and segments.`;
   if (key === "endmarkets" && water) play += `\nAlso give end_market_buckets: the split of US water treatment revenue into exactly these eight buckets: ${BUCKETS.join(", ")}.`;
   if (key === "financials" && water) play += `\nUS water treatment revenue counts only water treatment chemicals and chemical-based water treatment services sold in the US; show the arithmetic.`;
-  return `You are a senior buy-side M&A analyst building the "${c.name}" profile in Home Base, a private database of chemical companies used for deal work. Home Base builds each profile step by step: overview, M&A history, products, sectors, end markets, segments, financials, customers, competitors, buyers, add-ons. Each step starts from everything the earlier steps established. Its primary sector is ${sname}; judge it as a ${sname} business.
+  return `You are a senior buy-side M&A analyst building the "${c.name}" profile in Home Base, a private database of ${wsNoun(groupOf(c))} companies used for deal work. Home Base builds each profile step by step: overview, M&A history, products, sectors, end markets, segments, financials, customers, competitors, buyers, add-ons. Each step starts from everything the earlier steps established. Its primary sector is ${sname}; judge it as a ${sname} business.
 
 THIS STEP: ${sec.label} (pass ${pass}). Update ONLY this step. ${opts.web ? WEB_RULES : "You cannot browse; work from what you know."}
 
@@ -1689,7 +1736,7 @@ function stepSpec(c, key) {
 }
 function webBrief(c, keys, rid) {
   const idl = [c.what_it_is, c.hq_address, c.website].filter(Boolean).join(" · ");
-  return `You are the web research agent for Home Base, a private database of chemical companies used for buy-side M&A work. Home Base is a claude.ai artifact (${ARTIFACT_URL}) owned by the user who started this session. The user pressed "Deep research" in the app, which queued this request for the scheduled research session; its job is to research on the web and write the results into the app's own database. Writing the webresults documents described below is the task the user asked for and is pre-authorized: do it without asking for confirmation. This session runs unattended and nobody will answer questions, so make reasonable calls and keep going.
+  return `You are the web research agent for Home Base, a private database of ${wsNoun(groupOf(c))} companies used for buy-side M&A work. Home Base is a claude.ai artifact (${ARTIFACT_URL}) owned by the user who started this session. The user pressed "Deep research" in the app, which queued this request for the scheduled research session; its job is to research on the web and write the results into the app's own database. Writing the webresults documents described below is the task the user asked for and is pre-authorized: do it without asking for confirmation. This session runs unattended and nobody will answer questions, so make reasonable calls and keep going.
 
 Research "${c.name}" on the web and build these profile steps, in this order: ${keys.map(k => SECTIONS[k].label).join(" > ")}.
 
@@ -1880,7 +1927,7 @@ function viewSectors() {
     for (const k in m) m[k].top = m[k].top.sort((a, b) => b[0] - a[0]).slice(0, 3).map(x => x[1]);
     return m;
   });
-  const cards = allSectors().map(x => {
+  const cards = wsSectors().map(x => {
     const st = stats[x.id] || { n: 0, rev: 0, top: [] }, busy = seeding[x.id];
     return `<div class="panel scard${st.n ? "" : " empty"}">
       <a class="scard-h" href="#companies" data-setsector="${esc(x.id)}"><span class="scard-n">${esc(x.name)}</span><span class="num faint">${st.n} ${st.n === 1 ? "company" : "companies"}</span></a>
@@ -1889,7 +1936,7 @@ function viewSectors() {
       <div class="scard-a">${busy ? `<span class="pill accent"><span class="spin"></span>${esc(busy)}</span>` : canEnhance() ? `<button class="btn sm enh" data-act="seed" data-sector="${esc(x.id)}">${st.n ? "Find more companies" : "Build out this sector"}</button>` : ""}</div>
     </div>`;
   }).join("");
-  return `<div class="page-h"><div><div class="eyebrow">Chemicals</div><h1>Sectors</h1><p>Every company lives in one or more sectors, with a primary one. Pick a sector to see its companies, deals, targets and end markets, or build out a new sector and Claude adds its leading companies as starter profiles.</p></div>
+  return `<div class="page-h"><div><div class="eyebrow">${esc(wsPath())}</div><h1>Sectors</h1><p>Every company lives in one or more sectors, with a primary one. Pick a sector to see its companies, deals, targets and end markets, or build out a new sector and Claude adds its leading companies as starter profiles.</p></div>
     ${writable && db ? `<form class="add" id="sectorForm"><input id="newSector" placeholder="New sector, e.g. Industrial gases" autocomplete="off" aria-label="New sector name"><button class="btn" type="submit">Add sector</button></form>` : ""}</div>
   <div class="scards">${cards}</div>`;
 }
@@ -1898,7 +1945,7 @@ async function seedSector(sid) {
   const sec = sectorById(sid); if (!sample || !sec || seeding[sid]) return;
   seeding[sid] = "Finding companies"; render();
   const have = list().filter(c => inSector(c, sid)).map(c => c.name).slice(0, 150);
-  const prompt = `You are building out the "${sec.name}" sector in Home Base, a private database of chemical companies used by a buy-side M&A team focused on North America.
+  const prompt = `You are building out the "${sec.name}" sector in Home Base, a private database of ${wsNoun(sec.g || DEFAULT_WS)} companies used by a buy-side M&A team focused on North America.
 
 List up to 30 of the most relevant companies in this sector: the leaders plus the PE-backed and founder-owned mid-market companies an M&A team would track. Skip these, which are already in the database: ${have.join("; ") || "none"}.
 
@@ -1906,7 +1953,7 @@ Work from what you know; you cannot browse. Only include companies you are confi
 
 Reply with ONLY a JSON array of objects:
 [{"name":"","hq_address":"City, ST","owner_type":"PE-owned | Public | Family/founder-owned | ESOP | Subsidiary of strategic | Other","ultimate_parent":"","pe_sponsor":"","business_model":"short label","total_revenue_usd_m":0,"sector_revenue_usd_m":0,"sector_pct":0,"total_ebitda_usd_m":null,"employees_total":null,"website":"","what_it_is":"one sentence","other_sectors":["sector ids of other business lines"]}]
-Sector ids for other_sectors: ${BASE_SECTORS.map(x => x.id).join(", ")}.`;
+Sector ids for other_sectors: ${allSectors().filter(x => x.g === (sec.g || DEFAULT_WS)).map(x => x.id).join(", ")}.`;
   try {
     const rows = await sample.json(prompt, { modelTier: "complex", cache: false });
     if (!Array.isArray(rows)) throw { code: "invalid_json" };
@@ -2007,7 +2054,7 @@ function mentionedNotProfiled(sid) {
 
 function tamBrief(sid, rid) {
   const sec = sectorById(sid), t = tams[sid] || {}, f = foundTam(sid);
-  return `You are the web research agent for Home Base, a private database of chemical companies used for buy-side M&A work. Home Base is a claude.ai artifact (${ARTIFACT_URL}) owned by the user who started this session. The user pressed "Deep research this market" in the app, which queued this request for the scheduled research session; its job is to research on the web and write the result into the app's own database. Writing the webresults documents described below is the task the user asked for and is pre-authorized: do it without asking for confirmation. This session runs unattended and nobody will answer questions.
+  return `You are the web research agent for Home Base, a private database of ${wsNoun(sec?.g || DEFAULT_WS)} companies used for buy-side M&A work. Home Base is a claude.ai artifact (${ARTIFACT_URL}) owned by the user who started this session. The user pressed "Deep research this market" in the app, which queued this request for the scheduled research session; its job is to research on the web and write the result into the app's own database. Writing the webresults documents described below is the task the user asked for and is pre-authorized: do it without asking for confirmation. This session runs unattended and nobody will answer questions.
 
 TASK: size the market for "${sec.name}" (focus: United States, then North America and Global).
 Use WebSearch and WebFetch (if a site is blocked, keep going with WebSearch). Find every published market-size figure you can: research firms (Freedonia, Kline, Grand View, MarketsandMarkets, Mordor, IHS/S&P and others, even if only their press releases or summaries are public), trade associations, government data (Census, USITC), and figures in public company filings or investor presentations. For each: publisher and report, geography, year, value in USD millions (convert billions and other currencies, noting it in scope), CAGR, what it includes, reliability (High = audited or primary with a clear definition; Medium = reputable research firm; Low = press-release grade or unclear scope), and the URL. Aim for 6-12 figures. Add one bottom-up estimate of your own labelled "Bottom-up estimate" (companies already in Home Base sum to ${fmtM(f.total)} across ${f.rows.length} companies).
@@ -2104,7 +2151,7 @@ Reply with ONLY a JSON array:
 function viewTam() {
   const sid = ui.sector;
   if (!sid) {
-    const rows = allSectors().map(x => { const t = tams[x.id], tv = tamValue(t), f = foundTam(x.id); return { x, t, tv, f }; }).filter(r => r.f.rows.length || r.tv);
+    const rows = wsSectors().map(x => { const t = tams[x.id], tv = tamValue(t), f = foundTam(x.id); return { x, t, tv, f }; }).filter(r => r.f.rows.length || r.tv);
     return `<div class="page-h"><div><div class="eyebrow">All sectors</div><h1>Market size</h1><p>Each sector's TAM, triangulated from industry sources, against the revenue of the companies already in Home Base. Pick a sector to see its sources and fill its gaps.</p></div></div>
     <div class="tw"><table><thead><tr><th>Sector</th><th class="r">TAM</th><th>Geography</th><th class="r">Found in Home Base</th><th class="r">Coverage</th><th class="r">Companies</th><th class="r">Sources</th></tr></thead><tbody>${rows.map(r => `<tr class="link" data-setsector-tam="${esc(r.x.id)}"><td class="cname">${esc(r.x.name)}</td><td class="r num">${fmtM(r.tv)}</td><td class="muted">${esc(r.t?.geo || "")}</td><td class="r num">${fmtM(r.f.total)}</td><td class="r num">${r.tv ? Math.round(r.f.total / r.tv * 100) + "%" : "—"}</td><td class="r num">${r.f.rows.length}</td><td class="r num">${(r.t?.sources || []).length}</td></tr>`).join("") || `<tr><td colspan="7" class="faint">No sectors sized yet.</td></tr>`}</tbody></table></div>`;
   }
@@ -2158,15 +2205,15 @@ function dbCandidates(q) {
 }
 async function startAdd(q, sector) {
   q = String(q || "").trim(); if (!q) return;
-  ui.addFlow = { q, sector: sector || ui.sector || "specialty", status: sample ? "searching" : "pick", cands: [], db: dbCandidates(q) };
+  ui.addFlow = { q, sector: sector || defSector(), status: sample ? "searching" : "pick", cands: [], db: dbCandidates(q) };
   if (location.hash !== "#companies") location.hash = "companies"; else render();
   if (!sample) return;
-  const prompt = `Someone typed "${q}" to add a company to a chemicals M&A database (sector hint: ${sectorById(ui.addFlow.sector)?.name || "any"}).
+  const prompt = `Someone typed "${q}" to add a company to a ${wsNoun()} M&A database (sector hint: ${sectorById(ui.addFlow.sector)?.name || "any"}).
 
 Which real companies could this mean? List up to 5, most likely first. Include a company only if you are confident it exists. Correct obvious typos (for example "Lubriction" means "Lubrication"). If you don't recognise any real company by this name, return an empty list; do not make one up.
 
 Reply with ONLY JSON:
-{"candidates":[{"name":"official company name","one_line":"what it does, under 15 words","hq":"City, ST or City, Country","website":"domain.com or empty","parent":"owner or parent if any","sector":"one of: ${allSectors().map(x => x.id).join(", ")}","confidence":"High | Medium | Low"}]}`;
+{"candidates":[{"name":"official company name","one_line":"what it does, under 15 words","hq":"City, ST or City, Country","website":"domain.com or empty","parent":"owner or parent if any","sector":"one of: ${wsSectors().map(x => x.id).join(", ")}","confidence":"High | Medium | Low"}]}`;
   try {
     const web = webOK && await webSetup();
     const r = await sample.json(web ? prompt.replace("Which real companies could this mean?", "Search the web first (search_web, one call with 2-3 queries such as the name plus \"company\" and the name plus the sector), then answer from what you find. Which real companies could this mean?") : prompt, web ? { modelTier: "default", tools: webTools(null) } : { modelTier: "default", cache: false });
@@ -2240,7 +2287,7 @@ function viewCompanies() {
   }).join("") + (rows.length > shown.length ? `<tr><td colspan="9" style="text-align:center;padding:14px"><button class="btn sm" data-act="more">Show ${Math.min(150, rows.length - shown.length)} more of ${rows.length - shown.length}</button></td></tr>` : "") : `<tr><td colspan="10" class="faint" style="padding:28px 12px">${all.length ? "No companies match that search." : `No companies in ${esc(sname)} yet. Add one above, or build out the sector from the Sectors page.`}</td></tr>`;
   return `
   <div class="page-h"><div><div class="eyebrow">${esc(sname)}</div><h1>Companies</h1><p>${sid ? `Companies with a business line in ${esc(sname)}, ranked by ${water ? "US water treatment revenue" : "revenue in this sector"}.` : "Every company in Home Base, across all sectors."} Search always covers every sector. Type over any value in a profile to correct it.</p></div>
-    ${writable && db ? `<form class="add" id="addForm"><input id="addName" placeholder="Company name" autocomplete="off" aria-label="New company name"><select id="addSector" aria-label="Primary sector">${allSectors().map(x => `<option value="${esc(x.id)}" ${x.id === (sid || "specialty") ? "selected" : ""}>${esc(x.short)}</option>`).join("")}</select><button class="btn primary" type="submit">Add company</button></form>` : ""}</div>
+    ${writable && db ? `<form class="add" id="addForm"><input id="addName" placeholder="Company name" autocomplete="off" aria-label="New company name"><select id="addSector" aria-label="Primary sector">${sectorOptions(wsSectors(), defSector())}</select><button class="btn primary" type="submit">Add company</button></form>` : ""}</div>
   ${viewAddFlow()}
   <div class="stats">
     <div class="stat"><div class="v">${all.length}</div><div class="l">Profiles</div></div>
@@ -2324,6 +2371,7 @@ function viewCompany(id, tab) {
   ].join("");
   const head = `
   <div class="crumb"><a href="#companies">Companies</a> / ${esc(c.name)}</div>
+  ${inWs(c) ? "" : `<div class="run" role="status"><span>This company sits in <b>${esc(wsPath(groupOf(c)))}</b>, outside the vertical you are working in (${esc(wsPath())}).</span><span style="flex:1"></span><button class="btn sm" data-ws="${esc(groupOf(c))}" data-stay="1">Switch to ${esc(groupByKey(groupOf(c))?.name || "it")}</button></div>`}
   <div class="ph compact">
     <div class="ph-main"><div class="ph-name">${logoImg(c, "lg")}<h1>${ed("name", c.name, "text", "Company name")}</h1></div>
       <div class="sub">${esc(oneLine ? (oneLine.length > 190 ? oneLine.slice(0, 187) + "…" : oneLine) : (c.hq_address || ""))}</div>
@@ -2461,7 +2509,7 @@ function viewSnapshot(c) {
   const bk = Object.entries(water && Object.keys(buckets(c)).length ? buckets(c) : (c[EM_FIELD] || {})).sort((a, b) => b[1] - a[1]).slice(0, 10);
   const secRows = tableRows(c, "sectors");
   return `
-  <div class="sec">${secHead(c, "sectors", "Business lines by sector", `<label class="faint" style="font-size:12px">Primary <select id="primsel" aria-label="Primary sector">${allSectors().map(x => `<option value="${esc(x.id)}" ${x.id === ps ? "selected" : ""}>${esc(x.short)}</option>`).join("")}</select></label>`, "sectors", ["sectors", "primary_sector"])}
+  <div class="sec">${secHead(c, "sectors", "Business lines by sector", `<label class="faint" style="font-size:12px">Vertical <select id="grpsel" aria-label="Vertical and group">${VERTICALS.map(v => `<optgroup label="${esc(v.name)}">${v.groups.map(g => `<option value="${esc(g.key)}" ${g.key === groupOf(c) ? "selected" : ""}>${esc(g.name)}</option>`).join("")}</optgroup>`).join("")}</select></label> <label class="faint" style="font-size:12px">Primary <select id="primsel" aria-label="Primary sector">${sectorOptions(allSectors().filter(x => wsHas(groupOf(c).split("/")[0], x.g)), ps)}</select></label>`, "sectors", ["sectors", "primary_sector"])}
     ${editTable(c, "sectors", [{ k: "name", label: "Sector" }, { k: "what", label: "Products or brands" }, { k: "revenue_usd_m", label: "Revenue $M", t: "num", w: "110px" }, { k: "pct", label: "% of total", t: "num", w: "100px" }], secRows, { empty: "No business lines yet. Hit Enhance and Claude splits revenue by sector." })}
     <p class="faint" style="font-size:12px;margin-top:6px">Type a sector name, e.g. Lubricants, Food ingredients or Personal care. A company shows up in every sector listed here.</p></div>
   <div class="sec"><div class="sec-h"><h2>Key stats</h2><span class="faint" style="font-size:12px">Bars show where ${esc(c.name)} sits among ${peers.length} ${esc(pl)}. Type over any number to override it.</span></div>
@@ -2842,7 +2890,7 @@ async function researchSponsor(slug) {
   const seen = new Set();
   const tools = [{ name: "search_web", description: "Search the web. Returns results with title, URL and excerpts.", inputSchema: { type: "object", properties: { objective: { type: "string" }, queries: { type: "array", items: { type: "string" } } }, required: ["objective", "queries"] },
     execute: async (i, ctx) => { const qs = [].concat(i.queries || []).map(String).slice(0, 3); spBusy[slug] = "Searching: " + (qs[0] || "").slice(0, 40); render(); const rs = await webCall("web_search", { objective: String(i.objective || qs[0] || "").slice(0, 300), search_queries: qs }, ctx.signal); rs.forEach(r => r.url && seen.add(r.url)); return clip(rs.slice(0, 8).map(r => ({ title: r.title, url: r.url, text: clip((r.excerpts || []).join("\n"), 1500) })), 14000); } }];
-  const prompt = `Research the investment firm "${name}" for a chemicals M&A banker. Use search_web (2-3 calls, 2-3 queries each): the firm's website, fund announcements, press releases and portfolio pages.
+  const prompt = `Research the investment firm "${name}" for a ${wsNoun()} M&A banker. Use search_web (2-3 calls, 2-3 queries each): the firm's website, fund announcements, press releases and portfolio pages.
 Reply with ONLY JSON: {"name":"official firm name","summary":"two sentences on who they are and how they invest","type":"Private equity | Infrastructure | Growth | Family office | Sovereign | Other","hq":"","website":"","aum_usd_bn":null,"latest_fund":"","latest_fund_size_usd_bn":null,"latest_fund_vintage":"","dry_powder_usd_bn":null,"check_size":"typical EV range","sector_focus":"","chemicals_thesis":"what they look for in chemicals / industrials and which platforms they have built","contacts":"partners who lead chemicals or industrials deals, if public","other_holdings":[{"name":"","year":"","what":"current chemicals, materials or industrial portfolio companies"}],"sources":["urls you used"]}
 Only include facts you found or are confident of; use null or "" otherwise. Dry powder is an estimate: say so in chemicals_thesis if you estimate it.`;
   try {
@@ -2885,14 +2933,15 @@ function searchAll(q) {
   q = norm(q); if (q.length < 2) return null;
   const hit = t => { const n = norm(t); return n.startsWith(q) || n.includes(" " + q) || (q.length >= 5 && n.includes(q)); };
   const cos = list().filter(c => hit(c.name) || hit(c.platform_name)).sort((a, b) => (norm(a.name).startsWith(q) ? 0 : 1) - (norm(b.name).startsWith(q) ? 0 : 1) || (num(b.total_revenue_usd_m) || 0) - (num(a.total_revenue_usd_m) || 0)).slice(0, 6);
+  if (cos.length < 6) cos.push(...allList().filter(c => !inWs(c) && (hit(c.name) || hit(c.platform_name))).slice(0, 6 - cos.length));
   const sps = [...knownSponsors()].filter(([, n]) => hit(n)).slice(0, 4);
-  const ds = [...dealbook.values()].filter(d => hit(d.target) || hit(d.acquirer)).sort((a, b) => dateKey(b.date) - dateKey(a.date)).slice(0, 5);
+  const ds = wsDealRecs().filter(d => hit(d.target) || hit(d.acquirer)).sort((a, b) => dateKey(b.date) - dateKey(a.date)).slice(0, 5);
   return { cos, sps, ds };
 }
 function homeSearch() {
   const r = searchAll(ui.hq || "");
   const res = r ? (r.cos.length + r.sps.length + r.ds.length ? `<div class="hres">
-    ${r.cos.length ? `<div class="hgrp">Companies</div>${r.cos.map(c => `<a class="hrow" href="#c.${esc(c.id)}">${logoBadge(c)}<span><b>${esc(c.name)}</b><small>${esc([isPE(c) ? "PE · " + sponsorOf(c) : c.owner_type, sectorShort(primarySector(c))].filter(Boolean).join(" · "))}</small></span><span class="num faint">${fmtM(c.total_revenue_usd_m)}</span></a>`).join("")}` : ""}
+    ${r.cos.length ? `<div class="hgrp">Companies</div>${r.cos.map(c => `<a class="hrow" href="#c.${esc(c.id)}">${logoBadge(c)}<span><b>${esc(c.name)}</b><small>${esc([isPE(c) ? "PE · " + sponsorOf(c) : c.owner_type, sectorShort(primarySector(c)), inWs(c) ? "" : "In " + (groupByKey(groupOf(c))?.name || "another vertical")].filter(Boolean).join(" · "))}</small></span><span class="num faint">${fmtM(c.total_revenue_usd_m)}</span></a>`).join("")}` : ""}
     ${r.sps.length ? `<div class="hgrp">Sponsors</div>${r.sps.map(([k, n]) => `<a class="hrow" href="#s.${esc(k)}"><span class="ib">${esc(initials(n))}</span><span><b>${esc(n)}</b><small>Sponsor profile</small></span></a>`).join("")}` : ""}
     ${r.ds.length ? `<div class="hgrp">Deals</div>${r.ds.map(d => `<a class="hrow" href="#d.${esc(d.id)}"><span class="ib deal">M&amp;A</span><span><b>${esc(d.target)}</b><small>${esc([d.acquirer, String(d.date || "").slice(0, 7)].filter(Boolean).join(" · "))}</small></span><span class="num faint">${fmtM(num(d.ev_usd_m))}</span></a>`).join("")}` : ""}
   </div>` : `<div class="hres"><div class="faint" style="padding:10px 12px">Nothing matches “${esc(ui.hq)}”.</div></div>`) : "";
@@ -2902,20 +2951,20 @@ const initials = n => String(n || "?").replace(/\(.*?\)/g, "").split(/\s+/).filt
 const logoBadge = (c, size = "") => logos.get(c.id) ? `<img class="logo sm ${size === "sm" ? "xs" : ""}" src="${esc(logos.get(c.id))}" alt="">` : `<span class="ib ${size}">${esc(initials(c.name))}</span>`;
 function viewHome() {
   const all = list(), pe = all.filter(isPE), im = all.filter(inMarket);
-  const deals = [...dealbook.values()].filter(d => d && d.target && yearOf(d.date)).sort((a, b) => dateKey(b.date) - dateKey(a.date)).slice(0, 8);
+  const deals = wsDealRecs().filter(d => yearOf(d.date)).sort((a, b) => dateKey(b.date) - dateKey(a.date)).slice(0, 8);
   const longHolds = pe.filter(c => (holdYears(c) || 0) >= 5).sort((a, b) => (holdYears(b) || 0) - (holdYears(a) || 0) || (num(b.total_ebitda_usd_m) || 0) - (num(a.total_ebitda_usd_m) || 0)).slice(0, 8);
   // "Recently updated" skips the bulk-import timestamp that most profiles share.
   const stamps = new Map(); for (const c of all) stamps.set(c.updated_at, (stamps.get(c.updated_at) || 0) + 1);
   const bulk = [...stamps].sort((a, b) => b[1] - a[1])[0]?.[0];
   const recent = all.filter(c => c.updated_at && c.updated_at !== bulk).sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at))).slice(0, 8);
-  const secs = allSectors().map(x => ({ x, n: all.filter(c => inSector(c, x.id)).length, tam: tamValue(tams[x.id] || {}) })).filter(r => r.n).sort((a, b) => b.n - a.n).slice(0, 8);
+  const secs = wsSectors().map(x => ({ x, n: all.filter(c => inSector(c, x.id)).length, tam: tamValue(tams[x.id] || {}) })).filter(r => r.n).sort((a, b) => b.n - a.n).slice(0, 8);
   const card = (title, href, rows, empty) => `<section class="hcard"><div class="hcard-h"><h2>${title}</h2>${href ? `<a href="${href}">See all</a>` : ""}</div>${rows || `<p class="faint" style="margin:6px 0">${empty}</p>`}</section>`;
   const coRow = (c, right, sub) => `<a class="hrow" href="#c.${esc(c.id)}">${logoBadge(c)}<span><b>${esc(c.name)}</b><small>${esc(sub)}</small></span><span class="num">${right}</span></a>`;
   return `<div class="home">
-  <div class="hhero"><h1>Home Base</h1><p>Chemical companies, deals and sponsors for M&amp;A work.</p>${homeSearch()}</div>
+  <div class="hhero"><h1>Home Base</h1><p>${esc(wsPath())}: companies, deals and sponsors for M&amp;A work.</p>${homeSearch()}</div>
   <div class="hstats">
     <a href="#companies"><b>${all.length}</b><span>Companies</span></a>
-    <a href="#precedents"><b>${dealbook.size || allDeals().length}</b><span>Deals</span></a>
+    <a href="#precedents"><b>${allDeals().length}</b><span>Deals</span></a>
     <a href="#sponsors"><b>${pe.length}</b><span>PE-owned</span></a>
     <a href="#inmarket"><b>${im.length}</b><span>In market</span></a>
     <a href="#sponsors"><b>${pe.filter(c => (holdYears(c) || 0) >= 5).length}</b><span>Held 5+ years</span></a>
@@ -3040,17 +3089,48 @@ function viewEndMarkets() {
   <div class="panel bars">${bars}</div>`;
 }
 
+/* ---------- vertical switcher ---------- */
+function wsMenuHtml() {
+  const n = memod("wscounts", () => { const m = {}; for (const c of allList()) { const g = groupOf(c); m[g] = (m[g] || 0) + 1; const v = g.split("/")[0]; m[v] = (m[v] || 0) + 1; } return m; });
+  const b = (key, label) => `<button type="button" data-ws="${esc(key)}" aria-current="${key === WS}"><span>${esc(label)}</span><small>${n[key] || 0}</small></button>`;
+  return `<div class="wsh"><b>Switch vertical</b><span>You stay in the one you pick until you switch again.</span></div>` + VERTICALS.map(v => `<div class="wsv"><h3><span>${esc(v.name)}</span>${b(v.id, "All " + v.name.toLowerCase())}</h3><div class="wsgrid">${v.groups.map(g => b(g.key, g.name)).join("")}</div></div>`).join("");
+}
+function wsLabels() {
+  const [v] = WS.split("/"), g = groupByKey(WS);
+  const wv = $("#wsv"), wg = $("#wsg");
+  if (wv) wv.textContent = verticalById(v)?.name || "";
+  if (wg) wg.textContent = g ? g.name : "All groups";
+  document.title = "Home Base · " + wsName();
+}
+function toggleWsMenu(open) {
+  const m = $("#wsmenu"), btn = $("#wsbtn"); if (!m) return;
+  open = open ?? m.hidden;
+  if (open) m.innerHTML = wsMenuHtml();
+  m.hidden = !open; btn.setAttribute("aria-expanded", String(open));
+}
+document.addEventListener("click", e => {
+  const t = e.target;
+  if (t.closest("#wsbtn")) { toggleWsMenu(); return; }
+  const w = t.closest("[data-ws]");
+  if (w) { const k = w.dataset.ws; toggleWsMenu(false); if (k !== WS) { setWs(k); toast("Switched to " + wsPath()); } if (!w.dataset.stay && location.hash !== "#home") location.hash = "home"; else render(); return; }
+  if (!t.closest("#wsmenu") && !$("#wsmenu")?.hidden) toggleWsMenu(false);
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#wsmenu")?.hidden) { toggleWsMenu(false); $("#wsbtn")?.focus(); } });
+
 /* ---------- render ---------- */
 function render() {
   if (isEditing()) { pendingRender = true; return; }
   const r = route();
   document.body.classList.toggle("on-home", r.view === "home");
+  wsLabels();
   document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", (a.dataset.v === r.view || (r.view === "company" && a.dataset.v === "companies") || (r.view === "deal" && a.dataset.v === "precedents") || (r.view === "sponsor" && a.dataset.v === "sponsors")) ? "page" : "false"));
   setLive();
   const ss = $("#secsel");
   if (ss && document.activeElement !== ss) {
-    const counts = memod("seccounts", () => { const m = {}; for (const c of list()) for (const x of sectorsOf(c)) m[x.sector] = (m[x.sector] || 0) + 1; return m; });
-    ss.innerHTML = `<option value="">All sectors</option>` + allSectors().map(x => `<option value="${esc(x.id)}" ${x.id === ui.sector ? "selected" : ""} title="${esc(x.name)}">${esc(x.short)}${counts[x.id] ? ` (${counts[x.id]})` : ""}</option>`).join("");
+    const counts = memod("seccounts", () => { const m = {}; for (const c of list()) { for (const x of sectorsOf(c)) m[x.sector] = (m[x.sector] || 0) + 1; const g = "grp:" + groupOf(c); m[g] = (m[g] || 0) + 1; } return m; });
+    const opt = x => `<option value="${esc(x.id)}" ${x.id === ui.sector ? "selected" : ""} title="${esc(x.name)}">${esc(x.short)}${counts[x.id] ? ` (${counts[x.id]})` : ""}</option>`;
+    const v = verticalById(WS);
+    ss.innerHTML = `<option value="">All ${esc(groupByKey(WS) ? "sectors" : v.name.toLowerCase())}</option>` + (v ? v.groups.map(g => { const xs = wsSectors().filter(x => x.g === g.key); return `<optgroup label="${esc(g.name)}"><option value="grp:${esc(g.key)}" ${ui.sector === "grp:" + g.key ? "selected" : ""}>All ${esc(g.name.toLowerCase())}${counts["grp:" + g.key] ? ` (${counts["grp:" + g.key]})` : ""}</option>${xs.map(opt).join("")}</optgroup>`; }).join("") : wsSectors().map(opt).join(""));
   }
   if (!loaded) {
     if (dbState === "off") app.innerHTML = `<div class="panel empty-hero"><h2>The repository isn't connected</h2><p class="muted">Home Base keeps its profiles in a shared database that only loads when this page is opened in Claude while signed in. Open it from your Claude artifacts to see and edit profiles.</p></div>`;
@@ -3172,7 +3252,7 @@ ${knowledgeBase(c) || "Only the name."}
 EXISTING ROWS (use these exact names to update instead of adding duplicates):
 ${rows}${d}`;
 }
-const CHAT_RULES = `You are the research assistant inside Home Base, a buy-side M&A database of chemical companies. You are working on ONE company with the user. You can search the web (search_web), read pages (read_pages), and save to the profile (record).
+const CHAT_RULES = `You are the research assistant inside Home Base, a buy-side M&A database of companies (chemicals and other industrial, healthcare, consumer and technology verticals). You are working on ONE company with the user. You can search the web (search_web), read pages (read_pages), and save to the profile (record).
 
 HOW TO WORK
 - Before each tool call, write one short line saying what you're checking and why (the user sees your thinking). After results, say in a line what you found.
@@ -3429,7 +3509,7 @@ chatFab.onclick = () => { chat.open = true; chatView(); setTimeout(() => $("#cha
     if (!r) { gres.hidden = true; gres.innerHTML = ""; return; }
     const n = r.cos.length + r.sps.length + r.ds.length;
     gres.innerHTML = !n ? `<div class="faint" style="padding:10px 12px">Nothing matches.</div>` :
-      (r.cos.length ? `<div class="hgrp">Companies</div>${r.cos.map(c => `<a class="hrow" href="#c.${esc(c.id)}">${logoBadge(c)}<span><b>${esc(c.name)}</b><small>${esc([isPE(c) ? "PE · " + sponsorOf(c) : c.owner_type, sectorShort(primarySector(c))].filter(Boolean).join(" · "))}</small></span><span class="num faint">${fmtM(c.total_revenue_usd_m)}</span></a>`).join("")}` : "")
+      (r.cos.length ? `<div class="hgrp">Companies</div>${r.cos.map(c => `<a class="hrow" href="#c.${esc(c.id)}">${logoBadge(c)}<span><b>${esc(c.name)}</b><small>${esc([isPE(c) ? "PE · " + sponsorOf(c) : c.owner_type, sectorShort(primarySector(c)), inWs(c) ? "" : "In " + (groupByKey(groupOf(c))?.name || "another vertical")].filter(Boolean).join(" · "))}</small></span><span class="num faint">${fmtM(c.total_revenue_usd_m)}</span></a>`).join("")}` : "")
       + (r.sps.length ? `<div class="hgrp">Sponsors</div>${r.sps.map(([k, nm]) => `<a class="hrow" href="#s.${esc(k)}"><span class="ib">${esc(initials(nm))}</span><span><b>${esc(nm)}</b><small>Sponsor profile</small></span></a>`).join("")}` : "")
       + (r.ds.length ? `<div class="hgrp">Deals</div>${r.ds.map(d => `<a class="hrow" href="#d.${esc(d.id)}"><span class="ib deal">M&amp;A</span><span><b>${esc(d.target)}</b><small>${esc([d.acquirer, String(d.date || "").slice(0, 7)].filter(Boolean).join(" · "))}</small></span></a>`).join("")}` : "");
     gres.hidden = false;
@@ -3472,6 +3552,14 @@ app.addEventListener("change", async e => {
   else if (id === "fotype") { ui.otype = e.target.value; ui.limit = 150; }
   else if (id === "tamgeo" || id === "tamyear") { saveTam(ui.sector, id === "tamgeo" ? { geo: e.target.value } : { base_year: +e.target.value }).then(render); return; }
   else if (e.target.dataset.tamsel) { const t = tams[ui.sector] || {}, src = (t.sources || []).map(x => ({ ...x })), row = src[+e.target.dataset.r]; if (row) { row[e.target.dataset.tamsel] = e.target.value; saveTam(ui.sector, { sources: src }).then(render); } return; }
+  else if (id === "grpsel") {
+    const c = getC(route().id); if (!c) return;
+    const g = e.target.value, ps = primarySector(c), keep = sectorById(ps)?.g === g;
+    const ns = keep ? ps : sectorsOf(c).find(x => sectorById(x.sector)?.g === g)?.sector || allSectors().find(x => x.g === g)?.id;
+    const patch = { group: g };
+    if (ns && !keep) { const secs = sectorsOf(c).map(x => ({ ...x })); if (!secs.some(x => x.sector === ns)) secs.unshift({ sector: ns, revenue_usd_m: null, pct: null }); Object.assign(patch, { primary_sector: ns, sectors: secs }); }
+    save(c.id, patch, ["primary_sector"]).then(() => { ver++; toast(`Moved ${c.name} to ${wsPath(g)}`); render(); }); e.target.blur(); return;
+  }
   else if (id === "primsel") {
     const c = getC(route().id); if (!c) return;
     const v = e.target.value, secs = sectorsOf(c).map(x => ({ ...x }));
@@ -3538,7 +3626,7 @@ app.addEventListener("submit", async e => {
   if (e.target.id === "sectorForm") {
     const nm = $("#newSector").value.trim(); if (!nm) return;
     const ex = sectorFromName(nm); if (ex) { toast(`${ex.name} already exists`); return; }
-    const id = slugify(nm), next = [...customSectors, { id, name: nm, short: nm.length > 22 ? nm.split(/[ ,&]/)[0] : nm }];
+    const id = slugify(nm), next = [...customSectors, { id, name: nm, short: nm.length > 22 ? nm.split(/[ ,&]/)[0] : nm, g: groupByKey(WS) ? WS : DEFAULT_WS }];
     try { await db.doc("meta/sectors").set({ custom: next, updated_at: now() }); customSectors = next; ver++; toast(`Added ${nm}`); render(); }
     catch (err) { handleWriteError(err); }
   }
@@ -3555,8 +3643,8 @@ app.addEventListener("submit", async e => {
 
 async function createCompany(name, facts = "", sector = "") {
   let id = slugify(name); let n = 2; while (companies.has(id)) id = slugify(name) + "-" + n++;
-  sector = sector || ui.sector || "specialty";
-  const doc = { name, primary_sector: sector, sectors: [{ sector, revenue_usd_m: null, pct: null }], status: "empty", created_at: now(), updated_at: now(), locked: [], source_of_truth: facts ? [{ text: facts, at: now() }] : [], acquisitions: [], buyers: [], addon_ideas: [] };
+  sector = sector || defSector();
+  const doc = { name, group: sectorById(sector)?.g || (groupByKey(WS) ? WS : DEFAULT_WS), primary_sector: sector, sectors: [{ sector, revenue_usd_m: null, pct: null }], status: "empty", created_at: now(), updated_at: now(), locked: [], source_of_truth: facts ? [{ text: facts, at: now() }] : [], acquisitions: [], buyers: [], addon_ideas: [] };
   const det = { runs: [], customers: [], competitors: [] };
   try { await db.doc("companies/" + id).set(doc); await db.doc("details/" + id).set(det); companies.set(id, { id, ...doc }); details[id] = det; ver++; rebuildIndex(); location.hash = "c." + id; }
   catch (e) { handleWriteError(e); }
@@ -3586,7 +3674,7 @@ app.addEventListener("click", async e => {
   if (act === "profile-target") { startAdd(btn.dataset.name); return; }
   if (act === "ctwlogrow") { await logContact(btn.dataset.id); return; }
   if (act === "demodel") { const ds = list().filter(x => x.demo); if (!confirm(`Delete all ${ds.length} demo companies? Real companies are not touched.`)) return; for (const x of ds) { await deleteCompany(x.id); db.doc("chats/" + x.id).delete().catch(() => {}); } toast(`Removed ${ds.length} demo companies`); render(); return; }
-  if (act === "newdeal") { const id = "deal-" + Date.now().toString(36); await saveDeal(id, { target: "New deal", status: "Closed", origin: ["added by hand"], edited: true }); location.hash = "d." + id; return; }
+  if (act === "newdeal") { const id = "deal-" + Date.now().toString(36); await saveDeal(id, { target: "New deal", status: "Closed", origin: ["added by hand"], edited: true, ws: groupByKey(WS) ? WS : DEFAULT_WS }); location.hash = "d." + id; return; }
   if (r.view === "sponsor" && act === "spresearch") { researchSponsor(r.id); return; }
   if (r.view === "deal") {
     if (act === "dealok") { await saveDeal(r.id, { flags: [], checked_at: now(), edited: true }); render(); toast("Marked as checked"); return; }
