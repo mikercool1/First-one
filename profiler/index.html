@@ -554,6 +554,69 @@ const BUCKETS = ["Municipal","Energy & chemicals","Heavy industry","Commercial &
 const DETAIL_KEYS = new Set(["management","segment_profiles","dossier","products","product_em_map","history","suggestions","what_it_is","bluntly","profile_md","total_revenue_basis","ebitda_basis","employees_basis","us_water_treatment_arithmetic","open_questions","addon_corrections","what_changed_vs_prior","evidence","key_sites","chemistries","customers","runs","prior_owners"]);
 const END_MARKETS = ["Municipal drinking water","Municipal wastewater","Power generation","Oil & gas / refining","Chemicals & petrochem","Pulp & paper","Food & beverage","Mining & metals","Primary metals/steel","Commercial HVAC / buildings","Healthcare & institutional","Data centers","Pharma/life sciences","Microelectronics/semis","Manufacturing (general industrial)","Pools & spa","Agriculture & farm","Consumer / retail","Other"];
 
+/* ---------- verticals: vertical > group > sector. You work inside one "workspace" at a time. ---------- */
+// Chemicals keeps the sector ids above. Other groups get ids prefixed with the group, so none collide.
+const DEFAULT_WS = "industrials/chemicals";
+const VERTICALS = [
+  ["industrials", "Industrials", [
+    ["chemicals", "Chemicals", null],
+    ["distribution", "Distribution", ["Industrial & MRO distribution", "Electrical distribution", "Building products distribution", "HVAC/R distribution", "Fluid power, PVF & flow distribution", "Safety products distribution", "Packaging & jan-san distribution", "Automotive aftermarket distribution"]],
+    ["aero-defense", "Aerospace & defense", ["Aerostructures & components", "Engines & engine components", "Avionics & aerospace electronics", "Aftermarket & MRO", "Defense electronics & C5ISR", "Munitions & weapons systems", "Space", "Defense & government services"]],
+    ["building-products", "Building products", ["Residential building products", "Commercial building products", "HVAC equipment", "Plumbing & fixtures", "Roofing & siding", "Windows, doors & millwork", "Insulation & envelope", "Outdoor living"]],
+    ["water-flow", "Water & flow control", ["Pumps", "Valves & actuators", "Flow measurement & instrumentation", "Water infrastructure & meters", "Filtration & treatment equipment", "Fluid handling components"]],
+    ["industrial-tech", "Industrial technology", ["Test & measurement", "Sensors & instrumentation", "Automation & motion control", "Robotics & machine vision", "Industrial software", "Electrical components & connectors"]],
+    ["capital-goods", "Diversified / capital goods", ["Machinery & equipment", "Material handling", "Engineered components", "Power transmission", "Tools & consumables", "Specialty vehicles", "Metal fabrication & processing"]],
+    ["transportation", "Transportation & automotive", ["Automotive suppliers", "Automotive aftermarket", "Commercial vehicles", "Trucking & logistics", "Rail", "Marine", "Transportation services"]],
+    ["industrial-services", "Industrial services", ["Testing, inspection & certification", "Environmental services", "Facility & field services", "Engineering & construction services", "Equipment rental"]],
+    ["packaging", "Packaging", ["Rigid packaging", "Flexible packaging", "Paper & corrugated", "Metal & glass packaging", "Labels & specialty"]],
+  ]],
+  ["healthcare", "Healthcare", [
+    ["pharma-services", "Pharma services", ["CDMO", "CRO", "Commercialization services", "Pharma packaging & logistics"]],
+    ["medtech", "Medical devices", ["Surgical & interventional", "Orthopedics", "Diagnostics", "Consumables & disposables", "Device contract manufacturing"]],
+    ["life-sci-tools", "Life science tools", ["Lab equipment & instruments", "Bioprocessing", "Reagents & consumables"]],
+    ["hc-services", "Providers & services", ["Physician practice management", "Behavioral health", "Home health & hospice", "Dental", "Veterinary"]],
+    ["hcit", "Healthcare IT", ["Provider software", "Payer software", "Revenue cycle management", "Data & analytics"]],
+  ]],
+  ["consumer", "Consumer & retail", [
+    ["food-bev", "Food & beverage", ["Packaged food", "Beverages", "Snacks & confectionery", "Food ingredients (branded)"]],
+    ["beauty", "Beauty & personal care", ["Skin care", "Hair care", "Cosmetics", "Fragrance"]],
+    ["household", "Household products", ["Cleaning & laundry", "Home goods", "Pet products"]],
+    ["retail", "Retail & e-commerce", ["Specialty retail", "Grocery & convenience", "E-commerce & DTC"]],
+    ["leisure", "Leisure & restaurants", ["Restaurants", "Fitness", "Travel & hospitality", "Outdoor & sporting goods"]],
+  ]],
+  ["technology", "Technology", [
+    ["software", "Software", ["Vertical software", "Infrastructure software", "Security", "Data & analytics"]],
+    ["it-services", "IT services", ["Managed services", "Consulting & implementation", "Cloud services"]],
+    ["semis", "Semiconductors & hardware", ["Semiconductors", "Semicap equipment", "Hardware & devices", "Electronic manufacturing services"]],
+    ["internet", "Internet & media", ["Marketplaces", "Digital media", "Ad tech"]],
+  ]],
+  ["business-services", "Business services", [
+    ["professional", "Professional services", ["Consulting", "Accounting & tax", "Legal services"]],
+    ["staffing", "Staffing & HR", ["Commercial staffing", "Professional staffing", "HR outsourcing"]],
+    ["marketing", "Marketing services", ["Agencies", "Marketing technology", "Promotional products"]],
+    ["education", "Education & training", ["K-12", "Higher education", "Corporate training"]],
+  ]],
+  ["financial", "Financial services", [
+    ["banks", "Banks & lenders", ["Banks", "Specialty finance"]],
+    ["insurance", "Insurance", ["Carriers", "Brokers & distribution", "Insurance services"]],
+    ["asset-mgmt", "Asset & wealth management", ["Asset managers", "Wealth managers"]],
+    ["fintech", "Fintech & payments", ["Payments", "Financial software"]],
+  ]],
+  ["energy", "Energy & power", [
+    ["oil-gas", "Oil & gas", ["Upstream", "Midstream", "Oilfield services"]],
+    ["power", "Power & utilities", ["Utilities", "Power generation", "Grid & T&D services"]],
+    ["transition", "Energy transition", ["Renewables", "Storage", "EV charging", "Hydrogen & fuels"]],
+  ]],
+].map(([id, name, groups]) => ({ id, name, groups: groups.map(([gid, gname, secs]) => ({ id: gid, key: id + "/" + gid, name: gname, sectors: secs ? secs.map(s => ({ id: gid + "-" + slugify(s), name: s, short: s.length > 24 ? s.split(/[ ,&/]/)[0] : s, g: id + "/" + gid })) : null })) }));
+const verticalById = id => VERTICALS.find(v => v.id === id);
+const groupByKey = k => { const [v, g] = String(k || "").split("/"); return verticalById(v)?.groups.find(x => x.id === g) || null; };
+// The workspace is a group ("industrials/chemicals") or a whole vertical ("industrials").
+let WS = DEFAULT_WS;
+try { const w = localStorage.getItem("homebase.ws"); if (w && (groupByKey(w) || verticalById(w))) WS = w; } catch {}
+const wsName = (w = WS) => groupByKey(w)?.name || ("All " + (verticalById(w)?.name || "").toLowerCase());
+const wsPath = (w = WS) => { const [v] = w.split("/"); const g = groupByKey(w); return g ? `${verticalById(v).name} › ${g.name}` : `${verticalById(v)?.name || ""} (all groups)`; };
+const wsNoun = (w = WS) => { const g = groupByKey(w); return g ? (g.id === "chemicals" ? "chemical" : g.name.toLowerCase()) : (verticalById(w)?.name || "").toLowerCase(); };
+const wsHas = (w, key) => key === w || key.startsWith(w + "/");
 /* ---------- sectors ---------- */
 // Home Base covers chemicals broadly. Each company has business lines in one or more sectors; one is primary.
 const BASE_SECTORS = [
@@ -564,9 +627,12 @@ const BASE_SECTORS = [
   ["electronic", "Electronic & high-purity chemicals", "Electronic"], ["polymers", "Plastics, polymers & additives", "Polymers"], ["construction", "Construction chemicals", "Construction"],
   ["mining", "Mining & metals chemicals", "Mining"], ["inorganics", "Commodity & inorganic chemicals", "Inorganics"], ["specialty", "Specialty & intermediate chemicals", "Specialty"],
   ["distribution", "Chemical distribution", "Distribution"], ["equipment", "Equipment, media & membranes", "Equipment"],
-].map(([id, name, short]) => ({ id, name, short }));
+].map(([id, name, short]) => ({ id, name, short, g: DEFAULT_WS }));
 let customSectors = [];
-const allSectors = () => [...BASE_SECTORS, ...customSectors];
+const OTHER_SECTORS = VERTICALS.flatMap(v => v.groups.flatMap(g => g.sectors || []));
+const allSectors = () => [...BASE_SECTORS, ...OTHER_SECTORS, ...customSectors.map(x => ({ ...x, g: x.g || DEFAULT_WS }))];
+// Sectors of the workspace you are in.
+const wsSectors = () => allSectors().filter(x => wsHas(WS, x.g));
 const sectorById = id => allSectors().find(s => s.id === id) || (id ? { id, name: id.replace(/-/g, " "), short: id.replace(/-/g, " ") } : null);
 function sectorFromName(n) {
   const k = norm(n); if (!k) return null;
@@ -593,7 +659,11 @@ function primarySector(c) {
   if (c.imported_from) return "water";
   return sectorsOf(c).slice().sort((a, b) => (b.revenue_usd_m || 0) - (a.revenue_usd_m || 0))[0]?.sector || "specialty";
 }
-const inSector = (c, id) => !id || primarySector(c) === id || sectorsOf(c).some(s => s.sector === id);
+// A company's group: set on the company, else the group its primary sector belongs to. Everything already here is chemicals.
+const groupOf = c => (c.group && groupByKey(c.group) ? c.group : null) || sectorById(primarySector(c))?.g || DEFAULT_WS;
+const inWs = c => wsHas(WS, groupOf(c));
+// "grp:<key>" filters to a whole group when you are working across a vertical.
+const inSector = (c, id) => !id || (id.startsWith("grp:") ? groupOf(c) === id.slice(4) : primarySector(c) === id || sectorsOf(c).some(s => s.sector === id));
 // Revenue in one sector. Water reads the index's US water treatment revenue.
 function sectorRev(c, id) {
   id = id || primarySector(c);
@@ -721,7 +791,9 @@ function rebuildIndex() {
   entityIndex = new Map();
   for (const e of meta.entities || []) { const o = e.owner_id && companies.get(e.owner_id); if (o) for (const k of nameVariants(e.name)) if (!nameIndex.has(k) && !entityIndex.has(k)) entityIndex.set(k, o); }
 }
-const list = () => [...companies.values()];
+const allList = () => [...companies.values()];
+// Only the companies in the workspace you are in.
+const list = () => memod("ws:list", () => allList().filter(inWs));
 function segments(c) {
   return (c.revenue_by_business || []).map(s => ({ label: s.business, value: num(s.revenue_usd_m) ?? (num(s.pct) !== null && num(c.total_revenue_usd_m) ? s.pct * c.total_revenue_usd_m / 100 : null), pct: num(s.pct) })).filter(s => s.label);
 }
