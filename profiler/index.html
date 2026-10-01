@@ -42,6 +42,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 .brand{font:400 26px/1 var(--f-display);letter-spacing:-.01em;display:flex;align-items:baseline;gap:8px;text-decoration:none;color:var(--ink)}
 .brand small{font:500 10px/1 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
 .wsw{position:relative;margin-left:-8px}
+.linkbtn{border:0;background:none;padding:0 2px;cursor:pointer;color:inherit;font:inherit}
 .top:has(.wsmenu:not([hidden])){z-index:60}
 .wsbtn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:5px 26px 5px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);cursor:pointer;position:relative;font:inherit;text-align:left}
 .wsbtn:hover{border-color:var(--ink-3)}
@@ -584,7 +585,7 @@ const DEFAULT_WS = "industrials/chemicals";
 const VERTICALS = [
   ["industrials", "Industrials", [
     ["chemicals", "Chemicals", null],
-    ["distribution", "Distribution", ["Industrial & MRO distribution", "Electrical distribution", "Building products distribution", "HVAC/R distribution", "Fluid power, PVF & flow distribution", "Safety products distribution", "Packaging & jan-san distribution", "Automotive aftermarket distribution"]],
+    ["distribution", "Distribution", ["Aerospace & defense distribution", "Industrial & MRO distribution", "Electrical distribution", "Building products distribution", "HVAC/R distribution", "Fluid power, PVF & flow distribution", "Safety products distribution", "Packaging & jan-san distribution", "Automotive aftermarket distribution"]],
     ["aero-defense", "Aerospace & defense", ["Aerostructures & components", "Engines & engine components", "Avionics & aerospace electronics", "Aftermarket & MRO", "Defense electronics & C5ISR", "Munitions & weapons systems", "Space", "Defense & government services"]],
     ["building-products", "Building products", ["Residential building products", "Commercial building products", "HVAC equipment", "Plumbing & fixtures", "Roofing & siding", "Windows, doors & millwork", "Insulation & envelope", "Outdoor living"]],
     ["water-flow", "Water & flow control", ["Pumps", "Valves & actuators", "Flow measurement & instrumentation", "Water infrastructure & meters", "Filtration & treatment equipment", "Fluid handling components"]],
@@ -695,9 +696,11 @@ function primarySector(c) {
 }
 // A company's group: set on the company, else the group its primary sector belongs to. Everything already here is chemicals.
 const groupOf = c => (c.group && groupByKey(c.group) ? c.group : null) || sectorById(primarySector(c))?.g || DEFAULT_WS;
-const inWs = c => wsHas(WS, groupOf(c));
+// Every group a company shows up in: its home group, any extra groups set on it, and the group of each sector it sells into.
+const groupsOf = c => memod("grps:" + c.id, () => [...new Set([groupOf(c), ...(Array.isArray(c.groups) ? c.groups.filter(groupByKey) : []), ...sectorsOf(c).map(x => sectorById(x.sector)?.g).filter(Boolean)])]);
+const inWs = c => groupsOf(c).some(g => wsHas(WS, g));
 // "grp:<key>" filters to a whole group when you are working across a vertical.
-const inSector = (c, id) => !id || (id.startsWith("grp:") ? groupOf(c) === id.slice(4) : primarySector(c) === id || sectorsOf(c).some(s => s.sector === id));
+const inSector = (c, id) => !id || (id.startsWith("grp:") ? groupsOf(c).includes(id.slice(4)) : primarySector(c) === id || sectorsOf(c).some(s => s.sector === id));
 // Revenue in one sector. Water reads the index's US water treatment revenue.
 function sectorRev(c, id) {
   id = id || primarySector(c);
@@ -939,7 +942,7 @@ async function syncDeals(c) {
 }
 // Deals in the workspace: linked to a company in it, or tagged with it. Untagged, unlinked deals are chemicals.
 function dealWsKeys(d) {
-  const ks = [d.acquirerId, d.targetId].filter(x => x && companies.has(x)).map(x => groupOf(companies.get(x)));
+  const ks = [d.acquirerId, d.targetId].filter(x => x && companies.has(x)).flatMap(x => groupsOf(companies.get(x)));
   return ks.length ? ks : [d.ws || DEFAULT_WS];
 }
 const dealInWs = d => dealWsKeys(d).some(k => wsHas(WS, k));
@@ -2509,7 +2512,7 @@ function viewSnapshot(c) {
   const bk = Object.entries(water && Object.keys(buckets(c)).length ? buckets(c) : (c[EM_FIELD] || {})).sort((a, b) => b[1] - a[1]).slice(0, 10);
   const secRows = tableRows(c, "sectors");
   return `
-  <div class="sec">${secHead(c, "sectors", "Business lines by sector", `<label class="faint" style="font-size:12px">Vertical <select id="grpsel" aria-label="Vertical and group">${VERTICALS.map(v => `<optgroup label="${esc(v.name)}">${v.groups.map(g => `<option value="${esc(g.key)}" ${g.key === groupOf(c) ? "selected" : ""}>${esc(g.name)}</option>`).join("")}</optgroup>`).join("")}</select></label> <label class="faint" style="font-size:12px">Primary <select id="primsel" aria-label="Primary sector">${sectorOptions(allSectors().filter(x => wsHas(groupOf(c).split("/")[0], x.g)), ps)}</select></label>`, "sectors", ["sectors", "primary_sector"])}
+  <div class="sec">${secHead(c, "sectors", "Business lines by sector", `<label class="faint" style="font-size:12px">Vertical <select id="grpsel" aria-label="Vertical and group">${VERTICALS.map(v => `<optgroup label="${esc(v.name)}">${v.groups.map(g => `<option value="${esc(g.key)}" ${g.key === groupOf(c) ? "selected" : ""}>${esc(g.name)}</option>`).join("")}</optgroup>`).join("")}</select></label> <span class="faint" style="font-size:12px">Also in ${groupsOf(c).filter(g => g !== groupOf(c)).map(g => `<span class="pill">${esc(groupByKey(g)?.name || g)}${(c.groups || []).includes(g) ? ` <button class="linkbtn" data-act="grprm" data-g="${esc(g)}" aria-label="Remove from ${esc(groupByKey(g)?.name || g)}">×</button>` : ""}</span>`).join(" ") || "no other groups"} <select id="grpadd" aria-label="Also list in another group"><option value="">+ Add group</option>${VERTICALS.map(v => `<optgroup label="${esc(v.name)}">${v.groups.filter(g => !groupsOf(c).includes(g.key)).map(g => `<option value="${esc(g.key)}">${esc(g.name)}</option>`).join("")}</optgroup>`).join("")}</select></span> <label class="faint" style="font-size:12px">Primary <select id="primsel" aria-label="Primary sector">${sectorOptions(allSectors().filter(x => wsHas(groupOf(c).split("/")[0], x.g)), ps)}</select></label>`, "sectors", ["sectors", "primary_sector"])}
     ${editTable(c, "sectors", [{ k: "name", label: "Sector" }, { k: "what", label: "Products or brands" }, { k: "revenue_usd_m", label: "Revenue $M", t: "num", w: "110px" }, { k: "pct", label: "% of total", t: "num", w: "100px" }], secRows, { empty: "No business lines yet. Hit Enhance and Claude splits revenue by sector." })}
     <p class="faint" style="font-size:12px;margin-top:6px">Type a sector name, e.g. Lubricants, Food ingredients or Personal care. A company shows up in every sector listed here.</p></div>
   <div class="sec"><div class="sec-h"><h2>Key stats</h2><span class="faint" style="font-size:12px">Bars show where ${esc(c.name)} sits among ${peers.length} ${esc(pl)}. Type over any number to override it.</span></div>
@@ -3091,7 +3094,7 @@ function viewEndMarkets() {
 
 /* ---------- vertical switcher ---------- */
 function wsMenuHtml() {
-  const n = memod("wscounts", () => { const m = {}; for (const c of allList()) { const g = groupOf(c); m[g] = (m[g] || 0) + 1; const v = g.split("/")[0]; m[v] = (m[v] || 0) + 1; } return m; });
+  const n = memod("wscounts", () => { const m = {}; for (const c of allList()) { const gs = groupsOf(c); for (const g of gs) m[g] = (m[g] || 0) + 1; for (const v of new Set(gs.map(g => g.split("/")[0]))) m[v] = (m[v] || 0) + 1; } return m; });
   const b = (key, label) => `<button type="button" data-ws="${esc(key)}" aria-current="${key === WS}"><span>${esc(label)}</span><small>${n[key] || 0}</small></button>`;
   return `<div class="wsh"><b>Switch vertical</b><span>You stay in the one you pick until you switch again.</span></div>` + VERTICALS.map(v => `<div class="wsv"><h3><span>${esc(v.name)}</span>${b(v.id, "All " + v.name.toLowerCase())}</h3><div class="wsgrid">${v.groups.map(g => b(g.key, g.name)).join("")}</div></div>`).join("");
 }
@@ -3127,7 +3130,7 @@ function render() {
   setLive();
   const ss = $("#secsel");
   if (ss && document.activeElement !== ss) {
-    const counts = memod("seccounts", () => { const m = {}; for (const c of list()) { for (const x of sectorsOf(c)) m[x.sector] = (m[x.sector] || 0) + 1; const g = "grp:" + groupOf(c); m[g] = (m[g] || 0) + 1; } return m; });
+    const counts = memod("seccounts", () => { const m = {}; for (const c of list()) { for (const x of sectorsOf(c)) m[x.sector] = (m[x.sector] || 0) + 1; for (const g of groupsOf(c)) m["grp:" + g] = (m["grp:" + g] || 0) + 1; } return m; });
     const opt = x => `<option value="${esc(x.id)}" ${x.id === ui.sector ? "selected" : ""} title="${esc(x.name)}">${esc(x.short)}${counts[x.id] ? ` (${counts[x.id]})` : ""}</option>`;
     const v = verticalById(WS);
     ss.innerHTML = `<option value="">All ${esc(groupByKey(WS) ? "sectors" : v.name.toLowerCase())}</option>` + (v ? v.groups.map(g => { const xs = wsSectors().filter(x => x.g === g.key); return `<optgroup label="${esc(g.name)}"><option value="grp:${esc(g.key)}" ${ui.sector === "grp:" + g.key ? "selected" : ""}>All ${esc(g.name.toLowerCase())}${counts["grp:" + g.key] ? ` (${counts["grp:" + g.key]})` : ""}</option>${xs.map(opt).join("")}</optgroup>`; }).join("") : wsSectors().map(opt).join(""));
@@ -3552,6 +3555,10 @@ app.addEventListener("change", async e => {
   else if (id === "fotype") { ui.otype = e.target.value; ui.limit = 150; }
   else if (id === "tamgeo" || id === "tamyear") { saveTam(ui.sector, id === "tamgeo" ? { geo: e.target.value } : { base_year: +e.target.value }).then(render); return; }
   else if (e.target.dataset.tamsel) { const t = tams[ui.sector] || {}, src = (t.sources || []).map(x => ({ ...x })), row = src[+e.target.dataset.r]; if (row) { row[e.target.dataset.tamsel] = e.target.value; saveTam(ui.sector, { sources: src }).then(render); } return; }
+  else if (id === "grpadd") {
+    const c = getC(route().id), g = e.target.value; if (!c || !g) return;
+    save(c.id, { groups: [...new Set([...(c.groups || []), g])] }, []).then(() => { ver++; toast(`${c.name} now also shows in ${wsPath(g)}`); render(); }); return;
+  }
   else if (id === "grpsel") {
     const c = getC(route().id); if (!c) return;
     const g = e.target.value, ps = primarySector(c), keep = sectorById(ps)?.g === g;
@@ -3709,6 +3716,7 @@ app.addEventListener("click", async e => {
   if (act === "logoadd") { $("#logoFile")?.click(); return; }
   if (act === "logodel") { try { await db.doc("logos/" + c.id).delete(); logos.delete(c.id); render(); toast("Logo removed"); } catch (err) { handleWriteError(err); } return; }
   if (act === "ctwedit") { ui.ctwEdit = c.id; render(); return; }
+  if (act === "grprm") { const g = btn.dataset.g; await save(c.id, { groups: (c.groups || []).filter(x => x !== g) }, []); ver++; toast(`Removed from ${groupByKey(g)?.name || g}`); render(); return; }
   if (act === "ctwcancel") { document.activeElement?.blur?.(); ui.ctwEdit = null; render(); return; }
   if (act === "ctwlog") { await logContact(c.id); return; }
   if (act === "ctwremove") { ui.ctwEdit = null; await save(c.id, { ctw: { ...(c.ctw || {}), on: false } }, [], true); toast("Taken off the campaign list"); render(); return; }
