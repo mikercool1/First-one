@@ -17,7 +17,7 @@ The ownership filter in the left rail (PE, Family, ESOP, Private, Corporate) app
 
 ## Look
 
-Navy (#0A2A44) and safety orange (#F26300) on industrial and foundation grays, set in Montserrat, following the user's Workmark brand board: heavy uppercase headlines with a short orange rule, spaced small-caps labels, navy bands and hero panels. DNA bands keep their own green, amber and red.
+Rugged shop-floor design: gunmetal and steel, safety yellow used sparingly, a hazard stripe, condensed signage-style headings, and a left control rail. DNA bands are green, amber and red. (A navy and orange version following the Workmark brand board was tried and set aside; it is in commit 2ccfcf2.)
 
 ## Brand owners
 
