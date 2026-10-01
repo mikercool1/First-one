@@ -585,7 +585,7 @@ const DEFAULT_WS = "industrials/chemicals";
 const VERTICALS = [
   ["industrials", "Industrials", [
     ["chemicals", "Chemicals", null],
-    ["distribution", "Distribution", ["Aerospace & defense distribution", "Industrial & MRO distribution", "Electrical distribution", "Building products distribution", "HVAC/R distribution", "Fluid power, PVF & flow distribution", "Safety products distribution", "Packaging & jan-san distribution", "Automotive aftermarket distribution"]],
+    ["distribution", "Distribution", ["Aerospace & defense distribution", "Chemical & plastics distribution", "Industrial & MRO distribution", "Electrical distribution", "Building products distribution", "HVAC/R distribution", "Fluid power, PVF & flow distribution", "Safety products distribution", "Packaging & jan-san distribution", "Pool & leisure distribution", "Automotive aftermarket distribution"]],
     ["aero-defense", "Aerospace & defense", ["Aerostructures & components", "Engines & engine components", "Avionics & aerospace electronics", "Aftermarket & MRO", "Defense electronics & C5ISR", "Munitions & weapons systems", "Space", "Defense & government services"]],
     ["building-products", "Building products", ["Residential building products", "Commercial building products", "HVAC equipment", "Plumbing & fixtures", "Roofing & siding", "Windows, doors & millwork", "Insulation & envelope", "Outdoor living"]],
     ["water-flow", "Water & flow control", ["Pumps", "Valves & actuators", "Flow measurement & instrumentation", "Water infrastructure & meters", "Filtration & treatment equipment", "Fluid handling components"]],
@@ -697,10 +697,12 @@ function primarySector(c) {
 // A company's group: set on the company, else the group its primary sector belongs to. Everything already here is chemicals.
 const groupOf = c => (c.group && groupByKey(c.group) ? c.group : null) || sectorById(primarySector(c))?.g || DEFAULT_WS;
 // Every group a company shows up in: its home group, any extra groups set on it, and the group of each sector it sells into.
-const groupsOf = c => memod("grps:" + c.id, () => [...new Set([groupOf(c), ...(Array.isArray(c.groups) ? c.groups.filter(groupByKey) : []), ...sectorsOf(c).map(x => sectorById(x.sector)?.g).filter(Boolean)])]);
+// Cross-links: other sectors a company also belongs in, with the reason ({sector, why, conf}).
+const crossOf = c => Array.isArray(c.cross) ? c.cross.filter(x => x && sectorById(x.sector)?.g) : [];
+const groupsOf = c => memod("grps:" + c.id, () => [...new Set([groupOf(c), ...(Array.isArray(c.groups) ? c.groups.filter(groupByKey) : []), ...sectorsOf(c).map(x => sectorById(x.sector)?.g).filter(Boolean), ...crossOf(c).map(x => sectorById(x.sector).g)])]);
 const inWs = c => groupsOf(c).some(g => wsHas(WS, g));
 // "grp:<key>" filters to a whole group when you are working across a vertical.
-const inSector = (c, id) => !id || (id.startsWith("grp:") ? groupsOf(c).includes(id.slice(4)) : primarySector(c) === id || sectorsOf(c).some(s => s.sector === id));
+const inSector = (c, id) => !id || (id.startsWith("grp:") ? groupsOf(c).includes(id.slice(4)) : primarySector(c) === id || sectorsOf(c).some(s => s.sector === id) || crossOf(c).some(x => x.sector === id));
 // Revenue in one sector. Water reads the index's US water treatment revenue.
 function sectorRev(c, id) {
   id = id || primarySector(c);
@@ -774,7 +776,7 @@ function route() {
   if (h.startsWith("s.")) return { view: "sponsor", id: decodeURIComponent(h.slice(2)) };
   if (h.startsWith("precedents")) { const [, forId] = h.split("~"); return { view: "precedents", forId: forId ? decodeURIComponent(forId) : "" }; }
   if (h.startsWith("sponsors")) { const [, fk, fv] = h.split("~"); return { view: "sponsors", fk: fk || "", fv: fv ? decodeURIComponent(fv) : "" }; }
-  if (["home", "sectors", "companies", "targets", "endmarkets", "tam", "inmarket", "campaign"].includes(h)) return { view: h };
+  if (["home", "sectors", "companies", "targets", "endmarkets", "tam", "inmarket", "campaign", "crosslinks"].includes(h)) return { view: h };
   return { view: "home" };
 }
 
@@ -2512,7 +2514,7 @@ function viewSnapshot(c) {
   const bk = Object.entries(water && Object.keys(buckets(c)).length ? buckets(c) : (c[EM_FIELD] || {})).sort((a, b) => b[1] - a[1]).slice(0, 10);
   const secRows = tableRows(c, "sectors");
   return `
-  <div class="sec">${secHead(c, "sectors", "Business lines by sector", `<label class="faint" style="font-size:12px">Vertical <select id="grpsel" aria-label="Vertical and group">${VERTICALS.map(v => `<optgroup label="${esc(v.name)}">${v.groups.map(g => `<option value="${esc(g.key)}" ${g.key === groupOf(c) ? "selected" : ""}>${esc(g.name)}</option>`).join("")}</optgroup>`).join("")}</select></label> <span class="faint" style="font-size:12px">Also in ${groupsOf(c).filter(g => g !== groupOf(c)).map(g => `<span class="pill">${esc(groupByKey(g)?.name || g)}${(c.groups || []).includes(g) ? ` <button class="linkbtn" data-act="grprm" data-g="${esc(g)}" aria-label="Remove from ${esc(groupByKey(g)?.name || g)}">×</button>` : ""}</span>`).join(" ") || "no other groups"} <select id="grpadd" aria-label="Also list in another group"><option value="">+ Add group</option>${VERTICALS.map(v => `<optgroup label="${esc(v.name)}">${v.groups.filter(g => !groupsOf(c).includes(g.key)).map(g => `<option value="${esc(g.key)}">${esc(g.name)}</option>`).join("")}</optgroup>`).join("")}</select></span> <label class="faint" style="font-size:12px">Primary <select id="primsel" aria-label="Primary sector">${sectorOptions(allSectors().filter(x => wsHas(groupOf(c).split("/")[0], x.g)), ps)}</select></label>`, "sectors", ["sectors", "primary_sector"])}
+  <div class="sec">${secHead(c, "sectors", "Business lines by sector", `<label class="faint" style="font-size:12px">Vertical <select id="grpsel" aria-label="Vertical and group">${VERTICALS.map(v => `<optgroup label="${esc(v.name)}">${v.groups.map(g => `<option value="${esc(g.key)}" ${g.key === groupOf(c) ? "selected" : ""}>${esc(g.name)}</option>`).join("")}</optgroup>`).join("")}</select></label> <span class="faint" style="font-size:12px">Also in ${groupsOf(c).filter(g => g !== groupOf(c)).map(g => { const xs = crossOf(c).filter(x => sectorById(x.sector).g === g); return `<span class="pill" title="${esc(xs.map(x => sectorById(x.sector).name + ": " + (x.why || "")).join("\n"))}">${esc(groupByKey(g)?.name || g)}${xs.length ? ` · ${esc(xs.map(x => sectorById(x.sector).short).join(", "))}` : ""}${(c.groups || []).includes(g) || xs.length ? ` <button class="linkbtn" data-act="grprm" data-g="${esc(g)}" aria-label="Remove from ${esc(groupByKey(g)?.name || g)}">×</button>` : ""}</span>`; }).join(" ") || "no other groups"} <select id="grpadd" aria-label="Also list in another group"><option value="">+ Add group</option>${VERTICALS.map(v => `<optgroup label="${esc(v.name)}">${v.groups.filter(g => !groupsOf(c).includes(g.key)).map(g => `<option value="${esc(g.key)}">${esc(g.name)}</option>`).join("")}</optgroup>`).join("")}</select></span> <label class="faint" style="font-size:12px">Primary <select id="primsel" aria-label="Primary sector">${sectorOptions(allSectors().filter(x => wsHas(groupOf(c).split("/")[0], x.g)), ps)}</select></label>`, "sectors", ["sectors", "primary_sector"])}
     ${editTable(c, "sectors", [{ k: "name", label: "Sector" }, { k: "what", label: "Products or brands" }, { k: "revenue_usd_m", label: "Revenue $M", t: "num", w: "110px" }, { k: "pct", label: "% of total", t: "num", w: "100px" }], secRows, { empty: "No business lines yet. Hit Enhance and Claude splits revenue by sector." })}
     <p class="faint" style="font-size:12px;margin-top:6px">Type a sector name, e.g. Lubricants, Food ingredients or Personal care. A company shows up in every sector listed here.</p></div>
   <div class="sec"><div class="sec-h"><h2>Key stats</h2><span class="faint" style="font-size:12px">Bars show where ${esc(c.name)} sits among ${peers.length} ${esc(pl)}. Type over any number to override it.</span></div>
@@ -3092,11 +3094,22 @@ function viewEndMarkets() {
   <div class="panel bars">${bars}</div>`;
 }
 
+/* ---------- cross-links: companies that also belong in other groups ---------- */
+function viewCrosslinks() {
+  const rows = allList().flatMap(c => [...crossOf(c).map(x => ({ c, g: sectorById(x.sector).g, sec: sectorById(x.sector).name, why: x.why || "", conf: x.conf || "" })), ...(c.groups || []).filter(g => groupByKey(g) && !crossOf(c).some(x => sectorById(x.sector).g === g)).map(g => ({ c, g, sec: "", why: "Added by hand", conf: "" }))]).filter(r => r.g !== groupOf(r.c));
+  const by = new Map(); for (const r of rows) { if (!by.has(r.g)) by.set(r.g, []); by.get(r.g).push(r); }
+  const order = VERTICALS.flatMap(v => v.groups.map(g => g.key)).filter(k => by.has(k));
+  const cos = new Set(rows.map(r => r.c.id)).size;
+  return `<div class="page-h"><div><div class="eyebrow">All verticals</div><h1>Cross-links</h1><p>${cos} companies also belong in other groups (${rows.length} links). Each shows up in those groups' pages too. Remove a link with × on the company's Peers tab, or add one with “+ Add group”.</p></div></div>
+  ${order.map(k => `<div class="sec"><div class="sec-h"><h2>${esc(wsPath(k))}</h2><span class="faint" style="font-size:12px">${by.get(k).length} companies</span><span class="sp"></span><button class="btn sm ghost" data-ws="${esc(k)}">Go to ${esc(groupByKey(k).name)}</button></div>
+    <div class="tw"><table><thead><tr><th>Company</th><th>Home group</th><th>Linked as</th><th>Why</th><th>Confidence</th></tr></thead><tbody>${by.get(k).sort((a, b) => a.c.name.localeCompare(b.c.name)).map(r => `<tr><td class="cname"><a href="#c.${esc(r.c.id)}.stats">${esc(r.c.name)}</a></td><td class="muted">${esc(groupByKey(groupOf(r.c))?.name || "")}</td><td>${esc(r.sec || "—")}</td><td class="muted">${esc(r.why)}</td><td>${esc(r.conf)}</td></tr>`).join("")}</tbody></table></div></div>`).join("") || `<p class="faint">No cross-links yet.</p>`}`;
+}
 /* ---------- vertical switcher ---------- */
 function wsMenuHtml() {
   const n = memod("wscounts", () => { const m = {}; for (const c of allList()) { const gs = groupsOf(c); for (const g of gs) m[g] = (m[g] || 0) + 1; for (const v of new Set(gs.map(g => g.split("/")[0]))) m[v] = (m[v] || 0) + 1; } return m; });
   const b = (key, label) => `<button type="button" data-ws="${esc(key)}" aria-current="${key === WS}"><span>${esc(label)}</span><small>${n[key] || 0}</small></button>`;
-  return `<div class="wsh"><b>Switch vertical</b><span>You stay in the one you pick until you switch again.</span></div>` + VERTICALS.map(v => `<div class="wsv"><h3><span>${esc(v.name)}</span>${b(v.id, "All " + v.name.toLowerCase())}</h3><div class="wsgrid">${v.groups.map(g => b(g.key, g.name)).join("")}</div></div>`).join("");
+  const nx = allList().filter(c => groupsOf(c).length > 1).length;
+  return `<div class="wsh"><b>Switch vertical</b><span>You stay in the one you pick until you switch again.${nx ? ` <a href="#crosslinks" data-wsclose="1">${nx} companies are cross-linked</a>` : ""}</span></div>` + VERTICALS.map(v => `<div class="wsv"><h3><span>${esc(v.name)}</span>${b(v.id, "All " + v.name.toLowerCase())}</h3><div class="wsgrid">${v.groups.map(g => b(g.key, g.name)).join("")}</div></div>`).join("");
 }
 function wsLabels() {
   const [v] = WS.split("/"), g = groupByKey(WS);
@@ -3116,6 +3129,7 @@ document.addEventListener("click", e => {
   if (t.closest("#wsbtn")) { toggleWsMenu(); return; }
   const w = t.closest("[data-ws]");
   if (w) { const k = w.dataset.ws; toggleWsMenu(false); if (k !== WS) { setWs(k); toast("Switched to " + wsPath()); } if (!w.dataset.stay && location.hash !== "#home") location.hash = "home"; else render(); return; }
+  if (t.closest("[data-wsclose]")) { toggleWsMenu(false); return; }
   if (!t.closest("#wsmenu") && !$("#wsmenu")?.hidden) toggleWsMenu(false);
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#wsmenu")?.hidden) { toggleWsMenu(false); $("#wsbtn")?.focus(); } });
@@ -3148,6 +3162,7 @@ function render() {
   else if (r.view === "sectors") html = viewSectors();
   else if (r.view === "tam") html = viewTam();
   else if (r.view === "home") html = viewHome();
+  else if (r.view === "crosslinks") html = viewCrosslinks();
   else if (r.view === "campaign") html = viewCampaign();
   else if (r.view === "sponsors") html = viewSponsors(r);
   else if (r.view === "deal") html = viewDeal(r.id);
@@ -3716,7 +3731,7 @@ app.addEventListener("click", async e => {
   if (act === "logoadd") { $("#logoFile")?.click(); return; }
   if (act === "logodel") { try { await db.doc("logos/" + c.id).delete(); logos.delete(c.id); render(); toast("Logo removed"); } catch (err) { handleWriteError(err); } return; }
   if (act === "ctwedit") { ui.ctwEdit = c.id; render(); return; }
-  if (act === "grprm") { const g = btn.dataset.g; await save(c.id, { groups: (c.groups || []).filter(x => x !== g) }, []); ver++; toast(`Removed from ${groupByKey(g)?.name || g}`); render(); return; }
+  if (act === "grprm") { const g = btn.dataset.g; await save(c.id, { groups: (c.groups || []).filter(x => x !== g), cross: crossOf(c).filter(x => sectorById(x.sector).g !== g) }, []); ver++; toast(`Removed from ${groupByKey(g)?.name || g}`); render(); return; }
   if (act === "ctwcancel") { document.activeElement?.blur?.(); ui.ctwEdit = null; render(); return; }
   if (act === "ctwlog") { await logContact(c.id); return; }
   if (act === "ctwremove") { ui.ctwEdit = null; await save(c.id, { ctw: { ...(c.ctw || {}), on: false } }, [], true); toast("Taken off the campaign list"); render(); return; }
