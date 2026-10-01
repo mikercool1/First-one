@@ -22,7 +22,7 @@ Rugged shop-floor design: gunmetal and steel, safety yellow used sparingly, a ha
 
 ## Brand owners
 
-- **Owner verified**: the market map's verified Companies tab (919 brands in v9).
+- **Owner verified**: the market map's verified Companies tab (1,089 brands in v10).
 - **Owner unverified**: the workbook's prior (78).
 - **Claude's guess**: for brands the workbook has no owner for, Claude's best guess from its knowledge and the maker name on distributor listings, with High, Medium or Low confidence.
 - **Workbook triage guess**: where Claude had no guess, the owner named by the workbook's triage pass (v9 onward). Every brand page also shows its triage bucket and, when it differs, the triage owner guess. Stored in `import/brand_owners.json`. A guess that names a company already profiled links to it and shows under "Likely also owns" on that company. It does not count toward that company's DNA or SKU mix.
@@ -44,7 +44,7 @@ Seven checks, each Pass (full points), Partly (half) or Fail:
 
 Claude's judgments for all owners are in `import/judgments.json`. They come from Claude's knowledge plus the workbook facts, without new web research. On a company page you can click any check to change it, which saves as "Your call", or ask Claude to re-check the three judgment calls. Overrides live in the `dna` collection (one document per company), so re-importing the workbook never erases them. Precedence: your call, then a re-check from the page, then the imported judgment, then the data rule.
 
-**DNA workbook.** `Probrands_DNA_v9.xlsx` holds the DNA test in Excel, ready to paste into the market map. It has three sheets:
+**DNA workbook.** `Probrands_DNA_v10.xlsx` holds the DNA test in Excel, ready to paste into the market map. It has three sheets:
 - DNA by owner: every check's result, points, source and reason, keyed by the Master tab's Owner ID.
 - DNA by brand: each brand's owner score plus the three data checks scored for the brand alone, keyed by the Brands tab's Brand ID.
 - How it's scored.
@@ -53,7 +53,7 @@ To rebuild it after an import:
 
 ```
 NODE_PATH=$(npm root -g) node probrands/import/dump_dna.js dna.json
-python3 probrands/import/export_dna.py Professional_Brands_Market_Map_v9.xlsx dna.json probrands/Probrands_DNA_v9.xlsx
+python3 probrands/import/export_dna.py Professional_Brands_Market_Map_v10.xlsx dna.json probrands/Probrands_DNA_v10.xlsx
 ```
 
 The dump scores with the app's own code, so the numbers match the screen. Overrides saved in the app are not included.
@@ -63,13 +63,13 @@ Distributor channels (broadline MRO, trade specialty, retail-leaning) and the en
 ## Data
 
 ```
-python3 probrands/import/build_import.py Professional_Brands_Market_Map_v9.xlsx
+python3 probrands/import/build_import.py Professional_Brands_Market_Map_v10.xlsx
 ```
 
 This writes `import/out/data/*.json`, one file per document in the app's `data` collection: `co-N` (company summaries), `dt-N` (details), `br-N` (every brand), `deals`, `dists` and `index`. Every SKU goes in `import/out/sku/p-N.json`, the `sku` collection, which loads one document at a time when a brand page opens. Lists are split across documents because the database stores at most 256 KB per document; nothing is dropped. Load them with the ArtifactData tool (a `set` of each file). It also writes `import/out/judge/batch-N.json`, the facts behind the judgment calls, for scoring new owners.
 
 Owners come from the Master tab. Clean-up rules:
-- Owners listed twice are merged (11 merges in v9, including DuPont, S.C. Johnson, Kimberly-Clark, Control Solutions, Desco and FPC).
+- Owners listed twice are merged (16 merges in v10, including DuPont, S.C. Johnson, Kimberly-Clark, Control Solutions, Desco, FPC, FBC Chemical and Protexall).
 - "Unknown" placeholder rows (including "Unknown (…)" variants) get no profile; their brands stay unowned.
 - Brands that only carry an unverified "Likely owner (PRIOR)" join a matching Master owner, or become an owner marked unverified.
 
@@ -77,4 +77,4 @@ The database still holds the earlier version's `companies`, `details` and `meta`
 
 Columns read when the workbook fills them (empty in v9): Est. brand rev, Pro brand rev, EBITDA reported, Platform EBITDA, EBITDA margin, the Master % by trade and % by package format splits, and List price. The app shows each one as soon as it has a value. Mfr part # is shown in the product table.
 
-Loaded now: v9 (1 Oct 2026), with 630 owners (152 new, all judged), all 3,094 brands, 10,511 SKUs and 382 deals. Brands: 919 verified owner, 78 workbook prior, 1,689 Claude guesses, 61 workbook triage guesses, 347 not identified. The v9 Targets tab is not read separately: its section A owners are already on the screen, and its section B candidates are the brands in the Actionable candidate triage bucket.
+Loaded now: v10 (1 Oct 2026), with 761 owners (131 new, all judged), all 3,094 brands, 10,511 SKUs and 438 deals. Brands: 1,089 verified owner, 78 workbook prior, 1,531 Claude guesses, 55 workbook triage guesses, 341 not identified. DNA bands: 206 green, 343 amber, 212 red. The v10 Targets tab is not read separately: its section A owners are already on the screen, and its section B candidates are the brands in the Actionable candidate triage bucket.
