@@ -11,7 +11,7 @@ Writes import/out/data/*.json, one file per document of the app's "data" collect
 Writes import/out/sku/p-N.json, the "sku" collection: every scraped SKU, grouped by brand, loaded on demand.
 Also writes import/out/judge/batch-N.json: the facts Claude needs for the judgment tests.
 Judgments live in import/judgments.json (company id -> verdicts) and are merged into co-N.
-Claude's best-guess owners for brands the workbook has no owner for live in import/brand_owners.json (brand id -> guess).
+Claude's best-guess owners for brands the workbook has no owner for live in import/brand_owners.json (brand name -> guess).
 
 Owners come from the Master tab (verified ownership, with facts from Companies, Profiles and
 Sources). Brands that only carry Claude's unverified "Likely owner (PRIOR)" join a Master owner
@@ -441,8 +441,12 @@ for p in products:
     if s(p.get("Manufacturer as listed")):
         maker[s(p.get("Brand"))][re.sub(r"[®™]", "", s(p["Manufacturer as listed"]))] += 1
 out_br, out_sku = {}, {}
+guess_by_name = {key(k) or k.lower(): v for k, v in guesses.items()}
 for b in brands:
-    bid, name = s(b["Brand ID"]).lower(), s(b["Brand"])
+    name = s(b["Brand"])  # brand ids come from the name: the workbook renumbers its Brand IDs between versions
+    bid = slug(name) or "brand"
+    while bid in out_br:
+        bid += "-2"
     ps = prod_by_brand.get(name, [])
     bd = collections.Counter(s(p.get("Distributor")) for p in ps if s(p.get("Distributor")))
     fm = collections.Counter(s(p.get("Form factor")) or "Other" for p in ps)
@@ -454,7 +458,7 @@ for b in brands:
     if oid:
         rec.update(owner_id=ids[oid], owner=owners[oid]["name"], status=status, oclass=out_co[ids[oid]]["oclass"])
     else:
-        g = guesses.get(bid) or {}
+        g = guesses.get(name) or guess_by_name.get(key(name) or name.lower()) or {}
         if s(g.get("owner")):
             hit = name_key.get(key(g["owner"])) or name_key.get(key(g.get("parent")))
             rec.update(status="guess", owner=s(g["owner"]), parent=s(g.get("parent")), oclass=GUESS_CLASS.get(s(g.get("type")), "private"),
