@@ -1,13 +1,18 @@
-"""Build Probrands database documents from the Professional Brands Market Map workbook.
+"""Build the Probrands database from the Professional Brands Market Map workbook.
 
 Usage: python3 probrands/import/build_import.py <Professional_Brands_Market_Map.xlsx>
 
-Writes import/out/companies/<id>.json (summary), import/out/details/<id>.json,
-import/out/meta/entities.json (every brand and acquired company that has a known owner) and import/out/meta/deals.json (deals that are not an owner's own acquisition).
+Writes import/out/data/*.json, one file per document of the app's "data" collection:
+  co-N   company summaries (owner, model, SKU mix, the metrics behind the DNA test, Claude's judgment)
+  dt-N   company details (write-up, brand-by-brand list, acquisitions, sources)
+  deals  every deal in the ledger, with the acquiring and target owners resolved
+  dists  the distributor list with channel class and end market
+Also writes import/out/judge/batch-N.json: the facts Claude needs for the judgment tests.
+Judgments live in import/judgments.json (company id -> verdicts) and are merged into co-N.
 
 Owners come from the Master tab (verified ownership, with facts from Companies, Profiles and
-Sources). Brands that only carry Claude's unverified "Likely owner (PRIOR)" join a Master
-owner when the names match, and otherwise become starter profiles with ownership rated Low.
+Sources). Brands that only carry Claude's unverified "Likely owner (PRIOR)" join a Master owner
+when the names match, and otherwise become owners of their own with ownership marked unverified.
 """
 import collections, glob, json, os, re, sys, unicodedata
 
@@ -72,21 +77,7 @@ def key(name):
 
 ALIASES = {"itw": "illinoistoolworks"}  # prior name -> Master key
 
-# Trades: the app's end markets. Workbook trade labels map onto them.
-TRADES = ["Industrial MRO", "Plumbing", "HVAC/R", "Electrical", "Construction & Contractor", "Facilities & Janitorial",
-          "Automotive & Fleet", "Welding & Fabrication", "Water & Wastewater", "Other"]
-TRADE_MAP = {"Industrial MRO": ["Industrial MRO"], "Plumbing": ["Plumbing"], "HVAC/R": ["HVAC/R"], "Electrical": ["Electrical"],
-             "Plumbing/HVAC/Electrical": ["Plumbing", "HVAC/R", "Electrical"], "Construction": ["Construction & Contractor"],
-             "Construction & Contractor": ["Construction & Contractor"], "Facilities & Janitorial": ["Facilities & Janitorial"],
-             "Automotive": ["Automotive & Fleet"], "Heavy Duty / Fleet": ["Automotive & Fleet"], "Automotive & Fleet": ["Automotive & Fleet"],
-             "Welding": ["Welding & Fabrication"], "Welding & Fabrication": ["Welding & Fabrication"], "Water & Wastewater": ["Water & Wastewater"]}
-
-
-def trades_of(label):
-    return TRADE_MAP.get(s(label), ["Other"] if s(label) and s(label) != "Multi-trade" else [])
-
-
-# Sector ids match BASE_SECTORS in index.html; the regexes mirror CAT_SECTOR there (first match wins).
+# Product family of a category (first match wins).
 CAT_SECTOR = [
     (r"hand (cleaner|wipe|soap|care)|skin|barrier cream|sunscreen", "hand-care"),
     (r"disinfect|sanitiz|insecticide|wasp|hornet|pest|rodent|odor|deodor", "sanitation"),
@@ -109,11 +100,6 @@ def cat_sector(cat):
         if re.search(pat, cat or "", re.I):
             return sid
     return "other"
-
-
-OWNER_TYPE = {"Public": "Public", "Private (family)": "Family/founder-owned", "Founder / family": "Family/founder-owned",
-              "PE-backed": "PE-owned", "ESOP / employee": "ESOP", "Subsidiary of public co": "Subsidiary of strategic",
-              "Subsidiary of private co": "Subsidiary of strategic", "Private": "Other", "Unknown": "Other"}
 
 
 def split_prior(raw):
@@ -259,137 +245,229 @@ for d in sorted(deal_rows, key=lambda d: s(d.get("Date")) or s(d.get("Year")), r
 
 ev_by_co = collections.defaultdict(list)
 for x in sources:
-    ev_by_co[s(x["ID"])].append({"metric": s(x.get("Metric")), "value": s(x.get("Value"), 200), "year": s(x.get("Year")), "source_type": s(x.get("Source type")),
+    ev_by_co[s(x["ID"])].append({"metric": s(x.get("Metric")), "value": s(x.get("Value"), 200), "year": s(x.get("Year")),
                                  "url": s(x.get("URL")), "quote": s(x.get("Quote"), 300)})
 
-os.makedirs(f"{OUT}/companies", exist_ok=True); os.makedirs(f"{OUT}/details", exist_ok=True); os.makedirs(f"{OUT}/meta", exist_ok=True)
-for f in glob.glob(f"{OUT}/*/*.json"):
-    os.remove(f)
+# ---- channels: which distributors are pro channels, and which end market each serves
+RETAIL = {"Tractor Supply", "Do it Best / Ace / True Value (coops)", "Rockler / Woodcraft", "Pool Geek", "INYOPools", "TCP Global",
+          "The Home Depot (Pro desk)", "West Marine (Pro)", "AutoZone (Commercial)", "O'Reilly Auto Parts (Pro)",
+          "Advance Auto Parts (Carquest)", "Leslie's Pro", "Amazon Business"}
+BROADLINE = {"W.W. Grainger", "McMaster-Carr", "Fastenal", "MSC Industrial Supply", "Applied Industrial Technologies", "Motion Industries",
+             "Global Industrial", "Zoro", "Kimball Midwest", "Lawson Products (DSG)", "ORS Nasco", "Uline", "Home Depot Pro (incl. HD Supply)"}
+MARKET = {"Industrial MRO": "Industrial MRO", "Industrial MRO (wholesale)": "Industrial MRO", "Safety & PPE": "Industrial MRO",
+          "Oil & Gas / Energy": "Industrial MRO", "Plumbing": "Plumbing", "HVAC/R": "HVAC/R", "Electrical": "Electrical",
+          "Facilities Maintenance": "Facilities & jan-san", "Janitorial & Sanitation": "Facilities & jan-san", "Facilities / Shipping": "Facilities & jan-san",
+          "Construction / Contractor": "Construction", "Roofing & Exteriors": "Construction", "Drywall & Interiors": "Construction",
+          "Flooring & Tile": "Construction", "Paint & Coatings": "Construction", "Woodworking & Cabinetry": "Construction",
+          "Automotive Aftermarket": "Auto & fleet", "Automotive Refinish": "Auto & fleet", "Heavy Duty / Fleet": "Auto & fleet",
+          "Welding & Fabrication": "Welding", "Water & Wastewater": "Water & pool", "Pool & Irrigation": "Water & pool", "Pool & Spa": "Water & pool",
+          "Marine": "Marine & aviation", "Aviation MRO": "Marine & aviation", "Agriculture": "Farm & landscape", "Landscape & Turf": "Farm & landscape",
+          "Electronics Assembly": "Electronics & lab", "Lab & Cleanroom": "Electronics & lab", "Hardware": "Hardware", "Hardware (wholesale)": "Hardware"}
 
-sizes = []
+
+def channel(d):
+    return "retail" if d in RETAIL else "broadline" if d in BROADLINE else "specialty"
+
+
+def market(d):
+    return MARKET.get(s(dists.get(d, {}).get("Primary end market")), "Other")
+
+
+FAMILY = {"lubricants": "Lubricants & penetrants", "adhesives": "Adhesives & sealants", "cleaners": "Cleaners & degreasers",
+          "hand-care": "Hand care", "sanitation": "Disinfectants & pest", "paints": "Paints & markers", "plumbing": "Plumbing chemicals",
+          "hvac": "HVAC/R chemicals", "electrical": "Electrical chemicals", "welding": "Welding & metalworking", "automotive": "Auto & fleet chemicals",
+          "construction": "Construction chemicals", "water-ww": "Water treatment", "other": "Other"}
+
+# ---- what a worker can hold: format, then pack size for bottles, cans and powders
+HANDHELD = {"Aerosol", "Squeeze tube", "Cartridge", "Wipe", "Marker/Paint stick", "Kit"}
+SIZED = {"Bottle/Liquid", "Paste/Can", "Powder"}
+BULK_WORDS = re.compile(r"\b(drum|pail|tote|bulk|55[- ]?gal|5[- ]?gal|2\.5[- ]?gal|bag-in-box)\b", re.I)
+
+
+def pack_ok(size, name):
+    """True when a bottle, can or powder is hand-sized: up to 1 gal / 4 L, or 10 lb / 5 kg."""
+    t = f"{size} {name}".lower()
+    if BULK_WORDS.search(t):
+        return False
+    m = re.search(r"(\d+(?:\.\d+)?)\s*-?\s*(fl\.?\s*oz|oz|gal(?:lon)?s?|qt|quarts?|pt|pints?|lbs?|pounds?|ml|l\b|liters?|litres?|kg|g\b)", t)
+    if not m:
+        return True  # no size listed: most scraped bottles and cans are hand-sized
+    v, u = float(m.group(1)), m.group(2)
+    if u.startswith("gal"):
+        return v <= 1
+    if u.startswith(("lb", "pound")):
+        return v <= 10
+    if u == "kg":
+        return v <= 5
+    if u in ("l",) or u.startswith(("liter", "litre")):
+        return v <= 4
+    if u.startswith("qt") or u.startswith("quart"):
+        return v <= 4
+    return True  # oz, pt, ml, g
+
+
+DURABLE = re.compile(r"dispens|\btool|\bgun\b|pump\b|sprayer|brush|equipment|machine|gauge|fitting|valve|hose|bucket|mop\b|applicator|"
+                     r"trowel|tape measure|meter\b|cabinet|can opener|plug\b|torch|regulator|nozzle|wrench|blade|battery|charger|light|"
+                     r"filter housing|stand\b|cart\b|holder", re.I)
+
+
+def handheld(p):
+    f = s(p.get("Form factor"))
+    if f in HANDHELD:
+        return True
+    if f in SIZED:
+        return pack_ok(s(p.get("Size / pack")), s(p.get("Product name")))
+    return False
+
+
+def consumable(p):
+    if s(p.get("Form factor")) in HANDHELD | SIZED - {"Kit"}:
+        return not DURABLE.search(s(p.get("Product category")))
+    return not DURABLE.search(f"{s(p.get('Product category'))} {s(p.get('Product name'))}") and s(p.get("Form factor")) != "Other"
+
+
+prod_by_brand = collections.defaultdict(list)
+for p in products:
+    if s(p.get("Brand")):
+        prod_by_brand[s(p["Brand"])].append(p)
+
+OWNER_CLASS = {"PE-backed": "pe", "Founder / family": "family", "Private (family)": "family", "ESOP / employee": "esop",
+               "Subsidiary of private co": "sub_private", "Subsidiary of public co": "public", "Public": "public",
+               "Unknown": "private", "Private": "private", "PE": "pe"}
+
+out_co, out_dt, judge_in = {}, {}, []
 for oid, o in owners.items():
-    cid, m, bs = ids[oid], o["master"], sorted(o["brands"], key=lambda b: -(n(b.get("# SKUs scraped")) or 0))
+    cid, m = ids[oid], o["master"]
+    bs = sorted(o["brands"], key=lambda b: -(n(b.get("# SKUs scraped")) or 0))
     c = owner_row.get(oid, {}) if o["verified"] else {}
     rolled = [x for x in cos if s(x.get("Owner ID (rolls into)")) == oid and s(x.get("Role")) != "Owner"]
-    otype_raw = s(m.get("Owner type")) or o.get("otype", "")
-    otype = OWNER_TYPE.get(otype_raw, otype_raw)
-    pe = s(m.get("PE sponsor")) or (o["parent"] if otype == "PE-owned" else "")
-    skus = sum(int(n(b.get("# SKUs scraped")) or 0) for b in bs) or int(n(m.get("# SKUs scraped")) or 0)
+    raw_type = s(m.get("Owner type")) or o.get("otype", "")
+    oclass = OWNER_CLASS.get(raw_type, "private")
+    if oclass == "private" and s(m.get("PE-backed")) == "Y":
+        oclass = "pe"
 
-    # Sector mix and trade mix, weighted by SKUs scraped (at least 1 per brand).
-    sec, trade = collections.Counter(), collections.Counter()
+    fmt, mkt, dst, fam, brd = (collections.Counter() for _ in range(5))
+    hand = cons = pro = 0
+    brand_rows, max_bd = [], 0
     for b in bs:
-        w = max(1, int(n(b.get("# SKUs scraped")) or 0))
-        sec[cat_sector(s(b.get("Primary product category")))] += w
-        reached = {t for lab in s(b.get("Trades reached")).split(";") for t in trades_of(lab.strip())} or set(trades_of(b.get("Primary trade")))
-        for t in reached:
-            trade[t] += w / len(reached)
-    if not sec and m:
-        sec[cat_sector(s(m.get("Primary product category")))] += 1
-    stot, ttot = sum(sec.values()) or 1, sum(trade.values()) or 1
-    sectors = [{"sector": k, "pct": r1(v / stot * 100), "revenue_usd_m": None,
-                "what": ", ".join(s(b["Brand"]) for b in bs if cat_sector(s(b.get("Primary product category"))) == k)[:300] or s(m.get("Primary product category"))}
-               for k, v in sec.most_common()]
-    em = {t: r1(n(m.get("% " + t)) * 100) for t in TRADES if n(m.get("% " + t))} or {t: r1(v / ttot * 100) for t, v in trade.most_common()}
-    if not em and s(m.get("Primary trade")) in TRADES:
-        em = {s(m["Primary trade"]): 100}
-    prim_trade = s(m.get("Primary trade")) or (collections.Counter(s(b.get("Primary trade")) for b in bs).most_common(1)[0][0] if bs else "")
-    scope = s(m.get("Pro relevance")) or ("Core" if any(s(b.get("Scope flag")) == "Core" for b in bs) else "Adjacent")
-    brand_names = ", ".join(s(b["Brand"]) for b in bs) or s(m.get("Hero brands"))
-
-    # Customers: the distributors that carry its brands in the scrape.
-    carry, carried = collections.Counter(), collections.defaultdict(list)
-    for b in bs:
-        for d, k in sku_by[s(b["Brand"])].items():
-            carry[d] += k; carried[d].append(s(b["Brand"]))
-    customers = [{"name": d, "end_market": s(dists.get(d, {}).get("Primary end market")), "what": ", ".join(carried[d])[:200] + f" ({k} SKUs listed)",
-                  "share_pct": None, "source": "Distributor scrape 2026-10-01", "confidence": "Medium"} for d, k in carry.most_common(15)]
-    catalog = [{"category": s(b.get("Primary product category")) or "Uncategorised", "line": s(b["Brand"]),
-                "named_products": s(b.get("Known for (hero product)")), "what_it_is": s(b.get("Primary form factor")), "applications": "",
-                "end_markets": sorted({t for lab in s(b.get("Trades reached")).split(";") for t in trades_of(lab.strip())})[:6],
-                "made_or_resold": "", "share_pct": None, "revenue_usd_m": None, "confidence": "Low"} for b in bs]
-
-    scraped = "Market map distributor scrape, 1 Oct 2026"
-    conf = {f: {"level": "Medium", "basis": scraped} for f in ["pro_brands", "skus_scraped", "customers"]}
-    conf.update({"sectors": {"level": "Low", "basis": "Brand product categories weighted by SKUs scraped"},
-                 "primary_sector": {"level": "Low", "basis": "Largest sector by SKUs scraped"},
-                 "end_markets_total_platform": {"level": "Low", "basis": "Trades reached by the distributors carrying its brands, weighted by SKUs"},
-                 "products": {"level": "Low", "basis": "One line per brand from the market map; Enhance builds the full catalog"}})
-    if o["verified"]:
-        lvl, src = s(m.get("Confidence")) or "Medium", s(m.get("Key source")) or "Market map Master tab"
-        for f in ["name", "owner_type", "ultimate_parent", "pe_sponsor", "business_model", "primary_trade", "scope", "hq_address", "website"]:
-            conf[f] = {"level": lvl, "basis": "Market map (verified): " + src}
-    else:
-        prior = "Market map: owner is Claude's prior knowledge, not yet verified"
-        conf.update({f: {"level": "Low", "basis": prior} for f in ["name", "owner_type", "ultimate_parent", "pe_sponsor"]})
-        conf.update({"primary_trade": {"level": "Low", "basis": scraped}, "scope": {"level": "Low", "basis": "Brand scope flag in the market map"}})
-
+        ps = prod_by_brand.get(s(b["Brand"]), [])
+        bd = collections.Counter(s(p.get("Distributor")) for p in ps if s(p.get("Distributor")))
+        max_bd = max(max_bd, sum(1 for d in bd if channel(d) != "retail"))
+        for p in ps:
+            d = s(p.get("Distributor"))
+            fmt[s(p.get("Form factor")) or "Other"] += 1
+            mkt[market(d)] += 1
+            dst[d] += 1
+            fam[FAMILY[cat_sector(s(p.get("Product category")) or s(b.get("Primary product category")))]] += 1
+            brd[s(b["Brand"])] += 1
+            hand += handheld(p)
+            cons += consumable(p)
+            pro += channel(d) != "retail"
+        brand_rows.append({"name": s(b["Brand"]), "cat": s(b.get("Primary product category")), "hero": s(b.get("Known for (hero product)"), 140),
+                           "form": s(b.get("Primary form factor")), "skus": len(ps), "family": FAMILY[cat_sector(s(b.get("Primary product category")))],
+                           "dists": [d for d, _ in bd.most_common()], "mkts": sorted({market(d) for d in bd}),
+                           "verified": not b.get("_prior")})
+    skus = sum(fmt.values())
+    nd_pro = sum(1 for d in dst if channel(d) != "retail")
     rev = n(c.get("Total company rev ($M)")) or n(m.get("TOTAL PLATFORM REV ($M)"))
-    ebitda = n(c.get("EBITDA reported ($M)")) or n(m.get("PLATFORM EBITDA ($M)"))
-    rev_basis = s(c.get("Revenue basis / evidence"))
-    if rev:
-        conf["total_revenue_usd_m"] = {"level": "Low" if re.search(r"low|estimate|stale|historic|pre-acq", rev_basis, re.I) else "Medium", "basis": rev_basis or "Market map"}
-    if ebitda:
-        conf["total_ebitda_usd_m"] = {"level": "Low", "basis": "Market map starting margin by business model"}
-    hq = ", ".join(x for x in [s(c.get("HQ city")), s(c.get("HQ state")) or s(m.get("HQ state"))] if x)
-    pe_row = pe_entry.get(oid)
-    parent = s(m.get("Ultimate parent / sponsor")) if o["verified"] else (o["parent"] if otype != "PE-owned" else "")
-    summary = {
-        "name": o["name"], "universe_id": oid if o["verified"] else "", "ultimate_parent": parent, "owner_type": otype,
-        "pe_sponsor": pe, "pe_backed": otype == "PE-owned", "pe_rollup": s(m.get("PE roll-up")) == "Y",
-        "pe_entry_year": pe_row["date"][:4] if pe_row else "", "pe_entry_ev_usd_m": pe_row["value_usd_m"] if pe_row else None,
-        "business_model": s(m.get("Business model")), "primary_category": s(m.get("Primary product category")) or (s(bs[0].get("Primary product category")) if bs else ""),
-        "primary_trade": prim_trade, "scope": scope, "pro_brands": brand_names[:1500], "brands_count": len(bs) or int(n(m.get("# brands")) or 0), "skus_scraped": skus,
-        "hq_address": hq, "website": s(c.get("Website")), "total_revenue_usd_m": r1(rev), "total_revenue_year": s(c.get("Revenue year")),
-        "total_ebitda_usd_m": r1(ebitda), "ebitda_margin_pct": r1(ebitda / rev * 100) if rev and ebitda else None,
-        "employees_total": r1(n(c.get("Employees (total)")), 0), "rolled_in": "; ".join(s(x["Company"]) for x in rolled)[:1500],
-        "sectors": sectors, "primary_sector": sectors[0]["sector"] if sectors else "other",
-        "end_markets_total_platform": em, "revenue_by_business": [], "revenue_by_product": [],
-        "acquisitions": acq.get(oid, []), "buyers": [], "addon_ideas": [], "competitors": [], "locked": [], "source_of_truth": [], "conf": conf,
-        "confidence": s(m.get("Confidence")) or "Low", "status": "ready", "updated_at": NOW, "seeded_from": SEEDED, "owner_verified": o["verified"],
-    }
-    summary = {k: v for k, v in summary.items() if v not in ("", None) or k in ("ultimate_parent", "pe_sponsor")}
-
+    pe = pe_entry.get(oid, {})
     ptxt = s((profiles.get(s(c.get("ID"))) or {}).get("Profile"))
     paras = [p.strip() for p in re.split(r"\n\s*\n", ptxt) if p.strip()]
-    body = [p for p in paras if not p.startswith("# ") and not p.startswith("**") and not p.startswith("Brands:")]
-    evidence = [e for x in [c] + rolled for e in ev_by_co.get(s(x.get("ID")), [])][:40]
+    body = [p for p in paras if not p.startswith(("# ", "**", "Brands:"))]
     blunt = s(m.get("What it mostly is (blunt)"))
-    detail = {
-        "what_it_is": (body[0] if body else blunt if o["verified"] else f"Owns {len(bs)} professional brand{'s' if len(bs) != 1 else ''} in the market map: {brand_names[:300]}.")[:600],
-        "bluntly": blunt, "profile_md": "\n\n".join(paras[1:]) if paras and paras[0].startswith("# ") else ptxt,
-        "total_revenue_basis": rev_basis, "products": catalog, "customers": customers, "evidence": evidence,
-        "key_sites": [{"type": "HQ", "address": "", "city": s(c.get("HQ city")), "state": s(c.get("HQ state"))}] if s(c.get("HQ city")) else [],
-        "open_questions": [] if o["verified"] else ["Ownership is Claude's prior from the market map, not verified. Confirm the owner before relying on the profile."],
-        "runs": [{"at": NOW, "kind": "Imported", "summary": f"From {SEEDED}: {'verified owner' if o['verified'] else 'unverified owner'}, {len(bs)} brands, {skus} SKUs scraped, {len(acq.get(oid, []))} deals, {len(evidence)} sourced facts."}],
+    what = (body[0] if body else blunt)[:600]
+    summary = {
+        "name": o["name"], "verified": o["verified"], "oclass": oclass, "otype": raw_type or "Unknown",
+        "sponsor": s(m.get("PE sponsor")) or (o["parent"] if oclass == "pe" else ""),
+        "parent": s(m.get("Ultimate parent / sponsor")) if o["verified"] else o["parent"],
+        "pe_year": pe.get("date", "")[:4], "pe_ev": pe.get("value_usd_m"), "rollup": s(m.get("PE roll-up")) == "Y",
+        "model": s(m.get("Business model")), "trade": s(m.get("Primary trade")) or (s(bs[0].get("Primary trade")) if bs else ""),
+        "category": s(m.get("Primary product category")) or (s(bs[0].get("Primary product category")) if bs else ""),
+        "blunt": blunt, "hq": ", ".join(x for x in [s(c.get("HQ city")), s(c.get("HQ state")) or s(m.get("HQ state"))] if x),
+        "web": s(c.get("Website")), "rev": r1(rev), "rev_year": s(c.get("Revenue year")), "rev_basis": s(c.get("Revenue basis / evidence"), 200),
+        "emp": r1(n(c.get("Employees (total)")), 0), "conf": s(m.get("Confidence")) or "Low",
+        "brands": [x["name"] for x in brand_rows] or [b.strip() for b in s(m.get("Hero brands")).split(",") if b.strip()],
+        "skus": skus, "acq": len(acq.get(oid, [])), "rolled": [s(x["Company"]) for x in rolled],
+        "mix": {"fmt": dict(fmt), "mkt": dict(mkt), "dist": dict(dst.most_common(15)), "fam": dict(fam), "brand": dict(brd.most_common(15))},
+        "m": {"hand": r1(hand / skus, 3) if skus else None, "cons": r1(cons / skus, 3) if skus else None, "pro": r1(pro / skus, 3) if skus else None,
+              "nd": len(dst), "ndp": nd_pro, "maxbd": max_bd,
+              "broad": r1(sum(v for d, v in dst.items() if channel(d) == "broadline") / skus, 3) if skus else None},
     }
-    detail = {k: v for k, v in detail.items() if v not in ("", None, [])} | {"runs": detail["runs"]}
-    json.dump(summary, open(f"{OUT}/companies/{cid}.json", "w"))
-    json.dump(detail, open(f"{OUT}/details/{cid}.json", "w"))
-    sizes.append((len(json.dumps(summary)), len(json.dumps(detail)), cid))
+    summary = {k: v for k, v in summary.items() if v not in ("", None, [])}
+    out_co[cid] = summary
+    out_dt[cid] = {k: v for k, v in {
+        "what": what, "profile": "\n\n".join(paras[1:]) if paras and paras[0].startswith("# ") else ptxt,
+        "brands": brand_rows, "acq": acq.get(oid, []),
+        "evidence": [e for x in [c] + rolled for e in ev_by_co.get(s(x.get("ID")), [])][:30],
+    }.items() if v not in ("", None, [])}
+    judge_in.append({"id": cid, "name": o["name"], "owner": raw_type, "parent": summary.get("parent", ""), "model": summary.get("model", ""),
+                     "category": summary.get("category", ""), "what": what[:400], "brands": [f"{x['name']} ({x['cat']}; {x['form']}; {x['skus']} SKUs)" for x in brand_rows[:12]],
+                     "revenue_usd_m": summary.get("rev"), "skus": skus, "handheld_share": summary["m"]["hand"], "pro_channel_share": summary["m"]["pro"],
+                     "pro_distributors": nd_pro})
 
-# Brands and acquired companies, for search and Buyer finder: each points at its owner's profile when known.
-entities = []
-for x in cos:
-    if s(x.get("Role")) != "Owner" and s(x["Owner ID (rolls into)"]) not in placeholder:
-        oid = s(x["Owner ID (rolls into)"])
-        entities.append({"name": s(x["Company"]), "role": s(x.get("Role")), "owner_id": ids.get(oid), "owner": owners[oid]["name"] if oid in owners else "",
-                         "status": s(x.get("Status (verified)")) + (f" by {s(x.get('Acquired by'))} {s(x.get('Acquired date'))}" if s(x.get("Acquired by")) else ""),
-                         "what": s(x.get("What it mostly is (blunt)"), 200), "state": s(x.get("HQ state"))})
-for oid, o in owners.items():
-    for b in o["brands"]:
-        entities.append({"name": s(b["Brand"]), "role": "Brand", "owner_id": ids[oid], "owner": o["name"],
-                         "status": "Owner unverified (prior)" if b.get("_prior") else "Owner verified",
-                         "what": "; ".join(v for v in [s(b.get("Primary product category")), s(b.get("Known for (hero product)")), s(b.get("Primary trade"))] if v)[:200],
-                         "skus": int(n(b.get("# SKUs scraped")) or 0), "scope": s(b.get("Scope flag"))})
-# Brands with no known owner are left out: the app only uses entities that point at a profile, and a
-# database document is capped at 256 KB.
-json.dump({"entities": entities, "updated_at": NOW}, open(f"{OUT}/meta/entities.json", "w"))
-json.dump({"deals": other_deals, "updated_at": NOW}, open(f"{OUT}/meta/deals.json", "w"))
+# ---- every deal, with owners resolved where the ledger allows
+deals_out, seen = [], set()
+for d in sorted(deal_rows, key=lambda d: s(d.get("Date")) or s(d.get("Year")), reverse=True):
+    date = s(d.get("Date")) or s(d.get("Year"))
+    dk = (key(d["Target"])[:12], date[:4])
+    if dk in seen:
+        continue
+    seen.add(dk)
+    tgt = co_by_id.get(s(d.get("Target ID")))
+    t_owner = s(tgt["Owner ID (rolls into)"]) if tgt else ""
+    a_owner = name_key.get(key(d.get("Acquirer")))
+    if not a_owner and tgt and s(tgt.get("Role")) != "Owner" and t_owner in owners:
+        a_owner = t_owner  # the target now rolls into an owner, so that owner (or its predecessor) bought it
+    self_buy = tgt is not None and s(tgt.get("Role")) == "Owner" and a_owner == t_owner
+    kind = "addon" if a_owner in owners and (not tgt or s(tgt.get("Role")) != "Owner" or self_buy) else "ownership" if t_owner in owners else "other"
+    src = s(d.get("Source"))
+    deals_out.append({k: v for k, v in {
+        "date": date, "year": int(date[:4]) if date[:4].isdigit() else None, "acquirer": s(d.get("Acquirer")),
+        "acq_id": ids.get(a_owner) if a_owner in owners else None, "target": s(d["Target"]), "tgt_id": ids.get(t_owner) if t_owner in owners else None,
+        "brands": s(d.get("Target brands")), "value": n(d.get("Value ($M, if disclosed)")), "type": s(d.get("Deal type")),
+        "url": src if src.startswith("http") else "", "kind": kind}.items() if v not in ("", None)})
+
+# ---- judgments (Claude's read on the tests the data can't answer), merged when present
+JF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "judgments.json")
+judgments = json.load(open(JF)) if os.path.exists(JF) else {}
+for cid, j in judgments.items():
+    if cid in out_co:
+        out_co[cid]["judge"] = j
+
+dist_out = [{"name": k, "market": market(k), "end_market": s(v.get("Primary end market")), "channel": channel(k),
+             "status": s(v.get("Scrape status")), "skus": int(n(v.get("SKUs scraped")) or 0)} for k, v in dists.items()]
+
+# ---- write: shards sized to stay well under the 256 KB document cap
+for d in ("data", "judge"):
+    os.makedirs(f"{OUT}/{d}", exist_ok=True)
+    for f in glob.glob(f"{OUT}/{d}/*.json"):
+        os.remove(f)
+
+
+def shard(items, prefix, field, limit=180_000):
+    docs, cur, size = [], {}, 0
+    for k, v in items.items():
+        z = len(json.dumps(v)) + len(k) + 6
+        if cur and size + z > limit:
+            docs.append(cur); cur, size = {}, 0
+        cur[k] = v; size += z
+    if cur:
+        docs.append(cur)
+    for i, d in enumerate(docs):
+        json.dump({field: d, "updated_at": NOW, "source": SEEDED}, open(f"{OUT}/data/{prefix}-{i}.json", "w"), separators=(",", ":"))
+    return len(docs)
+
+
+nco = shard(out_co, "co", "companies")
+ndt = shard(out_dt, "dt", "details")
+json.dump({"deals": deals_out, "updated_at": NOW}, open(f"{OUT}/data/deals.json", "w"), separators=(",", ":"))
+json.dump({"list": dist_out, "updated_at": NOW}, open(f"{OUT}/data/dists.json", "w"), separators=(",", ":"))
+json.dump({"source": SEEDED, "updated_at": NOW, "co": nco, "dt": ndt}, open(f"{OUT}/data/index.json", "w"))
+for i in range(0, len(judge_in), 50):
+    json.dump(judge_in[i:i + 50], open(f"{OUT}/judge/batch-{i // 50}.json", "w"), indent=1)
 
 print("duplicate owners merged:", ", ".join(f"{d} into {c}" for d, c in dupes.items()) or "none")
-print("owners", len(ids), "verified", sum(1 for o in owners.values() if o["verified"]), "unverified", sum(1 for o in owners.values() if not o["verified"]))
-print("brands", len(brands), "linked to an owner", sum(len(o["brands"]) for o in owners.values()), "no owner", len(unlinked))
-print("deals: on owner M&A tabs", sum(len(v) for v in acq.values()), "in meta/deals", len(other_deals), "duplicates dropped", len(deal_rows) - len(seen_deals))
-print("largest summary/detail bytes", max(x[0] for x in sizes), max(x[1] for x in sizes), "| entities KB", os.path.getsize(f"{OUT}/meta/entities.json") // 1024)
-print("unverified:", ", ".join(o["name"] for o in owners.values() if not o["verified"]))
+print("owners", len(out_co), "verified", sum(1 for o in owners.values() if o["verified"]), "| judged", sum(1 for c in out_co.values() if "judge" in c))
+print("brands", len(brands), "linked", sum(len(o["brands"]) for o in owners.values()), "| deals", len(deals_out),
+      collections.Counter(d["kind"] for d in deals_out))
+print("shards: co", nco, "dt", ndt, "| sizes KB", sorted(os.path.getsize(f) // 1024 for f in glob.glob(f"{OUT}/data/*.json")))
