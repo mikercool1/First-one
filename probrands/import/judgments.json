@@ -224,6 +224,21 @@
    "why": "Alconox known in labs, not among trades"
   }
  },
+ "alexseal-yacht-coatings": {
+  "itw": {
+   "v": 0,
+   "why": "Yacht topcoat paint systems fall outside ITW Pro Brands' MRO consumables."
+  },
+  "major": {
+   "v": 0,
+   "why": "Marine brand is a small part of Mankiewicz's aerospace/industrial coatings."
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 1,
+   "why": "Respected by superyacht yards, but a niche coatings system, not a hand-held trade staple."
+  }
+ },
  "alfred-karcher-se-co-kg": {
   "itw": {
    "v": 0,
@@ -314,6 +329,51 @@
    "why": "Known in MRO but competes with Loctite/Permatex"
   }
  },
+ "antique-refinishers-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Hide glue through woodworking retail; not ITW territory."
+  },
+  "major": {
+   "v": 1,
+   "why": "Restoration shop plus glue; glue share unclear."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Old Brown Glue known to restorers; micro niche."
+  }
+ },
+ "applied-products-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Adhesive consumables via Wurth fit partly; hot melt less handheld."
+  },
+  "major": {
+   "v": 1,
+   "why": "Distributor/formulator; Infinity Bond a part of revenue."
+  },
+  "pro_pct": 30,
+  "pull": {
+   "v": 0,
+   "why": "Private-label hot melt; no name demand."
+  }
+ },
+ "aqua-coat-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Grain filler fits format, but woodworking retail is a poor channel fit."
+  },
+  "major": {
+   "v": 1,
+   "why": "Judged from workbook facts; split between hobby and pro users."
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "Known to luthiers; very niche."
+  }
+ },
  "aquaphalt": {
   "itw": {
    "v": 0,
@@ -342,6 +402,21 @@
   "pull": {
    "v": 1,
    "why": "Known among pipe welders for purge paper"
+  }
+ },
+ "aquatrols-corporation-of-america": {
+  "itw": {
+   "v": 0,
+   "why": "Turf/ag surfactants, larger containers; not MRO."
+  },
+  "major": {
+   "v": 0,
+   "why": "Now within Lamberti chemicals group."
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 1,
+   "why": "Superintendents know Aquatrols wetting agents."
   }
  },
  "ar-medicom-inc": {
@@ -464,6 +539,21 @@
    "why": "Mike-O-Lube niche recognition"
   }
  },
+ "ashland": {
+  "itw": {
+   "v": 2,
+   "why": "Handheld adhesive through MRO; fits Pro Brands."
+  },
+  "major": {
+   "v": 0,
+   "why": "Tiny within Ashland or Arkema."
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 2,
+   "why": "Pliobond is an old name pros ask for."
+  }
+ },
  "aspen-pumps-group": {
   "itw": {
    "v": 2,
@@ -492,6 +582,36 @@
   "pull": {
    "v": 1,
    "why": "Niche anti-seize brand, overshadowed by Loctite/Jet-Lube"
+  }
+ },
+ "athea-laboratories-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Drain maintainers fit category; contract-manufacturing model."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mostly private label, some branded pro line."
+  },
+  "pro_pct": 30,
+  "pull": {
+   "v": 0,
+   "why": "Mostly private label; little brand pull."
+  }
+ },
+ "atom-ventures-llc": {
+  "itw": {
+   "v": 1,
+   "why": "Handheld filler fits product form, channel is retail/online."
+  },
+  "major": {
+   "v": 2,
+   "why": "Single wood filler line; small format."
+  },
+  "pro_pct": 60,
+  "pull": {
+   "v": 1,
+   "why": "GoodFilla has some woodworker following."
   }
  },
  "avw-inc-dba-max-pro": {
@@ -614,6 +734,36 @@
    "why": "Bar's Leaks and Rislone are known by name to mechanics"
   }
  },
+ "basf": {
+  "itw": {
+   "v": 0,
+   "why": "Turf colorant inside a chemical giant."
+  },
+  "major": {
+   "v": 0,
+   "why": "BASF is a huge diversified chemical company."
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 1,
+   "why": "Green Lawnger is known to turf pros."
+  }
+ },
+ "bayer-cropscience": {
+  "itw": {
+   "v": 0,
+   "why": "Agchem herbicide; not ITW scope."
+  },
+  "major": {
+   "v": 0,
+   "why": "Huge diversified Bayer."
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 1,
+   "why": "Roundup known, but consumer/ag pull."
+  }
+ },
  "benasse-dis-ticaret-limited-sirketi": {
   "itw": {
    "v": 0,
@@ -704,6 +854,21 @@
    "why": "Known among pool pros"
   }
  },
+ "bioesque-solutions": {
+  "itw": {
+   "v": 1,
+   "why": "Formulated disinfectants fit janitorial more than trade MRO."
+  },
+  "major": {
+   "v": 2,
+   "why": "Pro-channel cleaners appear to be the whole business."
+  },
+  "pro_pct": 75,
+  "pull": {
+   "v": 1,
+   "why": "Known in restoration; moderate pull."
+  }
+ },
  "biolyst-scientific": {
   "itw": {
    "v": 0,
@@ -764,6 +929,21 @@
    "why": "PB B'laster and Gunk are household names with mechanics"
   }
  },
+ "bloxygen": {
+  "itw": {
+   "v": 0,
+   "why": "Niche woodworking gadget product."
+  },
+  "major": {
+   "v": 2,
+   "why": "Single small-format product."
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "Cult following among finishers; tiny."
+  }
+ },
  "blue-magic-inc": {
   "itw": {
    "v": 0,
@@ -779,6 +959,21 @@
    "why": "Consumer metal polish; judged from workbook facts"
   }
  },
+ "boat-bling-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Formulated detailing chemicals, but consumer-leaning."
+  },
+  "major": {
+   "v": 1,
+   "why": "Large share goes to boat owners and retail."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Detailers know Hot Sauce; modest pull."
+  }
+ },
  "bona-ab": {
   "itw": {
    "v": 1,
@@ -792,6 +987,21 @@
   "pull": {
    "v": 2,
    "why": "Bona is the floor-finisher's brand"
+  }
+ },
+ "bonide-products-llc": {
+  "itw": {
+   "v": 0,
+   "why": "Consumer lawn & garden brand; not pro MRO."
+  },
+  "major": {
+   "v": 0,
+   "why": "Part of huge Central Garden & Pet."
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 0,
+   "why": "Garden pesticides bought mostly by homeowners."
   }
  },
  "boyd-corporation-boyd-thermal": {
@@ -822,6 +1032,36 @@
   "pull": {
    "v": 0,
    "why": "HVAC hardware accessories"
+  }
+ },
+ "briwax-international-inc-brand-originates-with-henry-flack-l": {
+  "itw": {
+   "v": 1,
+   "why": "Paste wax fits format, but woodworking retail is a weak channel fit."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mixed restorer and consumer sales."
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "Briwax is known to furniture restorers."
+  }
+ },
+ "bti-chemical-company-inc": {
+  "itw": {
+   "v": 2,
+   "why": "Handheld aerosol pro cleaner via MRO; strong fit."
+  },
+  "major": {
+   "v": 2,
+   "why": "Single-brand aerosol company."
+  },
+  "pro_pct": 85,
+  "pull": {
+   "v": 2,
+   "why": "Plexus is the named standard in aviation shops."
   }
  },
  "calumet": {
@@ -869,6 +1109,21 @@
    "why": "Solvent cement is commodity add-on to conduit"
   }
  },
+ "captain-tolley-ltd": {
+  "itw": {
+   "v": 1,
+   "why": "Bottled sealant fits, but marine retail and UK base are weak fits."
+  },
+  "major": {
+   "v": 1,
+   "why": "Boat-owner retail is likely significant."
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "Creeping Crack Cure has a cult following among boaters."
+  }
+ },
  "carlisle-cos": {
   "itw": {
    "v": 1,
@@ -899,6 +1154,21 @@
    "why": "Membrane systems brand"
   }
  },
+ "carrollclean": {
+  "itw": {
+   "v": 1,
+   "why": "Janitorial chemicals partly fit; much is contract packaging."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of branded janitorial and contract packaging."
+  },
+  "pro_pct": 35,
+  "pull": {
+   "v": 0,
+   "why": "Janitorial chemicals bought on spec/price."
+  }
+ },
  "castrol": {
   "itw": {
    "v": 0,
@@ -927,6 +1197,36 @@
   "pull": {
    "v": 0,
    "why": "Consumer additive brand"
+  }
+ },
+ "ccp-industries-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Degreasers and hand cleaners fit; wipers less so."
+  },
+  "major": {
+   "v": 1,
+   "why": "Wiping cloths large share; chemicals meaningful."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Workbeaters has some MRO recognition."
+  }
+ },
+ "cerama-bryte": {
+  "itw": {
+   "v": 0,
+   "why": "Consumer household cleaner."
+  },
+  "major": {
+   "v": 0,
+   "why": "Mostly consumer retail sales."
+  },
+  "pro_pct": 15,
+  "pull": {
+   "v": 1,
+   "why": "Known cooktop cleaner, mainly consumer and appliance."
   }
  },
  "cfs-brands": {
@@ -1094,6 +1394,21 @@
    "why": "GOJO and Purell are default hand-care names"
   }
  },
+ "cole-parmer": {
+  "itw": {
+   "v": 0,
+   "why": "Lab instruments and distribution business."
+  },
+  "major": {
+   "v": 0,
+   "why": "Cleaners are a tiny share of a large lab platform."
+  },
+  "pro_pct": 3,
+  "pull": {
+   "v": 0,
+   "why": "Distributor catalog brand."
+  }
+ },
  "colgate-palmolive-company": {
   "itw": {
    "v": 0,
@@ -1169,6 +1484,21 @@
    "why": "Chip Quik known to electronics repair techs"
   }
  },
+ "connecticut-clean-room-corporation": {
+  "itw": {
+   "v": 0,
+   "why": "Paper and distribution; not formulated pro chemicals."
+  },
+  "major": {
+   "v": 0,
+   "why": "Paper conversion and distribution dominate."
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 0,
+   "why": "Cleanroom paper/consumables distributor."
+  }
+ },
  "contec-inc": {
   "itw": {
    "v": 0,
@@ -1182,6 +1512,21 @@
   "pull": {
    "v": 1,
    "why": "Known in cleanrooms, not among trades"
+  }
+ },
+ "control-solutions-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Regulated turf pesticides; not ITW scope."
+  },
+  "major": {
+   "v": 0,
+   "why": "Pesticide maker within ADAMA/Syngenta."
+  },
+  "pro_pct": 2,
+  "pull": {
+   "v": 1,
+   "why": "Quali-Pro known in turf as generic option."
   }
  },
  "coretex-products-inc": {
@@ -1212,6 +1557,36 @@
   "pull": {
    "v": 1,
    "why": "CorrosionX has an aviation/marine following"
+  }
+ },
+ "corteva-agriscience": {
+  "itw": {
+   "v": 0,
+   "why": "Regulated fungicide; agchem not ITW Pro Brands."
+  },
+  "major": {
+   "v": 0,
+   "why": "Huge diversified agchem company."
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 1,
+   "why": "Eagle known to turf pros, but ag chemical."
+  }
+ },
+ "cph-international-llc": {
+  "itw": {
+   "v": 1,
+   "why": "CA glue fits format, but the hobby channel is weak."
+  },
+  "major": {
+   "v": 1,
+   "why": "Hobby and retail sales are large."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Starbond has a following among woodturners and hobbyists."
   }
  },
  "crawford-products-company-inc": {
@@ -1257,6 +1632,21 @@
   "pull": {
    "v": 2,
    "why": "Goop hand cleaner a mechanic staple"
+  }
+ },
+ "crown-chemical": {
+  "itw": {
+   "v": 1,
+   "why": "Hand cleaner via Ferguson fits category; judged from workbook facts."
+  },
+  "major": {
+   "v": 2,
+   "why": "Judged from workbook facts: appears all pro hand cleaner."
+  },
+  "pro_pct": null,
+  "pull": {
+   "v": 0,
+   "why": "Unknown hand cleaner; no evident name recognition."
   }
  },
  "csw-industrials": {
@@ -1319,6 +1709,51 @@
    "why": "Latex-ite known to sealcoaters"
   }
  },
+ "debond-corporation": {
+  "itw": {
+   "v": 2,
+   "why": "Handheld formulated remover sold through pro channels; good fit."
+  },
+  "major": {
+   "v": 2,
+   "why": "Single-purpose remover company; all small-format pro."
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "Known by marine pros for removing 5200; small."
+  }
+ },
+ "decon-laboratories-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Formulated consumables, but lab/pharma channel, not trade MRO."
+  },
+  "major": {
+   "v": 2,
+   "why": "Bottled disinfectants and alcohols via lab distributors are core revenue."
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "Known in labs and cleanrooms, though alcohol is a spec-driven buy."
+  }
+ },
+ "decon-labs-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Formulated consumables, but lab/cleanroom channel."
+  },
+  "major": {
+   "v": 2,
+   "why": "Decon's alcohols and disinfectants are mostly small-format pro."
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "Hand cream is a minor lab line with limited pull."
+  }
+ },
  "desco-industries-inc": {
   "itw": {
    "v": 0,
@@ -1349,6 +1784,21 @@
    "why": "Test kits for consultants, not trades"
   }
  },
+ "dico-products": {
+  "itw": {
+   "v": 1,
+   "why": "Buffing compounds partly fit; wheels/brushes are tools."
+  },
+  "major": {
+   "v": 1,
+   "why": "Compounds plus wheels and brushes."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Dico compounds known in metal finishing."
+  }
+ },
  "diversitech-corporation": {
   "itw": {
    "v": 1,
@@ -1377,6 +1827,21 @@
   "pull": {
    "v": 1,
    "why": "DOWSIL known, but caulk is not a pro badge"
+  }
+ },
+ "drexel-chemical-company": {
+  "itw": {
+   "v": 0,
+   "why": "Bulk crop-protection chemicals."
+  },
+  "major": {
+   "v": 0,
+   "why": "Bulk ag chemicals dominate."
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 0,
+   "why": "Generic agchems are bought on price."
   }
  },
  "dumond-inc": {
@@ -1454,6 +1919,36 @@
    "why": "Known in welding supply, not a must-have name"
   }
  },
+ "dynalon-labware": {
+  "itw": {
+   "v": 0,
+   "why": "Labware, not chemicals."
+  },
+  "major": {
+   "v": 0,
+   "why": "Plasticware business."
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Generic lab plasticware."
+  }
+ },
+ "e-z-clor": {
+  "itw": {
+   "v": 0,
+   "why": "Pool chemicals, bulk-ish, distributor-owned label."
+  },
+  "major": {
+   "v": 0,
+   "why": "Tiny part of Pool Corp distribution revenue."
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 0,
+   "why": "Distributor private label; bought on price, not name."
+  }
+ },
  "e-zoil-products-inc": {
   "itw": {
    "v": 1,
@@ -1512,6 +2007,21 @@
   "pull": {
    "v": 0,
    "why": "Membrane systems brand"
+  }
+ },
+ "ellsworth-corporation": {
+  "itw": {
+   "v": 0,
+   "why": "Distribution and dispensing, not a brand owner."
+  },
+  "major": {
+   "v": 0,
+   "why": "Mostly distribution of Henkel/3M/Dow to OEMs."
+  },
+  "pro_pct": 10,
+  "pull": {
+   "v": 0,
+   "why": "Distributor of other makers' brands."
   }
  },
  "endurance-technologies-inc": {
@@ -1679,6 +2189,36 @@
    "why": "Fernox asked for by name by heating installers (UK especially)"
   }
  },
+ "fg-clean-wipes": {
+  "itw": {
+   "v": 0,
+   "why": "Wipes/paper, not formulated chemicals."
+  },
+  "major": {
+   "v": 0,
+   "why": "Tiny within Madison/Filtration Group."
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 0,
+   "why": "Cleanroom wipes are spec commodities."
+  }
+ },
+ "fiberlay-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Bulk resins and fiberglass distribution."
+  },
+  "major": {
+   "v": 0,
+   "why": "Mostly distribution of bulk composites."
+  },
+  "pro_pct": 10,
+  "pull": {
+   "v": 0,
+   "why": "Distributor and private label; no pull."
+  }
+ },
  "fiske-brothers-refining": {
   "itw": {
    "v": 2,
@@ -1737,6 +2277,21 @@
   "pull": {
    "v": 1,
    "why": "Simpson known for washers; detergents are attach items"
+  }
+ },
+ "forespar-products-corp": {
+  "itw": {
+   "v": 1,
+   "why": "Lanocote fits as a formulated consumable; spars and hardware do not."
+  },
+  "major": {
+   "v": 0,
+   "why": "Chemicals are a sideline to spars and Marelon hardware."
+  },
+  "pro_pct": 15,
+  "pull": {
+   "v": 1,
+   "why": "Lanocote is known to riggers, but it is a sideline brand."
   }
  },
  "formax-manufacturing-corp": {
@@ -1829,6 +2384,21 @@
    "why": "Wave urinal screens have some recognition"
   }
  },
+ "freudenberg-home-and-cleaning-solutions": {
+  "itw": {
+   "v": 0,
+   "why": "Mops and cloths are tools."
+  },
+  "major": {
+   "v": 0,
+   "why": "Inside huge Freudenberg Group."
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 1,
+   "why": "Vileda known in janitorial, tools not chemicals."
+  }
+ },
  "fytertech-nonwovens-llc": {
   "itw": {
    "v": 1,
@@ -1874,6 +2444,21 @@
    "why": "GC brand faded; chemicals minor"
   }
  },
+ "general-finishes": {
+  "itw": {
+   "v": 1,
+   "why": "Wood finishes are paint-adjacent and woodworking-retail, outside core MRO channels."
+  },
+  "major": {
+   "v": 1,
+   "why": "Large share goes to hobbyist retail rather than pro distribution."
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 2,
+   "why": "Strong name loyalty among pro finishers and woodworkers."
+  }
+ },
  "geocel": {
   "itw": {
    "v": 2,
@@ -1887,6 +2472,36 @@
   "pull": {
    "v": 2,
    "why": "Geocel sealants asked for by roofers and RV builders"
+  }
+ },
+ "glo-germ-company": {
+  "itw": {
+   "v": 0,
+   "why": "Training kits, not maintenance chemicals."
+  },
+  "major": {
+   "v": 1,
+   "why": "Kits mix lamps and powders."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Known in hygiene training; niche."
+  }
+ },
+ "glyptal-inc": {
+  "itw": {
+   "v": 2,
+   "why": "Insulating aerosols and varnishes through electrical MRO fit Pro Brands."
+  },
+  "major": {
+   "v": 2,
+   "why": "Insulating varnishes for maintenance pros appear to be the whole business."
+  },
+  "pro_pct": 85,
+  "pull": {
+   "v": 2,
+   "why": "Glyptal 1201 red is a legacy name with motor shops."
   }
  },
  "gold-eagle-co": {
@@ -2084,6 +2699,21 @@
    "why": "Loctite is the threadlocker name"
   }
  },
+ "hf-staples-co-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Furniture-care wax for retail/woodworkers, not MRO."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mixed retail and pro furniture care."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Staples wax known to refinishers; modest pull."
+  }
+ },
  "highline-warren": {
   "itw": {
    "v": 1,
@@ -2174,6 +2804,21 @@
    "why": "Known in DIY texture/patch; pros less loyal"
   }
  },
+ "homestead-finishing-products-manufactured-by-general-finishe": {
+  "itw": {
+   "v": 0,
+   "why": "Wood dye for finishers; outside MRO/trade distribution scope."
+  },
+  "major": {
+   "v": 2,
+   "why": "Single small-format dye line for pro finishers."
+  },
+  "pro_pct": 70,
+  "pull": {
+   "v": 1,
+   "why": "TransTint asked for by finishers, but narrow woodworking niche."
+  }
+ },
  "hospeco-brands-group": {
   "itw": {
    "v": 0,
@@ -2204,6 +2849,21 @@
    "why": "Restor-A-Finish known to refinishers, mostly DIY"
   }
  },
+ "howes-lubricator-products": {
+  "itw": {
+   "v": 2,
+   "why": "Diesel additive through fleet/auto parts channels mirrors ITW/CRC fuel treatments."
+  },
+  "major": {
+   "v": 2,
+   "why": "Fuel additives and lubricants are essentially the whole business."
+  },
+  "pro_pct": 85,
+  "pull": {
+   "v": 2,
+   "why": "Truckers ask for Howes Diesel Treat by name."
+  }
+ },
  "howmet-fastening-systems": {
   "itw": {
    "v": 0,
@@ -2232,6 +2892,21 @@
   "pull": {
    "v": 0,
    "why": "H-7 a regional/export retail degreaser"
+  }
+ },
+ "hut-products": {
+  "itw": {
+   "v": 0,
+   "why": "Hobby woodturning finishes and kits."
+  },
+  "major": {
+   "v": 1,
+   "why": "Hobby woodturning sales dominate."
+  },
+  "pro_pct": 30,
+  "pull": {
+   "v": 1,
+   "why": "Known among woodturners; niche."
   }
  },
  "hyde-tools-inc": {
@@ -2459,6 +3134,36 @@
    "why": "CLR is a widely known brand name"
   }
  },
+ "jl-darling-llc": {
+  "itw": {
+   "v": 0,
+   "why": "Paper notebooks and pens; not chemicals."
+  },
+  "major": {
+   "v": 0,
+   "why": "Paper products, not chemical consumables."
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 2,
+   "why": "Rite in the Rain is asked for by name in the field."
+  }
+ },
+ "john-myland-ltd": {
+  "itw": {
+   "v": 0,
+   "why": "UK paint and wood-finish maker, not MRO."
+  },
+  "major": {
+   "v": 1,
+   "why": "Paints for decorators plus woodturning finishes; pro mix uncertain."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Mylands friction polish is known to woodturners."
+  }
+ },
  "johndow-industries-inc": {
   "itw": {
    "v": 1,
@@ -2487,6 +3192,21 @@
   "pull": {
    "v": 0,
    "why": "Valves, not chemicals"
+  }
+ },
+ "jt-eaton-co-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Pest control consumables are adjacent but not core ITW Pro Brands."
+  },
+  "major": {
+   "v": 2,
+   "why": "Baits, glue boards and insecticides sold to pros make up most revenue."
+  },
+  "pro_pct": 70,
+  "pull": {
+   "v": 1,
+   "why": "Known among pest-control pros, but competes with larger brands."
   }
  },
  "justrite-safety-group": {
@@ -2532,6 +3252,21 @@
   "pull": {
    "v": 1,
    "why": "Known No-Touch system in BSC market"
+  }
+ },
+ "kanberra-group-llc": {
+  "itw": {
+   "v": 1,
+   "why": "Facility consumable, but odor control is janitorial-adjacent."
+  },
+  "major": {
+   "v": 1,
+   "why": "Consumer RV/home sales are significant."
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 0,
+   "why": "Odor gel with limited trade pull."
   }
  },
  "kano-laboratories": {
@@ -2699,6 +3434,36 @@
    "why": "Markal paint markers and LA-CO flux are specified by welders and plumbers"
   }
  },
+ "labconco-corporation": {
+  "itw": {
+   "v": 0,
+   "why": "Lab equipment maker."
+  },
+  "major": {
+   "v": 0,
+   "why": "Equipment is nearly all revenue."
+  },
+  "pro_pct": 3,
+  "pull": {
+   "v": 0,
+   "why": "Pump oil is an OEM accessory consumable."
+  }
+ },
+ "lami-lube-products-llc": {
+  "itw": {
+   "v": 2,
+   "why": "Single-purpose pro aerosol through Wurth is a classic Pro Brands fit."
+  },
+  "major": {
+   "v": 2,
+   "why": "The aerosol lube is the whole business."
+  },
+  "pro_pct": 95,
+  "pull": {
+   "v": 2,
+   "why": "The standard laminate lube, asked for by name in fab shops."
+  }
+ },
  "lamotte-company": {
   "itw": {
    "v": 1,
@@ -2729,6 +3494,36 @@
    "why": "Laticrete known by tile setters; specified"
   }
  },
+ "lawn-and-garden-products-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Garden pesticides; consumer-leaning."
+  },
+  "major": {
+   "v": 1,
+   "why": "Consumer and pro sales are mixed."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Monterey is known to gardeners."
+  }
+ },
+ "lear-chemical-research-corporation": {
+  "itw": {
+   "v": 2,
+   "why": "Aerosol corrosion inhibitor fits Pro Brands well."
+  },
+  "major": {
+   "v": 2,
+   "why": "ACF-50 and Corrosion Block are essentially the whole business."
+  },
+  "pro_pct": 85,
+  "pull": {
+   "v": 2,
+   "why": "ACF-50 is a cult brand with aviation and motorcycle mechanics."
+  }
+ },
  "lh-dottie-co": {
   "itw": {
    "v": 0,
@@ -2742,6 +3537,36 @@
   "pull": {
    "v": 1,
    "why": "Dottie is a known electrician house brand but mostly commodity"
+  }
+ },
+ "liberon-ltd": {
+  "itw": {
+   "v": 0,
+   "why": "Wood finishes under a French DIY paint group."
+  },
+  "major": {
+   "v": 0,
+   "why": "Small part of the consumer-leaning V33 Group."
+  },
+  "pro_pct": 10,
+  "pull": {
+   "v": 1,
+   "why": "Known to UK craftsmen; weak US pull."
+  }
+ },
+ "liberty-industries-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Cleanroom equipment and mats."
+  },
+  "major": {
+   "v": 0,
+   "why": "Equipment and mats dominate."
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Tacky mats bought on spec."
   }
  },
  "lien-chemical-company": {
@@ -2787,6 +3612,21 @@
   "pull": {
    "v": 1,
    "why": "Lift Off known to painters and retail shoppers"
+  }
+ },
+ "lonseal-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Flooring manufacturer; chemicals are accessories."
+  },
+  "major": {
+   "v": 0,
+   "why": "Flooring is the business; adhesives minor."
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 0,
+   "why": "Adhesives bought as flooring accessories."
   }
  },
  "lord-corporation": {
@@ -2849,6 +3689,21 @@
    "why": "Maker unidentified; judged from workbook facts"
   }
  },
+ "magicezy-pty-ltd": {
+  "itw": {
+   "v": 1,
+   "why": "Tube repair fillers fit format; marine/RV retail channel."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of DIY and pro sales."
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "Known among boat/RV repairers; modest pull."
+  }
+ },
  "mainstream-engineering": {
   "itw": {
    "v": 2,
@@ -2862,6 +3717,21 @@
   "pull": {
    "v": 1,
    "why": "QwikShot known to HVAC techs; niche"
+  }
+ },
+ "majic-paints": {
+  "itw": {
+   "v": 0,
+   "why": "General paint maker; farm/paint-store channel."
+  },
+  "major": {
+   "v": 0,
+   "why": "Mainly architectural and consumer paint."
+  },
+  "pro_pct": 15,
+  "pull": {
+   "v": 0,
+   "why": "Commodity paint brand."
   }
  },
  "mapei": {
@@ -2879,6 +3749,36 @@
    "why": "Tile setters know Mapei; product is bag/bucket"
   }
  },
+ "marine-development-research": {
+  "itw": {
+   "v": 1,
+   "why": "Formulated marine chemicals, but sold through boating retail rather than MRO."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mixed boater-retail and pro sales."
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "Long-standing marine brand with modest pull."
+  }
+ },
+ "marshalls-cove-marine-paint": {
+  "itw": {
+   "v": 0,
+   "why": "Marine paint is out of scope."
+  },
+  "major": {
+   "v": 1,
+   "why": "Judged from workbook facts; split between boat owners and yards."
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 0,
+   "why": "Tiny niche brand for wooden boats."
+  }
+ },
  "master-fluid-solutions": {
   "itw": {
    "v": 1,
@@ -2894,6 +3794,21 @@
    "why": "TRIM is asked for by name in machine shops"
   }
  },
+ "maxima-racing-oils": {
+  "itw": {
+   "v": 1,
+   "why": "Formulated lubes, but powersports dealer channel not MRO."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of bulk oils and small handheld chemicals."
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "Powersports enthusiasts and shops know Maxima."
+  }
+ },
  "mcgee-industries-inc": {
   "itw": {
    "v": 1,
@@ -2907,6 +3822,36 @@
   "pull": {
    "v": 1,
    "why": "McLube known to molders and sailors, niche"
+  }
+ },
+ "medical-chemical-corporation": {
+  "itw": {
+   "v": 0,
+   "why": "Healthcare/lab reagents; not MRO trades."
+  },
+  "major": {
+   "v": 0,
+   "why": "Lab and medical channel, not pro trade."
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 0,
+   "why": "Lab/medical disinfectants bought on spec."
+  }
+ },
+ "medina-agriculture-products-co": {
+  "itw": {
+   "v": 0,
+   "why": "Ag fertilizers/adjuvants; outside scope."
+  },
+  "major": {
+   "v": 0,
+   "why": "Mostly larger ag containers, not pro handheld."
+  },
+  "pro_pct": 15,
+  "pull": {
+   "v": 0,
+   "why": "Ag biologicals; little trade pull."
   }
  },
  "meridian-adhesives-group": {
@@ -2967,6 +3912,51 @@
   "pull": {
    "v": 1,
    "why": "Apiezon known in vacuum labs only"
+  }
+ },
+ "mi-t-m-corporation": {
+  "itw": {
+   "v": 0,
+   "why": "Equipment maker."
+  },
+  "major": {
+   "v": 0,
+   "why": "Equipment dominates revenue."
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 0,
+   "why": "Detergents are an accessory to washers."
+  }
+ },
+ "microcare-llc": {
+  "itw": {
+   "v": 2,
+   "why": "Contact cleaners and flux removers are core to Pro Brands (Chemtronics peer)."
+  },
+  "major": {
+   "v": 2,
+   "why": "Precision cleaning fluids and tools make up nearly all revenue."
+  },
+  "pro_pct": 85,
+  "pull": {
+   "v": 2,
+   "why": "Sticklers and MicroCare are spec'd by name by electronics and fiber techs."
+  }
+ },
+ "micronova-manufacturing-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Contamination-control consumables, but cleanroom channel, not trade."
+  },
+  "major": {
+   "v": 2,
+   "why": "Wipes and cleanroom consumables are the whole business."
+  },
+  "pro_pct": 85,
+  "pull": {
+   "v": 1,
+   "why": "Known in cleanrooms; spec-driven purchase."
   }
  },
  "midlab-inc": {
@@ -3044,6 +4034,51 @@
    "why": "MiracleWipes known to some painters"
   }
  },
+ "mixol": {
+  "itw": {
+   "v": 0,
+   "why": "Tint concentrate via woodworking retail; German."
+  },
+  "major": {
+   "v": 1,
+   "why": "Judged from workbook facts: mixed trade and retail."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Known among finishers; niche."
+  }
+ },
+ "ml-marine-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Formulated cleaners, but consumer marine retail."
+  },
+  "major": {
+   "v": 1,
+   "why": "Consumer retail via Overton's/Camping World is significant."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Toon-Brite is known among pontoon owners and dealers."
+  }
+ },
+ "moeller-marine-products": {
+  "itw": {
+   "v": 0,
+   "why": "Tanks business; chemicals are trivial."
+  },
+  "major": {
+   "v": 0,
+   "why": "Rotomolded tanks dominate; Dometic parent."
+  },
+  "pro_pct": 3,
+  "pull": {
+   "v": 0,
+   "why": "Engine paint is a minor, commoditised sideline."
+  }
+ },
  "momentive-performance-materials-inc": {
   "itw": {
    "v": 0,
@@ -3057,6 +4092,21 @@
   "pull": {
    "v": 1,
    "why": "GE silicone name known to glaziers; mostly OEM/industrial silicones"
+  }
+ },
+ "morris-products-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Broad electrical supplies, mostly hardware, not chemicals."
+  },
+  "major": {
+   "v": 0,
+   "why": "Chemicals tiny within electrical catalog."
+  },
+  "pro_pct": 3,
+  "pull": {
+   "v": 0,
+   "why": "Distributor catalog brand; commodity buying."
   }
  },
  "mothers-polishes-waxes-cleaners-inc": {
@@ -3087,6 +4137,21 @@
   "pull": {
    "v": 0,
    "why": "Lab reagent supplier"
+  }
+ },
+ "national-chemicals-inc": {
+  "itw": {
+   "v": 2,
+   "why": "Formulated coil and line cleaners through foodservice/HVAC trade fit Pro Brands."
+  },
+  "major": {
+   "v": 2,
+   "why": "Small-format cleaning chemicals sold to pros are core."
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "Known to beverage and coil-cleaning techs; moderate pull."
   }
  },
  "nc-brands-lp": {
@@ -3329,6 +4394,21 @@
    "why": "Heavy private-label jan-san; little name pull"
   }
  },
+ "o-zgedney": {
+  "itw": {
+   "v": 0,
+   "why": "Fittings maker; chemicals trivial inside Emerson."
+  },
+  "major": {
+   "v": 0,
+   "why": "Huge diversified public parent."
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 1,
+   "why": "O-Z/Gedney is a known electrical brand; duct seal is a commodity."
+  }
+ },
  "oatey-co": {
   "itw": {
    "v": 2,
@@ -3434,6 +4514,21 @@
    "why": "Best Welds familiar in welding shops; private label"
   }
  },
+ "owatrol-international-owatrol-coatings-usa": {
+  "itw": {
+   "v": 1,
+   "why": "Penetrating oil fits, but it is a paint additive and finish."
+  },
+  "major": {
+   "v": 1,
+   "why": "Painter pros plus substantial DIY sales."
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 2,
+   "why": "Owatrol Oil and Deks Olje are known to painters and boatyards."
+  }
+ },
  "paint-over-rust-products": {
   "itw": {
    "v": 2,
@@ -3464,6 +4559,21 @@
    "why": "Panduit known to electricians for hardware"
   }
  },
+ "peco-fasteners-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Distributor of fasteners/electrical; chemicals are relabeled."
+  },
+  "major": {
+   "v": 0,
+   "why": "Fastener and electrical distribution dominates."
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 0,
+   "why": "Private-label duct seal; no brand pull."
+  }
+ },
  "pecora-corporation": {
   "itw": {
    "v": 1,
@@ -3477,6 +4587,36 @@
   "pull": {
    "v": 2,
    "why": "Pecora specified and requested by glaziers/waterproofers"
+  }
+ },
+ "penn-union-corp": {
+  "itw": {
+   "v": 0,
+   "why": "Connector manufacturer; hardware, not chemicals."
+  },
+  "major": {
+   "v": 0,
+   "why": "Connectors dominate; compound is minor."
+  },
+  "pro_pct": 3,
+  "pull": {
+   "v": 0,
+   "why": "Connector brand; compound bought as accessory."
+  }
+ },
+ "perfex-corporation": {
+  "itw": {
+   "v": 0,
+   "why": "Cleaning tools, not chemicals."
+  },
+  "major": {
+   "v": 0,
+   "why": "Tools business."
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Mops and brooms; low name pull."
   }
  },
  "perma-patch-llc": {
@@ -3569,6 +4709,36 @@
    "why": "Boeshield T-9 has cult following among cyclists and machinists"
   }
  },
+ "pollardwater": {
+  "itw": {
+   "v": 0,
+   "why": "Distributor-owned tools and supplies."
+  },
+  "major": {
+   "v": 0,
+   "why": "Owned by Ferguson; a negligible share."
+  },
+  "pro_pct": 2,
+  "pull": {
+   "v": 1,
+   "why": "Known to waterworks crews as a supplier."
+  }
+ },
+ "polyform-us": {
+  "itw": {
+   "v": 0,
+   "why": "Fender maker; chemical marginal."
+  },
+  "major": {
+   "v": 0,
+   "why": "Fenders and buoys are the business."
+  },
+  "pro_pct": 3,
+  "pull": {
+   "v": 0,
+   "why": "Cleaner is an accessory to fenders."
+  }
+ },
  "polyguard-products-inc": {
   "itw": {
    "v": 0,
@@ -3582,6 +4752,36 @@
   "pull": {
    "v": 1,
    "why": "Known to pipeline/waterproofing crews"
+  }
+ },
+ "polyvance": {
+  "itw": {
+   "v": 1,
+   "why": "Repair consumables fit, but plastic welders are equipment."
+  },
+  "major": {
+   "v": 1,
+   "why": "Welders and equipment are a meaningful share alongside consumables."
+  },
+  "pro_pct": 55,
+  "pull": {
+   "v": 2,
+   "why": "Well known in collision shops for plastic repair."
+  }
+ },
+ "power-adhesives-ltd": {
+  "itw": {
+   "v": 1,
+   "why": "Glue sticks fit partly but bundled with guns; UK maker."
+  },
+  "major": {
+   "v": 1,
+   "why": "Guns plus sticks; consumables meaningful but not pro-chem."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 0,
+   "why": "Low US name recognition."
   }
  },
  "power-service-products": {
@@ -3644,6 +4844,21 @@
    "why": "Hobbyist product"
   }
  },
+ "prime-source-llc": {
+  "itw": {
+   "v": 0,
+   "why": "Ag/turf pesticides are outside ITW's scope."
+  },
+  "major": {
+   "v": 0,
+   "why": "Small unit of Albaugh's large generic agchem business."
+  },
+  "pro_pct": 2,
+  "pull": {
+   "v": 0,
+   "why": "Generic post-patent pesticides compete on price."
+  }
+ },
  "pro-line-products-inc": {
   "itw": {
    "v": 0,
@@ -3687,6 +4902,21 @@
   "pull": {
    "v": 1,
    "why": "Comet name known; pro version secondary"
+  }
+ },
+ "procter-gamble-professional": {
+  "itw": {
+   "v": 0,
+   "why": "Consumer-first megabrand, janitorial channel."
+  },
+  "major": {
+   "v": 0,
+   "why": "Tiny slice of giant P&G."
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 1,
+   "why": "Dawn known everywhere, but consumer brand pull, not trade."
   }
  },
  "propspeed-international": {
@@ -3734,6 +4964,21 @@
    "why": "PC-7 known to contractors and DIY"
   }
  },
+ "quest-products-corp": {
+  "itw": {
+   "v": 0,
+   "why": "Agchem adjuvants/fertilizers via turf channel."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mixed adjuvants, fungicide and nutrition."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Pentra-Bark known to arborists; narrow."
+  }
+ },
  "questspecialty-corporation": {
   "itw": {
    "v": 2,
@@ -3779,6 +5024,21 @@
    "why": "Liquid Wrench and Gunk are trade names"
   }
  },
+ "rainbow-technology-corporation": {
+  "itw": {
+   "v": 2,
+   "why": "Aerosol cleaners, marking paint and corrosion products for utilities closely fit Pro Brands."
+  },
+  "major": {
+   "v": 2,
+   "why": "Specialty chemicals for utility pros are the whole business."
+  },
+  "pro_pct": 90,
+  "pull": {
+   "v": 2,
+   "why": "Known to utility and telecom crews."
+  }
+ },
  "rainguard-brands": {
   "itw": {
    "v": 1,
@@ -3807,6 +5067,21 @@
   "pull": {
    "v": 0,
    "why": "Small DIY adhesive, judged from workbook facts"
+  }
+ },
+ "raytech-srl": {
+  "itw": {
+   "v": 1,
+   "why": "Electrical gel kits partly fit; Italian maker."
+  },
+  "major": {
+   "v": 1,
+   "why": "Judged from workbook facts: gels plus jointing kits."
+  },
+  "pro_pct": null,
+  "pull": {
+   "v": 0,
+   "why": "Unknown in US trades."
   }
  },
  "reckitt": {
@@ -3959,6 +5234,21 @@
    "why": "Rhomar glycol known to hydronic contractors"
   }
  },
+ "richardsapex-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Industrial lubricant maker plus marine care; partial fit."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of industrial lubricants and consumer marine."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "OrPine known among boaters; modest pro pull."
+  }
+ },
  "ritchie-engineering-company-inc": {
   "itw": {
    "v": 0,
@@ -3989,6 +5279,21 @@
    "why": "LUCAS known among roofers"
   }
  },
+ "rmp-finishes": {
+  "itw": {
+   "v": 0,
+   "why": "Woodworking-retail finishes."
+  },
+  "major": {
+   "v": 1,
+   "why": "Hobby retail is large."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Known among woodworkers; niche."
+  }
+ },
  "rochester-midland-corporation": {
   "itw": {
    "v": 1,
@@ -4017,6 +5322,21 @@
   "pull": {
    "v": 1,
    "why": "Known in plumbing supply and hardware"
+  }
+ },
+ "rootx": {
+  "itw": {
+   "v": 2,
+   "why": "Handheld formulated plumbing chemical via Ferguson; strong fit."
+  },
+  "major": {
+   "v": 1,
+   "why": "Gelco also runs pipe services; RootX meaningful share."
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 2,
+   "why": "RootX is the drain pro's named root killer."
   }
  },
  "rpm-international": {
@@ -4064,6 +5384,21 @@
    "why": "RCP known to janitorial buyers for equipment"
   }
  },
+ "rubio-monocoat-us-arm-rubio-monocoat-usa": {
+  "itw": {
+   "v": 1,
+   "why": "Wood-finish coatings, not MRO consumables."
+  },
+  "major": {
+   "v": 1,
+   "why": "Strong pro use, but substantial DIY/retail sales."
+  },
+  "pro_pct": 55,
+  "pull": {
+   "v": 2,
+   "why": "Flooring contractors and cabinetmakers ask for it by name."
+  }
+ },
  "s-c-johnson-son": {
   "itw": {
    "v": 1,
@@ -4077,6 +5412,21 @@
   "pull": {
    "v": 2,
    "why": "Deb/Stoko hand care is well known in plants"
+  }
+ },
+ "s-curve-technologies-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Fixtures, not consumable chemicals."
+  },
+  "major": {
+   "v": 0,
+   "why": "Fixtures business."
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Acrylic dispensers; no pull."
   }
  },
  "saf-t-lok-international-corporation": {
@@ -4107,6 +5457,36 @@
   "pull": {
    "v": 0,
    "why": "Daraweld obscure bonding agent"
+  }
+ },
+ "sakura-color-products-of-america": {
+  "itw": {
+   "v": 1,
+   "why": "Marker fits Markal-style product, but parent is pen maker."
+  },
+  "major": {
+   "v": 0,
+   "why": "Pens and art supplies dominate Sakura revenue."
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 2,
+   "why": "Mean Streak is the go-to paint stick for fabricators."
+  }
+ },
+ "salt-away-products-inc": {
+  "itw": {
+   "v": 2,
+   "why": "Formulated maintenance consumable; fits Pro Brands well."
+  },
+  "major": {
+   "v": 2,
+   "why": "Single-brand chemical company."
+  },
+  "pro_pct": 70,
+  "pull": {
+   "v": 2,
+   "why": "Salt-Away is asked for by name by marine techs."
   }
  },
  "saraya": {
@@ -4154,6 +5534,21 @@
    "why": "Instant Power known by plumbers/janitors"
   }
  },
+ "sek-surebond": {
+  "itw": {
+   "v": 1,
+   "why": "Formulated consumable, but bulk sand bags are not hand-held."
+  },
+  "major": {
+   "v": 1,
+   "why": "Bagged sand is large-format; sealers are a smaller share."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Polysweep is known to hardscape contractors."
+  }
+ },
  "sellars-absorbent-materials-inc": {
   "itw": {
    "v": 0,
@@ -4167,6 +5562,21 @@
   "pull": {
    "v": 1,
    "why": "Toolbox towels recognized, but commodity"
+  }
+ },
+ "semco-teak-products": {
+  "itw": {
+   "v": 1,
+   "why": "Formulated sealer, but boat/furniture-owner oriented."
+  },
+  "major": {
+   "v": 1,
+   "why": "Sold to both consumers and pros; the pro share is uncertain."
+  },
+  "pro_pct": 45,
+  "pull": {
+   "v": 1,
+   "why": "Loyal niche following among teak owners."
   }
  },
  "servaas-laboratories-inc": {
@@ -4197,6 +5607,21 @@
   "pull": {
    "v": 1,
    "why": "Sheila Shine known in commercial kitchens"
+  }
+ },
+ "shell": {
+  "itw": {
+   "v": 0,
+   "why": "Bulk motor oil from a supermajor."
+  },
+  "major": {
+   "v": 0,
+   "why": "Shell plc is a supermajor; a negligible share."
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 2,
+   "why": "Rotella is a name-brand diesel oil."
   }
  },
  "shell-plc": {
@@ -4289,6 +5714,21 @@
    "why": "Strong-Tie name strong for connectors; adhesives ride"
   }
  },
+ "skybryte-company-marine-enterprises-supplies-inc": {
+  "itw": {
+   "v": 2,
+   "why": "Handheld formulated metal-prep consumable; classic Pro Brands fit."
+  },
+  "major": {
+   "v": 2,
+   "why": "Single-brand pro chemical company."
+  },
+  "pro_pct": 85,
+  "pull": {
+   "v": 2,
+   "why": "Ospho is asked for by name in marine and metal prep."
+  }
+ },
  "slick-50": {
   "itw": {
    "v": 0,
@@ -4302,6 +5742,21 @@
   "pull": {
    "v": 0,
    "why": "Faded consumer engine treatment"
+  }
+ },
+ "slipit-industries": {
+  "itw": {
+   "v": 1,
+   "why": "Handheld formulated lube fits, but woodworking retail channel, not MRO."
+  },
+  "major": {
+   "v": 2,
+   "why": "Single-product company; all small-format tool lubricant."
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "Known among woodworkers by name, but tiny niche following."
   }
  },
  "solderweld-inc": {
@@ -4469,6 +5924,21 @@
    "why": "Tool brand pull, not chemicals"
   }
  },
+ "statlab-medical-products-llc": {
+  "itw": {
+   "v": 0,
+   "why": "Histology consumables; not trade MRO."
+  },
+  "major": {
+   "v": 0,
+   "why": "Now inside Danaher."
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 0,
+   "why": "Lab consumables bought by spec."
+  }
+ },
  "stearns-packaging-corporation": {
   "itw": {
    "v": 1,
@@ -4514,6 +5984,21 @@
    "why": "Healthcare infection-prevention company"
   }
  },
+ "stick-fast": {
+  "itw": {
+   "v": 1,
+   "why": "CA glue fits format but sells through woodworking retail."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mostly hobbyist woodworking retail."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Woodturners know it; small niche."
+  }
+ },
  "stoner-inc": {
   "itw": {
    "v": 1,
@@ -4527,6 +6012,21 @@
   "pull": {
    "v": 1,
    "why": "Invisible Glass and Lift Off strong consumer pull; Stoner industrial modest"
+  }
+ },
+ "sudbury-boat-care-products-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Formulated bottled cleaners, but boater/RV consumer-leaning rather than MRO trade."
+  },
+  "major": {
+   "v": 2,
+   "why": "Entire line is small-format marine/RV cleaners sold through distributors."
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "All-Off has some recognition, but these are mostly boat-owner care products."
   }
  },
  "summit-brands": {
@@ -4679,6 +6179,51 @@
    "why": "Raychem heat-shrink respected but hardware"
   }
  },
+ "teak-wonder": {
+  "itw": {
+   "v": 1,
+   "why": "Formulated teak care, but marine-only."
+  },
+  "major": {
+   "v": 1,
+   "why": "Judged from workbook facts; Barka's other lines are unknown."
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "Known to yacht crews; niche."
+  }
+ },
+ "teakdecking-systems-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Cartridge marine caulk fits the format, but the market is narrow marine."
+  },
+  "major": {
+   "v": 1,
+   "why": "Much of the revenue comes from custom deck fabrication, not caulk."
+  },
+  "pro_pct": 35,
+  "pull": {
+   "v": 1,
+   "why": "SIS 440 is known to yacht yards, but only within a tiny niche."
+  }
+ },
+ "technical-chemical-company": {
+  "itw": {
+   "v": 1,
+   "why": "Auto chemicals fit form; auto aftermarket/retail channel."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of retail and shop sales."
+  },
+  "pro_pct": 45,
+  "pull": {
+   "v": 1,
+   "why": "Johnsen's known in auto parts, mainly price brand."
+  }
+ },
  "techniseal": {
   "itw": {
    "v": 1,
@@ -4769,6 +6314,21 @@
    "why": "Dial known, but pros take whatever soap is dispensed"
   }
  },
+ "the-george-basch-co-inc": {
+  "itw": {
+   "v": 2,
+   "why": "Handheld can polish through hardware/MRO fits Pro Brands well."
+  },
+  "major": {
+   "v": 1,
+   "why": "Strong consumer and auto retail sales alongside pro."
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 2,
+   "why": "Nevr-Dull is a well-known name with mechanics and boaters."
+  }
+ },
  "the-gorilla-glue-company": {
   "itw": {
    "v": 0,
@@ -4814,6 +6374,21 @@
    "why": "Nobody buys Starrett for lubricant"
   }
  },
+ "the-merit-distribution-group-llc": {
+  "itw": {
+   "v": 1,
+   "why": "Caulks fit category, but distributor private label."
+  },
+  "major": {
+   "v": 0,
+   "why": "Distributor; house brand small slice."
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 0,
+   "why": "House brand; no name demand."
+  }
+ },
  "the-mill-rose-company": {
   "itw": {
    "v": 1,
@@ -4842,6 +6417,21 @@
   "pull": {
    "v": 1,
    "why": "NOCO pull is for chargers, not chemicals"
+  }
+ },
+ "the-old-fashioned-milk-paint-co-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Craft paint via woodworking retail."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mixed hobbyist and pro sales."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Known to furniture makers; niche."
   }
  },
  "the-orange-sol-group-of-companies-ltd": {
@@ -4902,6 +6492,21 @@
   "pull": {
    "v": 1,
    "why": "Seymour and Aervoe known for marking paint, but marking paint is often price-bought"
+  }
+ },
+ "the-scotts-miracle-gro-company": {
+  "itw": {
+   "v": 0,
+   "why": "Consumer lawn and garden."
+  },
+  "major": {
+   "v": 0,
+   "why": "Huge consumer company."
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 0,
+   "why": "Ortho is a consumer brand."
   }
  },
  "the-starco-group": {
@@ -4994,6 +6599,21 @@
    "why": "Mostly private label jan-san"
   }
  },
+ "thermo-fisher-scientific-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Lab reagents/consumables for a life-science giant."
+  },
+  "major": {
+   "v": 0,
+   "why": "Huge diversified public company."
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 0,
+   "why": "Lab reagents are bought on spec, not for brand."
+  }
+ },
  "thermotek-group": {
   "itw": {
    "v": 0,
@@ -5022,6 +6642,36 @@
   "pull": {
    "v": 1,
    "why": "Thrift drain cleaner known to some plumbers"
+  }
+ },
+ "timbermate-products-pty-ltd": {
+  "itw": {
+   "v": 1,
+   "why": "Handheld filler fits form; woodworking retail channel."
+  },
+  "major": {
+   "v": 2,
+   "why": "Wood filler is the business."
+  },
+  "pro_pct": 60,
+  "pull": {
+   "v": 1,
+   "why": "Known to woodworkers; niche."
+  }
+ },
+ "trac-ecological": {
+  "itw": {
+   "v": 2,
+   "why": "Formulated maintenance descalers and cleaners fit Pro Brands."
+  },
+  "major": {
+   "v": 0,
+   "why": "Small unit inside Drew Marine's larger shipboard chemicals business."
+  },
+  "pro_pct": 10,
+  "pull": {
+   "v": 1,
+   "why": "Barnacle Buster is known to yacht crews."
   }
  },
  "tracer-products": {
@@ -5069,6 +6719,21 @@
    "why": "Unclear entity; wipers not chemicals"
   }
  },
+ "trufuel": {
+  "itw": {
+   "v": 1,
+   "why": "Canned fuel and Royal Purple partly fit; consumer-led."
+  },
+  "major": {
+   "v": 0,
+   "why": "Small within Calumet refining revenue."
+  },
+  "pro_pct": 3,
+  "pull": {
+   "v": 1,
+   "why": "Landscapers know TruFuel, but largely consumer."
+  }
+ },
  "tsi-supercool": {
   "itw": {
    "v": 2,
@@ -5099,6 +6764,21 @@
    "why": "Marvel Mystery Oil has mechanic loyalty; Turtle Wax is consumer"
   }
  },
+ "u-beaut-polishes": {
+  "itw": {
+   "v": 0,
+   "why": "Hobby woodturning finishes."
+  },
+  "major": {
+   "v": 1,
+   "why": "Hobby/turner market."
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Known to woodturners; niche."
+  }
+ },
  "u-mark-inc": {
   "itw": {
    "v": 2,
@@ -5127,6 +6807,21 @@
   "pull": {
    "v": 2,
    "why": "U-POL and Raptor known to body shops"
+  }
+ },
+ "ultra-safety-systems-inc": {
+  "itw": {
+   "v": 2,
+   "why": "Handheld anti-seize tube is a classic Pro Brands consumable."
+  },
+  "major": {
+   "v": 2,
+   "why": "Tef-Gel appears to be essentially the whole business."
+  },
+  "pro_pct": 90,
+  "pull": {
+   "v": 2,
+   "why": "Tef-Gel is a cult brand with riggers and the military."
   }
  },
  "uni-ball-corporation": {
@@ -5204,6 +6899,21 @@
    "why": "Known via MSC, not a must-have brand"
   }
  },
+ "valutek-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Gloves, wipers, apparel; not ITW scope."
+  },
+  "major": {
+   "v": 0,
+   "why": "Mostly gloves and wipers."
+  },
+  "pro_pct": 10,
+  "pull": {
+   "v": 0,
+   "why": "Cleanroom gloves/wipers bought by spec."
+  }
+ },
  "valvoline-global-operations": {
   "itw": {
    "v": 0,
@@ -5219,6 +6929,21 @@
    "why": "Zerex and Valvoline known, but fluids are commodity-ish"
   }
  },
+ "valvtect-petroleum-products": {
+  "itw": {
+   "v": 1,
+   "why": "Fuel additives fit, but part is a certified-fuel program for bulk sales."
+  },
+  "major": {
+   "v": 1,
+   "why": "Bulk fuel-program sales dilute small-format share."
+  },
+  "pro_pct": 45,
+  "pull": {
+   "v": 1,
+   "why": "Known at marinas; fuel-additive brand with moderate pull."
+  }
+ },
  "vectair-systems": {
   "itw": {
    "v": 0,
@@ -5232,6 +6957,21 @@
   "pull": {
    "v": 0,
    "why": "Restroom air care is bought on price/service"
+  }
+ },
+ "vector-laboratories-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Lab reagents; outside scope."
+  },
+  "major": {
+   "v": 0,
+   "why": "Life-science reagents."
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Life-science reagents, not trade brand."
   }
  },
  "victor-technologies": {
@@ -5262,6 +7002,21 @@
   "pull": {
    "v": 1,
    "why": "Known to restoration contractors"
+  }
+ },
+ "voluntary-purchasing-groups-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Lawn and garden pesticides are consumer-leaning."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mostly sold to consumers through garden centers."
+  },
+  "pro_pct": 30,
+  "pull": {
+   "v": 1,
+   "why": "Hi-Yield and ferti-lome are known in garden centers."
   }
  },
  "vp-racing-fuels-inc": {
@@ -5324,6 +7079,21 @@
    "why": "Wholesale house-style plumbing specialties brand"
   }
  },
+ "walrus-oil": {
+  "itw": {
+   "v": 0,
+   "why": "Consumer and maker brand."
+  },
+  "major": {
+   "v": 1,
+   "why": "DTC and hobby sales dominate."
+  },
+  "pro_pct": 30,
+  "pull": {
+   "v": 1,
+   "why": "Known among makers; DTC-driven pull."
+  }
+ },
  "walter-surface-technologies": {
   "itw": {
    "v": 1,
@@ -5367,6 +7137,36 @@
   "pull": {
    "v": 2,
    "why": "WD-40 is the archetypal asked-for pro brand"
+  }
+ },
+ "wd-40-company": {
+  "itw": {
+   "v": 2,
+   "why": "Benchmark Pro Brands peer; handheld formulated consumables."
+  },
+  "major": {
+   "v": 1,
+   "why": "Large consumer/retail share; pro meaningful but not 60%."
+  },
+  "pro_pct": 45,
+  "pull": {
+   "v": 2,
+   "why": "WD-40 is the archetypal pro-requested brand."
+  }
+ },
+ "weaver-industries-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Hardware maker; adhesive marginal."
+  },
+  "major": {
+   "v": 0,
+   "why": "Davits/hardware dominate."
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 0,
+   "why": "Glue is an accessory to davit hardware."
   }
  },
  "web-products-inc": {
@@ -5474,6 +7274,21 @@
    "why": "Sherlock is the go-to leak detector name for HVAC and gas techs"
   }
  },
+ "wiremold": {
+  "itw": {
+   "v": 0,
+   "why": "Raceway hardware; paint marginal."
+  },
+  "major": {
+   "v": 0,
+   "why": "Tiny within Legrand."
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 0,
+   "why": "Touch-up paint is a raceway accessory."
+  }
+ },
  "wm-barr-company": {
   "itw": {
    "v": 1,
@@ -5547,6 +7362,51 @@
   "pull": {
    "v": 1,
    "why": "Liqui Moly strong in Europe, weak US pull"
+  }
+ },
+ "x-pando-products-company": {
+  "itw": {
+   "v": 2,
+   "why": "Handheld plumbing joint compound via trade; Oatey-like fit."
+  },
+  "major": {
+   "v": 2,
+   "why": "Judged from workbook facts: expanding cements are the business."
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "X-Pando known to some plumbers; old niche."
+  }
+ },
+ "yamaha-motor-corporation-usa": {
+  "itw": {
+   "v": 0,
+   "why": "OEM lubricant line of a vehicle maker."
+  },
+  "major": {
+   "v": 0,
+   "why": "Yamaha Motor is a huge vehicle maker."
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 2,
+   "why": "Yamalube is asked for by dealers and techs."
+  }
+ },
+ "z-tuff-products": {
+  "itw": {
+   "v": 0,
+   "why": "Marine/RV cleaners via West Marine, not MRO channel."
+  },
+  "major": {
+   "v": 2,
+   "why": "Small bottled cleaners are the whole business."
+  },
+  "pro_pct": 70,
+  "pull": {
+   "v": 1,
+   "why": "Some detailer loyalty; small marine brand."
   }
  },
  "zenex-international": {

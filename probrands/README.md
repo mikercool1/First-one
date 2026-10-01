@@ -47,16 +47,16 @@ Distributor channels (broadline MRO, trade specialty, retail-leaning) and the en
 ## Data
 
 ```
-python3 probrands/import/build_import.py Professional_Brands_Market_Map_v7.xlsx
+python3 probrands/import/build_import.py Professional_Brands_Market_Map_v8.xlsx
 ```
 
 This writes `import/out/data/*.json`, one file per document in the app's `data` collection: `co-N` (company summaries), `dt-N` (details), `br-N` (every brand), `deals`, `dists` and `index`. Every SKU goes in `import/out/sku/p-N.json`, the `sku` collection, which loads one document at a time when a brand page opens. Lists are split across documents because the database stores at most 256 KB per document; nothing is dropped. Load them with the ArtifactData tool (a `set` of each file). It also writes `import/out/judge/batch-N.json`, the facts behind the judgment calls, for scoring new owners.
 
 Owners come from the Master tab. Clean-up rules:
-- Owners listed twice are merged (in v5: DuPont, S.C. Johnson, Kimberly-Clark).
-- The "Unknown" placeholder row gets no profile.
+- Owners listed twice are merged (in v8: DuPont, S.C. Johnson, Kimberly-Clark, Control Solutions, Desco, FPC).
+- "Unknown" placeholder rows (including "Unknown (…)" variants) get no profile; their brands stay unowned.
 - Brands that only carry an unverified "Likely owner (PRIOR)" join a matching Master owner, or become an owner marked unverified.
 
 The database still holds the earlier version's `companies`, `details` and `meta` collections. The app no longer reads them, so they can be cleared.
 
-Loaded now: v7 (1 Oct 2026), with 357 owners, all 2,514 brands, 6,264 SKUs from 57 distributors, and 257 deals. Brands: 544 verified owner, 78 workbook prior, 1,567 Claude guesses, 325 not identified.
+Loaded now: v8 (1 Oct 2026), with 478 owners, all 3,094 brands, 8,006 SKUs and 291 deals. Brands: 721 verified owner, 78 workbook prior, 1,881 Claude guesses, 414 not identified.
