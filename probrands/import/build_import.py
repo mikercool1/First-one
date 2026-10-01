@@ -3,8 +3,7 @@
 Usage: python3 probrands/import/build_import.py <Professional_Brands_Market_Map.xlsx>
 
 Writes import/out/companies/<id>.json (summary), import/out/details/<id>.json,
-import/out/meta/entities.json (every brand and acquired company, linked to its owner when
-known) and import/out/meta/deals.json (deals that are not an owner's own acquisition).
+import/out/meta/entities.json (every brand and acquired company that has a known owner) and import/out/meta/deals.json (deals that are not an owner's own acquisition).
 
 Owners come from the Master tab (verified ownership, with facts from Companies, Profiles and
 Sources). Brands that only carry Claude's unverified "Likely owner (PRIOR)" join a Master
@@ -138,6 +137,24 @@ deal_rows = [d for d in table("Deals") if s(d.get("Target"))]
 profiles = {s(p.get("ID")): p for p in table("Profiles") if s(p.get("Company"))}
 sources = [x for x in table("Sources") if s(x.get("Company"))]
 
+# The same ultimate owner sometimes appears twice in Master under different IDs (two divisions of
+# DuPont, say). Fold each duplicate into the one with the most brands; its company row rolls in.
+canon = {}
+for m in sorted(master, key=lambda m: (-(n(m.get("# brands")) or 0), n(m.get("Owner ID")) or 0)):
+    canon.setdefault(key(m["Owner (ultimate)"]), s(m["Owner ID"]))
+dupes = {s(m["Owner ID"]): canon[key(m["Owner (ultimate)"])] for m in master if canon[key(m["Owner (ultimate)"])] != s(m["Owner ID"])}
+master = [m for m in master if s(m["Owner ID"]) not in dupes]
+for c in cos:
+    oid = s(c.get("Owner ID (rolls into)"))
+    if oid in dupes:
+        c["Owner ID (rolls into)"] = dupes[oid]
+        if s(c.get("Role")) == "Owner":
+            c["Role"], c["In owner figure? Owner/Y/N/X"] = "Merged duplicate", "Y"
+
+# A Master row named "Unknown" is a bucket of brands whose maker wasn't found, not a company: its brands stay unowned.
+placeholder = {s(m["Owner ID"]) for m in master if key(m["Owner (ultimate)"]) in ("unknown", "unidentified", "notidentified")}
+master = [m for m in master if s(m["Owner ID"]) not in placeholder]
+
 co_by_id = {s(c["ID"]): c for c in cos}
 owner_row = {s(c["Owner ID (rolls into)"]): c for c in cos if s(c.get("Role")) == "Owner"}
 
@@ -161,12 +178,24 @@ for oid, o in owners.items():
     hero_parent = key(s(o["master"].get("Ultimate parent / sponsor")))
     if hero_parent and len(hero_parent) >= 5:
         by_key.setdefault(hero_parent, oid)
+    for part in re.findall(r"\(([^)]+)\)", o["name"]):  # "Victor Technologies (ESAB)" is also ESAB
+        if len(key(part)) >= 3:
+            by_key.setdefault(key(part), oid)
+
+
+def prior_owner(k):
+    """A Master owner for an unverified prior name: exact key, else the one owner whose name starts with it."""
+    if k in by_key:
+        return by_key[k]
+    hits = {o for nk, o in name_key.items() if len(k) >= 3 and nk.startswith(k)}
+    return hits.pop() if len(hits) == 1 else None
 
 unlinked = []
 for b in brands:
     cid = s(b.get("Company ID"))
     if cid and cid in co_by_id:
-        owners[s(co_by_id[cid]["Owner ID (rolls into)"])]["brands"].append(b)
+        oid = s(co_by_id[cid]["Owner ID (rolls into)"])
+        (owners[oid]["brands"] if oid in owners else unlinked).append(b)
         continue
     raw = s(b.get("Likely owner (PRIOR - unverified)"))
     if not raw:
@@ -174,7 +203,7 @@ for b in brands:
         continue
     name, parent = split_prior(raw)
     k = ALIASES.get(key(name), key(name))
-    oid = by_key.get(k)
+    oid = prior_owner(k)
     if not oid:
         oid = "prior:" + k
         by_key[k] = oid
@@ -342,7 +371,7 @@ for oid, o in owners.items():
 # Brands and acquired companies, for search and Buyer finder: each points at its owner's profile when known.
 entities = []
 for x in cos:
-    if s(x.get("Role")) != "Owner":
+    if s(x.get("Role")) != "Owner" and s(x["Owner ID (rolls into)"]) not in placeholder:
         oid = s(x["Owner ID (rolls into)"])
         entities.append({"name": s(x["Company"]), "role": s(x.get("Role")), "owner_id": ids.get(oid), "owner": owners[oid]["name"] if oid in owners else "",
                          "status": s(x.get("Status (verified)")) + (f" by {s(x.get('Acquired by'))} {s(x.get('Acquired date'))}" if s(x.get("Acquired by")) else ""),
@@ -353,13 +382,12 @@ for oid, o in owners.items():
                          "status": "Owner unverified (prior)" if b.get("_prior") else "Owner verified",
                          "what": "; ".join(v for v in [s(b.get("Primary product category")), s(b.get("Known for (hero product)")), s(b.get("Primary trade"))] if v)[:200],
                          "skus": int(n(b.get("# SKUs scraped")) or 0), "scope": s(b.get("Scope flag"))})
-for b in unlinked:
-    entities.append({"name": s(b["Brand"]), "role": "Brand", "owner_id": None, "owner": "", "status": "Owner unknown",
-                     "what": "; ".join(v for v in [s(b.get("Primary product category")), s(b.get("Known for (hero product)")), s(b.get("Primary trade"))] if v)[:200],
-                     "skus": int(n(b.get("# SKUs scraped")) or 0), "scope": s(b.get("Scope flag"))})
+# Brands with no known owner are left out: the app only uses entities that point at a profile, and a
+# database document is capped at 256 KB.
 json.dump({"entities": entities, "updated_at": NOW}, open(f"{OUT}/meta/entities.json", "w"))
 json.dump({"deals": other_deals, "updated_at": NOW}, open(f"{OUT}/meta/deals.json", "w"))
 
+print("duplicate owners merged:", ", ".join(f"{d} into {c}" for d, c in dupes.items()) or "none")
 print("owners", len(ids), "verified", sum(1 for o in owners.values() if o["verified"]), "unverified", sum(1 for o in owners.values() if not o["verified"]))
 print("brands", len(brands), "linked to an owner", sum(len(o["brands"]) for o in owners.values()), "no owner", len(unlinked))
 print("deals: on owner M&A tabs", sum(len(v) for v in acq.values()), "in meta/deals", len(other_deals), "duplicates dropped", len(deal_rows) - len(seen_deals))
