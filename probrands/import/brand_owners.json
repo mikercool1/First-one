@@ -41,7 +41,15 @@
 },
 "4Th Gen": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"5-2-1 Compressor Saver": {
+"conf": "Low",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -49,7 +57,7 @@
 },
 "8-Way": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -65,7 +73,7 @@
 },
 "A+B": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -73,11 +81,11 @@
 },
 "A/C Leak Freeze": {
 "conf": "Low",
-"note": "No maker clue",
-"owner": "",
+"note": "Believed Cliplight product",
+"owner": "Cliplight Manufacturing",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "ABB Installation Products": {
 "conf": "High",
@@ -103,6 +111,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"AC/SMART SEAL": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "AC100+ Gold (ECLECTIC)": {
 "conf": "Low",
 "note": "DEWALT/Powers anchor adhesive; listing says Eclectic",
@@ -110,6 +126,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Public"
+},
+"ACE (Atlantic Chemical & Equipment)": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Atlantic Chemical & Equipment",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "ACF-50": {
 "conf": "Medium",
@@ -119,6 +143,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"ACI": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "ACS": {
 "conf": "Low",
 "note": "Brand name only",
@@ -127,10 +159,34 @@
 "sponsor": "",
 "type": "Unknown"
 },
+"ADCO Products": {
+"conf": "Medium",
+"note": "Via Royal Adhesives acquisition 2017",
+"owner": "ADCO Products",
+"parent": "H.B. Fuller",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"ADO Products": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "ADO Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "AERO-SPOT": {
 "conf": "Low",
 "note": "Brand name only",
 "owner": "AERO-SPOT",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"AF International": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "AF International",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -142,6 +198,14 @@
 "parent": "Fujikura",
 "sponsor": "",
 "type": "Subsidiary of public"
+},
+"AGL": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "AHF Products": {
 "conf": "Medium",
@@ -166,6 +230,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Public"
+},
+"AMEC Thermasol": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "AMEC Thermasol",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "AMERICAN CLEANSTAT": {
 "conf": "Low",
@@ -297,16 +369,56 @@
 },
 "AWI": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
 },
+"Aavid": {
+"conf": "Medium",
+"note": "Aavid Thermalloy part of Boyd",
+"owner": "Boyd Corporation",
+"parent": "",
+"sponsor": "Goldman Sachs Asset Management",
+"type": "PE"
+},
+"Abatix": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Abatix",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Abicor Binzel": {
+"conf": "High",
+"note": "German family-owned welding torch maker",
+"owner": "Alexander Binzel Schweisstechnik",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
+"Accuform": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Accuform Manufacturing",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Accumetric": {
 "conf": "Medium",
 "note": "Silicone sealant maker, Kentucky",
 "owner": "Accumetric",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Ace Glass": {
+"conf": "Medium",
+"note": "New Jersey lab glassware maker",
+"owner": "Ace Glass Incorporated",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -321,7 +433,7 @@
 },
 "Acid-Away": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -335,9 +447,25 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Across International": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Across International",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Acrylabs": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "Acti-Klean": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -345,7 +473,7 @@
 },
 "ActiveAire": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -363,6 +491,22 @@
 "conf": "Low",
 "note": "UK hydronic filter/chemical maker",
 "owner": "Adey Innovation",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Adhesives Technology": {
+"conf": "Medium",
+"note": "Florida anchoring adhesives maker",
+"owner": "Adhesives Technology Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Adwood": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Adwood Corporation",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -385,7 +529,7 @@
 },
 "Aero-Brite": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -431,6 +575,14 @@
 "sponsor": "",
 "type": "Public"
 },
+"Agilent Technologies": {
+"conf": "High",
+"note": "NYSE-listed",
+"owner": "Agilent Technologies",
+"parent": "",
+"sponsor": "",
+"type": "Public"
+},
 "Aiken Chemical": {
 "conf": "Medium",
 "note": "Purple Power maker, SC",
@@ -449,7 +601,7 @@
 },
 "AirWorks": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -457,7 +609,7 @@
 },
 "Aircraft": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -470,6 +622,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"AlcoSCRUB": {
+"conf": "Medium",
+"note": "VWR/Avantor private-label sanitizer",
+"owner": "VWR",
+"parent": "Avantor",
+"sponsor": "",
+"type": "Subsidiary of public"
 },
 "Alconox": {
 "conf": "Medium",
@@ -497,7 +657,7 @@
 },
 "Alien Power": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -505,7 +665,7 @@
 },
 "All American Paint": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -513,7 +673,7 @@
 },
 "All Kleer": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -559,6 +719,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Alpha Wire": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Alpha Wire",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Alum-a-Lub": {
 "conf": "Low",
 "note": "Brand name only",
@@ -585,7 +753,7 @@
 },
 "Amazing Liquid Fire": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -598,6 +766,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Public"
+},
+"Ambersil": {
+"conf": "Medium",
+"note": "CRC Industries Europe brand",
+"owner": "CRC Industries",
+"parent": "",
+"sponsor": "",
+"type": "Family"
 },
 "AmeriSeal": {
 "conf": "Low",
@@ -623,13 +799,21 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
-"American Garage Door Supply": {
+"American Fiber & Finishing": {
 "conf": "Low",
-"note": "No maker clue",
-"owner": "",
+"note": "Guess from maker/brand name only",
+"owner": "American Fiber & Finishing",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
+},
+"American Garage Door Supply": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "American Garage Door Supply",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "American Grease Stick": {
 "conf": "Medium",
@@ -643,6 +827,14 @@
 "conf": "Low",
 "note": "Maker name on listing only",
 "owner": "American Packing & Gasket",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"American Standard Coatings": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "American Standard Coatings",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -663,6 +855,14 @@
 "sponsor": "",
 "type": "Public"
 },
+"Amphenol Wilcoxon": {
+"conf": "High",
+"note": "Amphenol sensor unit",
+"owner": "Amphenol Wilcoxon",
+"parent": "Amphenol",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "Amrep": {
 "conf": "Medium",
 "note": "Amrep is Zep subsidiary",
@@ -681,7 +881,7 @@
 },
 "Anchor": {
 "conf": "Low",
-"note": "No reliable maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -727,6 +927,14 @@
 "sponsor": "",
 "type": "Subsidiary of private"
 },
+"Antex": {
+"conf": "Low",
+"note": "UK soldering iron maker",
+"owner": "Antex Electronics",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Anti-Bond": {
 "conf": "Low",
 "note": "Adhesive remover; guess",
@@ -761,7 +969,7 @@
 },
 "Apache": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -769,11 +977,11 @@
 },
 "Apel": {
 "conf": "Low",
-"note": "Brand name only",
-"owner": "",
+"note": "Guess from maker/brand name only",
+"owner": "Apel",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Apex Engineering": {
 "conf": "Medium",
@@ -841,7 +1049,7 @@
 },
 "AquaGuard": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -879,6 +1087,14 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Araldite": {
+"conf": "High",
+"note": "Huntsman Advanced Materials brand",
+"owner": "Huntsman",
+"parent": "",
+"sponsor": "",
+"type": "Public"
+},
 "Arborjet": {
 "conf": "Low",
 "note": "Tree care products; acquired by Rainbow",
@@ -910,6 +1126,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"Aremco Products": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Aremco Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Arjay": {
 "conf": "Low",
@@ -951,6 +1175,14 @@
 "sponsor": "",
 "type": "Unknown"
 },
+"Aseptic Control Products": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "Aspen": {
 "conf": "Low",
 "note": "Brand name only",
@@ -961,7 +1193,7 @@
 },
 "Asurity": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -991,9 +1223,17 @@
 "sponsor": "",
 "type": "Subsidiary of private"
 },
+"Austin's": {
+"conf": "Medium",
+"note": "Pennsylvania family-owned cleaning products",
+"owner": "James Austin Company",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "AutoWriter": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1017,7 +1257,7 @@
 },
 "Avenger": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1047,6 +1287,22 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"B&G Equipment": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "B&G Equipment Co",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"B&K Tank Gauge": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "B&K Tank Gauge",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "BAC INDUSTRIES": {
 "conf": "Low",
 "note": "Brand name only",
@@ -1060,6 +1316,14 @@
 "note": "Silvabrite solder; BASF likely mislabeled",
 "owner": "Harris Products Group",
 "parent": "Lincoln Electric",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"BASO": {
+"conf": "Medium",
+"note": "Resideo gas controls brand",
+"owner": "Baso Gas Products",
+"parent": "Resideo",
 "sponsor": "",
 "type": "Subsidiary of public"
 },
@@ -1099,6 +1363,14 @@
 "conf": "Low",
 "note": "Brand name only",
 "owner": "Bioesque Solutions",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"BITEC": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "BITEC Inc",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -1145,11 +1417,11 @@
 },
 "Baku": {
 "conf": "Low",
-"note": "Chinese electronics tool brand",
-"owner": "",
+"note": "Chinese soldering equipment brand",
+"owner": "Baku",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Balkamp (BK, brand not shown)": {
 "conf": "High",
@@ -1199,6 +1471,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Base": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "BaseLine": {
 "conf": "Low",
 "note": "Brand name only",
@@ -1217,7 +1497,7 @@
 },
 "Bathworks": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1231,9 +1511,25 @@
 "sponsor": "",
 "type": "Family"
 },
+"Beckett": {
+"conf": "High",
+"note": "Family-owned oil burner maker",
+"owner": "R.W. Beckett Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
+"Beckman Coulter": {
+"conf": "High",
+"note": "Danaher operating company",
+"owner": "Beckman Coulter",
+"parent": "Danaher",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "Bed Bug 911": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1241,7 +1537,7 @@
 },
 "Bee Bopper": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1253,6 +1549,22 @@
 "owner": "Behlen",
 "parent": "Mohawk Finishing / RPM",
 "sponsor": "RPM International",
+"type": "Subsidiary of public"
+},
+"Bel-Art": {
+"conf": "Medium",
+"note": "SP Industries acquired by ATS in 2022",
+"owner": "SP Industries (SP Scienceware)",
+"parent": "ATS Corporation",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"Bell & Gossett": {
+"conf": "High",
+"note": "Xylem brand",
+"owner": "Bell & Gossett",
+"parent": "Xylem",
+"sponsor": "",
 "type": "Subsidiary of public"
 },
 "Ben's": {
@@ -1287,6 +1599,22 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Berger Building Products": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Berger Building Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Better Waters": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "Big Rig Professional Coatings": {
 "conf": "Low",
 "note": "Brand name only",
@@ -1305,7 +1633,7 @@
 },
 "Bio-Max": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1313,7 +1641,7 @@
 },
 "Bio-Neutralizer": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1321,7 +1649,7 @@
 },
 "BioCoil": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1337,7 +1665,7 @@
 },
 "BioOne": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1351,10 +1679,26 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Biosurface Technologies": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "Bird Barrier": {
 "conf": "Low",
 "note": "Brand name only",
 "owner": "Bird Barrier America",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Birsch Industries": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Birsch Industries",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -1369,7 +1713,7 @@
 },
 "Black Diamond": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1385,7 +1729,7 @@
 },
 "Blackstone": {
 "conf": "Low",
-"note": "No reliable maker clue",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1415,6 +1759,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Blue Demon": {
+"conf": "Low",
+"note": "Welding consumables brand",
+"owner": "Blue Demon Welding Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Blue Dolphin": {
 "conf": "Low",
 "note": "Brand name only",
@@ -1425,7 +1777,7 @@
 },
 "Blue Ribbon": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1479,6 +1831,14 @@
 "sponsor": "",
 "type": "Family"
 },
+"Bonderite": {
+"conf": "High",
+"note": "Henkel surface treatment brand",
+"owner": "Henkel",
+"parent": "",
+"sponsor": "",
+"type": "Public"
+},
 "Bonide": {
 "conf": "High",
 "note": "Central Garden owns Bonide",
@@ -1486,6 +1846,14 @@
 "parent": "Central Garden & Pet",
 "sponsor": "",
 "type": "Subsidiary of public"
+},
+"Bonkote": {
+"conf": "Low",
+"note": "Japanese soldering supplies maker",
+"owner": "Bonkote",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Boshart": {
 "conf": "Medium",
@@ -1531,6 +1899,14 @@
 "conf": "Low",
 "note": "HVAC chemicals maker, Chicago",
 "owner": "Bramec Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Brand Nu Laboratories": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Brand Nu Laboratories",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -1615,6 +1991,14 @@
 "sponsor": "",
 "type": "Subsidiary of private"
 },
+"Bronz-Glow": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Bronz-Glow Technologies",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Brooklyn Tool and Craft": {
 "conf": "Low",
 "note": "Brand name only",
@@ -1649,7 +2033,7 @@
 },
 "BugX": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1695,6 +2079,14 @@
 "sponsor": "",
 "type": "Subsidiary of private"
 },
+"Busse Hospital Disposables": {
+"conf": "Medium",
+"note": "Family-owned NY medical disposables maker",
+"owner": "Busse Hospital Disposables",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Butler Chemicals": {
 "conf": "Low",
 "note": "Maker name on listing only",
@@ -1705,7 +2097,7 @@
 },
 "Buy Max": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1718,6 +2110,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Family"
+},
+"C.A. Technologies": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "CAF Outdoor Cleaning": {
 "conf": "Low",
@@ -1759,17 +2159,33 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"CCP Industries": {
+"conf": "Low",
+"note": "Ohio wipers/absorbents maker",
+"owner": "CCP Industries",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "CEP": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "Guess from maker/brand name only",
+"owner": "CEP Sorbents",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"CHAMP": {
+"conf": "Low",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
 },
-"CHAMP": {
+"CHC": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -1783,11 +2199,35 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"CHT": {
+"conf": "Medium",
+"note": "German family-owned specialty chemicals group",
+"owner": "CHT Group",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
+"CITGO": {
+"conf": "Medium",
+"note": "Court sale from PDVSA to Elliott's Amber Energy",
+"owner": "CITGO Petroleum",
+"parent": "Amber Energy (Elliott)",
+"sponsor": "Elliott Investment Management",
+"type": "PE"
+},
 "CITRUS II": {
 "conf": "Medium",
 "note": "Beaumont Products, Georgia",
 "owner": "CITRUS II",
 "parent": "Beaumont Products",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"CK Tools": {
+"conf": "Medium",
+"note": "UK hand tool maker",
+"owner": "Carl Kammerling International",
+"parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
 },
@@ -1847,6 +2287,14 @@
 "sponsor": "",
 "type": "Unknown"
 },
+"CPS": {
+"conf": "Medium",
+"note": "Florida HVAC tool maker, privately held",
+"owner": "CPS Products Inc",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "CSL Silicones": {
 "conf": "Medium",
 "note": "Canadian silicone coatings maker",
@@ -1895,6 +2343,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Calotherm": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Calotherm",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Calumet Branded Products": {
 "conf": "High",
 "note": "Calumet Specialty Products subsidiary",
@@ -1902,6 +2358,14 @@
 "parent": "Calumet",
 "sponsor": "",
 "type": "Subsidiary of public"
+},
+"Cambridge": {
+"conf": "Low",
+"note": "Maker name only; possibly distributor private label",
+"owner": "Cambridge Resources",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Camco": {
 "conf": "Medium",
@@ -1915,6 +2379,14 @@
 "conf": "Medium",
 "note": "Ohio janitorial chemical maker",
 "owner": "Canberra Corp",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Cantesco": {
+"conf": "Medium",
+"note": "Canadian NDT consumables maker",
+"owner": "Cantesco",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -1943,6 +2415,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Carlisle Coatings & Waterproofing": {
+"conf": "High",
+"note": "Carlisle Construction Materials unit",
+"owner": "Carlisle Coatings & Waterproofing",
+"parent": "Carlisle Companies",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "Carlon": {
 "conf": "High",
 "note": "ABB electrical brand",
@@ -1950,6 +2430,14 @@
 "parent": "ABB",
 "sponsor": "",
 "type": "Subsidiary of public"
+},
+"Caron Products and Services": {
+"conf": "Medium",
+"note": "Ohio lab equipment maker, privately held",
+"owner": "Caron Products and Services",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Carquest": {
 "conf": "High",
@@ -2009,7 +2497,7 @@
 },
 "Cavu": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2025,15 +2513,23 @@
 },
 "CellOTherm": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
 },
+"Cello-Seal": {
+"conf": "Medium",
+"note": "Fisher Scientific branded grease",
+"owner": "Fisher Scientific",
+"parent": "Thermo Fisher Scientific",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "Centaur": {
 "conf": "Low",
-"note": "No reliable maker clue",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2073,7 +2569,7 @@
 },
 "Century Q": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2087,6 +2583,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"CertainTeed Roofing": {
+"conf": "High",
+"note": "Saint-Gobain North America roofing",
+"owner": "CertainTeed",
+"parent": "Saint-Gobain",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "Certified Safety": {
 "conf": "Low",
 "note": "First aid supply maker",
@@ -2097,7 +2601,7 @@
 },
 "Challenger": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2105,7 +2609,7 @@
 },
 "Champion (pool)": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2151,9 +2655,17 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Charles Supper Co": {
+"conf": "Low",
+"note": "Small lab supply maker",
+"owner": "Charles Supper Company",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Chase's Clean Home": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2191,13 +2703,29 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Chemcraft": {
+"conf": "Medium",
+"note": "AkzoNobel wood coatings brand",
+"owner": "Chemcraft International",
+"parent": "AkzoNobel",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "Chemical Specialties": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"Chemours": {
+"conf": "High",
+"note": "NYSE-listed DuPont spinoff",
+"owner": "The Chemours Company",
+"parent": "",
+"sponsor": "",
+"type": "Public"
 },
 "Chempoint.com": {
 "conf": "Medium",
@@ -2255,9 +2783,17 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Chomerics": {
+"conf": "High",
+"note": "Parker Hannifin division",
+"owner": "Parker Chomerics",
+"parent": "Parker Hannifin",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "Chomp": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2273,7 +2809,7 @@
 },
 "CiDehol": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2297,7 +2833,7 @@
 },
 "Citrusafe": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2313,7 +2849,7 @@
 },
 "Clean Choice": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2329,15 +2865,23 @@
 },
 "Clean Quick": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "Guess",
+"owner": "Procter & Gamble Professional",
+"parent": "Procter & Gamble",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"Clean Water": {
+"conf": "Low",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
 },
-"Clean Water": {
+"Clean-n-Safe": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2379,6 +2923,22 @@
 "conf": "Low",
 "note": "Brand name only",
 "owner": "Cleansource",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Cleary Packing": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Cleary Packing LLC",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"ClenAir by Nu-Calgon": {
+"conf": "Medium",
+"note": "St. Louis HVAC chemical maker",
+"owner": "Nu-Calgon",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -2449,7 +3009,7 @@
 },
 "CoilJet": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2457,7 +3017,7 @@
 },
 "CoilShot": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2503,6 +3063,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Color Rite": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Color Rite Inc",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Combat": {
 "conf": "High",
 "note": "Henkel owns Combat",
@@ -2527,9 +3095,25 @@
 "sponsor": "",
 "type": "Public"
 },
+"Compotite": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Compotite Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Conbond": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "Condenserkote": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2542,6 +3126,14 @@
 "parent": "IBP Group",
 "sponsor": "",
 "type": "Subsidiary of private"
+},
+"Connecticut Clean Room Corporation": {
+"conf": "Low",
+"note": "Small cleanroom supplies maker",
+"owner": "Connecticut Clean Room Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Conq-R-Dust": {
 "conf": "Low",
@@ -2567,9 +3159,25 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Contrad": {
+"conf": "Medium",
+"note": "Decon Labs (PA) detergent brand",
+"owner": "Decon Laboratories",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"ControlMax": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "Cookson Electronic": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2582,6 +3190,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Cool Braze": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "Copeland": {
 "conf": "High",
@@ -2600,12 +3216,12 @@
 "type": "Private (unknown)"
 },
 "Copper Green": {
-"conf": "Low",
-"note": "Wood preservative brand",
-"owner": "",
-"parent": "",
+"conf": "Medium",
+"note": "Kop-Coat wood preservative, RPM unit",
+"owner": "Kop-Coat",
+"parent": "RPM International",
 "sponsor": "",
-"type": "Unknown"
+"type": "Subsidiary of public"
 },
 "Coral Seas": {
 "conf": "Low",
@@ -2614,6 +3230,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"Core & Main": {
+"conf": "High",
+"note": "Distributor private label",
+"owner": "Core & Main",
+"parent": "",
+"sponsor": "",
+"type": "Public"
 },
 "Corning": {
 "conf": "High",
@@ -2635,6 +3259,14 @@
 "conf": "Low",
 "note": "Brand name only",
 "owner": "Corrosion Technologies",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Cotronics": {
+"conf": "Medium",
+"note": "Brooklyn high-temp ceramics/adhesives maker",
+"owner": "Cotronics Corp",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -2668,6 +3300,14 @@
 "note": "Ex-Tyco Adhesives; Berry merged into Amcor",
 "owner": "Covalence Adhesives (Berry)",
 "parent": "Amcor",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"Coventry": {
+"conf": "Medium",
+"note": "Chemtronics is part of ITW",
+"owner": "Chemtronics",
+"parent": "Illinois Tool Works",
 "sponsor": "",
 "type": "Subsidiary of public"
 },
@@ -2719,9 +3359,17 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Crown Alloys": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Crown Alloys Company",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Crown Chemical": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2742,6 +3390,22 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Curis System": {
+"conf": "Low",
+"note": "Hydrogen peroxide fogging systems",
+"owner": "Curis System LLC",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Current Tech": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "Custom Coat": {
 "conf": "Low",
@@ -2799,6 +3463,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"DDP Specialty Electronics": {
+"conf": "Medium",
+"note": "DuPont electronics unit, spun off as Qnity 2025",
+"owner": "Qnity Electronics",
+"parent": "",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "DIESEL POWER": {
 "conf": "Low",
 "note": "Brand name only",
@@ -2849,7 +3521,7 @@
 },
 "Daily Dose": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2905,7 +3577,7 @@
 },
 "De-Sulph-A-Nator": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -2918,6 +3590,30 @@
 "parent": "",
 "sponsor": "Lone Star Funds",
 "type": "PE"
+},
+"Deb Group": {
+"conf": "High",
+"note": "Acquired by SC Johnson 2015",
+"owner": "SC Johnson Professional",
+"parent": "S.C. Johnson & Son",
+"sponsor": "",
+"type": "Subsidiary of private"
+},
+"Decon (UK)": {
+"conf": "Medium",
+"note": "UK lab detergent maker",
+"owner": "Decon Laboratories Ltd",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Decon Laboratories": {
+"conf": "Medium",
+"note": "Pennsylvania disinfectant maker",
+"owner": "Decon Laboratories",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Deep Gloss": {
 "conf": "Low",
@@ -2953,7 +3649,7 @@
 },
 "Dendesigns": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3007,6 +3703,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Desco Europe / Vermason": {
+"conf": "Low",
+"note": "ESD control products group",
+"owner": "Desco Industries",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Dexsil": {
 "conf": "Medium",
 "note": "Connecticut test kit maker",
@@ -3035,6 +3739,14 @@
 "conf": "High",
 "note": "Electronics distributor private label",
 "owner": "DigiKey",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
+"Dirtex": {
+"conf": "Medium",
+"note": "Massachusetts family-owned chemicals maker",
+"owner": "Savogran",
 "parent": "",
 "sponsor": "",
 "type": "Family"
@@ -3103,6 +3815,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Dorus (Doellken Woodtape)": {
+"conf": "Medium",
+"note": "Dorus is a Henkel adhesive brand",
+"owner": "Henkel",
+"parent": "",
+"sponsor": "",
+"type": "Public"
+},
 "Dow Chemical": {
 "conf": "High",
 "note": "Chemical major",
@@ -3121,7 +3841,7 @@
 },
 "Drainbo": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3191,6 +3911,14 @@
 "sponsor": "",
 "type": "Subsidiary of private"
 },
+"Dukal": {
+"conf": "Medium",
+"note": "Privately held medical supplies maker",
+"owner": "Dukal LLC",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Duke Cannon": {
 "conf": "Medium",
 "note": "Men's grooming brand, MN",
@@ -3217,7 +3945,7 @@
 },
 "Dura-Plex": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3225,11 +3953,11 @@
 },
 "DuraStripe": {
 "conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"note": "Guess; floor marking tape",
+"owner": "Selby Enterprises",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Durachlor": {
 "conf": "Medium",
@@ -3249,11 +3977,19 @@
 },
 "Durapatch": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"Duratool": {
+"conf": "Medium",
+"note": "Farnell private-label tools",
+"owner": "Farnell",
+"parent": "Avnet",
+"sponsor": "",
+"type": "Subsidiary of public"
 },
 "Durham's": {
 "conf": "High",
@@ -3271,6 +4007,14 @@
 "sponsor": "",
 "type": "Family"
 },
+"Dynabrade": {
+"conf": "Medium",
+"note": "Buffalo-area abrasive power tool maker",
+"owner": "Dynabrade Inc",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Dynagrip": {
 "conf": "Medium",
 "note": "Red Devil brand",
@@ -3279,9 +4023,17 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Dynarex": {
+"conf": "Medium",
+"note": "Family-owned medical supplies maker",
+"owner": "Dynarex Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Dynesic": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3289,7 +4041,7 @@
 },
 "E-Z Clor": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3305,7 +4057,7 @@
 },
 "EAGLE 1": {
 "conf": "Low",
-"note": "Possibly Eagle One car care; unclear",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3318,6 +4070,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Public"
+},
+"EASYkleen": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "ECHO": {
 "conf": "High",
@@ -3337,7 +4097,7 @@
 },
 "ECO-STRIPE": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3361,7 +4121,7 @@
 },
 "ECOSAFE-6400": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3369,7 +4129,7 @@
 },
 "EHC-33": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3383,9 +4143,17 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"EMC Fasteners & Tools": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "EMC Fasteners & Tools",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "ENVIROWASH": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3393,15 +4161,23 @@
 },
 "EPP": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
 },
+"ESAB": {
+"conf": "High",
+"note": "NYSE-listed welding company",
+"owner": "ESAB Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Public"
+},
 "EVER PRIME": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3409,7 +4185,7 @@
 },
 "EVOGEN": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3433,15 +4209,15 @@
 },
 "EZ Turn": {
 "conf": "Low",
-"note": "Brand name only",
-"owner": "",
+"note": "Guess from maker/brand name only",
+"owner": "EZ Turn",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "EZ on Coat": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3481,7 +4257,7 @@
 },
 "Easy Clean": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3497,7 +4273,7 @@
 },
 "Easy Paks": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3513,11 +4289,11 @@
 },
 "EasyCare": {
 "conf": "Low",
-"note": "No maker clue",
-"owner": "",
+"note": "Pool/spa chemical maker; BeauTec brand",
+"owner": "EasyCare Products",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "EasyPro": {
 "conf": "Medium",
@@ -3534,6 +4310,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Eaton": {
+"conf": "High",
+"note": "Eaton Corporation",
+"owner": "Eaton",
+"parent": "",
+"sponsor": "",
+"type": "Public"
 },
 "Eaton B-Line": {
 "conf": "High",
@@ -3577,7 +4361,7 @@
 },
 "Eco Air": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3585,7 +4369,7 @@
 },
 "Eco Clip": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3593,7 +4377,7 @@
 },
 "Eco-Fresh": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3601,7 +4385,7 @@
 },
 "Eco-Sure": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3657,7 +4441,7 @@
 },
 "Ecosan": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3665,7 +4449,7 @@
 },
 "Ecostar": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3673,7 +4457,7 @@
 },
 "Ecotech": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3681,7 +4465,7 @@
 },
 "Ecotemp": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3695,6 +4479,14 @@
 "sponsor": "Industrial Opportunity Partners",
 "type": "PE"
 },
+"Edsyn": {
+"conf": "Medium",
+"note": "California soldering supplies maker",
+"owner": "Edsyn Inc",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Ekcos": {
 "conf": "Low",
 "note": "Brand name only",
@@ -3702,6 +4494,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Electrolube": {
+"conf": "Medium",
+"note": "Element Solutions bought HK Wentworth 2021",
+"owner": "HK Wentworth (MacDermid Alpha)",
+"parent": "Element Solutions",
+"sponsor": "",
+"type": "Subsidiary of public"
 },
 "Elephant Snot": {
 "conf": "Medium",
@@ -3719,6 +4519,14 @@
 "sponsor": "",
 "type": "Family"
 },
+"Ellsworth Adhesives": {
+"conf": "High",
+"note": "Family-owned adhesives distributor, Wisconsin",
+"owner": "Ellsworth Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Elring": {
 "conf": "High",
 "note": "German gasket maker, listed",
@@ -3729,7 +4537,7 @@
 },
 "Emerald": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3753,11 +4561,19 @@
 },
 "Endurant": {
 "conf": "Low",
-"note": "Turf colorant brand",
-"owner": "",
+"note": "Ex-Becker Underwood colorant, acquired by BASF",
+"owner": "BASF",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Public"
+},
+"Enerfoam": {
+"conf": "Medium",
+"note": "Ex-Dow building solutions now DuPont",
+"owner": "DuPont",
+"parent": "",
+"sponsor": "",
+"type": "Public"
 },
 "Enerpac": {
 "conf": "High",
@@ -3792,17 +4608,33 @@
 "type": "Private (unknown)"
 },
 "Enviro Care": {
-"conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"conf": "Medium",
+"note": "Rochester Midland green cleaning line",
+"owner": "Rochester Midland Corporation",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Family"
+},
+"Enviro Tech International": {
+"conf": "Medium",
+"note": "Illinois solvent maker, privately held",
+"owner": "Enviro Tech International",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "EnviroColor": {
 "conf": "Low",
 "note": "Brand name only",
 "owner": "EnviroColor",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Environmental Lubricants": {
+"conf": "Low",
+"note": "Iowa bio-based lubricants maker",
+"owner": "Environmental Lubricants Manufacturing",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -3823,6 +4655,22 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Errecom": {
+"conf": "Medium",
+"note": "Italian HVAC/R chemicals maker",
+"owner": "Errecom Srl",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Esca Tech": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Esca Tech",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Essendant": {
 "conf": "Low",
 "note": "Wholesale distributor private label",
@@ -3835,6 +4683,14 @@
 "conf": "Medium",
 "note": "Wisconsin floor finish maker",
 "owner": "Essential Industries",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Essentra Porous Technologies": {
+"conf": "Low",
+"note": "Divested by Essentra; ownership unclear",
+"owner": "Essentra Porous Technologies",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -3857,7 +4713,7 @@
 },
 "Everflux": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3865,7 +4721,7 @@
 },
 "Eversoak": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3873,11 +4729,19 @@
 },
 "Exacto": {
 "conf": "Low",
-"note": "Brand name only",
-"owner": "",
+"note": "Guess from maker/brand name only",
+"owner": "Exacto Inc",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
+},
+"Excelta": {
+"conf": "Medium",
+"note": "California precision hand tool maker",
+"owner": "Excelta Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Eyesaline (PIP)": {
 "conf": "Medium",
@@ -3888,12 +4752,12 @@
 "type": "PE"
 },
 "F4P": {
-"conf": "Low",
-"note": "No maker clue",
-"owner": "",
+"conf": "Medium",
+"note": "Ferguson private label",
+"owner": "Ferguson",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Public"
 },
 "FASTENFOAM BY FASTENATION": {
 "conf": "Low",
@@ -3911,13 +4775,21 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
-"FG Clean Wipes": {
-"conf": "Low",
-"note": "Brand name only",
-"owner": "",
+"FBC Chemical": {
+"conf": "Medium",
+"note": "Pennsylvania pipe compound maker",
+"owner": "FBC Chemical Co",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
+},
+"FG Clean Wipes": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "FG Clean Wipes",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "FGCI": {
 "conf": "Low",
@@ -3929,11 +4801,11 @@
 },
 "FIT Organic": {
 "conf": "Low",
-"note": "Produce wash; owner unclear",
-"owner": "",
+"note": "Produce wash brand",
+"owner": "HealthPro Brands",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "FJC": {
 "conf": "Medium",
@@ -3969,7 +4841,7 @@
 },
 "FORMFLO": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3985,7 +4857,7 @@
 },
 "FRAGANZIA": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -3995,6 +4867,14 @@
 "conf": "Medium",
 "note": "Auto parts group; Chapter 11 2025",
 "owner": "First Brands Group",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"FREE-SAT": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "High-Tech Conversions",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -4033,7 +4913,7 @@
 },
 "Fast Wipes": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4049,7 +4929,7 @@
 },
 "Faster": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4087,6 +4967,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Fibertite Seaman": {
+"conf": "Medium",
+"note": "Ohio coated fabrics maker, FiberTite roofing",
+"owner": "Seaman Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Fieldpiece": {
 "conf": "Medium",
 "note": "HVAC test instrument maker, CA",
@@ -4094,6 +4982,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Fila Chemicals": {
+"conf": "Medium",
+"note": "Italian family-owned stone care maker",
+"owner": "Fila Industria Chimica",
+"parent": "",
+"sponsor": "",
+"type": "Family"
 },
 "Finish Line Teflon": {
 "conf": "Low",
@@ -4119,9 +5015,25 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Fisher Space Pen": {
+"conf": "High",
+"note": "Family-owned, Boulder City NV",
+"owner": "Fisher Space Pen Co",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
+"Fisherbrand": {
+"conf": "High",
+"note": "Thermo Fisher private label",
+"owner": "Fisher Scientific",
+"parent": "Thermo Fisher Scientific",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "Fit Fresh": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4129,7 +5041,7 @@
 },
 "Flame Stopper": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4137,7 +5049,7 @@
 },
 "Flame Tech": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4169,7 +5081,7 @@
 },
 "Floor Science": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4177,11 +5089,27 @@
 },
 "Flow-Easy": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"Fluke Calibration": {
+"conf": "High",
+"note": "Fortive operating company",
+"owner": "Fluke Corporation",
+"parent": "Fortive",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"Fluke Networks": {
+"conf": "High",
+"note": "Fortive operating company",
+"owner": "Fluke Networks",
+"parent": "Fortive",
+"sponsor": "",
+"type": "Subsidiary of public"
 },
 "Fluoramics": {
 "conf": "Medium",
@@ -4193,7 +5121,7 @@
 },
 "Flyers": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4201,7 +5129,7 @@
 },
 "Foam Blast": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4215,10 +5143,26 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Foamtec": {
+"conf": "Low",
+"note": "Cleanroom swab maker",
+"owner": "Foamtec International",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Folex": {
 "conf": "Low",
 "note": "Maker name on listing only",
 "owner": "Folex Co",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Footage Tools": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Footage Tools Inc",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -4231,9 +5175,25 @@
 "sponsor": "",
 "type": "Family"
 },
+"FormFill": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"Formica Adhesives": {
+"conf": "Medium",
+"note": "Formica owned by Broadview since 2019",
+"owner": "Formica Group",
+"parent": "Broadview Holding",
+"sponsor": "",
+"type": "Subsidiary of private"
+},
 "Formula 340": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4241,11 +5201,19 @@
 },
 "Formula 88": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"Fortress Railing Products": {
+"conf": "Medium",
+"note": "Texas railing/decking products company",
+"owner": "Fortress Building Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Franklin": {
 "conf": "Low",
@@ -4289,7 +5257,7 @@
 },
 "Fresh 100": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4311,6 +5279,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Fronius": {
+"conf": "High",
+"note": "Austrian family-owned welding maker",
+"owner": "Fronius International",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Frost King": {
 "conf": "Medium",
 "note": "Thermwell family-owned",
@@ -4321,7 +5297,7 @@
 },
 "Frostbite": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4337,7 +5313,15 @@
 },
 "FunkAway": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"Future Tools": {
+"conf": "Low",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4353,7 +5337,7 @@
 },
 "G STREAM": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4375,10 +5359,26 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"GCP Applied Technologies": {
+"conf": "High",
+"note": "Acquired by Saint-Gobain 2022",
+"owner": "GCP Applied Technologies",
+"parent": "Saint-Gobain",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "GF Lasswell Company": {
 "conf": "Low",
 "note": "Brand name only",
 "owner": "GF Lasswell Company",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"GIANI": {
+"conf": "Low",
+"note": "DIY countertop paint kits",
+"owner": "Giani Inc",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -4417,7 +5417,7 @@
 },
 "GREEN ENVY": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4425,7 +5425,7 @@
 },
 "GREENPATCH": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4454,6 +5454,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Public"
+},
+"Gallade Chemical": {
+"conf": "Medium",
+"note": "California chemical distributor/blender",
+"owner": "Gallade Chemical",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Garden Safe": {
 "conf": "Medium",
@@ -4513,7 +5521,7 @@
 },
 "Gear Hugger": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4526,6 +5534,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"GemTech": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "Gemini": {
 "conf": "Low",
@@ -4545,7 +5561,7 @@
 },
 "General Chemical": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4617,7 +5633,7 @@
 },
 "Gizmo": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4630,6 +5646,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Family"
+},
+"Glo Germ": {
+"conf": "Medium",
+"note": "Small Utah hand-wash training maker",
+"owner": "Glo Germ Company",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Global Industrial": {
 "conf": "High",
@@ -4657,7 +5681,7 @@
 },
 "Good Day": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4665,7 +5689,7 @@
 },
 "Good Hands": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4673,7 +5697,7 @@
 },
 "GoodEarth": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4682,6 +5706,14 @@
 "Goodway": {
 "conf": "Medium",
 "note": "Family-owned cleaning equipment maker",
+"owner": "Goodway Technologies",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
+"Goodway Technologies": {
+"conf": "Medium",
+"note": "Family-owned Connecticut maintenance equipment maker",
 "owner": "Goodway Technologies",
 "parent": "",
 "sponsor": "",
@@ -4761,7 +5793,7 @@
 },
 "Green Sweep": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4793,7 +5825,7 @@
 },
 "Gritt Commercial": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4817,11 +5849,11 @@
 },
 "Gym Wipes": {
 "conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"note": "Guess; 2XL GymWipes",
+"owner": "2XL Corporation",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "HD Chem": {
 "conf": "Low",
@@ -4857,15 +5889,15 @@
 },
 "HLS Commercial": {
 "conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
-"parent": "",
+"note": "Guess; Home Depot Pro private label",
+"owner": "HD Supply",
+"parent": "The Home Depot",
 "sponsor": "",
-"type": "Unknown"
+"type": "Subsidiary of public"
 },
 "HOUDINI": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4881,15 +5913,23 @@
 },
 "HVAC Super Pro": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
 },
+"HYBOND (Choice Brands Adhesives)": {
+"conf": "Medium",
+"note": "Choice Brands adhesives line",
+"owner": "Choice Brands Adhesives",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "HYDRO-SPOT": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4943,9 +5983,17 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Haemo-Sol": {
+"conf": "Medium",
+"note": "Baltimore lab detergent maker",
+"owner": "Haemo-Sol International",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Hands Instant": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4953,7 +6001,7 @@
 },
 "Hands On": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4961,7 +6009,7 @@
 },
 "Hanover": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -4969,7 +6017,7 @@
 },
 "Hard-Kut": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5006,6 +6054,14 @@
 "parent": "Lincoln Electric",
 "sponsor": "",
 "type": "Subsidiary of public"
+},
+"Harting": {
+"conf": "High",
+"note": "German family-owned connector maker",
+"owner": "Harting Technology Group",
+"parent": "",
+"sponsor": "",
+"type": "Family"
 },
 "Hartline Products": {
 "conf": "Low",
@@ -5071,6 +6127,22 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"HellermannTyton": {
+"conf": "High",
+"note": "Acquired by Aptiv 2015",
+"owner": "HellermannTyton",
+"parent": "Aptiv",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"Helmitin": {
+"conf": "Low",
+"note": "Canadian adhesives maker",
+"owner": "Helmitin Inc",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Henkel North America": {
 "conf": "Low",
 "note": "Henkel US arm",
@@ -5079,9 +6151,25 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Hernon": {
+"conf": "Medium",
+"note": "Florida adhesives maker",
+"owner": "Hernon Manufacturing",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Hi-Bond": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "High Mileage": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5089,11 +6177,19 @@
 },
 "High Noon": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"High-Tech Conversions": {
+"conf": "Low",
+"note": "Connecticut cleanroom wiper maker",
+"owner": "High-Tech Conversions",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Hilmor Tools": {
 "conf": "Low",
@@ -5105,7 +6201,7 @@
 },
 "HinderRUST": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5129,7 +6225,7 @@
 },
 "Hole In White": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5156,6 +6252,14 @@
 "note": "Honeywell PPE sold to PIP 2025",
 "owner": "Protective Industrial Products",
 "parent": "Odyssey Investment Partners",
+"sponsor": "Odyssey Investment Partners",
+"type": "PE"
+},
+"Honeywell Safety Products": {
+"conf": "Medium",
+"note": "Honeywell PPE sold to PIP 2025",
+"owner": "Protective Industrial Products",
+"parent": "",
 "sponsor": "Odyssey Investment Partners",
 "type": "PE"
 },
@@ -5193,7 +6297,7 @@
 },
 "Hot Springs": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5257,7 +6361,7 @@
 },
 "Hulk System": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5270,6 +6374,14 @@
 "parent": "Chase Corp",
 "sponsor": "KKR",
 "type": "PE"
+},
+"Huntsman Building Solutions": {
+"conf": "Medium",
+"note": "Huntsman spray foam unit",
+"owner": "Huntsman Building Solutions",
+"parent": "Huntsman Corporation",
+"sponsor": "",
+"type": "Subsidiary of public"
 },
 "Husky": {
 "conf": "Low",
@@ -5303,6 +6415,22 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Hydra-Eze (Assured Flow Sales)": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Assured Flow Sales",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Hydra-Kleen (Assured Flow Sales)": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Assured Flow Sales",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Hydrion": {
 "conf": "Medium",
 "note": "Hydrion maker, Brooklyn",
@@ -5311,25 +6439,57 @@
 "sponsor": "",
 "type": "Family"
 },
+"HydroStop": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "HydroStop",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Hygiena": {
+"conf": "Low",
+"note": "Hygiene monitoring maker; sponsor uncertain",
+"owner": "Hygiena LLC",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Hyperlube": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"Hypertherm": {
+"conf": "High",
+"note": "100% employee-owned (ESOP)",
+"owner": "Hypertherm Associates",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Hyso": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
 },
+"Hyvac Products": {
+"conf": "Low",
+"note": "Vacuum pump/oil maker",
+"owner": "Hyvac Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "I-CHEM": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5353,7 +6513,7 @@
 },
 "INKVIA": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5369,7 +6529,7 @@
 },
 "IPC": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5391,6 +6551,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"ISO-TIP": {
+"conf": "Medium",
+"note": "Wahl family-owned soldering tools line",
+"owner": "Wahl Clipper Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "ITW Fluids North America": {
 "conf": "High",
 "note": "ITW subsidiary",
@@ -5406,6 +6574,30 @@
 "parent": "Illinois Tool Works",
 "sponsor": "",
 "type": "Subsidiary of public"
+},
+"Ideal Stencil Machine and Tape": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Ideal Stencil Machine & Tape Co",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Ideal Vacuum Products": {
+"conf": "Low",
+"note": "New Mexico vacuum products maker",
+"owner": "Ideal Vacuum Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Ideal-Tek": {
+"conf": "Low",
+"note": "Swiss precision tweezers/tools maker",
+"owner": "Ideal-tek SA",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Ilsco": {
 "conf": "Medium",
@@ -5463,6 +6655,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Infinity Bond": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Infinity Bond",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Ingersoll Rand": {
 "conf": "High",
 "note": "Public industrial company",
@@ -5470,6 +6670,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Public"
+},
+"Inland Coatings": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Inland Coatings",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Innerlogic": {
 "conf": "Low",
@@ -5505,7 +6713,7 @@
 },
 "Insta-Flo": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5529,7 +6737,7 @@
 },
 "Instant Soap N' Water": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5553,7 +6761,7 @@
 },
 "Intex": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5561,7 +6769,7 @@
 },
 "Irion": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5577,7 +6785,7 @@
 },
 "Ishine": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5615,6 +6823,22 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"JET (Accu-Tab)": {
+"conf": "Medium",
+"note": "Accu-Tab under Sigura water treatment",
+"owner": "Sigura (Innovative Water Care)",
+"parent": "",
+"sponsor": "Platinum Equity",
+"type": "PE"
+},
+"JET (Chlor-Away)": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "JI Holcomb": {
 "conf": "Low",
 "note": "Maker name on listing only",
@@ -5631,6 +6855,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"JS 685": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "JT Eaton": {
 "conf": "Medium",
 "note": "Pest control maker, OH",
@@ -5638,6 +6870,22 @@
 "parent": "",
 "sponsor": "",
 "type": "Family"
+},
+"Jack of all Sprays": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"James Hardie": {
+"conf": "High",
+"note": "ASX/NYSE-listed fiber cement maker",
+"owner": "James Hardie Industries",
+"parent": "",
+"sponsor": "",
+"type": "Public"
 },
 "Japan Woodworker": {
 "conf": "Low",
@@ -5655,6 +6903,14 @@
 "sponsor": "",
 "type": "Subsidiary of private"
 },
+"Jax": {
+"conf": "Medium",
+"note": "Family-owned Wisconsin lubricants maker",
+"owner": "Jax Inc",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Jay-Kay Sales": {
 "conf": "Low",
 "note": "Brand name only",
@@ -5662,6 +6918,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Jetfoam": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "John Dow Industries": {
 "conf": "Low",
@@ -5689,11 +6953,11 @@
 },
 "Jomaps": {
 "conf": "Low",
-"note": "Brand name only",
-"owner": "",
+"note": "Product is Sunnyside mildew treatment",
+"owner": "Sunnyside Corporation",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Jomar International": {
 "conf": "Low",
@@ -5711,6 +6975,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Jonard Tools": {
+"conf": "Medium",
+"note": "New York tool maker",
+"owner": "Jonard Tools",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Jones Stephens": {
 "conf": "Medium",
 "note": "Plumbing supplies maker, AL",
@@ -5718,6 +6990,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Jowat": {
+"conf": "High",
+"note": "German family-owned adhesives maker",
+"owner": "Jowat SE",
+"parent": "",
+"sponsor": "",
+"type": "Family"
 },
 "Joy": {
 "conf": "Medium",
@@ -5761,7 +7041,7 @@
 },
 "K.O.": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5774,6 +7054,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"KD Scientific": {
+"conf": "Medium",
+"note": "Syringe pump maker, Harvard Bioscience",
+"owner": "KD Scientific",
+"parent": "Harvard Bioscience",
+"sponsor": "",
+"type": "Subsidiary of public"
 },
 "KEM TEK": {
 "conf": "Low",
@@ -5791,6 +7079,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"KM Coatings": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "KM Coatings",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "KOOL SEAL": {
 "conf": "Low",
 "note": "Kool Seal brand; ownership uncertain",
@@ -5801,7 +7097,7 @@
 },
 "KPC": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5839,6 +7135,14 @@
 "sponsor": "",
 "type": "Family"
 },
+"Kampel (WoodFil/SeamFil)": {
+"conf": "Medium",
+"note": "Pennsylvania laminate repair maker",
+"owner": "Kampel Enterprises",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Karcher North America": {
 "conf": "High",
 "note": "German family-owned",
@@ -5846,6 +7150,22 @@
 "parent": "Alfred K\u00e4rcher",
 "sponsor": "",
 "type": "Family"
+},
+"Karran": {
+"conf": "Low",
+"note": "Sink maker; private",
+"owner": "Karran USA",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Kationx": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Kationx",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Kaufman": {
 "conf": "Medium",
@@ -5879,6 +7199,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Kem Medical Products": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Kem Medical Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Kem Tech": {
 "conf": "Low",
 "note": "Maker name on listing only",
@@ -5886,6 +7214,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Kemio": {
+"conf": "Medium",
+"note": "Palintest Kemio instrument, Halma unit",
+"owner": "Palintest",
+"parent": "Halma",
+"sponsor": "",
+"type": "Subsidiary of public"
 },
 "Kemper": {
 "conf": "Low",
@@ -5927,6 +7263,14 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Kickstart": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "Killark": {
 "conf": "High",
 "note": "Hazardous-location electrical, Hubbell",
@@ -5953,7 +7297,7 @@
 },
 "Kinetic K-100": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5961,7 +7305,7 @@
 },
 "Kinetix": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -5993,7 +7337,7 @@
 },
 "Kitchen PRO": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6007,9 +7351,17 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Klauer Manufacturing Company": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Klauer Manufacturing Company",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Klean-Up": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6031,6 +7383,14 @@
 "sponsor": "",
 "type": "Public"
 },
+"Kleiberit": {
+"conf": "Medium",
+"note": "German family-owned adhesives maker",
+"owner": "Klebchemie M.G. Becker",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Klein Tools": {
 "conf": "High",
 "note": "Family-owned hand tool maker",
@@ -6038,6 +7398,22 @@
 "parent": "",
 "sponsor": "",
 "type": "Family"
+},
+"Klercide": {
+"conf": "High",
+"note": "Ecolab life sciences cleanroom line",
+"owner": "Ecolab",
+"parent": "",
+"sponsor": "",
+"type": "Public"
+},
+"Klerwipe": {
+"conf": "Medium",
+"note": "Ecolab life sciences cleanroom brand",
+"owner": "Ecolab",
+"parent": "",
+"sponsor": "",
+"type": "Public"
 },
 "Kluber": {
 "conf": "High",
@@ -6103,6 +7479,14 @@
 "sponsor": "",
 "type": "Subsidiary of private"
 },
+"Krayden": {
+"conf": "Low",
+"note": "Adhesives/sealants distributor",
+"owner": "Krayden Inc",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Kresto (Deb-Stoko)": {
 "conf": "High",
 "note": "Deb-Stoko under SC Johnson",
@@ -6111,13 +7495,45 @@
 "sponsor": "",
 "type": "Family"
 },
-"Kurobara": {
+"Krylex": {
 "conf": "Low",
-"note": "Japanese camellia oil brand",
-"owner": "",
+"note": "Maker name only",
+"owner": "Krylex",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
+},
+"Kurobara": {
+"conf": "Low",
+"note": "Japanese camellia oil maker",
+"owner": "Kurobara Honpo",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Kurt J. Lesker": {
+"conf": "Medium",
+"note": "Family-owned vacuum technology company",
+"owner": "Kurt J. Lesker Company",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
+"Kwik Seal": {
+"conf": "High",
+"note": "DAP caulk brand",
+"owner": "DAP",
+"parent": "RPM International",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"L-com": {
+"conf": "Medium",
+"note": "Infinite Electronics brand",
+"owner": "L-com",
+"parent": "Infinite Electronics",
+"sponsor": "Warburg Pincus",
+"type": "PE"
 },
 "L.C. Wax": {
 "conf": "Low",
@@ -6129,11 +7545,11 @@
 },
 "LANOX": {
 "conf": "Low",
-"note": "Brand name only",
-"owner": "",
+"note": "Guess from maker/brand name only",
+"owner": "LANOX",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "LDR Industries": {
 "conf": "Medium",
@@ -6145,7 +7561,7 @@
 },
 "LEAK-SEEKER": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6169,11 +7585,11 @@
 },
 "LOX-8": {
 "conf": "Low",
-"note": "Brand name only",
-"owner": "",
-"parent": "",
-"sponsor": "",
-"type": "Unknown"
+"note": "Believed Fel-Pro thread sealant",
+"owner": "Fel-Pro (DRiV)",
+"parent": "Tenneco",
+"sponsor": "Apollo Global Management",
+"type": "PE"
 },
 "LPS DETEX": {
 "conf": "High",
@@ -6183,13 +7599,69 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"LaMarKa Chemical Company": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "LaMarKa Chemical Company",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"LaMotte": {
+"conf": "High",
+"note": "Family-owned water testing maker, Maryland",
+"owner": "LaMotte Company",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Lab": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"Labconco": {
+"conf": "Medium",
+"note": "Kansas City lab equipment maker",
+"owner": "Labconco Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
+"Lakeside Manufacturing": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Lakeside Manufacturing",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Lami-Lube": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"Lansdale (Brecco)": {
+"conf": "Low",
+"note": "Guess from listing",
+"owner": "Brecco",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Lapolla": {
+"conf": "High",
+"note": "Icynene-Lapolla acquired by Huntsman 2020",
+"owner": "Huntsman Building Solutions",
+"parent": "Huntsman Corporation",
+"sponsor": "",
+"type": "Subsidiary of public"
 },
 "Larsen": {
 "conf": "Medium",
@@ -6217,7 +7689,7 @@
 },
 "Leak Master": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6225,7 +7697,7 @@
 },
 "LeakArmor": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6241,7 +7713,7 @@
 },
 "Lentus": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6271,17 +7743,25 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Leybold": {
+"conf": "High",
+"note": "Atlas Copco vacuum technique",
+"owner": "Leybold",
+"parent": "Atlas Copco",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "Liberon": {
 "conf": "Low",
-"note": "UK wood finish brand",
-"owner": "",
+"note": "UK wood finish brand; ownership uncertain",
+"owner": "Liberon",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Life": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6289,7 +7769,7 @@
 },
 "Lifeguard": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6297,7 +7777,7 @@
 },
 "Lighthouse": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6361,11 +7841,11 @@
 },
 "Lite N Foamy": {
 "conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"note": "Guess; foam hand soap line",
+"owner": "Spartan Chemical",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Family"
 },
 "Little Giant": {
 "conf": "High",
@@ -6393,7 +7873,7 @@
 },
 "LockDown": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6401,7 +7881,7 @@
 },
 "Long Shot": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6415,9 +7895,17 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Lovibond": {
+"conf": "Medium",
+"note": "German family-owned water analysis maker",
+"owner": "Tintometer Group",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Lube-A-Boom": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6463,6 +7951,14 @@
 "sponsor": "",
 "type": "Family"
 },
+"Lubriseal": {
+"conf": "Low",
+"note": "Thomas Scientific house brand",
+"owner": "Thomas Scientific",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Lumax": {
 "conf": "Medium",
 "note": "Lumax is Legacy Mfg brand",
@@ -6481,7 +7977,7 @@
 },
 "Luster Professional": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6497,7 +7993,7 @@
 },
 "M-1": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6515,6 +8011,14 @@
 "conf": "High",
 "note": "German auto supplier, foundation-owned",
 "owner": "MAHLE",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"MARC": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "MARC",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -6543,6 +8047,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"MCM": {
+"conf": "Medium",
+"note": "MCM Electronics is Newark/Avnet brand",
+"owner": "Newark",
+"parent": "Avnet",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "MCR Safety": {
 "conf": "Medium",
 "note": "Private PPE maker",
@@ -6553,11 +8065,11 @@
 },
 "MDR": {
 "conf": "Low",
-"note": "Marine products brand",
-"owner": "",
+"note": "Guess from maker/brand name only",
+"owner": "MDR (Marine Development & Research)",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "MG Chemicals": {
 "conf": "Medium",
@@ -6577,7 +8089,7 @@
 },
 "MICRO-MIST": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6591,9 +8103,17 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"ML Campbell": {
+"conf": "High",
+"note": "Sherwin-Williams wood finishes brand",
+"owner": "Sherwin-Williams",
+"parent": "",
+"sponsor": "",
+"type": "Public"
+},
 "MMR Fast Mold Removal": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6601,7 +8121,7 @@
 },
 "MMR-II": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6609,7 +8129,7 @@
 },
 "MOD": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6617,7 +8137,7 @@
 },
 "MRO": {
 "conf": "Low",
-"note": "Generic brand name",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6625,7 +8145,7 @@
 },
 "MRO Solution": {
 "conf": "Low",
-"note": "Likely distributor private label",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6633,11 +8153,11 @@
 },
 "MTC BIO": {
 "conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"note": "Lab supplies maker",
+"owner": "MTC Bio",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "MULTI SEAL": {
 "conf": "Low",
@@ -6657,7 +8177,7 @@
 },
 "MYECOWORLD": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6673,7 +8193,7 @@
 },
 "Magna Shine": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6727,6 +8247,14 @@
 "sponsor": "",
 "type": "Subsidiary of private"
 },
+"Mantek": {
+"conf": "Medium",
+"note": "NCH division, Levy family",
+"owner": "NCH Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Marine-Tex (Travaco)": {
 "conf": "Medium",
 "note": "Marine-Tex maker",
@@ -6769,7 +8297,7 @@
 },
 "Master Clean": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6785,7 +8313,7 @@
 },
 "MasterCare": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6809,15 +8337,23 @@
 },
 "Mastery dL": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
 },
+"Mastic": {
+"conf": "Medium",
+"note": "Cornerstone Building Brands siding brand",
+"owner": "Mastic Home Exteriors",
+"parent": "Cornerstone Building Brands",
+"sponsor": "Clayton Dubilier & Rice",
+"type": "PE"
+},
 "Max Clean": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6825,11 +8361,11 @@
 },
 "Maxima Racing Oils": {
 "conf": "Low",
-"note": "Ownership uncertain",
-"owner": "",
+"note": "Powersports lubricants; ownership uncertain",
+"owner": "Maxima Racing Oils",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Maxx": {
 "conf": "High",
@@ -6841,7 +8377,7 @@
 },
 "Mayfield": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6871,6 +8407,14 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Medical Chemical Corporation": {
+"conf": "Low",
+"note": "California lab chemicals maker",
+"owner": "Medical Chemical Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Medina": {
 "conf": "Low",
 "note": "Soil/plant products maker",
@@ -6878,6 +8422,22 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Medique": {
+"conf": "Low",
+"note": "First-aid OTC maker",
+"owner": "Medique Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Medline": {
+"conf": "Medium",
+"note": "IPO 2025; Blackstone/Carlyle/H&F backed",
+"owner": "Medline Industries",
+"parent": "",
+"sponsor": "",
+"type": "Public"
 },
 "Medplus Services USA": {
 "conf": "Low",
@@ -6897,11 +8457,11 @@
 },
 "Mega": {
 "conf": "Low",
-"note": "Maker name too generic",
-"owner": "",
+"note": "Guess from maker/brand name only",
+"owner": "Mega",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Mercury Adhesives": {
 "conf": "Low",
@@ -6918,6 +8478,14 @@
 "parent": "Brunswick Corporation",
 "sponsor": "",
 "type": "Subsidiary of public"
+},
+"Merit Pro": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "Metabo": {
 "conf": "Medium",
@@ -6937,7 +8505,7 @@
 },
 "Metalhead": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6945,7 +8513,7 @@
 },
 "Metalrustguard": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -6977,11 +8545,11 @@
 },
 "Mibro": {
 "conf": "Low",
-"note": "Home Depot drill accessory brand",
-"owner": "",
+"note": "Canadian tool accessories maker",
+"owner": "Mibro Group",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Micro-Gloss": {
 "conf": "Low",
@@ -6990,6 +8558,14 @@
 "parent": "Micro-Surface Finishing",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"MicroCare": {
+"conf": "Medium",
+"note": "Connecticut precision cleaning fluids maker",
+"owner": "MicroCare LLC",
+"parent": "",
+"sponsor": "",
+"type": "Family"
 },
 "Microbial Defense Laboratories": {
 "conf": "Low",
@@ -7001,7 +8577,7 @@
 },
 "Microburst": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -7015,10 +8591,26 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Micronova": {
+"conf": "Medium",
+"note": "California cleanroom products maker",
+"owner": "Micronova Manufacturing",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Mid American Research Chemical": {
 "conf": "Medium",
 "note": "Ohio cleaning chemical maker",
 "owner": "Mid American Research Chemical",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Mid-States Asphalt": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Mid-States Asphalt",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -7038,6 +8630,22 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Miller": {
+"conf": "High",
+"note": "ITW welding segment",
+"owner": "Miller Electric",
+"parent": "Illinois Tool Works",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"Miltex": {
+"conf": "Medium",
+"note": "Integra Miltex instruments",
+"owner": "Integra LifeSciences",
+"parent": "",
+"sponsor": "",
+"type": "Public"
 },
 "Minuteman": {
 "conf": "Medium",
@@ -7065,11 +8673,19 @@
 },
 "Mixol": {
 "conf": "Low",
-"note": "Brand name only",
-"owner": "",
+"note": "German universal tint maker",
+"owner": "Mixol",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
+},
+"Modelcraft": {
+"conf": "Low",
+"note": "Conrad Electronic house brand",
+"owner": "Conrad Electronic",
+"parent": "",
+"sponsor": "",
+"type": "Family"
 },
 "Moeller": {
 "conf": "Low",
@@ -7105,7 +8721,7 @@
 },
 "MomRemedy": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -7155,6 +8771,14 @@
 "conf": "Medium",
 "note": "Electrical products maker",
 "owner": "Morris Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Mortech": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Mortech Manufacturing",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -7217,7 +8841,7 @@
 },
 "MudKill": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -7231,9 +8855,17 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Mule-Hide": {
+"conf": "High",
+"note": "ABC Supply subsidiary, Hendricks family",
+"owner": "Mule-Hide Products",
+"parent": "ABC Supply",
+"sponsor": "",
+"type": "Subsidiary of private"
+},
 "Multi": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -7251,6 +8883,38 @@
 "conf": "Low",
 "note": "Maker name on listing only",
 "owner": "Multicoat",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Multicomp": {
+"conf": "High",
+"note": "Farnell/Newark private label",
+"owner": "Farnell",
+"parent": "Avnet",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"Multicomp Pro": {
+"conf": "High",
+"note": "Farnell/Newark private label",
+"owner": "Farnell",
+"parent": "Avnet",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"Multicore": {
+"conf": "High",
+"note": "Henkel Loctite electronics brand",
+"owner": "Henkel",
+"parent": "",
+"sponsor": "",
+"type": "Public"
+},
+"Mupro North America": {
+"conf": "Medium",
+"note": "German pipe support maker",
+"owner": "M\u00dcPRO Group",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -7278,6 +8942,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Musselbound": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "Mylands": {
 "conf": "Low",
@@ -7337,7 +9009,7 @@
 },
 "NOW": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -7383,6 +9055,22 @@
 "sponsor": "",
 "type": "Public"
 },
+"Nalco": {
+"conf": "High",
+"note": "Ecolab acquired Nalco 2011",
+"owner": "Nalco Water",
+"parent": "Ecolab",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"Nalgene": {
+"conf": "High",
+"note": "Thermo Fisher brand",
+"owner": "Thermo Fisher Scientific",
+"parent": "",
+"sponsor": "",
+"type": "Public"
+},
 "Namco": {
 "conf": "Low",
 "note": "Brand name only",
@@ -7393,11 +9081,19 @@
 },
 "Nano Pro MT": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"National Adhesive Distributors": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "National Adhesive Distributors",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "National Chemicals": {
 "conf": "Medium",
@@ -7433,7 +9129,7 @@
 },
 "Nattura": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -7441,7 +9137,7 @@
 },
 "Natura Onecoat": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -7449,7 +9145,7 @@
 },
 "Natural Orange": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -7489,7 +9185,7 @@
 },
 "Neutrazen": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -7503,6 +9199,14 @@
 "sponsor": "",
 "type": "Family"
 },
+"NeverLeak": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "NeverLeak Company LP",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "New Pig": {
 "conf": "High",
 "note": "Family-owned spill control maker, PA",
@@ -7513,23 +9217,23 @@
 },
 "Newaire": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
 },
 "Newborn": {
-"conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"conf": "Medium",
+"note": "Caulk gun maker, Maryland",
+"owner": "Newborn Bros Co",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Nexus": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -7537,7 +9241,7 @@
 },
 "Niel Seal": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -7545,11 +9249,11 @@
 },
 "Nixall": {
 "conf": "Low",
-"note": "No maker clue",
-"owner": "",
+"note": "Guess from maker/brand name only",
+"owner": "Nixall",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "No-Tox (Bel-Ray)": {
 "conf": "High",
@@ -7591,6 +9295,14 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Norjohn ACI": {
+"conf": "Low",
+"note": "Canadian chemicals maker",
+"owner": "Norjohn",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Norseman": {
 "conf": "Medium",
 "note": "Oregon drill bit maker",
@@ -7615,6 +9327,14 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Novaflex": {
+"conf": "Medium",
+"note": "Cleveland silicone sealant maker",
+"owner": "Novagard Solutions",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Noxcrete": {
 "conf": "Low",
 "note": "Maker name on listing only",
@@ -7630,6 +9350,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"NuShield": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "Nupla": {
 "conf": "Medium",
@@ -7777,7 +9505,7 @@
 },
 "Odor Genie": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -7801,11 +9529,19 @@
 },
 "Odorlos": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"Ohiolumex": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Ohio Lumex",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Old English": {
 "conf": "High",
@@ -7847,6 +9583,14 @@
 "sponsor": "",
 "type": "Public"
 },
+"Omega": {
+"conf": "High",
+"note": "Arcline merged Dwyer and Omega",
+"owner": "DwyerOmega",
+"parent": "",
+"sponsor": "Arcline Investment Management",
+"type": "PE"
+},
 "Omnisports": {
 "conf": "Low",
 "note": "Brand name only",
@@ -7856,12 +9600,12 @@
 "type": "Unknown"
 },
 "Oneshot": {
-"conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
-"parent": "",
+"conf": "Medium",
+"note": "RPM-owned sign enamel brand",
+"owner": "One Shot LLC",
+"parent": "RPM International",
 "sponsor": "",
-"type": "Unknown"
+"type": "Subsidiary of public"
 },
 "Opteon": {
 "conf": "High",
@@ -7919,6 +9663,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Organic Sales and Marketing": {
+"conf": "Low",
+"note": "Natural Chemistry style products",
+"owner": "Organic Sales and Marketing",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Osborn": {
 "conf": "Medium",
 "note": "Ex-Jason Industries brushes/finishing, post-bankruptcy",
@@ -7935,6 +9687,14 @@
 "sponsor": "EQT Infrastructure",
 "type": "PE"
 },
+"Ospho": {
+"conf": "Low",
+"note": "Ospho made by Skybryte",
+"owner": "Skybryte Company",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Ossian Inc.": {
 "conf": "Low",
 "note": "Maker name on listing only",
@@ -7942,6 +9702,22 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Owatrol": {
+"conf": "Low",
+"note": "Wood finish maker; ownership uncertain",
+"owner": "Owatrol",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Owens Corning": {
+"conf": "High",
+"note": "NYSE-listed building materials",
+"owner": "Owens Corning",
+"parent": "",
+"sponsor": "",
+"type": "Public"
 },
 "OxiClean": {
 "conf": "High",
@@ -7969,7 +9745,7 @@
 },
 "P-Tex": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8049,11 +9825,19 @@
 },
 "PREMIERE": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"PREempt": {
+"conf": "Medium",
+"note": "Spartanburg cleanroom products maker",
+"owner": "Contec Inc",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "PRO-SOURCE": {
 "conf": "Medium",
@@ -8113,7 +9897,7 @@
 },
 "Pak-Tite": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8207,6 +9991,22 @@
 "sponsor": "",
 "type": "Family"
 },
+"Penetone": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Penetone Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Penn Valley Chemical": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Penn Valley Chemical",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Penn-Union": {
 "conf": "Medium",
 "note": "Electrical connectors, owned by Hubbell",
@@ -8249,15 +10049,31 @@
 },
 "Perdiem": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
 },
+"Perfect Match": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"Perfex": {
+"conf": "Low",
+"note": "Small New York cleaning tools maker",
+"owner": "Perfex Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Performance Plus": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8279,6 +10095,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Permagrip (Choice Brands Adhesives)": {
+"conf": "Medium",
+"note": "Choice Brands adhesives line",
+"owner": "Choice Brands Adhesives",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Permaliner": {
 "conf": "Low",
 "note": "Pipe lining; possibly PE-backed",
@@ -8289,7 +10113,7 @@
 },
 "Petroflex": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8303,6 +10127,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Pettit": {
+"conf": "High",
+"note": "RPM marine coatings brand",
+"owner": "Kop-Coat Marine Group",
+"parent": "RPM International",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "Pettit Paint": {
 "conf": "High",
 "note": "Pettit marine paint, RPM",
@@ -8311,9 +10143,17 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Pharmacal Research Laboratories": {
+"conf": "Low",
+"note": "Connecticut maker",
+"owner": "Pharmacal Research Laboratories",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Pharmacopia": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8321,11 +10161,19 @@
 },
 "Phazer": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"Phenoseal": {
+"conf": "Low",
+"note": "Phenoseal historically Gloucester Co.",
+"owner": "Gloucester Company",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Pierce": {
 "conf": "Low",
@@ -8342,6 +10190,14 @@
 "parent": "Pilot Corporation (Japan)",
 "sponsor": "",
 "type": "Subsidiary of public"
+},
+"Pinestar Technology": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Pinestar Technology",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Pipe-Tite Stik": {
 "conf": "Low",
@@ -8393,7 +10249,7 @@
 },
 "Plink": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8414,6 +10270,22 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Pollardwater": {
+"conf": "High",
+"note": "Acquired by Ferguson 2016",
+"owner": "Pollardwater",
+"parent": "Ferguson",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"Poltex": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "Poly-Fiber (Polygone)": {
 "conf": "Low",
@@ -8503,6 +10375,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Power Adhesives": {
+"conf": "Medium",
+"note": "UK hot melt maker (Tecbond)",
+"owner": "Power Adhesives Ltd",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Power Team": {
 "conf": "Low",
 "note": "Power Team hydraulics brand",
@@ -8511,9 +10391,17 @@
 "sponsor": "Lone Star Funds",
 "type": "PE"
 },
+"Powerfoam Insulation": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Powerfoam Insulation",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Precision": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8526,6 +10414,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Family"
+},
+"Precision Plus Vacuum Parts": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Precision Plus Vacuum Parts",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Predco": {
 "conf": "Low",
@@ -8551,6 +10447,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Premier Adhesives": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "Premier Copper Products": {
 "conf": "Low",
 "note": "Copper sinks brand",
@@ -8569,7 +10473,7 @@
 },
 "Prep-All": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8577,11 +10481,11 @@
 },
 "Presco": {
 "conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"note": "Marking flags/tape maker",
+"owner": "Presco",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Preservation Solutions": {
 "conf": "Low",
@@ -8609,7 +10513,7 @@
 },
 "Prideline": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8633,11 +10537,11 @@
 },
 "Prime Source": {
 "conf": "Low",
-"note": "Likely distributor private label",
-"owner": "",
+"note": "Likely Albaugh specialty turf line",
+"owner": "Albaugh LLC",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Prime-Line": {
 "conf": "Low",
@@ -8654,6 +10558,14 @@
 "parent": "ITOCHU",
 "sponsor": "",
 "type": "Subsidiary of public"
+},
+"Princeton Chemical": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "Pristine Blue": {
 "conf": "Low",
@@ -8681,7 +10593,15 @@
 },
 "Pro Strip": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"Pro Value Series": {
+"conf": "Low",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8689,7 +10609,7 @@
 },
 "Pro-Flush": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8705,7 +10625,15 @@
 },
 "Pro-Trade": {
 "conf": "Low",
-"note": "Likely distributor private label",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"ProCare": {
+"conf": "Low",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8729,7 +10657,7 @@
 },
 "ProVetLogic": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8783,6 +10711,14 @@
 "sponsor": "",
 "type": "Public"
 },
+"Proguard": {
+"conf": "Medium",
+"note": "Decon Labs (PA) brand",
+"owner": "Decon Laboratories",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Prolong Super Lubricants": {
 "conf": "Low",
 "note": "Brand name only",
@@ -8815,10 +10751,34 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Protecto Wrap": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Protecto Wrap Company",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Protexall": {
 "conf": "Low",
 "note": "Brand name only",
 "owner": "Protexall",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Protexer": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"Pulsarlube": {
+"conf": "Low",
+"note": "Korean auto-lubricator maker",
+"owner": "Pulsarlube USA",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -8857,15 +10817,23 @@
 },
 "Puricle": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
 },
+"Pylam Products": {
+"conf": "Low",
+"note": "Dyes/colorants maker",
+"owner": "Pylam Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "QD-64": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8883,6 +10851,14 @@
 "conf": "Low",
 "note": "Brand name only",
 "owner": "Quality Aerosols",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Quality Aluminum Products": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Quality Aluminum Products",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -8921,7 +10897,7 @@
 },
 "Quickclick": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8929,7 +10905,7 @@
 },
 "Quickfill": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -8951,25 +10927,33 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Quip Laboratories": {
+"conf": "Low",
+"note": "Delaware chemicals maker",
+"owner": "Quip Laboratories",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "QwikCheck": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
 },
 "QwikShot": {
-"conf": "Low",
-"note": "Brand name only",
-"owner": "",
-"parent": "",
+"conf": "Medium",
+"note": "RectorSeal Qwik product line",
+"owner": "RectorSeal",
+"parent": "CSW Industrials",
 "sponsor": "",
-"type": "Unknown"
+"type": "Subsidiary of public"
 },
 "R&R": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9033,11 +11017,19 @@
 },
 "REFRESH": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"REM-1 (R.E. Michel private label by DiversiTech)": {
+"conf": "Medium",
+"note": "R.E. Michel private label, made by DiversiTech",
+"owner": "R.E. Michel Company",
+"parent": "",
+"sponsor": "",
+"type": "Family"
 },
 "RIDGID": {
 "conf": "High",
@@ -9065,11 +11057,11 @@
 },
 "RMC": {
 "conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"note": "Guess from initials",
+"owner": "Rochester Midland Corporation",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Family"
 },
 "RMP Finishes": {
 "conf": "Low",
@@ -9105,7 +11097,7 @@
 },
 "ROETECH": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9113,7 +11105,7 @@
 },
 "ROSMAR": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9129,7 +11121,7 @@
 },
 "RTD": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9145,7 +11137,7 @@
 },
 "RUST VANISH": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9158,6 +11150,38 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Radians": {
+"conf": "Medium",
+"note": "Memphis PPE maker",
+"owner": "Radians Inc",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Radiant Leak Finder": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"Radiator Specialty": {
+"conf": "Medium",
+"note": "Family-owned Charlotte chemicals maker",
+"owner": "Radiator Specialty Company",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
+"Radleys": {
+"conf": "Medium",
+"note": "Acquired by Heidolph Instruments",
+"owner": "Radleys",
+"parent": "Heidolph",
+"sponsor": "",
+"type": "Family"
 },
 "Rae": {
 "conf": "Low",
@@ -9193,7 +11217,7 @@
 },
 "Raindance": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9222,6 +11246,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Public"
+},
+"Raytech": {
+"conf": "Medium",
+"note": "Italian cable gel/sealing maker",
+"owner": "Raytech S.r.l.",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Razor Sharp Edgemaking System": {
 "conf": "Low",
@@ -9305,11 +11337,11 @@
 },
 "RejeX": {
 "conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"note": "Guess; polymer protectant",
+"owner": "Corrosion Technologies",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Releasall": {
 "conf": "Low",
@@ -9335,6 +11367,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Renner": {
+"conf": "Medium",
+"note": "Italian wood coatings maker",
+"owner": "Renner Italia",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Renown": {
 "conf": "Medium",
 "note": "Renown is Ferguson facilities private label",
@@ -9351,6 +11391,14 @@
 "sponsor": "",
 "type": "Public"
 },
+"Republic Manufacturing (5 Star Vac Lube)": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Republic Manufacturing",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "ResSeal": {
 "conf": "Low",
 "note": "Brand name only",
@@ -9358,6 +11406,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Research Products (Aprilaire)": {
+"conf": "High",
+"note": "Family-owned Madison WI",
+"owner": "Research Products Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Family"
 },
 "Resideo": {
 "conf": "High",
@@ -9369,7 +11425,7 @@
 },
 "RestorAir": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9393,7 +11449,7 @@
 },
 "Revitalize": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9401,7 +11457,7 @@
 },
 "Revive": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9439,6 +11495,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Ricca Chemical": {
+"conf": "Low",
+"note": "Lab reagents; sponsor uncertain",
+"owner": "Ricca Chemical Company",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Richard Specialty": {
 "conf": "Low",
 "note": "Brand name only",
@@ -9446,6 +11510,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Rid-X": {
+"conf": "High",
+"note": "Reckitt consumer brand",
+"owner": "Reckitt",
+"parent": "",
+"sponsor": "",
+"type": "Public"
 },
 "Rinnai": {
 "conf": "High",
@@ -9463,13 +11535,21 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
-"Rochester": {
+"Robnor": {
 "conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"note": "UK potting resin maker",
+"owner": "Robnor ResinLab",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
+},
+"Rochester": {
+"conf": "Low",
+"note": "Guess from name",
+"owner": "Rochester Midland Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Family"
 },
 "Rock River": {
 "conf": "Low",
@@ -9503,6 +11583,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Roll-Off": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "Roman": {
 "conf": "Medium",
 "note": "Wallcovering adhesive maker, IL",
@@ -9510,6 +11598,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Family"
+},
+"Roo Products": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "Root-X": {
 "conf": "Low",
@@ -9535,9 +11631,17 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Rothenberger": {
+"conf": "Medium",
+"note": "German family-owned pipe tool group",
+"owner": "Rothenberger",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Roto-Kut": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9561,7 +11665,7 @@
 },
 "RuptureSeal": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9577,7 +11681,7 @@
 },
 "Rust Destroyer": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9593,7 +11697,7 @@
 },
 "RustAid": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9615,6 +11719,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"S-Curve Technologies": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "S-Curve Technologies",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "SBS Products": {
 "conf": "Low",
 "note": "Brand name only",
@@ -9625,11 +11737,11 @@
 },
 "SCENSIBLES": {
 "conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"note": "Maker name only",
+"owner": "Scensibles",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "SCS": {
 "conf": "Low",
@@ -9641,7 +11753,7 @@
 },
 "SEED SLIK": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9655,9 +11767,17 @@
 "sponsor": "",
 "type": "Family"
 },
+"SHUR/Mark": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "General Data Healthcare",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "SILVER DEFENDER": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9689,7 +11809,7 @@
 },
 "SKYSHALO": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9713,7 +11833,7 @@
 },
 "SMS": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9721,7 +11841,7 @@
 },
 "SORITE": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9783,6 +11903,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"STS Coatings": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "STS Coatings",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "SUMMIT BY FASTENATION": {
 "conf": "Low",
 "note": "Small adhesive/foam maker",
@@ -9793,7 +11921,7 @@
 },
 "SUPER SPOT": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9809,7 +11937,7 @@
 },
 "SUREBOND": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9825,7 +11953,7 @@
 },
 "Safeguard": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9834,6 +11962,14 @@
 "Safetec": {
 "conf": "Medium",
 "note": "Buffalo NY wipe maker",
+"owner": "Safetec of America",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Safetec of America": {
+"conf": "Medium",
+"note": "Buffalo infection control maker",
 "owner": "Safetec of America",
 "parent": "",
 "sponsor": "",
@@ -9887,6 +12023,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Sames-Kremlin": {
+"conf": "Medium",
+"note": "Exel Industries (family-controlled, listed)",
+"owner": "Sames",
+"parent": "Exel Industries",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "Samuel Underberg": {
 "conf": "Low",
 "note": "Maker name on listing only",
@@ -9894,6 +12038,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Sanford Turf": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "Sani-Cloth": {
 "conf": "High",
@@ -9943,6 +12095,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Saturix": {
+"conf": "Low",
+"note": "Sold under FG Clean Wipes",
+"owner": "FG Clean Wipes",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Sauers": {
 "conf": "Low",
 "note": "Veneer maker",
@@ -9961,7 +12121,7 @@
 },
 "ScentBridge": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -9975,6 +12135,22 @@
 "sponsor": "",
 "type": "Family"
 },
+"Schluter Systems": {
+"conf": "High",
+"note": "German family-owned tile systems maker",
+"owner": "Schluter-Systems",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
+"Scientific Device Laboratory": {
+"conf": "Low",
+"note": "Illinois lab products maker",
+"owner": "Scientific Device Laboratory",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Scotwood": {
 "conf": "Medium",
 "note": "Ice melt maker, KS",
@@ -9985,7 +12161,7 @@
 },
 "Scout": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10041,8 +12217,8 @@
 },
 "SeaKlear": {
 "conf": "Low",
-"note": "No reliable maker clue",
-"owner": "",
+"note": "Originally HaloSource; current owner uncertain",
+"owner": "HaloSource",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
@@ -10065,7 +12241,7 @@
 },
 "Seal Fast": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10135,10 +12311,26 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Senox Corporation": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Senox Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Sentinel": {
 "conf": "Low",
 "note": "UK heating system chemical maker",
 "owner": "Sentinel Performance Solutions",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Serim Research": {
+"conf": "Low",
+"note": "Indiana test strip maker",
+"owner": "Serim Research",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -10161,7 +12353,7 @@
 },
 "Service First": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10185,7 +12377,7 @@
 },
 "Sharpshooter": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10217,7 +12409,7 @@
 },
 "ShopPro": {
 "conf": "Low",
-"note": "Likely private label; owner unclear",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10230,6 +12422,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Shurtape": {
+"conf": "High",
+"note": "Family-owned, Hickory NC",
+"owner": "Shurtape Technologies",
+"parent": "",
+"sponsor": "",
+"type": "Family"
 },
 "Siemens": {
 "conf": "High",
@@ -10289,7 +12489,7 @@
 },
 "Simple Scrub": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10303,9 +12503,33 @@
 "sponsor": "",
 "type": "Family"
 },
+"Siplast": {
+"conf": "Medium",
+"note": "Holcim roofing, now Amrize",
+"owner": "Siplast",
+"parent": "Amrize",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"Sirchie": {
+"conf": "Low",
+"note": "Forensic supplies maker",
+"owner": "Sirchie",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Siroflex": {
+"conf": "Low",
+"note": "Sealants maker",
+"owner": "Siroflex of America",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Sirona": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10335,6 +12559,14 @@
 "sponsor": "",
 "type": "Family"
 },
+"Smart Strip": {
+"conf": "High",
+"note": "Dumond paint remover brand",
+"owner": "Dumond Chemicals",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "SmartBurner": {
 "conf": "Medium",
 "note": "Canadian cooktop safety maker",
@@ -10345,7 +12577,7 @@
 },
 "Smartcell": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10353,11 +12585,19 @@
 },
 "Smell Zapper": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"Smooth-On": {
+"conf": "Medium",
+"note": "Privately held Pennsylvania mold rubber maker",
+"owner": "Smooth-On Inc",
+"parent": "",
+"sponsor": "",
+"type": "Family"
 },
 "Snappy Teak": {
 "conf": "Low",
@@ -10369,7 +12609,7 @@
 },
 "Sno Plow": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10399,6 +12639,14 @@
 "sponsor": "",
 "type": "Public"
 },
+"SoftGUARD": {
+"conf": "Medium",
+"note": "Epredia owned by Japan's PHC Holdings",
+"owner": "Epredia",
+"parent": "PHC Holdings",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "Softsoap": {
 "conf": "High",
 "note": "Softsoap brand",
@@ -10425,11 +12673,11 @@
 },
 "Solder-It": {
 "conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"note": "Maker name only",
+"owner": "Solder-It",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Solenis": {
 "conf": "High",
@@ -10441,7 +12689,7 @@
 },
 "Solidaire": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10449,7 +12697,7 @@
 },
 "Solsta": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10465,7 +12713,7 @@
 },
 "Solution": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10513,7 +12761,7 @@
 },
 "Spa Essentials": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10545,7 +12793,7 @@
 },
 "Sparclean": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10567,6 +12815,14 @@
 "sponsor": "",
 "type": "Family"
 },
+"Sparkleen": {
+"conf": "High",
+"note": "Fisherbrand detergent",
+"owner": "Fisher Scientific",
+"parent": "Thermo Fisher Scientific",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "SpecChem": {
 "conf": "Low",
 "note": "Concrete chemicals maker, KS",
@@ -10579,6 +12835,22 @@
 "conf": "Low",
 "note": "Maker name on listing only",
 "owner": "Specialty Chemical",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Specialty Fluids Co": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Specialty Fluids Co",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Spectra Metal Sales": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Spectra Metal Sales",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -10599,17 +12871,25 @@
 "sponsor": "",
 "type": "Family"
 },
-"Speedball": {
-"conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"Spectronics (Spectroline)": {
+"conf": "High",
+"note": "Family-owned Westbury NY",
+"owner": "Spectronics Corporation",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Family"
+},
+"Speedball": {
+"conf": "Low",
+"note": "Art products maker",
+"owner": "Speedball Art Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Speedtrack": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10647,6 +12927,22 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Splash Shield": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"Sporicidin": {
+"conf": "Medium",
+"note": "Contec disinfectant brand",
+"owner": "Contec Inc",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Spot On Turf": {
 "conf": "Low",
 "note": "Brand name only",
@@ -10663,6 +12959,14 @@
 "sponsor": "",
 "type": "Public"
 },
+"Spray & Forget": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Spray & Forget",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Spray and Forget": {
 "conf": "Low",
 "note": "Brand name only",
@@ -10673,7 +12977,7 @@
 },
 "Spray-X": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10689,7 +12993,7 @@
 },
 "Spruce": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -10727,6 +13031,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Sta-Put": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "Stain-Proof": {
 "conf": "Low",
 "note": "Stone sealer brand",
@@ -10742,6 +13054,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Stanbio": {
+"conf": "Medium",
+"note": "EKF Diagnostics (AIM-listed) unit",
+"owner": "Stanbio Laboratory",
+"parent": "EKF Diagnostics",
+"sponsor": "",
+"type": "Subsidiary of public"
 },
 "Standard Golf": {
 "conf": "Medium",
@@ -10799,6 +13119,22 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Startex": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"StatLab": {
+"conf": "Low",
+"note": "Likely PE-backed; sponsor unknown",
+"owner": "StatLab Medical Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Statguard": {
 "conf": "Medium",
 "note": "ESD control products maker",
@@ -10815,10 +13151,26 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Steinel": {
+"conf": "Medium",
+"note": "German family-owned heat tool maker",
+"owner": "Steinel",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Stellar Solutions": {
 "conf": "Low",
 "note": "Brand name only",
 "owner": "Stellar Solutions",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Stenner": {
+"conf": "Low",
+"note": "Florida metering pump maker",
+"owner": "Stenner Pump Company",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -10832,12 +13184,12 @@
 "type": "PE"
 },
 "Steramine": {
-"conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"conf": "Medium",
+"note": "Steramine tablets by Maril Products",
+"owner": "Maril Products",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Steri-Fab": {
 "conf": "Medium",
@@ -10887,6 +13239,14 @@
 "sponsor": "",
 "type": "Family"
 },
+"Stockhausen": {
+"conf": "Medium",
+"note": "Evonik skin care sold to Deb 2012",
+"owner": "SC Johnson Professional",
+"parent": "S.C. Johnson & Son",
+"sponsor": "",
+"type": "Subsidiary of private"
+},
 "Stop-It": {
 "conf": "Low",
 "note": "Brand name only",
@@ -10911,6 +13271,22 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Sudbury": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Sudbury Boat Care",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Sulflo": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "Sullivan Supply": {
 "conf": "Low",
 "note": "Livestock show supply maker",
@@ -10923,6 +13299,14 @@
 "conf": "Medium",
 "note": "Consumer cleaning products maker, IN",
 "owner": "Summit Brands",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Sumter Coatings": {
+"conf": "Low",
+"note": "Maker name only",
+"owner": "Armor Limited Inc (Sumter Coatings)",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -10999,9 +13383,17 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"SuperDeck": {
+"conf": "Low",
+"note": "Duckback brand; ownership uncertain",
+"owner": "Duckback Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "SuperPure": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -11105,7 +13497,7 @@
 },
 "Synkoloid": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -11127,6 +13519,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"TACBOND (Choice Brands Adhesives)": {
+"conf": "Medium",
+"note": "Choice Brands adhesives line",
+"owner": "Choice Brands Adhesives",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "TACC International": {
 "conf": "Low",
 "note": "Adhesive maker",
@@ -11136,16 +13536,16 @@
 "type": "Private (unknown)"
 },
 "TARN-X PRO": {
-"conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"conf": "Medium",
+"note": "Jelmar (CLR) owns Tarn-X",
+"owner": "Jelmar LLC",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Family"
 },
 "TB Quat": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -11177,7 +13577,7 @@
 },
 "TILE DOCTOR": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -11217,15 +13617,23 @@
 },
 "TRAC": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
 },
+"TRI-BUILT": {
+"conf": "High",
+"note": "Beacon private label; QXO acquired Beacon 2025",
+"owner": "Beacon Building Products",
+"parent": "QXO",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "TRUSOUTH": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -11233,11 +13641,11 @@
 },
 "TSI Supercool": {
 "conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"note": "Maker name only",
+"owner": "TSI Supercool",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "TWP": {
 "conf": "Medium",
@@ -11267,6 +13675,14 @@
 "conf": "Low",
 "note": "Flux brand",
 "owner": "Taramet",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Tarco": {
+"conf": "Low",
+"note": "Roofing underlayment maker",
+"owner": "TARCO",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -11335,9 +13751,41 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Tenma": {
+"conf": "Medium",
+"note": "Farnell/Newark house brand",
+"owner": "Premier Farnell",
+"parent": "Avnet",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"TensorGrip (Quin Global)": {
+"conf": "Low",
+"note": "Adhesives maker",
+"owner": "Quin Global",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Teroson": {
+"conf": "High",
+"note": "Henkel sealant brand",
+"owner": "Henkel",
+"parent": "",
+"sponsor": "",
+"type": "Public"
+},
 "Terra Breeze": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"TextureTek": {
+"conf": "Low",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -11345,7 +13793,7 @@
 },
 "Thawzone": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -11383,6 +13831,30 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"The Wolf Organization": {
+"conf": "Medium",
+"note": "Family-owned building products company",
+"owner": "Wolf Home Products",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
+"Thermco Products": {
+"conf": "Low",
+"note": "Thermometer maker",
+"owner": "Thermco Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Thermo Scientific Chemicals": {
+"conf": "High",
+"note": "Former Alfa Aesar/Acros chemicals",
+"owner": "Thermo Fisher Scientific",
+"parent": "",
+"sponsor": "",
+"type": "Public"
+},
 "Thetford": {
 "conf": "Medium",
 "note": "RV/marine sanitation products",
@@ -11406,6 +13878,14 @@
 "parent": "ABB",
 "sponsor": "",
 "type": "Subsidiary of public"
+},
+"Thorlabs": {
+"conf": "High",
+"note": "Privately held photonics company",
+"owner": "Thorlabs",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Thrifco Plumbing": {
 "conf": "Low",
@@ -11431,6 +13911,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Through The Roof!": {
+"conf": "Medium",
+"note": "Colorado sealant maker",
+"owner": "Sashco",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Tibet": {
 "conf": "Low",
 "note": "Small scratch remover maker",
@@ -11446,6 +13934,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Public"
+},
+"Tidi Products": {
+"conf": "Low",
+"note": "Medical disposables; sponsor uncertain",
+"owner": "TIDI Products",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
 },
 "Timbermate": {
 "conf": "Medium",
@@ -11473,7 +13969,7 @@
 },
 "TireJect": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -11481,11 +13977,19 @@
 },
 "Titan": {
 "conf": "Low",
-"note": "Generic brand name; unclear",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"Titan Tool": {
+"conf": "High",
+"note": "Wagner family-owned spray equipment",
+"owner": "Titan Tool",
+"parent": "Wagner Group",
+"sponsor": "",
+"type": "Subsidiary of private"
 },
 "Tool Black": {
 "conf": "Low",
@@ -11511,10 +14015,26 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"TopShield": {
+"conf": "High",
+"note": "SRS private label; Home Depot owns SRS",
+"owner": "SRS Distribution",
+"parent": "The Home Depot",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "Topaz": {
 "conf": "Medium",
 "note": "Electrical fittings maker, California",
 "owner": "Topaz Electric Corp",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Topps Products": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Topps Products",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -11623,6 +14143,22 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Trex": {
+"conf": "High",
+"note": "NYSE-listed composite decking maker",
+"owner": "Trex Company",
+"parent": "",
+"sponsor": "",
+"type": "Public"
+},
+"Triangle Biomedical Sciences (TBS)": {
+"conf": "Low",
+"note": "Histology supplies maker",
+"owner": "Triangle Biomedical Sciences",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Triax Lubricants": {
 "conf": "Low",
 "note": "Brand name only",
@@ -11643,6 +14179,14 @@
 "conf": "Low",
 "note": "Small Oregon finish maker",
 "owner": "Tried & True",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"TrippNT": {
+"conf": "Low",
+"note": "Lab furniture maker",
+"owner": "TrippNT",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -11681,7 +14225,7 @@
 },
 "Tub O' Scrub": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -11761,7 +14305,7 @@
 },
 "UHS": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -11769,11 +14313,11 @@
 },
 "ULTRATECH": {
 "conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"note": "Spill containment maker, Florida",
+"owner": "UltraTech International",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "URNEX": {
 "conf": "Medium",
@@ -11817,7 +14361,7 @@
 },
 "USP": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -11857,7 +14401,7 @@
 },
 "Ultra-Cut": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -11911,9 +14455,25 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Unibor": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"Uniflex": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "Unimed": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -11929,16 +14489,24 @@
 },
 "Unique": {
 "conf": "Low",
-"note": "No maker clue",
-"owner": "",
-"parent": "",
+"note": "G623 is a Momentive/GE silicone grease",
+"owner": "Momentive Performance Materials",
+"parent": "KCC Corporation",
 "sponsor": "",
-"type": "Unknown"
+"type": "Subsidiary of private"
 },
 "United Chemical Corp": {
 "conf": "Low",
 "note": "Brand name only",
 "owner": "United Chemical Corp",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"United Coatings": {
+"conf": "Low",
+"note": "Roof coatings; may be part of larger group",
+"owner": "United Coatings",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -11950,6 +14518,14 @@
 "parent": "",
 "sponsor": "Apollo Global Management",
 "type": "PE"
+},
+"Universal Building Services": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "Universal Technologies": {
 "conf": "Low",
@@ -11977,11 +14553,11 @@
 },
 "Uraseal": {
 "conf": "Low",
-"note": "No maker clue",
-"owner": "",
+"note": "Guess from maker/brand name only",
+"owner": "Uraseal",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "Urban Restoration": {
 "conf": "Low",
@@ -12015,6 +14591,14 @@
 "sponsor": "Odyssey Investment Partners",
 "type": "PE"
 },
+"VAI": {
+"conf": "Medium",
+"note": "Family-owned Pennsylvania cleanroom supplier",
+"owner": "Veltek Associates Inc",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "VARATHANE": {
 "conf": "High",
 "note": "Rust-Oleum wood finish brand",
@@ -12031,6 +14615,14 @@
 "sponsor": "",
 "type": "Public"
 },
+"VI Jon": {
+"conf": "Low",
+"note": "Private-label personal care maker; ownership uncertain",
+"owner": "Vi-Jon",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "VP Racing Lubricants": {
 "conf": "Medium",
 "note": "Texas racing fuel and lubricant maker",
@@ -12046,6 +14638,22 @@
 "parent": "",
 "sponsor": "",
 "type": "Family"
+},
+"VWR": {
+"conf": "High",
+"note": "Avantor lab supply brand",
+"owner": "VWR",
+"parent": "Avantor",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
+"VWR Spec-Wipe": {
+"conf": "High",
+"note": "Avantor/VWR brand",
+"owner": "VWR",
+"parent": "Avantor",
+"sponsor": "",
+"type": "Subsidiary of public"
 },
 "Val-Tex": {
 "conf": "Low",
@@ -12079,6 +14687,14 @@
 "sponsor": "",
 "type": "Public"
 },
+"Valutek": {
+"conf": "Low",
+"note": "Cleanroom supplies maker",
+"owner": "Valutek",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "ValvTect": {
 "conf": "Low",
 "note": "Brand name only",
@@ -12099,6 +14715,14 @@
 "conf": "Low",
 "note": "UK washroom products maker",
 "owner": "Vectair Systems",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Vector Laboratories": {
+"conf": "Low",
+"note": "Lab reagents; sponsor uncertain",
+"owner": "Vector Laboratories",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -12127,6 +14751,22 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"VersaSure": {
+"conf": "Medium",
+"note": "Essendant private label",
+"owner": "Essendant",
+"parent": "Staples (Sycamore Partners)",
+"sponsor": "Sycamore Partners",
+"type": "PE"
+},
+"Victaulic": {
+"conf": "High",
+"note": "Privately held grooved piping maker",
+"owner": "Victaulic",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "Victor Reinz": {
 "conf": "High",
 "note": "Dana gasket brand",
@@ -12151,10 +14791,66 @@
 "sponsor": "",
 "type": "Family"
 },
+"Vileda Professional": {
+"conf": "High",
+"note": "Freudenberg family-owned",
+"owner": "Freudenberg Home and Cleaning Solutions",
+"parent": "Freudenberg Group",
+"sponsor": "",
+"type": "Subsidiary of private"
+},
+"Viratek": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "Virginia KMP": {
 "conf": "Low",
 "note": "HVAC chemical brand",
 "owner": "Virginia KMP",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Viro Labs": {
+"conf": "Low",
+"note": "No identifying clues",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"Virtu-Clean": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
+"Viscot Medical": {
+"conf": "Low",
+"note": "Surgical markers maker",
+"owner": "Viscot Medical",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Vita-D-Chlor": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Integra Chemical",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Vita-D-Chlor (Integra Chemical)": {
+"conf": "Low",
+"note": "Guess from maker/brand name only",
+"owner": "Integra Chemical",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -12166,6 +14862,22 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Volu-Sol": {
+"conf": "Low",
+"note": "Lab stains maker",
+"owner": "Volu-Sol",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"Vybond (Berry Global)": {
+"conf": "Medium",
+"note": "Berry merged into Amcor 2025",
+"owner": "Berry Global",
+"parent": "Amcor",
+"sponsor": "",
+"type": "Subsidiary of public"
 },
 "WALTER SURFACE TECHNOLOGIES": {
 "conf": "Low",
@@ -12201,7 +14913,7 @@
 },
 "WHIRLOUT": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -12209,7 +14921,7 @@
 },
 "WHIZZER": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -12217,7 +14929,7 @@
 },
 "WIPE-A-WAY": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -12279,6 +14991,14 @@
 "sponsor": "",
 "type": "Family"
 },
+"Watch Dog": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
+},
 "Watco": {
 "conf": "High",
 "note": "Watco wood finish brand",
@@ -12289,7 +15009,7 @@
 },
 "Waterproof Green Grease": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -12305,7 +15025,7 @@
 },
 "Wave": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -12367,10 +15087,26 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Welch": {
+"conf": "High",
+"note": "Ingersoll Rand (ex-Gardner Denver) brand",
+"owner": "Welch Vacuum",
+"parent": "Ingersoll Rand",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "Weldcote Metals": {
 "conf": "Low",
 "note": "Welding supply maker",
 "owner": "Weldcote Metals",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
+"West Chester": {
+"conf": "Low",
+"note": "Gloves/PPE maker",
+"owner": "West Chester Protective Gear",
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
@@ -12407,6 +15143,22 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Westwood (R.W. Beckett)": {
+"conf": "High",
+"note": "Family-owned burner maker",
+"owner": "R.W. Beckett Corporation",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
+"Wexford Labs": {
+"conf": "Low",
+"note": "Disinfectants maker",
+"owner": "Wexford Labs",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Wheeler-Rex": {
 "conf": "Low",
 "note": "Pipe tool maker",
@@ -12425,7 +15177,7 @@
 },
 "White Marble": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -12446,6 +15198,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Private (unknown)"
+},
+"Wilmad-LabGlass": {
+"conf": "Medium",
+"note": "SP Scientific owned by ATS",
+"owner": "SP Industries",
+"parent": "ATS Corporation",
+"sponsor": "",
+"type": "Subsidiary of public"
 },
 "Wilson Imperial": {
 "conf": "Low",
@@ -12503,6 +15263,14 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"Wiska": {
+"conf": "Low",
+"note": "German family firm likely",
+"owner": "Wiska Hoppmann",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "Wizards Products": {
 "conf": "Low",
 "note": "Car care products maker",
@@ -12529,7 +15297,7 @@
 },
 "Woodbine": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -12577,7 +15345,7 @@
 },
 "Wow!": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -12593,11 +15361,19 @@
 },
 "Wypo": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
 "type": "Unknown"
+},
+"W\u00fcrth": {
+"conf": "High",
+"note": "German family-owned fastener/chemicals group",
+"owner": "W\u00fcrth Group",
+"parent": "",
+"sponsor": "",
+"type": "Family"
 },
 "X-Pando Products": {
 "conf": "Low",
@@ -12609,11 +15385,11 @@
 },
 "X-tra Seal": {
 "conf": "Low",
-"note": "No clue beyond brand name",
-"owner": "",
+"note": "Guess; tire repair line",
+"owner": "31 Incorporated",
 "parent": "",
 "sponsor": "",
-"type": "Unknown"
+"type": "Private (unknown)"
 },
 "XOMOX": {
 "conf": "Medium",
@@ -12689,7 +15465,7 @@
 },
 "Z-Max": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -12713,7 +15489,7 @@
 },
 "ZING": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -12767,6 +15543,14 @@
 "sponsor": "",
 "type": "Subsidiary of public"
 },
+"Zogics": {
+"conf": "Low",
+"note": "Fitness cleaning supplies maker",
+"owner": "Zogics LLC",
+"parent": "",
+"sponsor": "",
+"type": "Private (unknown)"
+},
 "ZolaTerra": {
 "conf": "Low",
 "note": "Brand name only",
@@ -12799,6 +15583,14 @@
 "sponsor": "",
 "type": "Public"
 },
+"Zynolyte": {
+"conf": "Low",
+"note": "Guess; paint brand",
+"owner": "Rust-Oleum",
+"parent": "RPM International",
+"sponsor": "",
+"type": "Subsidiary of public"
+},
 "enMotion (Georgia-Pacific)": {
 "conf": "High",
 "note": "Koch-owned GP",
@@ -12809,7 +15601,7 @@
 },
 "iFLO Pro": {
 "conf": "Low",
-"note": "No maker clue",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -12825,7 +15617,7 @@
 },
 "ig-loo": {
 "conf": "Low",
-"note": "Brand name only",
+"note": "No reliable ownership info",
 "owner": "",
 "parent": "",
 "sponsor": "",
@@ -12847,6 +15639,14 @@
 "sponsor": "",
 "type": "Public"
 },
+"neodisher": {
+"conf": "Medium",
+"note": "German family-owned cleaning chemicals",
+"owner": "Chemische Fabrik Dr. Weigert",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "osmo": {
 "conf": "Medium",
 "note": "German family-owned wood finish maker",
@@ -12854,6 +15654,14 @@
 "parent": "",
 "sponsor": "",
 "type": "Family"
+},
+"rea-sol": {
+"conf": "Low",
+"note": "No reliable ownership info",
+"owner": "",
+"parent": "",
+"sponsor": "",
+"type": "Unknown"
 },
 "t-Global Technology": {
 "conf": "Low",
@@ -12863,9 +15671,17 @@
 "sponsor": "",
 "type": "Private (unknown)"
 },
+"wedi": {
+"conf": "High",
+"note": "German family-owned tile backer maker",
+"owner": "wedi GmbH",
+"parent": "",
+"sponsor": "",
+"type": "Family"
+},
 "zycoat": {
 "conf": "Low",
-"note": "No clue beyond brand name",
+"note": "No identifying clues",
 "owner": "",
 "parent": "",
 "sponsor": "",

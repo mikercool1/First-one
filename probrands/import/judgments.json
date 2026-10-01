@@ -149,6 +149,21 @@
    "why": "Sil-Glyde known by mechanics; AGS mostly brake line"
   }
  },
+ "ags-company-automotive-solutions": {
+  "itw": {
+   "v": 1,
+   "why": "Lubricant line fits; brake/fuel line hardware does not"
+  },
+  "major": {
+   "v": 0,
+   "why": "Brake/fuel line hardware dominates revenue"
+  },
+  "pro_pct": 25,
+  "pull": {
+   "v": 1,
+   "why": "Sil-Glyde known to mechanics; company mostly brake lines"
+  }
+ },
  "aiken-chemical-co-inc": {
   "itw": {
    "v": 2,
@@ -164,6 +179,21 @@
    "why": "Purple Power well known, but mostly price-driven"
   }
  },
+ "aim-metals-alloys-lp": {
+  "itw": {
+   "v": 0,
+   "why": "Bulk solder for electronics OEMs"
+  },
+  "major": {
+   "v": 0,
+   "why": "Mostly industrial/OEM electronics solder"
+  },
+  "pro_pct": 10,
+  "pull": {
+   "v": 1,
+   "why": "AIM known in electronics assembly"
+  }
+ },
  "aladdin-equipment-company-inc": {
   "itw": {
    "v": 0,
@@ -177,6 +207,21 @@
   "pull": {
    "v": 1,
    "why": "Magic Lube known to pool techs"
+  }
+ },
+ "alconox-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Formulated consumable but lab/pharma channel, not MRO"
+  },
+  "major": {
+   "v": 2,
+   "why": "Lab detergents sold via lab distributors are the business"
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "Alconox known in labs, not among trades"
   }
  },
  "alfred-karcher-se-co-kg": {
@@ -222,6 +267,21 @@
   "pull": {
    "v": 1,
    "why": "Anchorlube has a machinist following; niche"
+  }
+ },
+ "anchor-lubricants-llc": {
+  "itw": {
+   "v": 2,
+   "why": "Handheld cutting lubricant through MRO; ITW already owns similar lines"
+  },
+  "major": {
+   "v": 2,
+   "why": "Single cutting-fluid brand sold to machinists via distribution"
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "Anchorlube has loyal machinist following but niche"
   }
  },
  "anderson-mfg-co-inc": {
@@ -284,6 +344,21 @@
    "why": "Known among pipe welders for purge paper"
   }
  },
+ "ar-medicom-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Gloves/masks, healthcare channel"
+  },
+  "major": {
+   "v": 0,
+   "why": "Healthcare PPE, not trade products"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Dental/medical commodity PPE"
+  }
+ },
  "arcot-manufacturing-corporation": {
   "itw": {
    "v": 1,
@@ -344,6 +419,21 @@
    "why": "Arlington known to electricians for fittings"
   }
  },
+ "armacell-international-sa": {
+  "itw": {
+   "v": 0,
+   "why": "Insulation manufacturer"
+  },
+  "major": {
+   "v": 0,
+   "why": "Adhesive minor vs insulation"
+  },
+  "pro_pct": 3,
+  "pull": {
+   "v": 1,
+   "why": "Armaflex well known, insulation not chemical"
+  }
+ },
  "armor-all-stp": {
   "itw": {
    "v": 0,
@@ -389,6 +479,21 @@
    "why": "Nu-Calgon-style HVAC chemicals; Nar-Coil/HB30 have niche recognition"
   }
  },
+ "ast-industries-inc": {
+  "itw": {
+   "v": 2,
+   "why": "Anti-seize and thread sealants are core Pro Brands categories"
+  },
+  "major": {
+   "v": 2,
+   "why": "Small company built around these compounds"
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "Niche anti-seize brand, overshadowed by Loctite/Jet-Lube"
+  }
+ },
  "avw-inc-dba-max-pro": {
   "itw": {
    "v": 2,
@@ -419,6 +524,21 @@
    "why": "Chesterton seals known; sprays less so"
   }
  },
+ "awlgrip": {
+  "itw": {
+   "v": 0,
+   "why": "Spray-applied coating system inside AkzoNobel"
+  },
+  "major": {
+   "v": 0,
+   "why": "Small brand inside a huge public coatings company"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 2,
+   "why": "Awlgrip is the yacht-finishing standard"
+  }
+ },
  "b3c-fuel-solutions-llc": {
   "itw": {
    "v": 1,
@@ -447,6 +567,21 @@
   "pull": {
    "v": 0,
    "why": "Unidentified; judged from workbook facts"
+  }
+ },
+ "banner-chemicals-limited": {
+  "itw": {
+   "v": 0,
+   "why": "Bulk solvents and AdBlue, not handheld pro products"
+  },
+  "major": {
+   "v": 0,
+   "why": "Bulk chemicals distribution business"
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 0,
+   "why": "UK solvent supplier, no US pro brand pull"
   }
  },
  "bardahl-manufacturing-corporation": {
@@ -492,6 +627,21 @@
   "pull": {
    "v": 0,
    "why": "Amazon private-label brand"
+  }
+ },
+ "berkshire-corporation": {
+  "itw": {
+   "v": 0,
+   "why": "Cleanroom wipes/swabs, not trade chemicals"
+  },
+  "major": {
+   "v": 0,
+   "why": "Critical-environment consumables, not trade-pro products"
+  },
+  "pro_pct": 10,
+  "pull": {
+   "v": 1,
+   "why": "Known in cleanrooms only"
   }
  },
  "berryman-products": {
@@ -554,6 +704,21 @@
    "why": "Known among pool pros"
   }
  },
+ "biolyst-scientific": {
+  "itw": {
+   "v": 0,
+   "why": "Microscopy/lab supplies"
+  },
+  "major": {
+   "v": 0,
+   "why": "Lab, not trade products"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Lab consumables, no trade pull"
+  }
+ },
  "black-swan-manufacturing": {
   "itw": {
    "v": 2,
@@ -567,6 +732,21 @@
   "pull": {
    "v": 1,
    "why": "Long-standing wholesale brand; judged from workbook facts, limited pull"
+  }
+ },
+ "black-swan-manufacturing-co": {
+  "itw": {
+   "v": 2,
+   "why": "Plumbing chemicals through wholesalers; classic Pro Brands fit"
+  },
+  "major": {
+   "v": 2,
+   "why": "Plumbing chemicals and accessories via wholesalers are the business"
+  },
+  "pro_pct": 85,
+  "pull": {
+   "v": 1,
+   "why": "Long-standing plumbing chemical line, secondary to Oatey/RectorSeal in pull"
   }
  },
  "blaster-holdings": {
@@ -612,6 +792,36 @@
   "pull": {
    "v": 2,
    "why": "Bona is the floor-finisher's brand"
+  }
+ },
+ "boyd-corporation-boyd-thermal": {
+  "itw": {
+   "v": 0,
+   "why": "Thermal systems, now inside Eaton"
+  },
+  "major": {
+   "v": 0,
+   "why": "TIMs a minor part of thermal hardware"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Data-center thermal hardware, no trade pull"
+  }
+ },
+ "bramec-corporation": {
+  "itw": {
+   "v": 0,
+   "why": "Hardware, not chemicals"
+  },
+  "major": {
+   "v": 0,
+   "why": "No chemical products"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "HVAC hardware accessories"
   }
  },
  "calumet": {
@@ -672,6 +882,21 @@
   "pull": {
    "v": 1,
    "why": "Hardcast known to HVAC; Henry to roofers"
+  }
+ },
+ "carlisle-syntec-systems": {
+  "itw": {
+   "v": 0,
+   "why": "Part of public Carlisle"
+  },
+  "major": {
+   "v": 0,
+   "why": "Adhesives minor in huge company"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Membrane systems brand"
   }
  },
  "castrol": {
@@ -762,6 +987,21 @@
   "pull": {
    "v": 1,
    "why": "Enthusiast and detailer cult brand, not trades"
+  }
+ },
+ "chemical-products-r-borghgraef-sa": {
+  "itw": {
+   "v": 0,
+   "why": "Lab channel, now inside Christeyns"
+  },
+  "major": {
+   "v": 0,
+   "why": "Lab detergents, not trade"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Belgian lab detergent"
   }
  },
  "chevron": {
@@ -869,6 +1109,21 @@
    "why": "Consumer brands"
   }
  },
+ "collinite-corp": {
+  "itw": {
+   "v": 1,
+   "why": "Wax fits marginally; detailing/marine channel"
+  },
+  "major": {
+   "v": 1,
+   "why": "Pro detailers meaningful but retail significant"
+  },
+  "pro_pct": 45,
+  "pull": {
+   "v": 2,
+   "why": "Collinite 845 is a cult favourite among detailers and marine"
+  }
+ },
  "comstar-international": {
   "itw": {
    "v": 2,
@@ -882,6 +1137,51 @@
   "pull": {
    "v": 1,
    "why": "Known in hydronics wholesale; judged from workbook facts"
+  }
+ },
+ "comstar-international-inc": {
+  "itw": {
+   "v": 2,
+   "why": "300 HVAC/R and plumbing service chemicals via trade distribution"
+  },
+  "major": {
+   "v": 2,
+   "why": "Specialty contractor chemicals are essentially all revenue"
+  },
+  "pro_pct": 90,
+  "pull": {
+   "v": 1,
+   "why": "Recognized HVAC chemicals line, behind Nu-Calgon/RectorSeal"
+  }
+ },
+ "concept-to-life-solutions-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Electronics solder/flux consumables; electronics channel, not trades"
+  },
+  "major": {
+   "v": 2,
+   "why": "Small-format solder/flux products are the business"
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "Chip Quik known to electronics repair techs"
+  }
+ },
+ "contec-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Cleanroom wipes and disinfectants for pharma/semis, not MRO trades"
+  },
+  "major": {
+   "v": 0,
+   "why": "Critical-environment consumables, not trade-pro products"
+  },
+  "pro_pct": 10,
+  "pull": {
+   "v": 1,
+   "why": "Known in cleanrooms, not among trades"
   }
  },
  "coretex-products-inc": {
@@ -912,6 +1212,21 @@
   "pull": {
    "v": 1,
    "why": "CorrosionX has an aviation/marine following"
+  }
+ },
+ "crawford-products-company-inc": {
+  "itw": {
+   "v": 2,
+   "why": "Handheld formulated pro product via paint/pro distribution"
+  },
+  "major": {
+   "v": 2,
+   "why": "Painter's putty/spackle sold to pros is the business"
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 2,
+   "why": "Crawford's putty is what painters ask for by name"
   }
  },
  "crc-industries": {
@@ -1004,6 +1319,36 @@
    "why": "Latex-ite known to sealcoaters"
   }
  },
+ "desco-industries-inc": {
+  "itw": {
+   "v": 0,
+   "why": "ESD hardware (straps, mats); cleaners minor"
+  },
+  "major": {
+   "v": 0,
+   "why": "Chemicals a small part of ESD equipment revenue"
+  },
+  "pro_pct": 10,
+  "pull": {
+   "v": 1,
+   "why": "Desco/SCS known in ESD world, not chemicals"
+  }
+ },
+ "dexsil-corporation": {
+  "itw": {
+   "v": 0,
+   "why": "Analytical kits/instruments"
+  },
+  "major": {
+   "v": 0,
+   "why": "Environmental testing, not trade-pro products"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Test kits for consultants, not trades"
+  }
+ },
  "diversitech-corporation": {
   "itw": {
    "v": 1,
@@ -1079,6 +1424,21 @@
    "why": "Consumer engine treatment"
   }
  },
+ "duro-dyne-national-corp": {
+  "itw": {
+   "v": 1,
+   "why": "Duct sealant fits; hardware dominates"
+  },
+  "major": {
+   "v": 0,
+   "why": "Sealants a minority vs hardware"
+  },
+  "pro_pct": 15,
+  "pull": {
+   "v": 1,
+   "why": "Duro Dyne known to sheet metal shops"
+  }
+ },
  "dynaflux-inc": {
   "itw": {
    "v": 2,
@@ -1092,6 +1452,21 @@
   "pull": {
    "v": 1,
    "why": "Known in welding supply, not a must-have name"
+  }
+ },
+ "e-zoil-products-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Fuel additives fit NAPA-style channel; strong retail mix"
+  },
+  "major": {
+   "v": 1,
+   "why": "Fleet/pro meaningful alongside 1,000+ retail outlets"
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "Regional following among truckers/fleets"
   }
  },
  "eclectic-products-llc": {
@@ -1122,6 +1497,36 @@
   "pull": {
    "v": 1,
    "why": "Bought as a service program, not brand pull"
+  }
+ },
+ "elevate": {
+  "itw": {
+   "v": 0,
+   "why": "Public-company roofing systems"
+  },
+  "major": {
+   "v": 0,
+   "why": "Adhesives minor"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Membrane systems brand"
+  }
+ },
+ "endurance-technologies-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Epoxy kits fit partially; marine/woodworking channel"
+  },
+  "major": {
+   "v": 1,
+   "why": "Kits meaningful, plus bulk resins"
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "MAS known among boatbuilders"
   }
  },
  "energy-saving-products": {
@@ -1169,6 +1574,21 @@
    "why": "H2Orange2 has a niche green following"
   }
  },
+ "epifanes": {
+  "itw": {
+   "v": 1,
+   "why": "Marine finishes, not MRO; foreign owned"
+  },
+  "major": {
+   "v": 1,
+   "why": "Cans to yards and owners; pro share partial"
+  },
+  "pro_pct": 45,
+  "pull": {
+   "v": 2,
+   "why": "Revered marine varnish among yacht pros"
+  }
+ },
  "essity": {
   "itw": {
    "v": 0,
@@ -1214,6 +1634,21 @@
    "why": "Mobil grease/oils asked for by name"
   }
  },
+ "ez-pro-texture-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Tool-led texture gun system"
+  },
+  "major": {
+   "v": 1,
+   "why": "Pre-filled compound bags partly consumable"
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 0,
+   "why": "Micro brand, little recognition"
+  }
+ },
  "fastenal": {
   "itw": {
    "v": 0,
@@ -1257,6 +1692,21 @@
   "pull": {
    "v": 2,
    "why": "Lubriplate is a long-trusted name with plant mechanics"
+  }
+ },
+ "fiske-brothers-refining-company": {
+  "itw": {
+   "v": 1,
+   "why": "Mostly bulk industrial oils/greases; tubes and aerosols a minority"
+  },
+  "major": {
+   "v": 1,
+   "why": "Sizable pails/drums share; small-format meaningful but not majority"
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 2,
+   "why": "Lubriplate is a well-known name among plant maintenance techs"
   }
  },
  "flitz-international-ltd": {
@@ -1334,6 +1784,21 @@
    "why": "Gasoila known to LP-gas/plumbing; Free All minor"
   }
  },
+ "fppf-chemical-co-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Fuel additives fit NAPA-type channels, truck-stop retail heavy"
+  },
+  "major": {
+   "v": 1,
+   "why": "Fleet/pro meaningful, truck-stop retail big"
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "Known at truck stops; moderate pull"
+  }
+ },
  "franklin-international": {
   "itw": {
    "v": 1,
@@ -1364,6 +1829,51 @@
    "why": "Wave urinal screens have some recognition"
   }
  },
+ "fytertech-nonwovens-llc": {
+  "itw": {
+   "v": 1,
+   "why": "Absorbents are consumables via MRO but non-formulated mostly"
+  },
+  "major": {
+   "v": 1,
+   "why": "MRO absorbents sold via distribution, mixed with bulk/OEM"
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "Spilfyter known in spill-control niche"
+  }
+ },
+ "gaf-materials-llc": {
+  "itw": {
+   "v": 0,
+   "why": "Shingles and membranes, huge building products"
+  },
+  "major": {
+   "v": 0,
+   "why": "Roof cements a trivial share of a giant roofer"
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 0,
+   "why": "Roofing systems brand, not handheld chemical"
+  }
+ },
+ "gcwaldom-electronics-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Mostly low-voltage parts and master distribution"
+  },
+  "major": {
+   "v": 0,
+   "why": "Chemicals a small slice of parts/distribution revenue"
+  },
+  "pro_pct": 10,
+  "pull": {
+   "v": 0,
+   "why": "GC brand faded; chemicals minor"
+  }
+ },
  "geocel": {
   "itw": {
    "v": 2,
@@ -1392,6 +1902,21 @@
   "pull": {
    "v": 2,
    "why": "STA-BIL is the category name; strong small-engine pull"
+  }
+ },
+ "gougeon-brothers-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Formulated consumable, but marine channel not MRO"
+  },
+  "major": {
+   "v": 1,
+   "why": "Small packs strong, but PRO-SET/bulk composites meaningful"
+  },
+  "pro_pct": 55,
+  "pull": {
+   "v": 2,
+   "why": "WEST SYSTEM is the iconic marine epoxy pros ask for"
   }
  },
  "greatnecktools-inc": {
@@ -1452,6 +1977,21 @@
   "pull": {
    "v": 0,
    "why": "Maker unidentified; judged from workbook facts"
+  }
+ },
+ "hach-company": {
+  "itw": {
+   "v": 0,
+   "why": "Instruments and lab reagents inside public Veralto"
+  },
+  "major": {
+   "v": 0,
+   "why": "Part of large diversified public company"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 1,
+   "why": "Known to water operators, instruments-led"
   }
  },
  "hammonds-fuel-additives-inc": {
@@ -1574,6 +2114,21 @@
    "why": "Leak Lock has a following among HVAC techs; niche"
   }
  },
+ "highside-chemicals-inc": {
+  "itw": {
+   "v": 2,
+   "why": "Handheld HVAC/R service chemicals via HVAC distribution; RectorSeal/Nu-Calgon-like"
+  },
+  "major": {
+   "v": 2,
+   "why": "Essentially all revenue is HVAC/R service chemicals"
+  },
+  "pro_pct": 90,
+  "pull": {
+   "v": 1,
+   "why": "Known niche HVAC leak-stop brand among techs, but small awareness"
+  }
+ },
  "hillyard-inc": {
   "itw": {
    "v": 0,
@@ -1662,6 +2217,21 @@
   "pull": {
    "v": 1,
    "why": "Fix-A-Thred/Recoil known but hardware"
+  }
+ },
+ "huerta-chemical-corp": {
+  "itw": {
+   "v": 0,
+   "why": "Consumer-first cleaner sold through auto retail and household"
+  },
+  "major": {
+   "v": 0,
+   "why": "Mostly retail/household products"
+  },
+  "pro_pct": 15,
+  "pull": {
+   "v": 0,
+   "why": "H-7 a regional/export retail degreaser"
   }
  },
  "hyde-tools-inc": {
@@ -1754,6 +2324,21 @@
    "why": "Institutional jan-san chemicals; no tradesperson pull"
   }
  },
+ "ipex-usa-llc": {
+  "itw": {
+   "v": 0,
+   "why": "Pipe/fittings maker inside Aliaxis"
+  },
+  "major": {
+   "v": 0,
+   "why": "Cements a small share of pipe revenue"
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 1,
+   "why": "IPEX cements known, pipe-led brand"
+  }
+ },
  "ips-corporation": {
   "itw": {
    "v": 2,
@@ -1812,6 +2397,21 @@
   "pull": {
    "v": 1,
    "why": "TotalBoat liked by yards/DIYers"
+  }
+ },
+ "jamestown-distributors-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Marine distributor/DTC retailer, outside MRO/trade model"
+  },
+  "major": {
+   "v": 1,
+   "why": "Own-brand chemicals meaningful, but much revenue is distributed goods"
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "TotalBoat liked by DIY boaters and some yards"
   }
  },
  "jb-industries-inc": {
@@ -1874,6 +2474,21 @@
    "why": "Cre-Oil has some loyalty but minor vs PB Blaster/Kroil"
   }
  },
+ "jomar-international-ltd": {
+  "itw": {
+   "v": 0,
+   "why": "Hydronic hardware"
+  },
+  "major": {
+   "v": 0,
+   "why": "No chemical products"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Valves, not chemicals"
+  }
+ },
  "justrite-safety-group": {
   "itw": {
    "v": 0,
@@ -1934,6 +2549,21 @@
    "why": "Kroil has a cult following among machinists"
   }
  },
+ "karnak-corporation": {
+  "itw": {
+   "v": 1,
+   "why": "Roof coatings mostly pails/drums; cements in tubes a minority"
+  },
+  "major": {
+   "v": 1,
+   "why": "Some caulk-tube cements; most volume is bulk coatings"
+  },
+  "pro_pct": 35,
+  "pull": {
+   "v": 1,
+   "why": "Known to commercial roofers; pails dominate"
+  }
+ },
  "kbs-coatings": {
   "itw": {
    "v": 1,
@@ -1992,6 +2622,21 @@
   "pull": {
    "v": 1,
    "why": "Joe's has loyal mechanic users"
+  }
+ },
+ "kluber-lubrication": {
+  "itw": {
+   "v": 0,
+   "why": "Bulk specialty lubricants inside Freudenberg; not acquirable fit"
+  },
+  "major": {
+   "v": 0,
+   "why": "Unit of huge diversified Freudenberg"
+  },
+  "pro_pct": 10,
+  "pull": {
+   "v": 1,
+   "why": "Respected specialty lube name among engineers"
   }
  },
  "koch-industries": {
@@ -2097,6 +2742,36 @@
   "pull": {
    "v": 1,
    "why": "Dottie is a known electrician house brand but mostly commodity"
+  }
+ },
+ "lien-chemical-company": {
+  "itw": {
+   "v": 1,
+   "why": "Janitorial absorbent; jan-san channel, not core MRO"
+  },
+  "major": {
+   "v": 2,
+   "why": "Single janitorial product line"
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "OOOPS known to custodians; judged from workbook facts"
+  }
+ },
+ "life-industries-corporation": {
+  "itw": {
+   "v": 1,
+   "why": "Handheld sealants fit; marine/retail channel"
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of pro marine and retail sales"
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "BoatLIFE known in marine trade and DIY"
   }
  },
  "lift-off-inc": {
@@ -2219,6 +2894,21 @@
    "why": "TRIM is asked for by name in machine shops"
   }
  },
+ "mcgee-industries-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Aerosol releases/dry lubes fit, but OEM/process bulk too"
+  },
+  "major": {
+   "v": 1,
+   "why": "Aerosols meaningful; bulk process aids substantial"
+  },
+  "pro_pct": 45,
+  "pull": {
+   "v": 1,
+   "why": "McLube known to molders and sailors, niche"
+  }
+ },
  "meridian-adhesives-group": {
   "itw": {
    "v": 1,
@@ -2247,6 +2937,36 @@
   "pull": {
    "v": 1,
    "why": "CaviWipes known in dental/medical"
+  }
+ },
+ "mg-chemicals": {
+  "itw": {
+   "v": 1,
+   "why": "Electronics chemicals fit partially; electronics, not MRO, channel"
+  },
+  "major": {
+   "v": 2,
+   "why": "Packaged electronics chemicals are the business"
+  },
+  "pro_pct": 75,
+  "pull": {
+   "v": 1,
+   "why": "Known to electronics techs; not trade-pro name"
+  }
+ },
+ "mi-materials-ltd": {
+  "itw": {
+   "v": 0,
+   "why": "Lab/scientific greases, UK"
+  },
+  "major": {
+   "v": 1,
+   "why": "Apiezon now a large share post-MIDEL sale, but lab not trade"
+  },
+  "pro_pct": 30,
+  "pull": {
+   "v": 1,
+   "why": "Apiezon known in vacuum labs only"
   }
  },
  "midlab-inc": {
@@ -2309,6 +3029,21 @@
    "why": "Electricians know Minerallac for hangers, not compounds"
   }
  },
+ "miracle-brands-llc": {
+  "itw": {
+   "v": 1,
+   "why": "Wipes adjacent, but Lowe's/Amazon consumer-first"
+  },
+  "major": {
+   "v": 1,
+   "why": "Pro SKU meaningful, retail-led sales"
+  },
+  "pro_pct": 35,
+  "pull": {
+   "v": 1,
+   "why": "MiracleWipes known to some painters"
+  }
+ },
  "momentive-performance-materials-inc": {
   "itw": {
    "v": 0,
@@ -2337,6 +3072,21 @@
   "pull": {
    "v": 1,
    "why": "Loved by enthusiasts, not trades"
+  }
+ },
+ "mp-biomedicals-llc": {
+  "itw": {
+   "v": 0,
+   "why": "Life-science reagents"
+  },
+  "major": {
+   "v": 0,
+   "why": "Detergent a sliver of lab reagents"
+  },
+  "pro_pct": 1,
+  "pull": {
+   "v": 0,
+   "why": "Lab reagent supplier"
   }
  },
  "nc-brands-lp": {
@@ -2444,6 +3194,36 @@
    "why": "Pyroil an old name, but weak pull today"
   }
  },
+ "norwalk-wastewater-equipment-company-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Wastewater treatment equipment, not handheld chemicals"
+  },
+  "major": {
+   "v": 0,
+   "why": "Tablets a minor share vs treatment plants"
+  },
+  "pro_pct": 15,
+  "pull": {
+   "v": 0,
+   "why": "Equipment brand; tablets incidental"
+  }
+ },
+ "novagard-solutions-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Dielectric greases fit; mostly OEM silicones"
+  },
+  "major": {
+   "v": 1,
+   "why": "OEM supply dominates; MRO distribution minority"
+  },
+  "pro_pct": 30,
+  "pull": {
+   "v": 1,
+   "why": "Known to OEMs; limited trade pull"
+  }
+ },
  "novus-plastic-polish": {
   "itw": {
    "v": 2,
@@ -2474,6 +3254,21 @@
    "why": "Nu-Calgon is the default HVAC chemical brand at wholesalers"
   }
  },
+ "nu-puttie-corporation": {
+  "itw": {
+   "v": 2,
+   "why": "Colored sealant tubes via contractor distribution; good fit"
+  },
+  "major": {
+   "v": 2,
+   "why": "Caulk tubes to contractors are the business"
+  },
+  "pro_pct": 85,
+  "pull": {
+   "v": 1,
+   "why": "NPC Solar Seal known to siding contractors"
+  }
+ },
  "nuvik-usa": {
   "itw": {
    "v": 1,
@@ -2487,6 +3282,36 @@
   "pull": {
    "v": 1,
    "why": "Crocodile Cloth has some contractor following; wipes are substitutable"
+  }
+ },
+ "nuvik-usa-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Pro wipes fit hand-cleaner adjacency, but retail-heavy mix"
+  },
+  "major": {
+   "v": 1,
+   "why": "Meaningful pro distribution, but home centers a large share"
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "Crocodile Cloth gaining contractor recognition but young brand"
+  }
+ },
+ "nvent": {
+  "itw": {
+   "v": 0,
+   "why": "Large public electrical company"
+  },
+  "major": {
+   "v": 0,
+   "why": "Negligible share of nVent"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "VCI emitters an obscure accessory"
   }
  },
  "nyco-products-company": {
@@ -2579,6 +3404,21 @@
    "why": "PEAK known but antifreeze is commodity"
   }
  },
+ "omni-lubricants-ltd": {
+  "itw": {
+   "v": 1,
+   "why": "Grease fits, but sold mainly via auto retail"
+  },
+  "major": {
+   "v": 1,
+   "why": "Small-format grease, but retail-weighted channel"
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Green Grease has a following, mostly DIY/auto parts"
+  }
+ },
  "ors-nasco": {
   "itw": {
    "v": 1,
@@ -2622,6 +3462,21 @@
   "pull": {
    "v": 1,
    "why": "Panduit known to electricians for hardware"
+  }
+ },
+ "pecora-corporation": {
+  "itw": {
+   "v": 1,
+   "why": "Sealants fit, but spec-driven construction, not MRO"
+  },
+  "major": {
+   "v": 2,
+   "why": "Sausage/cartridge sealants to contractors are core"
+  },
+  "pro_pct": 65,
+  "pull": {
+   "v": 2,
+   "why": "Pecora specified and requested by glaziers/waterproofers"
   }
  },
  "perma-patch-llc": {
@@ -2714,6 +3569,21 @@
    "why": "Boeshield T-9 has cult following among cyclists and machinists"
   }
  },
+ "polyguard-products-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Tapes and membranes, not handheld chemicals"
+  },
+  "major": {
+   "v": 0,
+   "why": "Membranes/tapes dominate"
+  },
+  "pro_pct": 10,
+  "pull": {
+   "v": 1,
+   "why": "Known to pipeline/waterproofing crews"
+  }
+ },
  "power-service-products": {
   "itw": {
    "v": 1,
@@ -2744,6 +3614,36 @@
    "why": "SEM and Liquid Nails have pull, but PPG overall is coatings"
   }
  },
+ "premierrepak-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Contract repacker, not brand owner"
+  },
+  "major": {
+   "v": 0,
+   "why": "Serves other brands, not pros"
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 0,
+   "why": "Private label, no own brand pull"
+  }
+ },
+ "preservation-solutions": {
+  "itw": {
+   "v": 0,
+   "why": "Craft product"
+  },
+  "major": {
+   "v": 0,
+   "why": "Hobby/craft revenue"
+  },
+  "pro_pct": 10,
+  "pull": {
+   "v": 0,
+   "why": "Hobbyist product"
+  }
+ },
  "pro-line-products-inc": {
   "itw": {
    "v": 0,
@@ -2759,6 +3659,21 @@
    "why": "Unidentified; judged from workbook facts"
   }
  },
+ "pro-products-llc": {
+  "itw": {
+   "v": 2,
+   "why": "Handheld formulated consumables via plumbing/water treatment dealers"
+  },
+  "major": {
+   "v": 1,
+   "why": "Equipment line (American Hydro) also meaningful"
+  },
+  "pro_pct": 60,
+  "pull": {
+   "v": 1,
+   "why": "Pro Rust Out known to water-treatment dealers"
+  }
+ },
  "procter-gamble": {
   "itw": {
    "v": 0,
@@ -2772,6 +3687,21 @@
   "pull": {
    "v": 1,
    "why": "Comet name known; pro version secondary"
+  }
+ },
+ "propspeed-international": {
+  "itw": {
+   "v": 1,
+   "why": "Kit coating fits; marine channel, foreign"
+  },
+  "major": {
+   "v": 2,
+   "why": "Pro-applied small kits are the business"
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 2,
+   "why": "Propspeed is the brand yards specify for running gear"
   }
  },
  "prosoco-inc": {
@@ -2817,6 +3747,21 @@
   "pull": {
    "v": 1,
    "why": "Loose Screw has some jan-san recognition; mostly private label"
+  }
+ },
+ "r-c-d-corporation": {
+  "itw": {
+   "v": 2,
+   "why": "Duct mastics via HVAC distribution; Pro Brands-style sealing"
+  },
+  "major": {
+   "v": 2,
+   "why": "Duct sealing products are core revenue"
+  },
+  "pro_pct": 75,
+  "pull": {
+   "v": 1,
+   "why": "RCD numbered mastics known to duct installers"
   }
  },
  "radiator-specialty-company": {
@@ -2984,6 +3929,36 @@
    "why": "Niche bio-lube recognition"
   }
  },
+ "rex-international-usa-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Pipe tools and machines"
+  },
+  "major": {
+   "v": 0,
+   "why": "Threading oil a minor accessory"
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 1,
+   "why": "Wheeler-Rex tools respected; oil incidental"
+  }
+ },
+ "rhomar-water": {
+  "itw": {
+   "v": 2,
+   "why": "HVAC/hydronic treatment chemicals via HVAC distribution"
+  },
+  "major": {
+   "v": 2,
+   "why": "Hydronic chemicals are the business"
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "Rhomar glycol known to hydronic contractors"
+  }
+ },
  "ritchie-engineering-company-inc": {
   "itw": {
    "v": 0,
@@ -2999,6 +3974,21 @@
    "why": "YELLOW JACKET is iconic with HVAC techs"
   }
  },
+ "rm-lucas-co": {
+  "itw": {
+   "v": 1,
+   "why": "Roof cements in tubes fit; pails/coatings bulk"
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of tubes and bulk pails"
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "LUCAS known among roofers"
+  }
+ },
  "rochester-midland-corporation": {
   "itw": {
    "v": 1,
@@ -3012,6 +4002,21 @@
   "pull": {
    "v": 0,
    "why": "Route-based service sale, not brand asked by tradespeople"
+  }
+ },
+ "roebic-laboratories-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Drain/septic treatments fit, retail-weighted"
+  },
+  "major": {
+   "v": 1,
+   "why": "Plumbing supply meaningful, but hardware/retail big"
+  },
+  "pro_pct": 45,
+  "pull": {
+   "v": 1,
+   "why": "Known in plumbing supply and hardware"
   }
  },
  "rpm-international": {
@@ -3072,6 +4077,21 @@
   "pull": {
    "v": 2,
    "why": "Deb/Stoko hand care is well known in plants"
+  }
+ },
+ "saf-t-lok-international-corporation": {
+  "itw": {
+   "v": 2,
+   "why": "Threadlockers, sealants, anti-seize via MRO; core Pro Brands"
+  },
+  "major": {
+   "v": 2,
+   "why": "Handheld MRO chemicals are the business"
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "Known Loctite alternative, limited pull"
   }
  },
  "saint-gobain": {
@@ -3224,6 +4244,21 @@
    "why": "Sika known to contractors in construction"
   }
  },
+ "silver-king-manufacturing-co": {
+  "itw": {
+   "v": 2,
+   "why": "Boiler chemicals via Ferguson/State Supply; Pro Brands fit"
+  },
+  "major": {
+   "v": 2,
+   "why": "Boiler chemicals are the business"
+  },
+  "pro_pct": 90,
+  "pull": {
+   "v": 1,
+   "why": "Known among boiler techs regionally"
+  }
+ },
  "simoniz-usa": {
   "itw": {
    "v": 1,
@@ -3269,6 +4304,21 @@
    "why": "Faded consumer engine treatment"
   }
  },
+ "solderweld-inc": {
+  "itw": {
+   "v": 1,
+   "why": "Brazing alloys are metal; flux fits"
+  },
+  "major": {
+   "v": 2,
+   "why": "Small-format pro HVAC/R products are the business"
+  },
+  "pro_pct": 80,
+  "pull": {
+   "v": 1,
+   "why": "Emerging HVAC brazing brand"
+  }
+ },
  "solenis": {
   "itw": {
    "v": 0,
@@ -3282,6 +4332,21 @@
   "pull": {
    "v": 1,
    "why": "Diversey known to facility buyers, chosen on program/service"
+  }
+ },
+ "soprema-inc-soprema-sas": {
+  "itw": {
+   "v": 0,
+   "why": "Large roofing membrane group"
+  },
+  "major": {
+   "v": 0,
+   "why": "Adhesives minor vs membranes"
+  },
+  "pro_pct": 3,
+  "pull": {
+   "v": 0,
+   "why": "Membranes, not handheld"
   }
  },
  "soudal-accumetric": {
@@ -3434,6 +4499,21 @@
    "why": "Lucas-Milhaupt brazing alloys respected in HVAC"
   }
  },
+ "steris-plc": {
+  "itw": {
+   "v": 0,
+   "why": "Large public healthcare company"
+  },
+  "major": {
+   "v": 0,
+   "why": "Disinfectants a small part of huge diversified company"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Healthcare infection-prevention company"
+  }
+ },
  "stoner-inc": {
   "itw": {
    "v": 1,
@@ -3567,6 +4647,36 @@
   "pull": {
    "v": 1,
    "why": "T-88 known to boatbuilders and woodworkers"
+  }
+ },
+ "tamko-building-products-llc": {
+  "itw": {
+   "v": 0,
+   "why": "Shingles and underlayment"
+  },
+  "major": {
+   "v": 0,
+   "why": "Roof cements minor"
+  },
+  "pro_pct": 3,
+  "pull": {
+   "v": 1,
+   "why": "Shingle brand, not handheld"
+  }
+ },
+ "te-connectivity": {
+  "itw": {
+   "v": 0,
+   "why": "Huge public connectivity company"
+  },
+  "major": {
+   "v": 0,
+   "why": "Negligible share of TE"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 1,
+   "why": "Raychem heat-shrink respected but hardware"
   }
  },
  "techniseal": {
@@ -3734,6 +4844,21 @@
    "why": "NOCO pull is for chargers, not chemicals"
   }
  },
+ "the-orange-sol-group-of-companies-ltd": {
+  "itw": {
+   "v": 1,
+   "why": "Citrus solvents fit, but retail-heavy"
+  },
+  "major": {
+   "v": 1,
+   "why": "Industrial/institutional meaningful but not majority"
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "De-Solv-it known, mostly retail"
+  }
+ },
  "the-orelube-corporation": {
   "itw": {
    "v": 2,
@@ -3824,6 +4949,36 @@
    "why": "Pull is for fixtures, not chemicals"
   }
  },
+ "the-swan-corporation-swan-surfaces-llc": {
+  "itw": {
+   "v": 0,
+   "why": "Solid-surface fixtures, not consumables"
+  },
+  "major": {
+   "v": 0,
+   "why": "Fixture manufacturer, no chemical products"
+  },
+  "pro_pct": 0,
+  "pull": {
+   "v": 0,
+   "why": "Fixtures, not a chemical brand"
+  }
+ },
+ "the-tile-doctor": {
+  "itw": {
+   "v": 1,
+   "why": "Sealers/cleaners fit; distribution of setting materials does not"
+  },
+  "major": {
+   "v": 1,
+   "why": "Own care products partial vs distributed materials"
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Known among some tile installers"
+  }
+ },
  "theochem-laboratories-inc": {
   "itw": {
    "v": 1,
@@ -3839,6 +4994,36 @@
    "why": "Mostly private label jan-san"
   }
  },
+ "thermotek-group": {
+  "itw": {
+   "v": 0,
+   "why": "Roof coatings/membranes in pails/rolls"
+  },
+  "major": {
+   "v": 0,
+   "why": "Mostly bulk coatings and membranes"
+  },
+  "pro_pct": 10,
+  "pull": {
+   "v": 0,
+   "why": "Low recognition; likely Sika brand"
+  }
+ },
+ "thrift-marketing-inc": {
+  "itw": {
+   "v": 2,
+   "why": "Drain chemicals via plumbing wholesalers; Pro Brands fit"
+  },
+  "major": {
+   "v": 2,
+   "why": "Drain chemicals to plumbers are the business"
+  },
+  "pro_pct": 85,
+  "pull": {
+   "v": 1,
+   "why": "Thrift drain cleaner known to some plumbers"
+  }
+ },
  "tracer-products": {
   "itw": {
    "v": 1,
@@ -3852,6 +5037,21 @@
   "pull": {
    "v": 1,
    "why": "Known in auto A/C service; UV kits more than dye"
+  }
+ },
+ "trico-products": {
+  "itw": {
+   "v": 0,
+   "why": "Wiper blades, consumer/auto aftermarket hardware"
+  },
+  "major": {
+   "v": 0,
+   "why": "Washer fluid is negligible"
+  },
+  "pro_pct": 3,
+  "pull": {
+   "v": 1,
+   "why": "Known wiper brand but no pro chemical pull"
   }
  },
  "trico-products-identification-uncertain": {
@@ -3957,6 +5157,21 @@
   "pull": {
    "v": 1,
    "why": "Boxer known in pool supply, judged from workbook facts"
+  }
+ },
+ "united-asphalt-company": {
+  "itw": {
+   "v": 1,
+   "why": "Roof cements partly tubes; mostly pails"
+  },
+  "major": {
+   "v": 1,
+   "why": "Some cartridges; bulk dominates"
+  },
+  "pro_pct": 30,
+  "pull": {
+   "v": 1,
+   "why": "Known to regional roofers"
   }
  },
  "us-pumice-company": {
@@ -4079,6 +5294,21 @@
    "why": "Meadows a specified name with concrete contractors"
   }
  },
+ "wakefield-thermal-solutions-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Electronics thermal hardware"
+  },
+  "major": {
+   "v": 0,
+   "why": "Thermal compound minor"
+  },
+  "pro_pct": 5,
+  "pull": {
+   "v": 0,
+   "why": "Heat-sink OEM supplier"
+  }
+ },
  "wal-rich-corporation": {
   "itw": {
    "v": 1,
@@ -4169,6 +5399,21 @@
    "why": "Goo Gone and Weiman known, consumer-led"
   }
  },
+ "weitron-inc": {
+  "itw": {
+   "v": 0,
+   "why": "Packaged refrigerant is commodity gas, not formulated"
+  },
+  "major": {
+   "v": 1,
+   "why": "Cans/cylinders to techs, but commodity and auto retail"
+  },
+  "pro_pct": 40,
+  "pull": {
+   "v": 1,
+   "why": "Known in refrigerant supply, commodity"
+  }
+ },
  "wet-forget-group": {
   "itw": {
    "v": 1,
@@ -4197,6 +5442,21 @@
   "pull": {
    "v": 1,
    "why": "Niche anti-spatter brand, judged largely from workbook facts"
+  }
+ },
+ "whalespray-sl-us-distribution-by-alliance-distribution-partn": {
+  "itw": {
+   "v": 1,
+   "why": "Welding aerosols fit, but foreign maker with thin US presence"
+  },
+  "major": {
+   "v": 2,
+   "why": "Aerosol pro products are the whole line"
+  },
+  "pro_pct": 85,
+  "pull": {
+   "v": 0,
+   "why": "Little US name recognition; imported line"
   }
  },
  "winton-products-company-inc": {
@@ -4229,6 +5489,21 @@
    "why": "Klean-Strip and Goof Off are known by painters"
   }
  },
+ "woody-wax": {
+  "itw": {
+   "v": 0,
+   "why": "Consumer-ish marine wax, micro brand"
+  },
+  "major": {
+   "v": 1,
+   "why": "Detailer sales meaningful, owner sales too"
+  },
+  "pro_pct": 50,
+  "pull": {
+   "v": 1,
+   "why": "Known among Florida marine detailers"
+  }
+ },
  "worthington-cylinder-corporation": {
   "itw": {
    "v": 1,
@@ -4242,6 +5517,21 @@
   "pull": {
    "v": 1,
    "why": "Flux is a minor line; cylinders drive the brand"
+  }
+ },
+ "worx-environmental-products-inc": {
+  "itw": {
+   "v": 2,
+   "why": "Heavy-duty hand cleaner via MRO/NAPA; Kano-type fit"
+  },
+  "major": {
+   "v": 2,
+   "why": "Hand cleaner is the business"
+  },
+  "pro_pct": 85,
+  "pull": {
+   "v": 1,
+   "why": "Known hand cleaner in NAPA/Grainger, behind Gojo/Fast Orange"
   }
  },
  "wurth-group": {
