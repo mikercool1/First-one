@@ -1,4 +1,4 @@
-# Profiler
+# Home Base
 
 A chemicals company repository for deal work, organised by sector (water treatment, lubricants, personal care and professional beauty, food ingredients, coatings and more; custom sectors can be added). Each company has business lines in one or more sectors and a primary sector. "Build out this sector" on the Sectors page has Claude add a sector's leading companies as starter profiles.
 
@@ -16,7 +16,7 @@ Live app: https://claude.ai/artifact/KCB1rWzeMTqDnqVXoQz3eG (private to the owne
 - **Precedents**: every deal from every profile, plus sponsor entries with a known EV, with EV / revenue.
 - **End markets**: rank companies by exposure to an end market, as a share or in dollars.
 
-In-page deep dives run on Claude's own knowledge (no web browsing). For a web-researched dive, ask Claude in chat to research a company into Profiler, and it writes the profile to the same database.
+In-page deep dives run on Claude's own knowledge (no web browsing). For a web-researched dive, ask Claude in chat to research a company into Home Base, and it writes the profile to the same database.
 
 ## Profile builder
 
@@ -46,7 +46,7 @@ Web search uses the free Parallel Search connector (claude.ai Settings → Conne
 ## Deal book, sponsors, history, management
 
 - **Deal book** (`dealbook/s00`…`s15`, a map of deal id → record, sharded by id hash): one record per deal, merged from the water index deal log, every company's M&A tab and sponsor entries, deduplicated by target and year. Each record has status, deal type, buyer type (Strategic / PE platform / Sponsor), EV, target revenue, EBITDA, EV/EBITDA, employees, advisors, source and notes. Suspect values are flagged and left out of medians until checked. Each deal has a page (`#d.<id>`). New rows on a company's M&A tab are added automatically; deals edited by hand are never overwritten.
-- **Sponsor profiles** (`sponsors/<slug>`, page `#s.<slug>`): firm details (type, AUM, latest fund, dry powder, check size, focus, chemicals thesis, contacts), portfolio in Profiler by entry year, deals by the firm and its platforms, and a web research button.
+- **Sponsor profiles** (`sponsors/<slug>`, page `#s.<slug>`): firm details (type, AUM, latest fund, dry powder, check size, focus, chemicals thesis, contacts), portfolio in Home Base by entry year, deals by the firm and its platforms, and a web research button.
 - **Financial history** (`fin_history` on the company): 3-5 fiscal years of revenue and EBITDA with growth, margin and CAGR on the Overview; "Find history" researches it through the chat.
 - **Management** (`management`, Management tab): leadership team and board chair with title, tenure, background and LinkedIn; "Find management team" researches it through the chat.
 
@@ -64,7 +64,7 @@ Every company page has a Chat button. Ask or tell it anything in plain language 
 
 ## Market size (TAM)
 
-Each sector has a Market size page. Sources (research firms, associations, filings, bottom-up estimates) are listed with geography, year, value, growth and reliability. The TAM is triangulated: each source is rolled forward to the base year at its growth rate, weighted by reliability (High 3, Medium 2, Low 1), and sources more than 2.5x away from the median count a quarter as much. You can type your own TAM to override it. Found TAM sums the sector revenue of companies in Profiler, giving coverage and the gap. "Names to add" lists companies that profiles mention as competitors, buyers or add-on ideas but that have no profile yet, plus Claude suggestions sized to the gap. Stored in `tam/<sector>`.
+Each sector has a Market size page. Sources (research firms, associations, filings, bottom-up estimates) are listed with geography, year, value, growth and reliability. The TAM is triangulated: each source is rolled forward to the base year at its growth rate, weighted by reliability (High 3, Medium 2, Low 1), and sources more than 2.5x away from the median count a quarter as much. You can type your own TAM to override it. Found TAM sums the sector revenue of companies in Home Base, giving coverage and the gap. "Names to add" lists companies that profiles mention as competitors, buyers or add-on ideas but that have no profile yet, plus Claude suggestions sized to the gap. Stored in `tam/<sector>`.
 
 ## Data
 
