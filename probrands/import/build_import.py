@@ -450,7 +450,7 @@ maker = collections.defaultdict(collections.Counter)
 for p in products:
     if s(p.get("Manufacturer as listed")):
         maker[s(p.get("Brand"))][re.sub(r"[®™]", "", s(p["Manufacturer as listed"]))] += 1
-out_br, out_sku = {}, {}
+out_br, out_sku, wb_brand_id = {}, {}, {}
 # v9 added a triage pass on every brand (bucket, owner guess, owner type, confidence)
 TRIAGE = {"ACTIONABLE_CANDIDATE": "actionable", "UNKNOWN_BRAND": "unknown", "SUBSIDIARY_KNOWN": "sub_known",
           "SUBSIDIARY_PUBLIC": "sub_public", "OUT_OF_SCOPE_OTHER": "out", "NOT_CHEMICAL": "not_chem",
@@ -486,6 +486,7 @@ for b in brands:
         else:
             rec.update(status="unknown", oclass="unknown")
     out_br[bid] = {k: v for k, v in rec.items() if v not in ("", None, [], {})}
+    wb_brand_id[bid] = s(b["Brand ID"])
     out_sku[bid] = [[s(p.get("Product name"), 140), s(p.get("Form factor")), s(p.get("Size / pack"), 40), s(p.get("Distributor")),
                      s(p.get("Product URL"), 300), s(p.get("Product category"), 60), s(p.get("List price ($)")), s(p.get("Mfr part #"), 40)] for p in ps]
 
@@ -579,6 +580,9 @@ nbr = len(set(shard(out_br, "br", "brands").values()))
 json.dump({"deals": deals_out, "updated_at": NOW}, open(f"{OUT}/data/deals.json", "w"), separators=(",", ":"))
 json.dump({"list": dist_out, "updated_at": NOW}, open(f"{OUT}/data/dists.json", "w"), separators=(",", ":"))
 json.dump({"source": SEEDED, "updated_at": NOW, "co": nco, "dt": ndt, "br": nbr, "sku": len(set(where.values()))}, open(f"{OUT}/data/index.json", "w"))
+# the workbook's own IDs, so exports (the DNA workbook) can be joined back to the Master and Brands tabs
+json.dump({"owners": {cid: oid for oid, cid in ids.items()}, "merged": {d: ids.get(c) for d, c in dupes.items()}, "brands": wb_brand_id},
+          open(f"{OUT}/ids.json", "w"), indent=0)
 for i in range(0, len(judge_in), 50):
     json.dump(judge_in[i:i + 50], open(f"{OUT}/judge/batch-{i // 50}.json", "w"), indent=1)
 

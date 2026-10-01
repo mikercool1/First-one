@@ -44,6 +44,20 @@ Seven checks, each Pass (full points), Partly (half) or Fail:
 
 Claude's judgments for all owners are in `import/judgments.json`. They come from Claude's knowledge plus the workbook facts, without new web research. On a company page you can click any check to change it, which saves as "Your call", or ask Claude to re-check the three judgment calls. Overrides live in the `dna` collection (one document per company), so re-importing the workbook never erases them. Precedence: your call, then a re-check from the page, then the imported judgment, then the data rule.
 
+**DNA workbook.** `Probrands_DNA_v9.xlsx` holds the DNA test in Excel, ready to paste into the market map. It has three sheets:
+- DNA by owner: every check's result, points, source and reason, keyed by the Master tab's Owner ID.
+- DNA by brand: each brand's owner score plus the three data checks scored for the brand alone, keyed by the Brands tab's Brand ID.
+- How it's scored.
+
+To rebuild it after an import:
+
+```
+NODE_PATH=$(npm root -g) node probrands/import/dump_dna.js dna.json
+python3 probrands/import/export_dna.py Professional_Brands_Market_Map_v9.xlsx dna.json probrands/Probrands_DNA_v9.xlsx
+```
+
+The dump scores with the app's own code, so the numbers match the screen. Overrides saved in the app are not included.
+
 Distributor channels (broadline MRO, trade specialty, retail-leaning) and the end-market groups are set in `import/build_import.py` (`RETAIL`, `BROADLINE`, `MARKET`).
 
 ## Data
