@@ -79,6 +79,8 @@ h3{font-size:17px;font-weight:800}
 .gauge:last-child{border-right:0}
 .gauge b{display:block;font:800 30px/1 var(--f-display);font-variant-numeric:tabular-nums}
 .gauge span{display:block;margin-top:4px}
+.gauge.glink{text-decoration:none;color:inherit;background:var(--panel-2);box-shadow:inset 0 -3px 0 var(--accent)}
+.gauge.glink:hover{background:var(--sunk)}
 .gauge.g b{color:var(--good)}.gauge.a b{color:var(--mid)}.gauge.r b{color:var(--bad)}
 
 /* ---- toolbar ---- */
@@ -186,6 +188,13 @@ td b{font-weight:700}
 .hbars .fill{position:absolute;inset:0 auto 0 0;background:var(--accent)}
 .hbars .num{text-align:right;font-size:12.5px;color:var(--ink-2)}
 .cons-row{cursor:pointer}
+.st{font:600 10px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3)}
+.st-guess,.st-prior{color:var(--mid)}
+.btable td{font-size:13.5px}
+.btable td:nth-child(2){min-width:220px}
+.btable td:first-child{min-width:130px}
+.btable th button{font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit}
+.rhead button,.btable th button{white-space:nowrap}
 .cons-row:hover td{background:var(--panel-2)}
 .rank{font:800 22px/1 var(--f-display);color:var(--ink-3);font-variant-numeric:tabular-nums}
 
@@ -238,6 +247,7 @@ td b{font-weight:700}
     <div class="plate"><b>Probrands</b><small>US professional brands · deal screen</small></div>
     <nav class="nav" id="nav">
       <a href="#screen" data-v="screen">The screen<small id="nScreen"></small></a>
+      <a href="#brands" data-v="brands">Brands<small id="nBrands"></small></a>
       <a href="#consolidators" data-v="consolidators">Consolidators</a>
       <a href="#web" data-v="web">The web</a>
       <a href="#mix" data-v="mix">SKU mix</a>
@@ -269,11 +279,13 @@ const store = { get(k, d) { try { const v = localStorage.getItem("probrands2." +
 
 /* ---------- state ---------- */
 let db = null, sample = null, writable = false, dbState = "connecting";
-const CO = new Map(), DT = new Map(), DNA = new Map();
+const CO = new Map(), DT = new Map(), DNA = new Map(), BR = new Map(), SKU = new Map(), skuLoading = new Set();
+let brandByName = new Map();
 let DEALS = [], DISTS = [], SRC = "", loaded = false, ver = 0;
 const OWN = [["pe", "PE"], ["family", "Family"], ["esop", "ESOP"], ["private", "Private"], ["corp", "Corporate"]];
 const ownKey = c => c.oclass === "public" || c.oclass === "sub_private" ? "corp" : c.oclass;
-const ui = { own: new Set(store.get("own", ["pe", "family"])), q: "", fam: "", mkt: "", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {} };
+const ui = { own: new Set(store.get("own", ["pe", "family"])), q: "", fam: "", mkt: "", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
+  b: { q: "", status: "", own: "", fam: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
 
 /* ---------- DNA ---------- */
 // Seven checks. Data checks come from the SKU scrape; judgment checks come from Claude, and you can override any of them.
@@ -382,14 +394,16 @@ function sponsors() {
 function route() {
   const h = decodeURIComponent((location.hash || "#screen").slice(1));
   if (h.startsWith("c.")) return { v: "company", id: h.slice(2) };
+  if (h.startsWith("b.")) return { v: "brand", id: h.slice(2) };
   if (h.startsWith("web")) return { v: "web", id: h.split(".")[1] || null };
-  if (["screen", "consolidators", "mix"].includes(h)) return { v: h };
+  if (["screen", "consolidators", "mix", "brands"].includes(h)) return { v: h };
   return { v: "screen" };
 }
 function chrome(r) {
-  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v) ? "page" : "false"));
+  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v) ? "page" : "false"));
   const counts = {}; for (const c of list()) counts[ownKey(c)] = (counts[ownKey(c)] || 0) + 1;
   $("#ownChips").innerHTML = OWN.map(([k, l]) => `<button class="chip" type="button" data-own="${k}" aria-pressed="${ui.own.has(k)}">${l}<small>${counts[k] || 0}</small></button>`).join("");
+  $("#nBrands").textContent = BR.size || "";
   $("#nScreen").textContent = loaded ? visible().filter(c => ui.showOut || !dnaOf(c).out).length : "";
   const live = { connecting: ["", "Connecting"], live: ["on", "Live · " + CO.size + " owners"], readonly: ["on", "View only · " + CO.size + " owners"], off: ["", "Not connected"] }[dbState];
   $("#live").innerHTML = `<span class="dot ${live[0]}"></span>${esc(live[1])}`;
@@ -435,6 +449,7 @@ function viewScreen() {
     <div class="gauge r"><b>${band("r")}</b><span class="lbl">Red · under 45</span></div>
     <div class="gauge"><b>${inScope.filter(c => c.oclass === "pe").length}</b><span class="lbl">PE owned</span></div>
     <div class="gauge"><b>${inScope.filter(c => c.oclass === "family").length}</b><span class="lbl">Family owned</span></div>
+    <a class="gauge glink" href="#brands"><b>${BR.size.toLocaleString()}</b><span class="lbl">Brands →</span></a>
   </div>
   <div class="bar">
     <input class="search" id="q" type="search" placeholder="Search companies, brands, sponsors…" value="${esc(ui.q)}" aria-label="Search">
@@ -488,9 +503,10 @@ function viewCompany(id) {
   </div>
   <section class="panel"><header><h2>Brands</h2><span class="sp"></span><span class="lbl">${brands.length} in the map</span></header>
     <div class="tw"><table><thead><tr><th>Brand</th><th>What it is</th><th>Hero product</th><th>Format</th><th class="r">SKUs</th><th>Who carries it</th></tr></thead><tbody>
-    ${brands.map(b => `<tr><td><b>${esc(b.name)}</b>${b.verified ? "" : `<br><span class="unv">owner unverified</span>`}</td><td>${esc(b.cat || b.family)}</td><td class="muted">${esc(b.hero)}</td><td>${esc(b.form)}</td><td class="r num">${b.skus}</td>
+    ${brands.map(b => `<tr><td><b>${brandLink(b.name)}</b>${b.verified ? "" : `<br><span class="unv">owner unverified</span>`}</td><td>${esc(b.cat || b.family)}</td><td class="muted">${esc(b.hero)}</td><td>${esc(b.form)}</td><td class="r num">${b.skus}</td>
       <td>${(b.dists || []).slice(0, 6).map(x => `<span class="tag">${esc(x.replace(/\s*\(.*\)$/, ""))}</span>`).join("")}${(b.dists || []).length > 6 ? `<span class="faint">+${b.dists.length - 6}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="6" class="faint">No brands linked in the map.</td></tr>`}
     </tbody></table></div></section>
+  ${likelyOf(id)}
   ${deals.length ? `<section class="panel"><header><h2>Deals</h2></header><div class="tw"><table><thead><tr><th>Year</th><th>Buyer</th><th>Target</th><th>Type</th><th class="r">Value</th></tr></thead><tbody>
     ${deals.map(x => `<tr><td class="num">${esc(x.date || "")}</td><td>${x.acq_id && x.acq_id !== id && CO.has(x.acq_id) ? `<a href="#c.${esc(x.acq_id)}">${esc(x.acquirer)}</a>` : esc(x.acquirer)}</td><td><b>${esc(x.target)}</b>${x.brands ? `<br><span class="faint">${esc(x.brands)}</span>` : ""}</td><td class="muted">${esc(x.type)}</td><td class="r num">${x.value ? fmtM(x.value) : "—"}</td></tr>`).join("")}
   </tbody></table></div></section>` : ""}
@@ -598,7 +614,7 @@ function viewWeb(focus) {
   <div class="focus-list">${f ? `<section class="panel"><header><h2>${esc(f.c.name)}</h2><span class="sp"></span><a class="btn" href="#c.${esc(f.id)}">Open company</a><button class="btn" type="button" data-act="unfocus">Clear</button></header>
     <div class="body" style="padding-bottom:4px"><div>${ownerLine(f.c)}</div><p class="muted" style="margin:6px 0 10px">${esc((fdt.what || f.c.blunt || "").slice(0, 300))}</p></div>
     <div class="tw"><table><thead><tr><th>Brand</th><th>What it does</th><th>Hero product</th><th>Format</th><th class="r">SKUs</th><th class="r">Dist.</th></tr></thead><tbody>
-    ${(fdt.brands || []).map(b => `<tr><td><b>${esc(b.name)}</b></td><td>${esc(b.cat || b.family)}</td><td class="muted">${esc(b.hero)}</td><td>${esc(b.form)}</td><td class="r num">${b.skus}</td><td class="r num">${(b.dists || []).length}</td></tr>`).join("")}
+    ${(fdt.brands || []).map(b => `<tr><td><b>${brandLink(b.name)}</b></td><td>${esc(b.cat || b.family)}</td><td class="muted">${esc(b.hero)}</td><td>${esc(b.form)}</td><td class="r num">${b.skus}</td><td class="r num">${(b.dists || []).length}</td></tr>`).join("")}
     </tbody></table></div>
     ${f.r.deals.length ? `<div class="body"><div class="lbl" style="margin-bottom:6px">Acquisitions</div>${f.r.deals.map(x => `<div style="padding:4px 0;border-bottom:1px dashed var(--line)"><span class="num faint">${esc(x.date)}</span> <b>${esc(x.target)}</b> <span class="muted">${esc(x.type)}</span></div>`).join("")}</div>` : ""}
   </section>` : `<div class="note">Click a hub in the web to list its brands here.</div>`}</div>`;
@@ -608,6 +624,93 @@ function zoomWeb(k, cx, cy) {
   if (!k) { view = [...WEB.box]; }
   else { const [x, y, w, h] = view; cx = cx ?? x + w / 2; cy = cy ?? y + h / 2; view = [cx - (cx - x) * k, cy - (cy - y) * k, w * k, h * k]; }
   $("#websvg")?.setAttribute("viewBox", view.map(v => v.toFixed(1)).join(" "));
+}
+
+/* ---------- brands ---------- */
+const STATUS = { verified: ["Owner verified", "From the market map's verified Companies tab"], prior: ["Owner unverified", "The market map's prior, not yet checked"],
+  guess: ["Claude's guess", "Claude's best guess from its knowledge and the maker name on listings; not verified"], unknown: ["Owner not identified", "No owner in the market map and no confident guess"] };
+const OCLS = { pe: "PE", family: "Family", esop: "ESOP", private: "Private", public: "Corporate", sub_private: "Corporate", unknown: "Unknown" };
+const brandLink = name => { const id = brandByName.get(norm(name)); return id ? `<a href="#b.${esc(id)}">${esc(name)}</a>` : esc(name); };
+function ownerCell(b) {
+  const badge = `<span class="own ${b.oclass === "pe" ? "pe" : b.oclass === "family" ? "family" : ""}">${OCLS[b.oclass] || "Unknown"}</span>`;
+  const name = b.owner ? (b.owner_id && CO.has(b.owner_id) ? `<a href="#c.${esc(b.owner_id)}">${esc(b.owner)}</a>` : esc(b.owner)) : `<span class="faint">Not identified</span>`;
+  const st = b.status === "verified" ? "" : `<br><span class="st st-${b.status}">${esc(STATUS[b.status][0])}${b.conf ? " · " + esc(b.conf) : ""}</span>`;
+  return `${badge}${name}${b.parent && b.parent !== b.owner ? `<span class="faint"> · ${esc(b.parent)}</span>` : ""}${st}`;
+}
+function viewBrands() {
+  const f = ui.b, q = norm(f.q);
+  const all = [...BR.values()];
+  const dists = [...new Set(all.flatMap(b => b.dists || []))].sort(), fams = [...new Set(all.map(b => b.family).filter(Boolean))].sort();
+  const mkts = [...new Set(all.flatMap(b => b.mkts || []))].sort(), fmts = [...new Set(all.flatMap(b => Object.keys(b.fmt || {})))].sort();
+  let rows = all.filter(b => (!f.status || b.status === f.status) && (!f.own || OCLS[b.oclass] === f.own) && (!f.fam || b.family === f.fam)
+    && (!f.dist || (b.dists || []).includes(f.dist)) && (!f.mkt || (b.mkts || []).includes(f.mkt)) && (!f.fmt || (b.fmt || {})[f.fmt])
+    && (!q || norm([b.name, b.owner, b.parent, b.cat, b.hero, ...(b.maker || []), ...(b.dists || [])].join(" ")).includes(q)));
+  const key = { skus: b => b.skus || 0, dists: b => (b.dists || []).length, name: b => b.name.toLowerCase(), owner: b => (b.owner || "~").toLowerCase() }[f.sort];
+  rows.sort((a, c) => { const x = key(a), y = key(c); return (x < y ? -1 : x > y ? 1 : 0) * f.dir || (c.skus || 0) - (a.skus || 0); });
+  const cnt = st => all.filter(b => b.status === st).length;
+  const sel = (id, label, opts, val) => `<select id="${id}" aria-label="${label}"><option value="">${label}</option>${opts.map(o => `<option ${o === val ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+  const sortBtn = (k, label, cls = "") => `<button type="button" class="${cls}" data-bsort="${k}">${label}${f.sort === k ? (f.dir < 0 ? " ▼" : " ▲") : ""}</button>`;
+  return `<div class="page-h"><div class="grow"><div class="lbl">Every brand in the market map · all owners</div><h1>Brands</h1>
+    <p>All ${all.length.toLocaleString()} brands found on distributor shelves: what they are, who carries them and who owns them. Owners marked “Claude's guess” are not verified yet; the market map's ownership work hasn't reached them. The ownership filter on the left doesn't apply here; use Owner type below.</p></div></div>
+  <div class="gauges"><div class="gauge"><b>${all.length.toLocaleString()}</b><span class="lbl">Brands</span></div>
+    <div class="gauge g"><b>${cnt("verified")}</b><span class="lbl">Owner verified</span></div><div class="gauge a"><b>${cnt("prior") + cnt("guess")}</b><span class="lbl">Owner unverified</span></div>
+    <div class="gauge r"><b>${cnt("unknown")}</b><span class="lbl">Not identified</span></div><div class="gauge"><b>${rows.length.toLocaleString()}</b><span class="lbl">Shown</span></div></div>
+  <div class="bar"><input class="search" id="bq" type="search" placeholder="Search brands, owners, products, makers, distributors…" value="${esc(f.q)}" aria-label="Search brands"></div>
+  <div class="bar">
+    <select id="bstatus" aria-label="Owner status"><option value="">Any owner status</option>${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === f.status ? "selected" : ""}>${v[0]}</option>`).join("")}</select>
+    ${sel("bown", "Any owner type", ["PE", "Family", "ESOP", "Private", "Corporate", "Unknown"], f.own)}
+    ${sel("bfam", "All product families", fams, f.fam)}${sel("bfmt", "All formats", fmts, f.fmt)}${sel("bmkt", "All end markets", mkts, f.mkt)}${sel("bdist", "All distributors", dists, f.dist)}
+  </div>
+  <section class="panel"><div class="tw"><table class="btable"><thead><tr><th>${sortBtn("name", "Brand")}</th><th>${sortBtn("owner", "Owner")}</th><th>What it is</th><th>Format</th><th class="r">${sortBtn("skus", "SKUs", "r")}</th><th>${sortBtn("dists", "Who carries it")}</th></tr></thead><tbody>
+    ${rows.slice(0, f.limit).map(b => `<tr class="cons-row" data-go="b.${esc(b.id)}"><td><b><a href="#b.${esc(b.id)}">${esc(b.name)}</a></b>${b.scope && b.scope !== "Core" ? `<br><span class="tag">${esc(b.scope)}</span>` : ""}</td>
+      <td>${ownerCell(b)}</td><td>${esc(b.cat || b.family || "")}${b.hero ? `<br><span class="faint">${esc(b.hero)}</span>` : ""}</td><td>${esc(b.form || "")}</td><td class="r num">${b.skus || 0}</td>
+      <td>${(b.dists || []).slice(0, 3).map(x => `<span class="tag">${esc(x.replace(/\s*\(.*\)$/, ""))}</span>`).join("")}${(b.dists || []).length > 3 ? `<span class="faint">+${b.dists.length - 3}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="6" class="empty">No brands match.</td></tr>`}
+  </tbody></table></div>
+  ${rows.length > f.limit ? `<button class="more" type="button" data-act="bmore">Show ${Math.min(100, rows.length - f.limit)} more of ${rows.length - f.limit}</button>` : ""}</section>`;
+}
+function loadSkus(b) {
+  if (b.p === undefined || SKU.has(b.p) || skuLoading.has(b.p) || !db) return;
+  skuLoading.add(b.p);
+  db.doc("sku/p-" + b.p).get().then(d => { SKU.set(b.p, d.exists ? d.data().skus || {} : {}); }).catch(() => SKU.set(b.p, {})).finally(() => { skuLoading.delete(b.p); render(); });
+}
+function viewBrand(id) {
+  const b = BR.get(id); if (!b) return `<a class="back" href="#brands">← Brands</a><div class="empty">No brand with id “${esc(id)}”.</div>`;
+  loadSkus(b);
+  const skus = b.p !== undefined && SKU.has(b.p) ? SKU.get(b.p)[id] || [] : null;
+  const co = b.owner_id && CO.get(b.owner_id), dmap = new Map(DISTS.map(d => [d.name, d]));
+  const sibs = [...BR.values()].filter(x => x.id !== id && ((b.owner_id && x.owner_id === b.owner_id) || (!b.owner_id && b.owner && norm(x.owner) === norm(b.owner)))).sort((a, c) => (c.skus || 0) - (a.skus || 0));
+  const dcount = new Map(); for (const s of skus || []) dcount.set(s[3], (dcount.get(s[3]) || 0) + 1);
+  const distRows = (b.dists || []).map(d => [d.replace(/\s*\(.*\)$/, ""), dcount.get(d) || 0]);
+  const ch = { broadline: 0, specialty: 0, retail: 0 }; for (const d of b.dists || []) ch[dmap.get(d)?.channel || "specialty"] += dcount.get(d) || 0;
+  const chT = ch.broadline + ch.specialty + ch.retail;
+  const chLine = chT ? `<p class="muted" style="margin:0 0 10px">Broadline MRO <b>${Math.round(ch.broadline / chT * 100)}%</b> · Trade specialty <b>${Math.round(ch.specialty / chT * 100)}%</b> · Retail-leaning <b>${Math.round(ch.retail / chT * 100)}%</b> of SKUs</p>` : "";
+  return `<a class="back" href="#brands">← Brands</a>
+  <section class="nameplate"><div>
+    <div><span class="lbl">${esc(b.family || "")}${b.scope ? " · " + esc(b.scope) : ""}</span></div>
+    <h1>${esc(b.name)}</h1>
+    <p class="what">${esc(b.cat || "")}${b.hero ? ` · known for <b style="color:var(--ink)">${esc(b.hero)}</b>` : ""}</p>
+    <div class="specs"><span>Owner <b>${b.owner ? esc(b.owner) : "Not identified"}</b></span>${b.parent ? `<span>Parent <b>${esc(b.parent)}</b></span>` : ""}${b.sponsor ? `<span>Sponsor <b>${esc(b.sponsor)}</b></span>` : ""}
+      <span>Status <b>${esc(STATUS[b.status][0])}${b.conf ? " · " + esc(b.conf) + " confidence" : ""}</b></span>${(b.maker || []).length ? `<span>Maker on listings <b>${esc(b.maker.join(", "))}</b></span>` : ""}</div>
+    <p class="faint" style="margin:10px 0 0;font-size:13px">${esc(STATUS[b.status][1])}${b.note ? ". Claude's note: " + esc(b.note) : ""}.</p></div>
+    <div class="dial">${co ? `<b class="${dnaOf(co).band}">${dnaOf(co).score}</b><span class="lbl">Owner DNA</span>` : `<b style="color:var(--ink-3)">${b.skus || 0}</b><span class="lbl">SKUs scraped</span>`}</div>
+  </section>
+  ${co ? `<div class="note">Owned by <a href="#c.${esc(co.id)}"><b>${esc(co.name)}</b></a> · ${ownerLine(co)}${b.status === "guess" ? " · <span class=\"st st-guess\">Claude's guess, not verified</span>" : ""}</div>` : ""}
+  <div class="grid2">
+    <section class="panel"><header><h2>Where it's sold</h2><span class="sp"></span><span class="lbl">${(b.dists || []).length} distributors</span></header><div class="body">${chLine}${distRows.length ? hbars(distRows, b.skus || 0) : `<p class="faint">Not found on a scraped distributor.</p>`}
+      ${(b.mkts || []).length ? `<div class="lbl" style="margin:12px 0 6px">End markets</div>${b.mkts.map(m => `<span class="tag">${esc(m)}</span>`).join("")}` : ""}</div></section>
+    <section class="panel"><header><h2>Package formats</h2></header><div class="body">${mixBlock("By SKU", Object.entries(b.fmt || {}).sort((a, c) => c[1] - a[1]), b.skus || 0)}${b.hand !== undefined ? `<p class="muted" style="margin:10px 0 0">${pct(b.hand)} of SKUs are hand-sized packs.</p>` : ""}</div></section>
+  </div>
+  <section class="panel"><header><h2>Products</h2><span class="sp"></span><span class="lbl">${b.skus || 0} SKUs on distributor shelves</span></header>
+    ${skus === null ? `<div class="body faint">Loading products…</div>` : `<div class="tw"><table><thead><tr><th>Product</th><th>Format</th><th>Size</th><th>Category</th><th>Distributor</th><th class="r">List $</th></tr></thead><tbody>
+    ${skus.map(s => `<tr><td>${s[4] ? `<a href="${esc(s[4])}" target="_blank" rel="noopener">${esc(s[0] || "(unnamed)")}</a>` : esc(s[0] || "(unnamed)")}</td><td>${esc(s[1])}</td><td class="num">${esc(s[2])}</td><td class="muted">${esc(s[5])}</td><td>${esc(String(s[3]).replace(/\s*\(.*\)$/, ""))}</td><td class="r num">${esc(s[6])}</td></tr>`).join("") || `<tr><td colspan="6" class="faint">No products scraped.</td></tr>`}
+    </tbody></table></div>`}</section>
+  ${sibs.length ? `<section class="panel"><header><h2>Same owner's other brands</h2><span class="sp"></span><span class="lbl">${sibs.length}</span></header><div class="body">${sibs.map(x => `<a class="tag" style="text-decoration:none" href="#b.${esc(x.id)}">${esc(x.name)} · ${x.skus || 0}</a>`).join("")}</div></section>` : ""}`;
+}
+function likelyOf(id) {
+  const xs = [...BR.values()].filter(b => b.owner_id === id && b.status === "guess").sort((a, c) => (c.skus || 0) - (a.skus || 0));
+  if (!xs.length) return "";
+  return `<section class="panel"><header><h2>Likely also owns</h2><span class="sp"></span><span class="lbl">Claude's guess · not verified · not in the DNA</span></header><div class="tw"><table><thead><tr><th>Brand</th><th>What it is</th><th>Confidence</th><th class="r">SKUs</th></tr></thead><tbody>
+    ${xs.map(b => `<tr><td><b><a href="#b.${esc(b.id)}">${esc(b.name)}</a></b></td><td>${esc(b.cat || "")}</td><td>${esc(b.conf || "")}</td><td class="r num">${b.skus || 0}</td></tr>`).join("")}</tbody></table></div></section>`;
 }
 
 /* ---------- view: SKU mix ---------- */
@@ -638,7 +741,7 @@ function render() {
   chrome(r);
   if (!loaded) { if (dbState === "off") app.innerHTML = `<div class="empty"><h2>Not connected</h2><p>Probrands keeps the market map in a shared database that loads when this page is opened in Claude while signed in.</p></div>`; return; }
   const y = scrollY;
-  app.innerHTML = r.v === "company" ? viewCompany(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
+  app.innerHTML = r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
   if (render.last === location.hash) scrollTo(0, y); else scrollTo(0, 0);
   render.last = location.hash;
   if (r.v === "web") bindWeb();
@@ -702,6 +805,7 @@ document.addEventListener("click", e => {
   if (a) {
     const act = a.dataset.act;
     if (act === "more") { ui.limit += 80; render(); }
+    else if (act === "bmore") { ui.b.limit += 100; render(); }
     else if (act === "out") { ui.showOut = !ui.showOut; render(); }
     else if (act === "cycle") cycle(a.dataset.id, a.dataset.k);
     else if (act === "askclaude") askClaude(a.dataset.id);
@@ -709,16 +813,21 @@ document.addEventListener("click", e => {
     else if (act === "unfocus") location.hash = "web";
     return;
   }
+  const bs = t.closest("[data-bsort]");
+  if (bs) { const k = bs.dataset.bsort; if (ui.b.sort === k) ui.b.dir *= -1; else { ui.b.sort = k; ui.b.dir = k === "name" || k === "owner" ? 1 : -1; } render(); return; }
   const go = t.closest("[data-go]");
   if (go && !t.closest("a")) { location.hash = go.dataset.go; return; }
   const z = t.closest("[data-zoom]");
   if (z) { zoomWeb(+z.dataset.zoom || 0); return; }
 });
 document.addEventListener("input", e => {
+  if (e.target.id === "bq") { ui.b.q = e.target.value; ui.b.limit = 100; const pos = e.target.selectionStart; render(); const q = $("#bq"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
   if (e.target.id === "q") { ui.q = e.target.value; ui.limit = 80; const pos = e.target.selectionStart; render(); const q = $("#q"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } }
 });
 document.addEventListener("change", e => {
   if (e.target.id === "fam") { ui.fam = e.target.value; render(); }
+  const bmap = { bstatus: "status", bown: "own", bfam: "fam", bdist: "dist", bmkt: "mkt", bfmt: "fmt" };
+  if (bmap[e.target.id]) { ui.b[bmap[e.target.id]] = e.target.value; ui.b.limit = 100; render(); }
   if (e.target.id === "mkt") { ui.mkt = e.target.value; render(); }
 });
 window.addEventListener("hashchange", render);
@@ -750,15 +859,17 @@ render();
   dbState = writable ? "live" : "readonly";
   db.collection("dna").limit(1000).onSnapshot(snap => { DNA.clear(); snap.docs.forEach(x => DNA.set(x.id, x.data())); ver++; if (loaded) render(); }, () => {});
   db.collection("data").limit(100).onSnapshot(snap => {
-    CO.clear(); DT.clear();
+    CO.clear(); DT.clear(); BR.clear();
     snap.docs.forEach(x => {
       const v = x.data() || {};
       if (x.id.startsWith("co-")) for (const [id, c] of Object.entries(v.companies || {})) CO.set(id, { ...c, id });
       else if (x.id.startsWith("dt-")) for (const [id, t] of Object.entries(v.details || {})) DT.set(id, t);
+      else if (x.id.startsWith("br-")) for (const [id, b] of Object.entries(v.brands || {})) BR.set(id, { ...b, id });
       else if (x.id === "deals") DEALS = v.deals || [];
       else if (x.id === "dists") DISTS = v.list || [];
       else if (x.id === "index") SRC = v.source || "";
     });
+    brandByName = new Map([...BR.values()].map(b => [norm(b.name), b.id]));
     loaded = true; ver++; render();
   }, err => { dbState = "off"; render(); });
 })();

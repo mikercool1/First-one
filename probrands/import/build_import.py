@@ -5,10 +5,13 @@ Usage: python3 probrands/import/build_import.py <Professional_Brands_Market_Map.
 Writes import/out/data/*.json, one file per document of the app's "data" collection:
   co-N   company summaries (owner, model, SKU mix, the metrics behind the DNA test, Claude's judgment)
   dt-N   company details (write-up, brand-by-brand list, acquisitions, sources)
+  br-N   every brand: owner (verified, unverified prior, Claude's guess or unknown), channels, formats
   deals  every deal in the ledger, with the acquiring and target owners resolved
   dists  the distributor list with channel class and end market
+Writes import/out/sku/p-N.json, the "sku" collection: every scraped SKU, grouped by brand, loaded on demand.
 Also writes import/out/judge/batch-N.json: the facts Claude needs for the judgment tests.
 Judgments live in import/judgments.json (company id -> verdicts) and are merged into co-N.
+Claude's best-guess owners for brands the workbook has no owner for live in import/brand_owners.json (brand id -> guess).
 
 Owners come from the Master tab (verified ownership, with facts from Companies, Profiles and
 Sources). Brands that only carry Claude's unverified "Likely owner (PRIOR)" join a Master owner
@@ -427,6 +430,42 @@ for d in sorted(deal_rows, key=lambda d: s(d.get("Date")) or s(d.get("Year")), r
         "brands": s(d.get("Target brands")), "value": n(d.get("Value ($M, if disclosed)")), "type": s(d.get("Deal type")),
         "url": src if src.startswith("http") else "", "kind": kind}.items() if v not in ("", None)})
 
+# ---- every brand: its owner (verified, unverified prior, Claude's guess, or unknown), products and channels
+BOF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "brand_owners.json")
+guesses = json.load(open(BOF)) if os.path.exists(BOF) else {}
+GUESS_CLASS = {"PE": "pe", "Family": "family", "Public": "public", "Subsidiary of public": "public",
+               "Subsidiary of private": "sub_private", "Private (unknown)": "private", "Unknown": "private"}
+brand_owner = {s(b["Brand ID"]): (oid, "prior" if b.get("_prior") else "verified") for oid, o in owners.items() for b in o["brands"]}
+maker = collections.defaultdict(collections.Counter)
+for p in products:
+    if s(p.get("Manufacturer as listed")):
+        maker[s(p.get("Brand"))][re.sub(r"[®™]", "", s(p["Manufacturer as listed"]))] += 1
+out_br, out_sku = {}, {}
+for b in brands:
+    bid, name = s(b["Brand ID"]).lower(), s(b["Brand"])
+    ps = prod_by_brand.get(name, [])
+    bd = collections.Counter(s(p.get("Distributor")) for p in ps if s(p.get("Distributor")))
+    fm = collections.Counter(s(p.get("Form factor")) or "Other" for p in ps)
+    rec = {"name": name, "cat": s(b.get("Primary product category")), "family": FAMILY[cat_sector(s(b.get("Primary product category")))],
+           "hero": s(b.get("Known for (hero product)"), 160), "form": s(b.get("Primary form factor")), "fmt": dict(fm), "skus": len(ps),
+           "dists": [d for d, _ in bd.most_common()], "mkts": sorted({market(d) for d in bd}), "scope": s(b.get("Scope flag")),
+           "maker": [m for m, _ in maker[name].most_common(2)], "hand": r1(sum(handheld(p) for p in ps) / len(ps), 2) if ps else None}
+    oid, status = brand_owner.get(s(b["Brand ID"]), (None, "unknown"))
+    if oid:
+        rec.update(owner_id=ids[oid], owner=owners[oid]["name"], status=status, oclass=out_co[ids[oid]]["oclass"])
+    else:
+        g = guesses.get(bid) or {}
+        if s(g.get("owner")):
+            hit = name_key.get(key(g["owner"])) or name_key.get(key(g.get("parent")))
+            rec.update(status="guess", owner=s(g["owner"]), parent=s(g.get("parent")), oclass=GUESS_CLASS.get(s(g.get("type")), "private"),
+                       sponsor=s(g.get("sponsor")), conf=s(g.get("conf")) or "Low", note=s(g.get("note"), 120),
+                       **({"owner_id": ids[hit]} if hit in owners else {}))
+        else:
+            rec.update(status="unknown", oclass="unknown")
+    out_br[bid] = {k: v for k, v in rec.items() if v not in ("", None, [], {})}
+    out_sku[bid] = [[s(p.get("Product name"), 140), s(p.get("Form factor")), s(p.get("Size / pack"), 40), s(p.get("Distributor")),
+                     s(p.get("Product URL"), 300), s(p.get("Product category"), 60), s(p.get("List price ($)"))] for p in ps]
+
 # ---- judgments (Claude's read on the tests the data can't answer), merged when present
 JF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "judgments.json")
 judgments = json.load(open(JF)) if os.path.exists(JF) else {}
@@ -438,13 +477,13 @@ dist_out = [{"name": k, "market": market(k), "end_market": s(v.get("Primary end 
              "status": s(v.get("Scrape status")), "skus": int(n(v.get("SKUs scraped")) or 0)} for k, v in dists.items()]
 
 # ---- write: shards sized to stay well under the 256 KB document cap
-for d in ("data", "judge"):
+for d in ("data", "judge", "sku"):
     os.makedirs(f"{OUT}/{d}", exist_ok=True)
     for f in glob.glob(f"{OUT}/{d}/*.json"):
         os.remove(f)
 
 
-def shard(items, prefix, field, limit=180_000):
+def shard(items, prefix, field, limit=180_000, folder="data"):
     docs, cur, size = [], {}, 0
     for k, v in items.items():
         z = len(json.dumps(v)) + len(k) + 6
@@ -454,15 +493,20 @@ def shard(items, prefix, field, limit=180_000):
     if cur:
         docs.append(cur)
     for i, d in enumerate(docs):
-        json.dump({field: d, "updated_at": NOW, "source": SEEDED}, open(f"{OUT}/data/{prefix}-{i}.json", "w"), separators=(",", ":"))
-    return len(docs)
+        json.dump({field: d, "updated_at": NOW, "source": SEEDED}, open(f"{OUT}/{folder}/{prefix}-{i}.json", "w"), separators=(",", ":"))
+    return {k: i for i, d in enumerate(docs) for k in d}
 
 
-nco = shard(out_co, "co", "companies")
-ndt = shard(out_dt, "dt", "details")
+nco = len(set(shard(out_co, "co", "companies").values()))
+ndt = len(set(shard(out_dt, "dt", "details").values()))
+where = shard({k: v for k, v in out_sku.items() if v}, "p", "skus", folder="sku")  # SKUs load on demand, per brand
+for bid, rec in out_br.items():
+    if bid in where:
+        rec["p"] = where[bid]
+nbr = len(set(shard(out_br, "br", "brands").values()))
 json.dump({"deals": deals_out, "updated_at": NOW}, open(f"{OUT}/data/deals.json", "w"), separators=(",", ":"))
 json.dump({"list": dist_out, "updated_at": NOW}, open(f"{OUT}/data/dists.json", "w"), separators=(",", ":"))
-json.dump({"source": SEEDED, "updated_at": NOW, "co": nco, "dt": ndt}, open(f"{OUT}/data/index.json", "w"))
+json.dump({"source": SEEDED, "updated_at": NOW, "co": nco, "dt": ndt, "br": nbr, "sku": len(set(where.values()))}, open(f"{OUT}/data/index.json", "w"))
 for i in range(0, len(judge_in), 50):
     json.dump(judge_in[i:i + 50], open(f"{OUT}/judge/batch-{i // 50}.json", "w"), indent=1)
 
@@ -470,4 +514,5 @@ print("duplicate owners merged:", ", ".join(f"{d} into {c}" for d, c in dupes.it
 print("owners", len(out_co), "verified", sum(1 for o in owners.values() if o["verified"]), "| judged", sum(1 for c in out_co.values() if "judge" in c))
 print("brands", len(brands), "linked", sum(len(o["brands"]) for o in owners.values()), "| deals", len(deals_out),
       collections.Counter(d["kind"] for d in deals_out))
-print("shards: co", nco, "dt", ndt, "| sizes KB", sorted(os.path.getsize(f) // 1024 for f in glob.glob(f"{OUT}/data/*.json")))
+print("brand owners:", collections.Counter(b["status"] for b in out_br.values()), "| sku docs", len(set(where.values())))
+print("shards: co", nco, "dt", ndt, "br", nbr, "| sizes KB", sorted(os.path.getsize(f) // 1024 for f in glob.glob(f"{OUT}/data/*.json")))
