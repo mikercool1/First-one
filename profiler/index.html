@@ -2439,8 +2439,8 @@ function viewCompany(id, tab) {
     c.demo ? `<span class="pill warn" title="Invented company for demonstration">Demo</span>` : "",
   ].join("");
   const head = `
-  <div class="crumb"><a href="#companies">Companies</a> / ${esc(c.name)}</div>
-  ${inWs(c) ? "" : `<div class="run" role="status"><span>This company sits in <b>${esc(wsPath(groupOf(c)))}</b>, outside the vertical you are working in (${esc(wsPath())}).</span><span style="flex:1"></span><button class="btn sm" data-ws="${esc(groupOf(c))}" data-stay="1">Switch to ${esc(groupByKey(groupOf(c))?.name || "it")}</button></div>`}
+  <div class="crumb">${ui.peBack ? `<a href="${esc(ui.peBack.hash)}">← Back to ${esc(ui.peBack.label)}</a>` : `<a href="#companies">Companies</a>`} / ${esc(c.name)}</div>
+  ${inWs(c) || ui.peBack ? "" : `<div class="run" role="status"><span>This company sits in <b>${esc(wsPath(groupOf(c)))}</b>, outside the vertical you are working in (${esc(wsPath())}).</span><span style="flex:1"></span><button class="btn sm" data-ws="${esc(groupOf(c))}" data-stay="1">Switch to ${esc(groupByKey(groupOf(c))?.name || "it")}</button></div>`}
   <div class="ph compact">
     <div class="ph-main"><div class="ph-name">${logoImg(c, "lg")}<h1>${ed("name", c.name, "text", "Company name")}</h1></div>
       <div class="sub">${esc(oneLine ? (oneLine.length > 190 ? oneLine.slice(0, 187) + "…" : oneLine) : (c.hq_address || ""))}</div>
@@ -2966,22 +2966,23 @@ const spRag = doc => { const d = daysSince(doc?.last_contact); return d === null
 const groupChips = cos => { const n = new Map(); for (const { c } of cos) { const g = groupOf(c); n.set(g, (n.get(g) || 0) + 1); } return [...n].sort((a, b) => b[1] - a[1]).map(([g, k]) => `<span class="pill" title="${esc(wsPath(g))}">${esc(groupByKey(g)?.name || g)}${k > 1 ? " " + k : ""}</span>`).join(" "); };
 
 /* ---------- private equity: a directory of every firm, across all verticals ---------- */
+// What kind of firm this is for us: leads deals, only co-invests, or only appears in the deal book.
+const spRole = e => (e.doc?.portfolio?.length || e.cos.some(x => x.lead)) ? "lead" : e.cos.length ? "co" : "deals";
 function viewPE() {
   const all = [...spIndex().values()];
-  const q = norm(ui.peq || ""), f = ui.pef || "";
-  const stat = e => { const cos = e.cos.map(x => x.c); return { n: cos.length, eb: cos.reduce((t, c) => t + (num(c.total_ebitda_usd_m) || 0), 0), old: cos.filter(c => (holdYears(c) || 0) >= 5).length, im: cos.filter(inMarket).length, ctw: cos.filter(onCampaign), rag: spRag(e.doc) }; };
-  const rows = all.map(e => ({ e, s: stat(e) })).filter(({ e, s }) => (!q || norm(e.name).includes(q) || e.cos.some(x => norm(x.c.name).includes(q))) && (!f || (f === "old" && s.old) || (f === "im" && s.im) || (f === "ctw" && s.ctw.length) || (f === "due" && (s.rag.d === null || s.rag.d > 90)) || (f === "ws" && e.cos.some(x => inWs(x.c)))))
+  const q = norm(ui.peq || ""), f = ui.pef ?? "lead";
+  const stat = e => { const H = spHoldings(e.slug), cos = H.map(h => h.c).filter(Boolean); return { n: H.length, eb: cos.reduce((t, c) => t + (num(c.total_ebitda_usd_m) || 0), 0), old: H.filter(h => (h.hold || 0) >= 5).length, im: cos.filter(inMarket).length, rag: spRag(e.doc), H }; };
+  const rows = all.map(e => ({ e, s: stat(e), role: spRole(e) })).filter(({ e, s, role }) => (!q || norm(e.name).includes(q) || s.H.some(h => norm(h.company).includes(q))) && (!f || (["lead", "co", "deals"].includes(f) ? role === f : f === "old" ? s.old : f === "due" ? (s.rag.d === null || s.rag.d > 90) && role === "lead" : f === "ws" ? s.H.some(h => h.c && inWs(h.c)) : true)))
     .sort((a, b) => b.s.n - a.s.n || b.s.eb - a.s.eb || a.e.name.localeCompare(b.e.name));
-  const cos = new Set(all.flatMap(e => e.cos.map(x => x.c.id))), pcs = [...cos].map(getC).filter(Boolean);
-  const chip = (k, l, n) => `<button class="ragchip ${f === k ? "on" : ""}" data-pef="${k}">${l}${n !== undefined ? ` <b>${n}</b>` : ""}</button>`;
-  const cnt = fn => all.filter(e => fn(stat(e))).length;
-  return `<div class="page-h"><div><div class="eyebrow">Private equity</div><h1>Firms</h1><p>Every PE firm that owns a company in Home Base, in any industry, each with its own page: funds, holdings, exits, deal team and your relationship.</p></div>
+  const chip = (k, l, n) => `<button class="ragchip ${f === k ? "on" : ""}" data-pef="${k}">${l} <b>${n}</b></button>`;
+  const roles = all.map(spRole), cnt = r => roles.filter(x => x === r).length;
+  const where = H => { const m = new Map(); for (const h of H) { const k = h.hbGroup ? verticalById(h.hbGroup.split("/")[0])?.name || "" : h.sector || ""; if (k) m.set(k, (m.get(k) || 0) + 1); } const xs = [...m].sort((a, b) => b[1] - a[1]); return xs.slice(0, 3).map(([k, n]) => `<span class="pill">${esc(k)} ${n}</span>`).join(" ") + (xs.length > 3 ? ` <span class="faint" style="font-size:12px">+${xs.length - 3} more</span>` : ""); };
+  return `<div class="page-h"><div><div class="eyebrow">Private equity</div><h1>Firms</h1><p>Sponsors that own companies in Home Base, across every industry. Co-investors (sovereign funds, minority partners) and firms seen only in past deals are kept on their own tabs.</p></div>
     ${writable && db ? `<form class="add" id="spAddForm"><input id="spAddName" placeholder="Add a firm, e.g. Arsenal Capital" autocomplete="off" aria-label="Firm name"><button class="btn" type="submit">Add firm</button></form>` : ""}</div>
-  <div class="stats"><div class="stat"><div class="v">${all.length}</div><div class="l">Firms</div></div><div class="stat"><div class="v">${pcs.length}</div><div class="l">Portfolio companies</div></div><div class="stat"><div class="v">${fmtM(pcs.reduce((t, c) => t + (num(c.total_ebitda_usd_m) || 0), 0))}</div><div class="l">Portfolio EBITDA</div></div><div class="stat"><div class="v">${pcs.filter(c => (holdYears(c) || 0) >= 5).length}</div><div class="l">Held 5+ years</div></div><div class="stat"><div class="v">${pcs.filter(inMarket).length}</div><div class="l">In market</div></div></div>
-  <div class="bar"><div class="grow"><input class="search" id="peq" type="search" placeholder="Search firms or portfolio companies…" value="${esc(ui.peq || "")}" autocomplete="off" aria-label="Search firms"></div></div>
-  <div class="chips" style="margin:6px 0 12px">${chip("", "All", all.length)}${chip("ws", "Own a company in " + wsName(), all.filter(e => e.cos.some(x => inWs(x.c))).length)}${chip("old", "Likely sellers (5+ yr hold)", cnt(s => s.old))}${chip("im", "In market", cnt(s => s.im))}${chip("ctw", "On campaign", cnt(s => s.ctw.length))}${chip("due", "No contact in 90+ days", cnt(s => s.rag.d === null || s.rag.d > 90))}</div>
-  <div class="tw"><table class="pet"><thead><tr><th>Firm</th><th>Latest fund</th><th class="r">AUM</th><th class="r">Dry powder</th><th>Raising now</th><th class="r k">Portfolio</th><th>Where they own</th><th class="r">Portfolio EBITDA</th><th class="r">5+ yr holds</th><th class="r">In market</th><th class="r">Campaign fees</th><th class="k">Last contact</th></tr></thead><tbody>
-  ${rows.map(({ e, s }) => `<tr class="link" data-href="#s.${esc(e.slug)}"><td class="cname"><a href="#s.${esc(e.slug)}"><span class="ib sm">${esc(initials(e.name))}</span> <b>${esc(e.name)}</b></a></td><td class="muted">${esc(e.doc?.latest_fund || "")}</td><td class="r num">${e.doc?.aum_usd_bn ? "$" + esc(e.doc.aum_usd_bn) + "bn" : "—"}</td><td class="r num">${e.doc?.dry_powder_usd_bn ? "~$" + esc(e.doc.dry_powder_usd_bn) + "bn" : "—"}</td><td class="muted">${esc(e.doc?.fundraising?.in_market || "")}</td><td class="r num">${s.n || "—"}</td><td>${groupChips(e.cos) || `<span class="faint">${e.deals ? e.deals + " deal" + (e.deals > 1 ? "s" : "") + " in the deal book" : "—"}</span>`}</td><td class="r num">${s.eb ? fmtM(s.eb) : "—"}</td><td class="r num">${s.old || ""}</td><td class="r num">${s.im || ""}</td><td class="r num">${s.ctw.length ? fmtM(s.ctw.reduce((t, c) => t + (num(c.ctw.est_fee_usd_m) || 0), 0)) : ""}</td><td><span class="ragdot ${s.rag.k}"></span> ${s.rag.d === null ? "never" : s.rag.d + "d ago"}</td></tr>`).join("") || `<tr><td colspan="12" class="faint">No firms match.</td></tr>`}
+  <div class="bar"><div class="grow"><input class="search" id="peq" type="search" placeholder="Search firms or their holdings…" value="${esc(ui.peq || "")}" autocomplete="off" aria-label="Search firms"></div></div>
+  <div class="chips" style="margin:6px 0 12px">${chip("lead", "Sponsors", cnt("lead"))}${chip("co", "Co-investors only", cnt("co"))}${chip("deals", "Past deals only", cnt("deals"))}${chip("old", "Have 5+ yr holds", all.filter(e => stat(e).old).length)}${chip("due", "Sponsors not called in 90+ days", all.filter(e => spRole(e) === "lead" && (spRag(e.doc).d === null || spRag(e.doc).d > 90)).length)}</div>
+  <div class="tw"><table class="pet"><thead><tr><th>Firm</th><th>Latest fund</th><th class="r">Dry powder</th><th class="r k">Holdings</th><th>Where they own</th><th class="r">Holdings EBITDA</th><th class="r">5+ yr holds</th><th class="k">Last call</th></tr></thead><tbody>
+  ${rows.map(({ e, s }) => `<tr class="link" data-href="#s.${esc(e.slug)}"><td class="cname"><a href="#s.${esc(e.slug)}"><b>${esc(e.name)}</b></a>${e.doc?.fundraising?.in_market ? `<small>Raising: ${esc(e.doc.fundraising.in_market)}</small>` : ""}</td><td class="muted">${esc(e.doc?.latest_fund || "—")}</td><td class="r num">${e.doc?.dry_powder_usd_bn ? "~$" + esc(e.doc.dry_powder_usd_bn) + "bn" : "—"}</td><td class="r num">${s.n || (e.deals ? `<span class="faint">${e.deals} deal${e.deals > 1 ? "s" : ""}</span>` : "—")}</td><td>${where(s.H) || "—"}</td><td class="r num">${s.eb ? fmtM(s.eb) : "—"}</td><td class="r num">${s.old || ""}</td><td><span class="ragdot ${s.rag.k}"></span> ${s.rag.d === null ? "never" : s.rag.d + "d ago"}</td></tr>`).join("") || `<tr><td colspan="8" class="faint">No firms match.</td></tr>`}
   </tbody></table></div>`;
 }
 function sponsorLink(name) {
@@ -3036,7 +3037,7 @@ function viewSponsor(id) {
   <div class="stats">
     <div class="stat"><div class="v">${H.length}</div><div class="l">Current holdings</div></div>
     <div class="stat"><div class="v">${newP}</div><div class="l">New platforms since ${yr - 1}</div></div>
-    <div class="stat"><div class="v">${avgHold !== null ? avgHold.toFixed(1) + " yrs" : "—"}</div><div class="l">Average hold</div></div>
+    <div class="stat"><div class="v">${avgHold === null ? "—" : avgHold < 1 ? "<1 yr" : avgHold.toFixed(1) + " yrs"}</div><div class="l">Average hold</div></div>
     <div class="stat"><div class="v">${cand.length}</div><div class="l">Exit candidates</div></div>
     <div class="stat"><div class="v">${doc.aum_usd_bn ? fmtBn(doc.aum_usd_bn) : "—"}</div><div class="l">Firm AUM${doc.pe_aum_usd_bn ? ` · PE ${fmtBn(doc.pe_aum_usd_bn)}` : ""}</div></div>
     <div class="stat"><div class="v">${dry ? "~" + fmtBn(dry) : doc.dry_powder_usd_bn ? fmtBn(doc.dry_powder_usd_bn) : "—"}</div><div class="l">Dry powder (est.)</div></div>
@@ -3044,9 +3045,10 @@ function viewSponsor(id) {
   return head + `<div class="sptabs">` + spTab(tab, { slug, doc, name, H, funds, deals, cand, coLink, W, yr }) + `</div>`;
 }
 // Holdings by fund, vintage and industry. Click a slice (or its legend row) to list the companies in it.
-const SP_DIMS = [["fund", "By fund", h => (h.fund_name || "Fund not attributed").replace(/^Bain Capital /, "")], ["year", "By vintage year", h => String(h.year || "Not known")], ["industry", "By industry", h => h.hbGroup ? (verticalById(h.hbGroup.split("/")[0])?.name || h.hbGroup) : (h.sector || "Not mapped")]];
+const fundLabel = h => (h.fund_name || (/life sciences/i.test(h.fund_basis || "") ? "Life Sciences (earlier fund)" : h.fund_basis ? "Earlier fund (pre-2014)" : "Fund not known")).replace(/^Bain Capital /, "");
+const SP_DIMS = [["fund", "By fund", fundLabel], ["year", "By vintage year", h => String(h.year || "Not known")], ["industry", "By industry", h => h.hbGroup ? (verticalById(h.hbGroup.split("/")[0])?.name || h.hbGroup) : (h.sector || "Not mapped")]];
 function spPies(slug, H) {
-  if (!H.length) return "";
+  if (H.length < 5) return "";
   const pick = ui.spPick && ui.spPick.slug === slug ? ui.spPick : null;
   const pies = SP_DIMS.map(([dim, title, fn]) => {
     const m = new Map(); for (const h of H) { const k = fn(h); m.set(k, (m.get(k) || 0) + 1); }
@@ -3122,11 +3124,11 @@ function spTab(tab, x) {
     const mine = new Set(H.filter(h => h.c).map(h => h.c.id));
     const ideas = H.filter(h => h.c).map(h => {
       const c = h.c, secs = [primarySector(c), ...crossOf(c).map(x => x.sector)], rev = num(c.total_revenue_usd_m);
-      const cands = allList().filter(o => !mine.has(o.id) && o.id !== c.id && secs.some(s => inSector(o, s)) && !/Public|Global major/i.test((o.owner_type || "") + " " + (o.business_model || "")) && (!rev || !num(o.total_revenue_usd_m) || num(o.total_revenue_usd_m) < rev * 0.6))
+      const cands = allList().filter(o => !mine.has(o.id) && o.id !== c.id && o.status !== "empty" && primarySector(o) && secs.includes(primarySector(o)) && !/Public|Global major|Subsidiary/i.test((o.owner_type || "") + " " + (o.business_model || "")) && !addonOf(o) && (rev ? (!num(o.total_revenue_usd_m) || num(o.total_revenue_usd_m) < rev * 0.6) : (num(o.total_revenue_usd_m) || 0) < 500))
         .sort((a, b) => (num(b.total_revenue_usd_m) || 0) - (num(a.total_revenue_usd_m) || 0)).slice(0, 6);
       return { h, cands };
     }).filter(x => x.cands.length);
-    return `<div class="sec"><div class="sec-h"><h2>Add-on ideas from Home Base</h2><span class="faint" style="font-size:12px">Companies in Home Base that sell into the same sectors as each holding and are smaller than it. A starting list for buy-side pitches.</span></div>
+    return `<div class="sec"><div class="sec-h"><h2>Add-on ideas from Home Base</h2><span class="faint" style="font-size:12px">Independent or sponsor-owned companies in Home Base whose main business is in the same sector as a holding, and smaller than it (under $500M revenue where the holding's size isn't known). Strategic subsidiaries, listed companies and existing add-ons are left out.</span></div>
     ${ideas.map(({ h, cands }) => `<div class="panel" style="margin:10px 0"><div class="sec-h" style="margin:0 0 6px"><h3 style="margin:0;font-size:15px">${coLink(h)}</h3><span class="faint" style="font-size:12px">${esc(h.subsector || "")}</span></div>${cands.map(o => `<a class="hrow" href="#c.${esc(o.id)}">${logoBadge(o)}<span><b>${esc(o.name)}</b><small>${esc([o.owner_type, isPE(o) ? sponsorOf(o) : "", sectorShort(primarySector(o))].filter(Boolean).join(" · "))}</small></span><span class="num">${fmtM(o.total_revenue_usd_m)}</span></a>`).join("")}</div>`).join("") || `<p class="faint">No holdings are linked to Home Base sectors with smaller peers yet.</p>`}</div>`;
   }
   if (tab === "activity") {
@@ -3136,7 +3138,7 @@ function spTab(tab, x) {
     return `<div class="sec"><div class="sec-h"><h2>Investment pace</h2></div>${bars}</div>
     ${(doc.pending || []).length ? `<div class="sec"><div class="sec-h"><h2>Signed, not closed</h2></div><div class="tw"><table><thead><tr><th>Company</th><th>Announced</th><th>Status</th></tr></thead><tbody>${doc.pending.map(p => `<tr><td><b>${esc(p.company)}</b><small>${esc(p.subsector || "")}</small></td><td class="num">${esc(p.announced || "")}</td><td class="muted">${esc(p.condition || p.status || "")} ${p.source ? `<a href="${esc(p.source)}" target="_blank" rel="noopener">source</a>` : ""}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
     <div class="sec"><div class="sec-h"><h2>Deals in the Home Base deal book</h2><span class="faint" style="font-size:12px">By the firm and its platforms, all verticals</span></div>
-    <div class="tw"><table><thead><tr><th>Date</th><th>Target</th><th>Buyer</th><th>Type</th><th class="r">EV</th><th class="r">EV / EBITDA</th></tr></thead><tbody>${deals.slice(0, 80).map(d => `<tr><td class="num">${d.id ? `<a href="#d.${esc(d.id)}">${esc(String(d.date || "").slice(0, 10) || "Deal")}</a>` : esc(d.date)}</td><td>${d.targetId && companies.has(d.targetId) ? `<a href="#c.${esc(d.targetId)}">${esc(d.target)}</a>` : esc(d.target)}</td><td>${d.acquirerId && companies.has(d.acquirerId) ? `<a href="#c.${esc(d.acquirerId)}">${esc(d.acquirer)}</a>` : esc(d.acquirer)}</td><td class="muted">${esc(d.type || "")}</td><td class="r num">${fmtM(d.value)}</td><td class="r num">${dealEvx(d) !== null ? dealEvx(d).toFixed(1) + "x" : "—"}</td></tr>`).join("") || `<tr><td colspan="6" class="faint">No deals logged.</td></tr>`}</tbody></table></div></div>`;
+    <div class="tw"><table><thead><tr><th>Date</th><th>Target</th><th>Buyer</th><th>Type</th><th class="r">EV</th><th class="r">EV / EBITDA</th></tr></thead><tbody>${deals.slice(0, 80).map(d => `<tr><td class="num">${d.id ? `<a href="#d.${esc(d.id)}">${esc(String(d.date || "").slice(0, 10) || "Deal")}</a>` : esc(d.date)}</td><td>${d.targetId && companies.has(d.targetId) ? `<a href="#c.${esc(d.targetId)}">${esc(d.target)}</a>` : esc(d.target)}</td><td>${d.acquirerId && companies.has(d.acquirerId) ? `<a href="#c.${esc(d.acquirerId)}">${esc(d.acquirer)}</a>` : esc(d.acquirer)}</td><td class="muted">${esc(String(d.type || "").replace(/ by universe company/i, ""))}</td><td class="r num">${fmtM(d.value)}</td><td class="r num">${dealEvx(d) !== null ? dealEvx(d).toFixed(1) + "x" : "—"}</td></tr>`).join("") || `<tr><td colspan="6" class="faint">No deals logged.</td></tr>`}</tbody></table></div></div>`;
   }
   // details: relationship + firm fields
   const g = spRag(doc);
@@ -3355,7 +3357,14 @@ function viewEndMarkets() {
 
 /* ---------- private equity module: its own landing pages for sponsor coverage ---------- */
 const PE_NAV = [["", "Home"], ["firms", "Firms"], ["funds", "Funds"], ["portfolio", "Portfolio"], ["exits", "Exits"], ["fundraising", "Fundraising"], ["people", "People"], ["coverage", "Coverage"]];
-const allSpHoldings = () => memod("allsph", () => [...spIndex().values()].flatMap(e => spHoldings(e.slug).map(h => ({ ...h, firm: e.name, slug: e.slug }))));
+// One row per company across firms: the firm with the portfolio file or the lead stake first, co-investors noted.
+const allSpHoldings = () => memod("allsph", () => {
+  const rows = [...spIndex().values()].sort((a, b) => (spRole(a) === "lead" ? 0 : 1) - (spRole(b) === "lead" ? 0 : 1) || (b.doc?.portfolio ? 1 : 0) - (a.doc?.portfolio ? 1 : 0)).flatMap(e => spHoldings(e.slug).map(h => ({ ...h, firm: e.name, slug: e.slug, lead: !h.minority })));
+  const by = new Map();
+  for (const h of rows) { const k = h.c ? h.c.id : norm(h.company); const cur = by.get(k); if (!cur) by.set(k, { ...h, co: [] }); else if (!cur.co.some(x => x.slug === h.slug) && cur.slug !== h.slug) cur.co.push({ slug: h.slug, firm: h.firm }); }
+  return [...by.values()];
+});
+const firmCell = h => `${firmLink(h.slug, h.firm)}${h.co?.length ? `<small>with ${h.co.map(x => esc(x.firm)).join(", ")}</small>` : ""}`;
 const allSpFunds = () => memod("allspf", () => [...sponsorDocs].flatMap(([slug, d]) => (d.funds || []).map(f => ({ ...f, firm: d.name || slug, slug }))));
 const firmLink = (slug, name) => `<a href="#s.${esc(slug)}">${esc(name)}</a>`;
 const peHead = (eyebrow, title, sub, extra = "") => `<div class="page-h"><div><div class="eyebrow">${eyebrow}</div><h1>${title}</h1><p>${sub}</p></div>${extra}</div>`;
@@ -3375,7 +3384,7 @@ function viewPEHome() {
   const closed = F.filter(f => f.final_close && dateKey(f.final_close) >= dateKey((yr - 1) + "-01")).sort((a, b) => dateKey(b.final_close) - dateKey(a.final_close));
   const ex = H.map(h => ({ h, ...exitCase(h) })).filter(x => x.s >= 3).sort((a, b) => b.s - a.s || (b.h.hold || 0) - (a.h.hold || 0));
   const newP = H.filter(h => h.year >= yr - 1).sort((a, b) => b.year - a.year);
-  const due = firms.map(e => ({ e, g: spRag(e.doc) })).filter(x => x.e.cos.length || x.e.doc?.portfolio).sort((a, b) => (b.g.d ?? 1e9) - (a.g.d ?? 1e9) || spHoldings(b.e.slug).length - spHoldings(a.e.slug).length);
+  const due = firms.map(e => ({ e, g: spRag(e.doc) })).filter(x => spRole(x.e) === "lead").sort((a, b) => (b.g.d ?? 1e9) - (a.g.d ?? 1e9) || spHoldings(b.e.slug).length - spHoldings(a.e.slug).length);
   const card = (title, href, rows, empty) => `<section class="hcard"><div class="hcard-h"><h2>${title}</h2>${href ? `<a href="${href}">See all</a>` : ""}</div>${rows || `<p class="faint" style="margin:6px 0">${empty}</p>`}</section>`;
   const hRow = (h, right, sub) => `<a class="hrow" href="${h.c ? "#c." + esc(h.c.id) : "#s." + esc(h.slug) + ".portfolio"}"><span class="ib">${esc(initials(h.company))}</span><span><b>${esc(h.company)}</b><small>${esc(sub)}</small></span><span class="num">${right}</span></a>`;
   return `<div class="home">
@@ -3426,12 +3435,12 @@ function viewPEPortfolio() {
   return peHead("Private equity", "Portfolio", "Every sponsor holding in Home Base, by industry, firm, vintage or hold. Add-ons bought by a holding are listed under that holding, not here.")
   + `<div class="bar" style="flex-wrap:wrap;gap:10px"><div class="grow"><input class="search" id="pepfq" type="search" placeholder="Search holdings, firms, people…" value="${esc(f.q || "")}" autocomplete="off"></div>${opts("firm", "Firm", [...new Set(H.map(h => h.firm))].sort())}${opts("industry", "Industry", [...new Set(H.map(ind))].sort())}${opts("hold", "Hold", ["0-2 yrs", "3-4 yrs", "5-6 yrs", "7+ yrs"])}<label class="faint" style="font-size:12px">Group by <select id="pepf-by">${[["industry", "Industry"], ["firm", "Firm"], ["year", "Investment year"], ["hold", "Hold"]].map(([k, l]) => `<option value="${k}" ${by === k ? "selected" : ""}>${l}</option>`).join("")}</select></label></div>
   <p class="faint" style="font-size:12px">${rows.length} of ${H.length} holdings</p>
-  ${ks.map(k => `<div class="sec-h" style="margin-top:16px"><h3 style="margin:0;font-size:15px">${esc(k)}</h3><span class="faint" style="font-size:12px">${grp.get(k).length}</span></div><div class="tw sptabs"><table><thead><tr><th>Company</th><th>Firm</th><th class="r">Year</th><th class="r k">Hold</th><th>Fund</th><th class="r">EBITDA</th><th>People</th></tr></thead><tbody>${grp.get(k).sort((a, b) => (b.year || 0) - (a.year || 0)).map(h => `<tr><td>${h.c ? `<a href="#c.${esc(h.c.id)}"><b>${esc(h.company)}</b></a>` : `<b>${esc(h.company)}</b>`}<small>${esc(h.subsector || "")}</small></td><td>${firmLink(h.slug, h.firm)}</td><td class="r num">${h.year || "—"}</td><td class="r num ${h.hold >= 5 ? "warnc" : ""}">${h.hold ?? "—"}</td><td class="muted">${esc((h.fund_name || "").replace(/^Bain Capital /, "") || "—")}</td><td class="r num">${h.c ? fmtM(h.c.total_ebitda_usd_m) : "—"}</td><td>${esc(h.people || "")}</td></tr>`).join("")}</tbody></table></div>`).join("")}`;
+  ${ks.map(k => `<div class="sec-h" style="margin-top:16px"><h3 style="margin:0;font-size:15px">${esc(k)}</h3><span class="faint" style="font-size:12px">${grp.get(k).length}</span></div><div class="tw sptabs"><table><thead><tr><th>Company</th><th>Firm</th><th class="r">Year</th><th class="r k">Hold</th><th>Fund</th><th class="r">EBITDA</th><th>People</th></tr></thead><tbody>${grp.get(k).sort((a, b) => (b.year || 0) - (a.year || 0)).map(h => `<tr><td>${h.c ? `<a href="#c.${esc(h.c.id)}"><b>${esc(h.company)}</b></a>` : `<b>${esc(h.company)}</b>`}<small>${esc(h.subsector || "")}</small></td><td>${firmCell(h)}</td><td class="r num">${h.year || "—"}</td><td class="r num ${h.hold >= 5 ? "warnc" : ""}">${h.hold ?? "—"}</td><td class="muted">${esc((h.fund_name || "").replace(/^Bain Capital /, "") || "—")}</td><td class="r num">${h.c ? fmtM(h.c.total_ebitda_usd_m) : "—"}</td><td>${esc(h.people || "")}</td></tr>`).join("")}</tbody></table></div>`).join("")}`;
 }
 function viewPEExits() {
   const ex = allSpHoldings().map(h => ({ h, ...exitCase(h) })).filter(x => x.s >= 2).sort((a, b) => b.s - a.s || (b.h.hold || 0) - (a.h.hold || 0));
   return peHead("Private equity", "Exit pipeline", "Holdings most likely to come to market next, across all firms: long holds, ageing funds, listed stakes to sell down and signed sales. This is the sell-side pitch list.")
-  + `<div class="tw sptabs"><table><thead><tr><th>Company</th><th>Firm</th><th class="r k">Year</th><th>Fund</th><th>Why now</th><th>People</th></tr></thead><tbody>${ex.map(({ h, why }) => `<tr><td>${h.c ? `<a href="#c.${esc(h.c.id)}"><b>${esc(h.company)}</b></a>` : `<b>${esc(h.company)}</b>`}<small>${esc(h.subsector || "")}${h.hbGroup ? " · " + esc(groupByKey(h.hbGroup)?.name || "") : ""}</small></td><td>${firmLink(h.slug, h.firm)}</td><td class="r num">${h.year || "—"}</td><td class="muted">${esc((h.fund_name || "—").replace(/^Bain Capital /, ""))}</td><td>${why.map(w => `<span class="pill">${esc(w)}</span>`).join(" ")}</td><td>${esc(h.people || "")}</td></tr>`).join("") || `<tr><td colspan="6" class="faint">No candidates yet.</td></tr>`}</tbody></table></div>`;
+  + `<div class="tw sptabs"><table><thead><tr><th>Company</th><th>Firm</th><th class="r k">Year</th><th>Fund</th><th>Why now</th><th>People</th></tr></thead><tbody>${ex.map(({ h, why }) => `<tr><td>${h.c ? `<a href="#c.${esc(h.c.id)}"><b>${esc(h.company)}</b></a>` : `<b>${esc(h.company)}</b>`}<small>${esc(h.subsector || "")}${h.hbGroup ? " · " + esc(groupByKey(h.hbGroup)?.name || "") : ""}</small></td><td>${firmCell(h)}</td><td class="r num">${h.year || "—"}</td><td class="muted">${esc((h.fund_name || "—").replace(/^Bain Capital /, ""))}</td><td>${why.map(w => `<span class="pill">${esc(w)}</span>`).join(" ")}</td><td>${esc(h.people || "")}</td></tr>`).join("") || `<tr><td colspan="6" class="faint">No candidates yet.</td></tr>`}</tbody></table></div>`;
 }
 function viewPEPeople() {
   const P = new Map(); for (const h of allSpHoldings()) for (const n of String(h.people || "").split(/;\s*/).map(s => s.trim()).filter(Boolean)) { const k = n + "|" + h.slug; if (!P.has(k)) P.set(k, { n, slug: h.slug, firm: h.firm, hs: [] }); P.get(k).hs.push(h); }
@@ -3440,9 +3449,9 @@ function viewPEPeople() {
   + `<div class="tw"><table><thead><tr><th>Person</th><th>Firm</th><th class="r k">Holdings</th><th>Companies</th><th>Sectors</th></tr></thead><tbody>${ppl.map(p => `<tr><td><b>${esc(p.n)}</b></td><td>${firmLink(p.slug, p.firm)}</td><td class="r num">${p.hs.length}</td><td>${p.hs.map(h => h.c ? `<a href="#c.${esc(h.c.id)}">${esc(h.company)}</a>` : esc(h.company)).join(", ")}</td><td class="muted">${esc([...new Set(p.hs.map(h => h.sector || (h.hbGroup ? groupByKey(h.hbGroup)?.name : "")))].filter(Boolean).join(", "))}</td></tr>`).join("") || `<tr><td colspan="5" class="faint">No named people yet.</td></tr>`}</tbody></table></div>`;
 }
 function viewPECoverage() {
-  const rows = [...spIndex().values()].map(e => ({ e, g: spRag(e.doc), n: spHoldings(e.slug).length, ex: spHoldings(e.slug).filter(h => exitCase(h).s >= 3).length })).sort((a, b) => (b.g.d ?? 1e9) - (a.g.d ?? 1e9) || b.n - a.n);
+  const all = !!ui.covAll, rows = [...spIndex().values()].filter(e => all || spRole(e) === "lead").map(e => ({ e, g: spRag(e.doc), n: spHoldings(e.slug).length, ex: spHoldings(e.slug).filter(h => exitCase(h).s >= 3).length })).sort((a, b) => (b.g.d ?? 1e9) - (a.g.d ?? 1e9) || b.n - a.n);
   const cnt = k => rows.filter(r => r.g.k === k).length;
-  return peHead("Private equity", "Coverage", "Your calling list of sponsors: when you last spoke, who leads the relationship and what's next. Red first. Log a call from here.")
+  return peHead("Private equity", "Coverage", "Your calling list of sponsors: when you last spoke, who leads the relationship and what's next. Red first. Log a call from here.", `<div class="add"><button class="btn sm ghost" data-act="covall">${all ? "Sponsors only" : "Include co-investors and past-deal firms"}</button></div>`)
   + `<div class="chips" style="margin:0 0 12px"><span class="ragchip"><span class="ragdot g"></span> 30 days or less <b>${cnt("g")}</b></span><span class="ragchip"><span class="ragdot y"></span> 31-60 <b>${cnt("y")}</b></span><span class="ragchip"><span class="ragdot r"></span> 61-90 <b>${cnt("r")}</b></span><span class="ragchip"><span class="ragdot r9"></span> 90+ or never <b>${cnt("r9")}</b></span></div>
   <div class="tw"><table class="ctwt"><thead><tr><th>Firm</th><th class="r k">Last contact</th><th>Spoke to</th><th>Our lead</th><th>Next step</th><th class="r">Holdings</th><th class="r">Exit candidates</th><th></th></tr></thead><tbody>${rows.map(({ e, g, n, ex }) => `<tr><td><span class="ragdot ${g.k}" title="${esc(g.l)}"></span> <a href="#s.${esc(e.slug)}"><b>${esc(e.name)}</b></a></td><td class="r num">${g.d === null ? "never" : g.d + "d ago"}</td><td class="muted">${esc(e.doc?.last_contact_with || "")}</td><td>${esc(e.doc?.rel_lead || "")}</td><td class="muted">${esc(e.doc?.next_step || "")}</td><td class="r num">${n || ""}</td><td class="r num">${ex || ""}</td><td>${writable && db ? `<button class="btn sm ghost" data-act="splogrow" data-slug="${esc(e.slug)}">Log call</button>` : ""}</td></tr>`).join("")}</tbody></table></div>`;
 }
@@ -3491,7 +3500,9 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#wsmen
 function render() {
   if (isEditing()) { pendingRender = true; return; }
   const r = route();
-  const peMod = r.view === "pe" || r.view === "sponsor";
+  if (r.view === "pe" || r.view === "sponsor") ui.peBack = { hash: location.hash || "#pe", label: r.view === "sponsor" ? (sponsorDocs.get(r.id)?.name || knownSponsors().get(r.id) || "firm") : "Private equity" };
+  else if (r.view !== "company") ui.peBack = null;
+  const peMod = r.view === "pe" || r.view === "sponsor" || (r.view === "company" && !!ui.peBack);
   document.body.classList.toggle("mod-pe", peMod);
   document.body.classList.toggle("on-home", r.view === "home" || (r.view === "pe" && !r.sub));
   if (!peMod) ui.lastInd = location.hash || "#home";
@@ -4076,6 +4087,7 @@ app.addEventListener("click", async e => {
   if (act === "ctwlogrow") { await logContact(btn.dataset.id); return; }
   if (act === "demodel") { const ds = list().filter(x => x.demo); if (!confirm(`Delete all ${ds.length} demo companies? Real companies are not touched.`)) return; for (const x of ds) { await deleteCompany(x.id); db.doc("chats/" + x.id).delete().catch(() => {}); } toast(`Removed ${ds.length} demo companies`); render(); return; }
   if (act === "newdeal") { const id = "deal-" + Date.now().toString(36); await saveDeal(id, { target: "New deal", status: "Closed", origin: ["added by hand"], edited: true, ws: groupByKey(WS) ? WS : DEFAULT_WS }); location.hash = "d." + id; return; }
+  if (act === "covall") { ui.covAll = !ui.covAll; render(); return; }
   if (act === "sppickclear") { ui.spPick = null; render(); return; }
   if (act === "splogrow") { const k = btn.dataset.slug, d = sponsorDocs.get(k) || {}; try { await db.doc("sponsors/" + k).set(clean({ ...d, name: d.name || knownSponsors().get(k) || k, last_contact: todayISO(), updated_at: now() })); toast("Logged a call with " + (d.name || k)); } catch (err) { handleWriteError(err); } return; }
   if (r.view === "sponsor" && act === "spresearch") { researchSponsor(r.id); return; }
