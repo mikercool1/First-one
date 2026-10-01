@@ -696,7 +696,7 @@ const CAT_SECTOR = [[/hand (cleaner|wipe|soap|care)|skin|barrier cream|sunscreen
   [/wire pull|dielectric|anti.?oxid|joint compound|electrical|contact clean|fiber optic|arc|insulating|splic/i, "electrical"], [/weld|spatter|cutting (fluid|oil)|tapping|layout|cold galv|soldering|brazing|metalworking|coolant/i, "welding"],
   [/brake|carb|throttle|motor oil|oil additive|fuel|radiator|cooling system|antifreeze|body filler|automotive|fleet|def|diesel|transmission/i, "automotive"], [/grout|mortar|concrete|cure|curing|form release|waterproof|firestop|anchor|masonry|bonding agent|tile|stucco|patch/i, "construction"],
   [/water treat|dechlor|wastewater|test kit|reagent|chlorin|lift station/i, "water-ww"], [/paint|marker|crayon|coating|primer|galvaniz|stain|lacquer/i, "paints"],
-  [/lubric|grease|penetr|oil|anti.?seize|silicone spray|rust (prevent|inhib)|corrosion/i, "lubricants"], [/adhesive|sealant|caulk|thread ?lock|epoxy|glue|gasket|retaining|cement|mastic|foam/i, "adhesives"],
+  [/lubric|(?<!de)grease|penetr|oil|anti.?seize|silicone spray|rust (prevent|inhib)|corrosion/i, "lubricants"], [/adhesive|sealant|caulk|thread ?lock|epoxy|glue|gasket|retaining|cement|mastic|foam/i, "adhesives"],
   [/clean|degreas|solvent|remover|towel|wipe|glass|janitor/i, "cleaners"]];
 function catToSector(cat) { for (const [re, id] of CAT_SECTOR) if (re.test(cat || "")) return id; return null; }
 // Saved `sectors` wins. Otherwise derive from the segment split, with water from the water index.
