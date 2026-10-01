@@ -434,13 +434,19 @@ for d in sorted(deal_rows, key=lambda d: s(d.get("Date")) or s(d.get("Year")), r
 BOF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "brand_owners.json")
 guesses = json.load(open(BOF)) if os.path.exists(BOF) else {}
 GUESS_CLASS = {"PE": "pe", "Family": "family", "Public": "public", "Subsidiary of public": "public",
-               "Subsidiary of private": "sub_private", "Private (unknown)": "private", "Unknown": "private"}
+               "Subsidiary of private": "sub_private", "Private (unknown)": "private", "Unknown": "private",
+               "Founder / family": "family", "PE-backed": "pe", "Subsidiary of public co": "public", "Subsidiary of private co": "sub_private",
+               "Public": "public", "ESOP": "esop"}
 brand_owner = {s(b["Brand ID"]): (oid, "prior" if b.get("_prior") else "verified") for oid, o in owners.items() for b in o["brands"]}
 maker = collections.defaultdict(collections.Counter)
 for p in products:
     if s(p.get("Manufacturer as listed")):
         maker[s(p.get("Brand"))][re.sub(r"[®™]", "", s(p["Manufacturer as listed"]))] += 1
 out_br, out_sku = {}, {}
+# v9 added a triage pass on every brand (bucket, owner guess, owner type, confidence)
+TRIAGE = {"ACTIONABLE_CANDIDATE": "actionable", "UNKNOWN_BRAND": "unknown", "SUBSIDIARY_KNOWN": "sub_known",
+          "SUBSIDIARY_PUBLIC": "sub_public", "OUT_OF_SCOPE_OTHER": "out", "NOT_CHEMICAL": "not_chem",
+          "FOREIGN_MAKER": "foreign", "HOUSE_BRAND": "house", "CONSUMER_ONLY": "consumer", "SUBSIDIARY_OTHER_LARGE": "sub_large"}
 guess_by_name = {key(k) or k.lower(): v for k, v in guesses.items()}
 for b in brands:
     name = s(b["Brand"])  # brand ids come from the name: the workbook renumbers its Brand IDs between versions
@@ -453,16 +459,21 @@ for b in brands:
     rec = {"name": name, "cat": s(b.get("Primary product category")), "family": FAMILY[cat_sector(s(b.get("Primary product category")))],
            "hero": s(b.get("Known for (hero product)"), 160), "form": s(b.get("Primary form factor")), "fmt": dict(fm), "skus": len(ps),
            "dists": [d for d, _ in bd.most_common()], "mkts": sorted({market(d) for d in bd}), "scope": s(b.get("Scope flag")),
-           "maker": [m for m, _ in maker[name].most_common(2)], "hand": r1(sum(handheld(p) for p in ps) / len(ps), 2) if ps else None}
+           "maker": [m for m, _ in maker[name].most_common(2)], "tri": TRIAGE.get(s(b.get("Triage bucket (single-source)"))),
+           "tri_owner": s(b.get("Triage owner guess")), "tri_type": s(b.get("Triage owner type guess")), "tri_conf": s(b.get("Triage confidence")),
+           "hand": r1(sum(handheld(p) for p in ps) / len(ps), 2) if ps else None}
     oid, status = brand_owner.get(s(b["Brand ID"]), (None, "unknown"))
     if oid:
         rec.update(owner_id=ids[oid], owner=owners[oid]["name"], status=status, oclass=out_co[ids[oid]]["oclass"])
     else:
         g = guesses.get(name) or guess_by_name.get(key(name) or name.lower()) or {}
+        if not s(g.get("owner")) and s(b.get("Triage owner guess")) and s(b.get("Triage owner guess")).lower() not in ("unknown", "n/a"):
+            g = {"owner": s(b["Triage owner guess"]), "type": s(b.get("Triage owner type guess")), "conf": s(b.get("Triage confidence")) or "Low",
+                 "note": "The workbook's triage guess.", "src": "triage"}
         if s(g.get("owner")):
             hit = name_key.get(key(g["owner"])) or name_key.get(key(g.get("parent")))
             rec.update(status="guess", owner=s(g["owner"]), parent=s(g.get("parent")), oclass=GUESS_CLASS.get(s(g.get("type")), "private"),
-                       sponsor=s(g.get("sponsor")), conf=s(g.get("conf")) or "Low", note=s(g.get("note"), 120),
+                       sponsor=s(g.get("sponsor")), conf=s(g.get("conf")) or "Low", note=s(g.get("note"), 120), src=s(g.get("src")),
                        **({"owner_id": ids[hit]} if hit in owners else {}))
         else:
             rec.update(status="unknown", oclass="unknown")

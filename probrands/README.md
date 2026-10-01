@@ -8,7 +8,7 @@ Live app: https://claude.ai/artifact/UkLSFqKaS38kQqd4JmvNhk (private to the owne
 
 - **The screen**: every owner ranked by its DNA score. Green (70+) at the top, amber (45 to 69) in the middle, red (under 45) at the bottom. Companies that fail "pro brands are most of revenue" are out of scope and hidden behind a toggle. Filter by product family, end market or search.
 - **Company**: the DNA test check by check, SKU mix (package format, end market, brand, distributor), the brand list with who carries each one, deals, the workbook's write-up and sources.
-- **Brands**: all 2,127 brands, searchable by brand, owner, product, maker or distributor, and filterable by owner status, owner type, product family, format, end market and distributor. Each brand has a page with its owner, where it's sold (with the broadline, specialty and retail split), package formats and every scraped SKU with links to the distributor listing.
+- **Brands**: all 3,094 brands, searchable by brand, owner, product, maker or distributor, and filterable by the workbook's triage bucket (for example Actionable candidate), owner status, owner type, product family, format, end market and distributor. Each brand has a page with its owner, where it's sold (with the broadline, specialty and retail split), package formats and every scraped SKU with links to the distributor listing.
 - **Consolidators**: who is buying pro brands, ranked by add-on deals in the ledger and then by brands owned; PE sponsors and their platforms; add-ons by year; the deal log.
 - **The web**: each consolidator is a hub with its brands on spokes. Brands that came in through an acquisition are yellow, and dashed lines tie PE sponsors to their platforms. Click a hub to list its brands below.
 - **SKU mix**: format, end market, product family, distributors and brands across everything in the filter, plus the broadline, specialty and retail channel split.
@@ -21,10 +21,11 @@ Rugged shop-floor design: gunmetal and steel, safety yellow used sparingly, a ha
 
 ## Brand owners
 
-- **Owner verified**: the market map's verified Companies tab (440 brands).
+- **Owner verified**: the market map's verified Companies tab (919 brands in v9).
 - **Owner unverified**: the workbook's prior (78).
-- **Claude's guess**: for brands the workbook has no owner for, Claude's best guess from its knowledge and the maker name on distributor listings, with High, Medium or Low confidence (1,283). Stored in `import/brand_owners.json`. A guess that names a company already profiled links to it and shows under "Likely also owns" on that company. It does not count toward that company's DNA or SKU mix.
-- **Owner not identified**: no clue at all (326).
+- **Claude's guess**: for brands the workbook has no owner for, Claude's best guess from its knowledge and the maker name on distributor listings, with High, Medium or Low confidence.
+- **Workbook triage guess**: where Claude had no guess, the owner named by the workbook's triage pass (v9 onward). Every brand page also shows its triage bucket and, when it differs, the triage owner guess. Stored in `import/brand_owners.json`. A guess that names a company already profiled links to it and shows under "Likely also owns" on that company. It does not count toward that company's DNA or SKU mix.
+- **Owner not identified**: no clue at all.
 
 ## The DNA test
 
@@ -47,16 +48,16 @@ Distributor channels (broadline MRO, trade specialty, retail-leaning) and the en
 ## Data
 
 ```
-python3 probrands/import/build_import.py Professional_Brands_Market_Map_v8.xlsx
+python3 probrands/import/build_import.py Professional_Brands_Market_Map_v9.xlsx
 ```
 
 This writes `import/out/data/*.json`, one file per document in the app's `data` collection: `co-N` (company summaries), `dt-N` (details), `br-N` (every brand), `deals`, `dists` and `index`. Every SKU goes in `import/out/sku/p-N.json`, the `sku` collection, which loads one document at a time when a brand page opens. Lists are split across documents because the database stores at most 256 KB per document; nothing is dropped. Load them with the ArtifactData tool (a `set` of each file). It also writes `import/out/judge/batch-N.json`, the facts behind the judgment calls, for scoring new owners.
 
 Owners come from the Master tab. Clean-up rules:
-- Owners listed twice are merged (in v8: DuPont, S.C. Johnson, Kimberly-Clark, Control Solutions, Desco, FPC).
+- Owners listed twice are merged (11 merges in v9, including DuPont, S.C. Johnson, Kimberly-Clark, Control Solutions, Desco and FPC).
 - "Unknown" placeholder rows (including "Unknown (…)" variants) get no profile; their brands stay unowned.
 - Brands that only carry an unverified "Likely owner (PRIOR)" join a matching Master owner, or become an owner marked unverified.
 
 The database still holds the earlier version's `companies`, `details` and `meta` collections. The app no longer reads them, so they can be cleared.
 
-Loaded now: v8 (1 Oct 2026), with 478 owners, all 3,094 brands, 8,006 SKUs and 291 deals. Brands: 721 verified owner, 78 workbook prior, 1,881 Claude guesses, 414 not identified.
+Loaded now: v9 (1 Oct 2026), with 630 owners (152 new, all judged), all 3,094 brands, 10,511 SKUs and 382 deals. Brands: 919 verified owner, 78 workbook prior, 1,689 Claude guesses, 61 workbook triage guesses, 347 not identified. The v9 Targets tab is not read separately: its section A owners are already on the screen, and its section B candidates are the brands in the Actionable candidate triage bucket.
