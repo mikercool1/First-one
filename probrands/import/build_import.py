@@ -647,7 +647,11 @@ for cid, j in judgments.items():
         out_co[cid]["judge"] = j
 
 dist_out = [{"name": k, "market": market(k), "end_market": s(v.get("Primary end market")), "channel": channel(k),
-             "status": s(v.get("Scrape status")), "skus": int(n(v.get("SKUs scraped")) or 0)} for k, v in dists.items()]
+             "status": s(v.get("Scrape status")), "skus": int(n(v.get("SKUs scraped")) or 0),
+             **{k2: v2 for k2, v2 in {"web": s(v.get("Website")), "secondary": s(v.get("Secondary markets"), 200),
+                                      "scope": s(v.get("Chemical categories to scrape"), 200), "priority": s(v.get("Scrape priority")),
+                                      "found": int(n(v.get("Brands found (pipeline)")) or 0), "method": s(v.get("Scrape method / limits"), 240)}.items() if v2}}
+            for k, v in dists.items()]
 
 # ---- write: shards sized to stay well under the 256 KB document cap
 for d in ("data", "judge", "sku"):
