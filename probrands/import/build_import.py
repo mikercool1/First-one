@@ -28,7 +28,7 @@ VERSION = re.search(r"v\d+", os.path.basename(SRC))
 SEEDED = f"Professional Brands Market Map {VERSION.group(0) if VERSION else ''} (1 Oct 2026)".replace("  ", " ")
 
 wb = openpyxl.load_workbook(SRC, data_only=True)
-FIRST_COL = {"Rank", "ID", "Brand ID", "Year", "#", "Product name", "Segment", "Distributor"}
+FIRST_COL = {"Rank", "ID", "Brand ID", "Year", "#", "Product name", "Segment", "Distributor", "Section"}
 
 
 def table(name):
@@ -122,6 +122,20 @@ products = table("Products")
 dists = {s(d["Distributor"]): d for d in table("Distributors") if s(d.get("Distributor"))}
 master = [m for m in table("Master") if s(m.get("Owner (ultimate)"))]
 cos = [c for c in table("Companies") if s(c.get("Company"))]
+# v24+: the Targets tab carries each owner's researched channel split (retail share, key retail customers, pro revenue)
+targets_by_key = {}
+if "Targets" in wb.sheetnames:
+    for r in table("Targets"):
+        if s(r.get("Owner")):
+            targets_by_key.setdefault(key(s(r["Owner"])), r)
+
+
+def n0(v):
+    """Like n(), but a real 0 stays 0 (a 0% retail share is information)."""
+    try:
+        return float(v) if v not in (None, "") else None
+    except (TypeError, ValueError):
+        return None
 deal_rows = [d for d in table("Deals") if s(d.get("Target"))]
 profiles = {s(p.get("ID")): p for p in table("Profiles") if s(p.get("Company"))}
 sources = [x for x in table("Sources") if s(x.get("Company"))]
@@ -423,6 +437,9 @@ for oid, o in owners.items():
         "category": s(m.get("Primary product category")) or (s(bs[0].get("Primary product category")) if bs else ""),
         "blunt": blunt, "hq": ", ".join(x for x in [s(c.get("HQ city")), s(c.get("HQ state")) or s(m.get("HQ state"))] if x),
         "web": s(c.get("Website")), "rev": r1(rev), "rev_year": s(c.get("Revenue year")), "rev_basis": s(c.get("Revenue basis / evidence"), 200),
+        **(lambda tg: {k: v for k, v in {"ret_pct": r1(n0(tg.get("Retail share - company-level (%)")), 1),
+            "ch_class": s(tg.get("Channel classification (best available)")), "ch_conf": s(tg.get("Split confidence")),
+            "prorev": r1(n(tg.get("Pro-channel revenue est. ($M)")))}.items() if v not in ("", None)})(targets_by_key.get(key(o["name"]), {})),
         "emp": r1(n(c.get("Employees (total)")), 0), "emp_band": s(c.get("Employees band")), "size_basis": s(c.get("Size basis")),
         "size_conf": s(c.get("Size confidence")), "linkedin": s(c.get("LinkedIn URL")), "li_emp": r1(n(c.get("LinkedIn employees (baseline Oct-2026)")), 0),
         "pro_rev": r1(n(c.get("Pro brand rev ($M, US)")) or n(m.get("PRO BRAND REV ($M, pro forma)"))),
@@ -441,7 +458,8 @@ for oid, o in owners.items():
     summary = {k: v for k, v in summary.items() if v not in ("", None, [], {})}
     out_co[cid] = summary
     out_dt[cid] = {k: v for k, v in {
-        "what": what, "size_note": s(c.get("Size sources / note"), 600), "profile": "\n\n".join(paras[1:]) if paras and paras[0].startswith("# ") else ptxt,
+        "what": what, "size_note": s(c.get("Size sources / note"), 600),
+        "ch_basis": s(targets_by_key.get(key(o["name"]), {}).get("Channel-split basis / key retail customers"), 600), "profile": "\n\n".join(paras[1:]) if paras and paras[0].startswith("# ") else ptxt,
         "brands": brand_rows, "acq": acq.get(oid, []),
         "evidence": [e for x in [c] + rolled for e in ev_by_co.get(s(x.get("ID")), [])][:30],
     }.items() if v not in ("", None, [])}
@@ -530,6 +548,7 @@ for b in brands:
            "hero": s(b.get("Known for (hero product)"), 160), "form": s(b.get("Primary form factor")), "fmt": dict(fm), "skus": len(ps),
            "dists": [d for d, _ in bd.most_common()], "mkts": sorted({market(d) for d in bd}), "scope": s(b.get("Scope flag")),
            "ch": dict(collections.Counter(ctype(s(p.get("Distributor"))) or "unknown" for p in ps)),
+           "ret": r1(n0(b.get("Retail share used (%)")), 1), "ret_b": {"owner research": "o", "brand scrape": "s"}.get(s(b.get("Retail share basis")), ""),
            "rscreen": {k: v for k, v in {"tier": s(b.get("Retail screen tier (big-box/mass search)")), "hits": s(b.get("Retail screen hits"), 200),
                        "signals": s(b.get("Consumer signals (screen)"), 300)}.items() if v},
            "maker": [m for m, _ in maker[name].most_common(2)], "tri": TRIAGE.get(s(b.get("Triage bucket (single-source)"))),
@@ -597,6 +616,10 @@ cats_out = [{k: v for k, v in {
             "sub_private": r1(n(r.get("Sub. of private co")), 0), "public": r1(n(r.get("Public / sub. of public")), 0),
             "other": r1(n(r.get("Unknown / house brand / other")), 0)},
     "pct_pe": r1(n(r.get("% PE-backed")), 3), "pct_priv": r1(n(r.get("% private (PE+family+ESOP+private sub)")), 3),
+    "npw": r1(n0(r.get("# core brands (pro-weighted)")), 1), "pct_pe_pw": r1(n0(r.get("% PE (pro-wtd)")), 3), "pct_priv_pw": r1(n0(r.get("% private (pro-wtd)")), 3),
+    "mixpw": {k: v for k, v in {"pe": r1(n0(r.get("PE-backed (pro-wtd)")), 1), "family": r1(n0(r.get("Family + ESOP (pro-wtd)")), 1),
+              "public": r1(n0(r.get("Public / public sub (pro-wtd)")), 1)}.items() if v is not None},
+    "avg_ret": r1(n0(r.get("Avg retail share of core brands")), 3),
     "skus": r1(n(r.get("# SKUs (core brands)")), 0), "top": s(r.get("Top 10 brands by distributor reach in this category (owner type)")),
     "pe_players": s(r.get("PE-backed players")), "fam_players": s(r.get("Family / ESOP players (roll-up candidates)")), "notes": s(r.get("Notes")),
     "npriced": r1(n(r.get("# priced items")), 0), "cpo": r1(n(r.get("Avg $/oz (category)")), 3), "nrev": r1(n(r.get("# brands with reviews")), 0),
