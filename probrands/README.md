@@ -8,6 +8,19 @@ Live app: https://claude.ai/artifact/UkLSFqKaS38kQqd4JmvNhk (private to the owne
 
 - **The screen**: every owner ranked by its DNA score. Green (70+) at the top, amber (45 to 69) in the middle, red (under 45) at the bottom. Companies that fail "pro brands are most of revenue" are out of scope and hidden behind a toggle. Filter by product family, end market or search.
 - **Whitespace**: how far each company is from full distribution, and what filling the gaps could be worth. A chart plots DNA score against reach, so the "great product, under-distributed" corner (DNA 70+, reach under 50%) stands out. The table ranks companies by headroom, lowest reach, or proven missing doors. See "Reach and headroom" below.
+- **Roll-up**: pick any set of companies (search, a quick-start list of PE platforms, or "Add to roll-up" on a company page; the selection lives in the URL, so it can be shared). It shows:
+  - combined revenue, brands and doors, and how many doors two or more members share
+  - each member's cross-sell: distributors another member already sells to that stock its categories but don't carry it, valued at its own revenue per door times the capture rate
+  - a "who unlocks whom" matrix and a category-overlap matrix (high = head-to-head, low = complementary)
+  - head-to-head brand pairs
+  - the best next add-ons: PE, family, ESOP and private owners with DNA 45+, no bigger than the platform, ranked by cross-sell both ways
+- **Strategy** (from any company page):
+  - "Where to push": the biggest move in each direction (distribution, new end market, line extension, add-on)
+  - the distribution headroom panel
+  - "Extend the line": categories its own distributors already stock that it doesn't sell, with the leading brands there and family, ESOP or private owners it could buy instead of build
+  - add-ons that cross-sell
+  - "Fix first": DNA gaps with advice, and pricing position
+  - "Ask Claude for a growth plan" writes a plan from those facts. It is saved in the `strategy` collection (one document per company), so everyone with access sees the latest one.
 - **Company**: the DNA test check by check, SKU mix (package format, end market, brand, distributor), the brand list with who carries each one, deals, the workbook's write-up and sources.
 - **Brands**: all 3,094 brands, searchable by brand, owner, product, maker or distributor, and filterable by the workbook's triage bucket (for example Actionable candidate), owner status (including where Claude's owner guess and the market map's disagree), owner type, segment, category, format, end market and distributor. Each brand has a page with its owner, where it's sold (with the broadline, specialty and retail split), package formats and every scraped SKU with links to the distributor listing.
 - **Competitors**: every brand page shows the market map's competitor list first (same category, ranked by distributor reach, with each owner's type and sponsor), then up to 8 more rival brands with each one's owner and ownership type (PE, Family, ESOP, Private, Corporate), and the Brands table shows the top 3. Rivals are matched in `import/build_import.py` by how alike their products look on distributor shelves (product categories, hero product and SKU names), ranked higher when they share distributors. Brands with the same owner are left out. Each company page rolls this up into "Who it competes with": the owners of rival brands, ranked by how many of the company's brands they meet.
