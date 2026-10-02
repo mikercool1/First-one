@@ -689,7 +689,12 @@ for r in out_br.values():
     r["wc"] = [e[2] if len(e) > 2 else e[:2] for e in r.get("wc", [])]  # linked rivals by id; the rest by name and label
     if not r["wc"]:
         r.pop("wc")
-    r["rv"] = r.get("rv", [])[:8]
+    wcids = {e for e in r.get("wc", []) if isinstance(e, str)}
+    r["rv"] = [x for x in r.get("rv", []) if x not in wcids][:8]  # the shelf match adds to the market map's list
+    r.pop("mkts", None)  # rebuilt in the app from each distributor's end market
+    r.pop("tri_type", None)
+    if same_owner(r.get("tri_owner"), r.get("owner")):
+        r.pop("tri_owner", None)
     if not r["rv"]:
         r.pop("rv")
     b = r.pop("wb_basis", "")

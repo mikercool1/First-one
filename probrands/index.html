@@ -1056,8 +1056,10 @@ render();
       else if (x.id === "index") SRC = v.source || "";
       else if (x.id === "cats") { CATS = v.cats || []; CATNAMES = v.names || []; SEGOF = v.segs || {}; }
     });
+    const dmk = new Map(DISTS.map(d => [d.name, d.market]));
     for (const b of BR.values()) {  // categories arrive as indexes into the Competition tab's list
       b.ncat = CATNAMES[b.nc] || "Unclassified"; b.seg = SEGOF[b.ncat] || "Unclassified";
+      b.mkts = [...new Set((b.dists || []).map(d => dmk.get(d)).filter(Boolean))].sort();
       b.allc = b.cats ? Object.fromEntries(Object.entries(b.cats).map(([i, n]) => [CATNAMES[i] || "Unclassified", n])) : { [b.ncat]: b.skus || 0 };
     }
     brandByName = new Map([...BR.values()].map(b => [norm(b.name), b.id]));
