@@ -530,7 +530,7 @@ function viewCompany(id) {
   const brands = dt.brands || [];
   const busy = ui.busy[id];
   return `<a class="back" href="#screen">← The screen</a>
-  <div class="bar" style="margin:-4px 0 12px"><a class="tog" href="#s.${esc(id)}">Strategy →</a>${ui.roll.includes(id) ? `<a class="tog" href="#rollup">In your roll-up (${ui.roll.length}) →</a>` : `<a class="tog" href="#rollup:${esc([...ui.roll, id].join(","))}">Add to roll-up${ui.roll.length ? ` (${ui.roll.length})` : ""} +</a>`}</div>
+  <div class="bar" style="margin:-4px 0 12px"><a class="tog" href="#s.${esc(id)}">Strategy →</a>${ROLLS.filter(r => (r.ids || []).includes(id)).map(r => `<a class="tog" href="#rollup:${esc(r.ids.join(","))}">In “${esc(r.name)}” →</a>`).join("")}${ui.roll.includes(id) ? `<a class="tog" href="#rollup">In your roll-up (${ui.roll.length}) →</a>` : `<a class="tog" href="#rollup:${esc([...ui.roll, id].join(","))}">Add to roll-up${ui.roll.length ? ` (${ui.roll.length})` : ""} +</a>`}</div>
   <section class="nameplate">
     <div><div>${ownerLine(c)}${c.verified ? "" : ` <span class="unv">· owner unverified</span>`}</div>
       <h1>${esc(c.name)}</h1>
@@ -1226,7 +1226,7 @@ function viewRollup() {
   ${ids.length ? `<div class="bar">${ids.map(id => `<span class="tag" style="font-size:12px;padding:4px 8px">${esc(CO.get(id).name)} <button type="button" data-act="rdel" data-id="${esc(id)}" aria-label="Remove ${esc(CO.get(id).name)}" style="color:var(--ink-3);margin-left:4px">✕</button></span>`).join("")}</div>` : ""}`;
   if (!ids.length) {
     const starts = list().filter(c => c.oclass === "pe" && !dnaOf(c).out && reachOf(c).doors >= 3).sort((a, b) => dnaOf(b).score - dnaOf(a).score || (num(b.rev) || 0) - (num(a.rev) || 0)).slice(0, 10);
-    return head + `<section class="panel"><header><h2>Start from a platform</h2><span class="sp"></span><span class="lbl">PE-backed, highest DNA, on 3+ doors</span></header><div class="body">${starts.map(c => `<button class="tog" type="button" data-act="radd" data-id="${esc(c.id)}" style="margin:0 6px 6px 0">+ ${esc(c.name)} <span class="faint">${dnaOf(c).score}</span></button>`).join("")}<p class="muted" style="margin:10px 0 0">Or search above, or use "Add to roll-up" on any company page.</p></div></section>`;
+    return head + savedRollsPanel([]) + `<section class="panel"><header><h2>Start from a platform</h2><span class="sp"></span><span class="lbl">PE-backed, highest DNA, on 3+ doors</span></header><div class="body">${starts.map(c => `<button class="tog" type="button" data-act="radd" data-id="${esc(c.id)}" style="margin:0 6px 6px 0">+ ${esc(c.name)} <span class="faint">${dnaOf(c).score}</span></button>`).join("")}<p class="muted" style="margin:10px 0 0">Or search above, or use "Add to roll-up" on any company page.</p></div></section>`;
   }
   const X = rollupCalc(ids), M = X.M;
   const rev = M.reduce((a, x) => a + (num(x.c.rev) || 0), 0), xs = M.reduce((a, x) => a + (val(x.gainUsd, x.gainDemo) || 0), 0);
@@ -1240,6 +1240,7 @@ function viewRollup() {
     <div class="gauge"><b>${nb}</b><span class="lbl">Brands</span></div><div class="gauge"><b>${X.union.size}</b><span class="lbl">Doors combined</span></div>
     <div class="gauge"><b>${X.union.size ? pct(X.shared / X.union.size) : "—"}</b><span class="lbl">Doors shared by 2+</span></div>
     <div class="gauge g"><b>${fmtM(xs)}</b><span class="lbl">Cross-sell at ${capLbl()}</span></div></div>
+  ${rollPlanPanel(ids)}
   <section class="panel"><header><h2>Cross-sell by member</h2><span class="sp"></span><span class="lbl">Doors a member gains from the others' shelves</span></header>
   <div class="tw"><table><thead><tr><th>Company</th><th class="r">DNA</th><th class="r">Revenue</th><th class="r">Doors now</th><th class="r">Doors gained</th><th class="r">Cross-sell</th><th>Biggest doors gained (via)</th></tr></thead><tbody>
   ${M.map(x => `<tr><td><b><a href="#c.${esc(x.c.id)}">${esc(x.c.name)}</a></b><br><small class="faint">${ownerLine(x.c)}</small></td><td class="r"><span class="score ${dnaOf(x.c).band} num" style="font-size:16px">${dnaOf(x.c).score}</span></td>
@@ -1264,11 +1265,96 @@ function viewRollup() {
     <td><button class="tog" type="button" data-act="radd" data-id="${esc(k.c.id)}">Add +</button></td></tr>`).join("") || `<tr><td colspan="8" class="faint">No candidates found.</td></tr>`}
   </tbody></table></div></section>
   ${ratesPanel()}
+  ${savedRollsPanel(ids)}
   <div class="note">Cross-sell values use each company's revenue per door, so they need revenue and 3+ doors ("thin" otherwise), and they inherit the Whitespace caveats: the scrape can miss a listing, and revenue includes direct and retail sales. Brands count only verified and workbook owners, not guesses.</div>`;
 }
 
 /* ---------- strategy: a growth playbook per company, from the data, plus an optional plan written by Claude ---------- */
 const STRAT = new Map(), stratLoading = new Set();
+let ROLLS = [];  // saved roll-ups, live from the "rollups" collection
+const RPLAN = new Map(), rplanLoading = new Set();
+const rollKey = ids => { const s = [...ids].sort().join(","); let h = 5381; for (let i = 0; i < s.length; i++) h = (h * 33 + s.charCodeAt(i)) >>> 0; return "p-" + h.toString(36) + "-" + ids.length; };
+function loadRollPlan(key) {
+  if (!db || RPLAN.has(key) || rplanLoading.has(key)) return;
+  rplanLoading.add(key);
+  db.doc("rollplans/" + key).get().then(d => RPLAN.set(key, d.exists ? d.data() : null)).catch(() => RPLAN.set(key, null)).finally(() => { rplanLoading.delete(key); render(); });
+}
+async function saveRoll(asNew) {
+  const ids = ui.roll.filter(id => CO.has(id)); if (!ids.length || !db || !writable) return;
+  const key = [...ids].sort().join(","), same = ROLLS.find(r => [...(r.ids || [])].sort().join(",") === key);
+  const name = (ui.rname || "").trim() || (same && !asNew ? same.name : ids.map(id => CO.get(id).name.replace(/\s*\(.*\)$/, "")).slice(0, 3).join(" + ") + (ids.length > 3 ? ` +${ids.length - 3}` : ""));
+  const id = same && !asNew ? same.id : "r-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  try { await db.doc("rollups/" + id).set({ name: name.slice(0, 120), ids, at: now() }); ui.rname = ""; toast("Saved “" + name + "”"); }
+  catch (e) { toast(e?.code === "permission_denied" ? "You can view but not save" : "Couldn't save"); }
+}
+async function deleteRoll(id) {
+  if (!db || !writable) return;
+  const r = ROLLS.find(x => x.id === id); if (!r || !confirm(`Delete the saved roll-up “${r.name}”?`)) return;
+  try { await db.doc("rollups/" + id).delete(); toast("Deleted"); } catch { toast("Couldn't delete"); }
+}
+function rollupFacts(ids) {
+  const X = rollupCalc(ids), M = X.M, rt = demoRates(), cand = addonCands(ids, 6);
+  const nb = M.reduce((a, x) => a + (reachIndex().byOwner.get(x.c.id) || []).length, 0);
+  const short = c => c.name.replace(/\s*\(.*\)$/, "");
+  const cats = c => Object.entries(c.mix?.cat || {}).filter(([k]) => k !== "Unclassified").sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k).join(", ");
+  const pairs = []; M.forEach((x, i) => M.forEach((y, j) => { if (i !== j && X.matrix[i][j]) pairs.push([short(y.c), short(x.c), X.matrix[i][j]]); }));
+  const ov = []; M.forEach((x, i) => M.forEach((y, j) => { if (i < j) ov.push([short(x.c), short(y.c), X.overlap[i][j]]); }));
+  return `Platform: ${M.length} companies, ${nb} brands (${X.focused ? "focused" : "sprawling"} portfolio), combined revenue ${fmtM(M.reduce((a, x) => a + (num(x.c.rev) || 0), 0))}, ${X.union.size} distributor doors combined, ${X.shared} shared by 2+ members. Cross-sell at demonstrated rates: ${fmtM(M.reduce((a, x) => a + (x.gainDemo || 0), 0))} (ceiling at 100%: ${fmtM(M.reduce((a, x) => a + (x.gainUsd || 0), 0))}).
+Demonstrated cross-sell rates (share of sister-brand doors that also carry a brand, across all multi-brand owners): native channel with rivals present ${pct(rt.get(true, true, true))} focused / ${pct(rt.get(false, true, true))} sprawling; native, no rivals ${pct(rt.get(true, true, false))}; off-channel with rivals ${pct(rt.get(true, false, true))}; off-channel, no rivals ${pct(rt.get(true, false, false))}. Benchmark: ITW Pro Brands (31 brands) co-stocks only ~24% of its brands across its own distributors because it runs channel-specialist divisions; focused roll-ups (Kano, DiversiTech, Oatey) reach 55-75%.
+Members:
+${M.map(x => `- ${x.c.name} (${x.c.otype}${x.c.sponsor ? ", " + x.c.sponsor : ""}; DNA ${dnaOf(x.c).score}; revenue ${x.c.rev ? fmtM(x.c.rev) : "unknown"}; main categories ${cats(x.c)}; on ${x.r.carried.size} doors; reach ${x.r.pen === null ? "n/a" : pct(x.r.pen)}). Gains ${x.gain.length} doors from the others${x.gainDemo !== null ? `, worth ${fmtM(x.gainDemo)} at demonstrated rates` : " (no revenue or thin, so doors only)"}. Best: ${x.gain.slice(0, 6).map(g => `${g.d} (${pct(g.rtw)} of its SKUs fit${g.prv ? ", rivals already there" : ""}; via ${g.from.map(short).join("/")})`).join("; ") || "none"}.`).join("\n")}
+Who unlocks whom (doors one member opens for another): ${pairs.sort((a, b) => b[2] - a[2]).slice(0, 6).map(([a, b, n]) => `${a} opens ${n} for ${b}`).join("; ") || "n/a"}.
+Category overlap (cosine of SKU mix): ${ov.sort((a, b) => b[2] - a[2]).map(([a, b, v]) => `${a}–${b} ${Math.round(v * 100)}%`).join("; ") || "n/a"}.
+Head-to-head brands today: ${X.h2h.slice(0, 10).map(([a, b]) => `${a.name} vs ${b.name}`).join("; ") || "none"}.
+Best next add-ons (PE/family/ESOP/private, DNA 45+, no bigger than the platform): ${cand.map(k => `${k.c.name} (${k.c.otype}, DNA ${k.d.score}, revenue ${k.c.rev ? fmtM(k.c.rev) : "unknown"}, opens ${k.givesN} doors for the platform, gets ${k.getsN}, category overlap ${Math.round(k.ov * 100)}%)`).join("; ") || "none"}.`;
+}
+async function askRollPlan() {
+  const ids = ui.roll.filter(id => CO.has(id)); if (!ids.length || !sample) return;
+  const key = rollKey(ids), facts = rollupFacts(ids);
+  ui.busy[key] = "Claude is writing the roll-up plan…"; ui.planDraft = ""; render();
+  const prompt = `You advise a private-equity deal team building a roll-up of US professional brands: branded chemical products tradespeople and plant workers hold in their hand, sold through pro distributors. The cross-sell numbers below come from a distributor scrape: a "door" is a distributor; a member "gains" a door when another member already sells there and the door stocks that member's categories; "fit" is the share of its SKUs whose category the door stocks; "rivals already there" means the category demonstrably sells at that door. Values use each member's revenue per door times the demonstrated cross-sell rates.
+
+Facts (use ONLY these plus general industry knowledge; don't invent numbers, names or deals):
+${facts}
+
+Write the roll-up plan in Markdown, about 450 words. Start with one bold sentence: the investment thesis for this exact combination. Then "## " sections, each with 2-5 short bullets naming specific members, brands and distributors from the facts:
+## Where the cross-sell is (by member: which doors, why they fit, who opens them)
+## First moves (the 5-8 highest-value brand-into-door moves to make first, in order)
+## Go-to-market (one sales team or channel specialists; apply the ITW and focused-vs-sprawling evidence)
+## Rationalize (head-to-head brands and overlapping categories)
+## Next add-ons (which to buy next and what each adds)
+## Risks and what to verify (scrape gaps, revenue-per-door assumptions, channel conflict)
+Plain language, no hype, no em dashes.`;
+  try {
+    const res = await sample(prompt, { modelTier: "complex", cache: false, onText: ({ text }) => { ui.planDraft = text; const el = $("#plandraft"); if (el) el.innerHTML = mdPlan(text); } });
+    const doc = { ids, text: res.text, at: now(), facts };
+    RPLAN.set(key, doc); delete ui.busy[key]; render();
+    if (writable) { try { await db.doc("rollplans/" + key).set(doc); toast("Roll-up plan saved"); } catch { toast("Plan shown but couldn't be saved"); } }
+  } catch (e) {
+    delete ui.busy[key]; render();
+    toast(e?.code === "not_granted" ? "Claude isn't allowed on this page" : e?.code === "rate_limited" ? "Claude is busy; try again shortly" : "Claude couldn't answer");
+  }
+}
+function savedRollsPanel(ids) {
+  const key = [...ids].sort().join(",");
+  if (!ROLLS.length) return "";
+  return `<section class="panel"><header><h2>Saved roll-ups</h2><span class="sp"></span><span class="lbl">${ROLLS.length} · shared with everyone who can open this page</span></header>
+  <div class="tw"><table><thead><tr><th>Name</th><th>Members</th><th class="r">Saved</th><th></th></tr></thead><tbody>
+  ${ROLLS.slice().sort((a, b) => String(b.at).localeCompare(String(a.at))).map(r => { const on = [...(r.ids || [])].sort().join(",") === key; return `<tr${on ? ' style="background:var(--panel-2)"' : ""}><td><b><a href="#rollup:${esc((r.ids || []).join(","))}">${esc(r.name)}</a></b>${on ? ` <span class="tag tri">Open</span>` : ""}</td>
+    <td style="font-size:13px">${(r.ids || []).map(id => esc(CO.get(id)?.name.replace(/\s*\(.*\)$/, "") || id)).join(", ")}</td><td class="r num faint">${esc(String(r.at || "").slice(0, 10))}</td>
+    <td class="r">${writable ? `<button class="tog" type="button" data-act="rdelsave" data-id="${esc(r.id)}" aria-label="Delete ${esc(r.name)}">Delete</button>` : ""}</td></tr>`; }).join("")}
+  </tbody></table></div></section>`;
+}
+function rollPlanPanel(ids) {
+  const key = rollKey(ids); loadRollPlan(key);
+  const plan = RPLAN.get(key), busy = ui.busy[key];
+  const key2 = [...ids].sort().join(","), same = ROLLS.find(r => [...(r.ids || [])].sort().join(",") === key2);
+  return `<section class="panel"><header><h2>Roll-up plan</h2><span class="sp"></span><span class="lbl">${plan ? `Written by Claude ${esc(String(plan.at || "").slice(0, 10))} for this exact mix` : "Claude turns this mix's cross-sell into a plan"}</span></header><div class="body">
+    ${busy ? `<p class="muted">${esc(busy)}</p><div id="plandraft">${mdPlan(ui.planDraft)}</div>` : plan ? mdPlan(plan.text) : `<p class="muted" style="margin:0">No plan for this mix yet. It uses each member's best doors (fit, proof, who opens them), who unlocks whom, category overlap, head-to-head brands, the demonstrated rates and the next add-ons.</p>`}
+    <div class="bar" style="margin:12px 0 0">${sample && !busy ? `<button class="tog" type="button" data-act="rplan">${plan ? "Rewrite the plan" : "Ask Claude for a roll-up plan"}</button>` : ""}
+      ${writable ? `<input class="search" id="rname" type="text" placeholder="${esc(same ? same.name : "Name this roll-up…")}" value="${esc(ui.rname || "")}" aria-label="Roll-up name" style="flex:1 1 200px">
+      <button class="tog" type="button" data-act="rsave">${same ? "Update saved roll-up" : "Save roll-up"}</button>${same ? `<button class="tog" type="button" data-act="rsavenew">Save as new</button>` : ""}` : `<span class="faint">You can view but not save roll-ups.</span>`}</div></div></section>`;
+}
 function loadPlan(id) {
   if (!db || STRAT.has(id) || stratLoading.has(id)) return;
   stratLoading.add(id);
@@ -1491,6 +1577,10 @@ document.addEventListener("click", e => {
     else if (act === "rdel") { location.hash = "rollup:" + ui.roll.filter(x => x !== a.dataset.id).join(","); }
     else if (act === "rclear") { location.hash = "rollup:"; }
     else if (act === "plan") askPlan(a.dataset.id);
+    else if (act === "rplan") askRollPlan();
+    else if (act === "rsave") saveRoll(false);
+    else if (act === "rsavenew") saveRoll(true);
+    else if (act === "rdelsave") deleteRoll(a.dataset.id);
     else if (act === "rmore") { ui.rlimit += 60; render(); }
     else if (act === "bmore") { ui.b.limit += 100; render(); }
     else if (act === "out") { ui.showOut = !ui.showOut; render(); }
@@ -1509,6 +1599,7 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("input", e => {
   if (e.target.id === "bq") { ui.b.q = e.target.value; ui.b.limit = 100; const pos = e.target.selectionStart; render(); const q = $("#bq"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
+  if (e.target.id === "rname") { ui.rname = e.target.value; return; }
   if (e.target.id === "rq") { ui.rq = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#rq"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
   if (e.target.id === "dq") { ui.dq = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#dq"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
   if (e.target.id === "q") { ui.q = e.target.value; ui.limit = 80; const pos = e.target.selectionStart; render(); const q = $("#q"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } }
@@ -1563,6 +1654,7 @@ render();
   if (!db) { dbState = "off"; render(); return; }
   try { const w = u?.can ? await u.can("data.write") : null; writable = w !== false; } catch { writable = true; }
   dbState = writable ? "live" : "readonly";
+  db.collection("rollups").limit(500).onSnapshot(snap => { ROLLS = snap.docs.map(x => ({ id: x.id, ...(x.data() || {}) })); if (loaded) render(); }, () => {});
   db.collection("dna").limit(1000).onSnapshot(snap => { DNA.clear(); snap.docs.forEach(x => DNA.set(x.id, x.data())); ver++; if (loaded) render(); }, () => {});
   db.collection("data").limit(100).onSnapshot(snap => {
     CO.clear(); DT.clear(); BR.clear();

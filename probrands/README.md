@@ -14,6 +14,8 @@ Live app: https://claude.ai/artifact/UkLSFqKaS38kQqd4JmvNhk (private to the owne
   - a "who unlocks whom" matrix and a category-overlap matrix (high = head-to-head, low = complementary)
   - head-to-head brand pairs
   - the best next add-ons: PE, family, ESOP and private owners with DNA 45+, no bigger than the platform, ranked by cross-sell both ways
+  - **Save roll-ups**: name a combination and save it. Saved roll-ups live in the `rollups` collection, shared with everyone who can open the page, and list at the bottom of the Roll-up page. A company page links to every saved roll-up it's in.
+  - **Roll-up plan**: Claude writes a plan for the exact mix selected: thesis, where the cross-sell is, first moves, go-to-market, what to rationalize, next add-ons, and risks. It gets each member's best doors (fit, proof, who opens them), who unlocks whom, category overlap, head-to-head brands, the demonstrated rates with the ITW benchmark, and the next add-ons. Plans are saved in the `rollplans` collection, keyed by the set of members, so the same mix reopens its plan.
 - **Strategy** (from any company page):
   - "Where to push": the biggest move in each direction (distribution, new end market, line extension, add-on)
   - the distribution headroom panel
