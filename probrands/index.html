@@ -311,7 +311,7 @@ const PRICES = new Map(), priceLoading = new Set();
 let DEALS = [], DISTS = [], SRC = "", loaded = false, ver = 0;
 const OWN = [["pe", "PE"], ["family", "Family"], ["esop", "ESOP"], ["private", "Private"], ["corp", "Corporate"]];
 const ownKey = c => c.oclass === "public" || c.oclass === "sub_private" ? "corp" : c.oclass;
-const ui = { own: new Set(store.get("own", ["pe", "family"])), roll: store.get("roll", []), rq: "", cap: 0.25, rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "n", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
+const ui = { own: new Set(store.get("own", ["pe", "family"])), roll: store.get("roll", []), rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "n", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
   b: { q: "", status: "", tri: "", own: "", fam: "", seg: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
 
 /* ---------- DNA ---------- */
@@ -999,13 +999,52 @@ function viewDist(i) {
 let reachC = { v: -1 };
 function reachIndex() {
   if (reachC.v === ver) return reachC;
-  const shelf = new Map(), byOwner = new Map(), leaders = new Map();
+  const shelf = new Map(), byOwner = new Map(), leaders = new Map(), cm = new Map(), dmk = new Map(DISTS.map(d => [d.name, d.market || "Other"]));
   for (const b of BR.values()) {
-    for (const d of b.dists || []) { const m = shelf.get(d) || shelf.set(d, new Map()).get(d); for (const c of Object.keys(b.allc || {})) if (plays(b, c)) m.set(c, (m.get(c) || 0) + 1); }
+    for (const d of b.dists || []) { const m = shelf.get(d) || shelf.set(d, new Map()).get(d); for (const c of Object.keys(b.allc || {})) if (plays(b, c)) { m.set(c, (m.get(c) || 0) + 1); const x = cm.get(c) || cm.set(c, new Map()).get(c), k = dmk.get(d) || "Other"; x.set(k, (x.get(k) || 0) + 1); } }
     if (b.owner_id && b.status !== "guess") (byOwner.get(b.owner_id) || byOwner.set(b.owner_id, []).get(b.owner_id)).push(b);
     for (const c of Object.keys(b.allc || {})) if (plays(b, c)) { const l = leaders.get(c); if (!l || (b.dists || []).length > (l.dists || []).length) leaders.set(c, b); }
   }
-  return (reachC = { v: ver, scraped: DISTS.filter(d => /scraped/i.test(d.status)), shelf, byOwner, leaders, memo: new Map() });
+  // a category's native channels: the end markets holding 60% of its shelf presence
+  const native = new Map([...cm].map(([c, m]) => { const tot = [...m.values()].reduce((a, n) => a + n, 0), s = new Set(); let acc = 0; for (const [k, n] of [...m].sort((a, b) => b[1] - a[1])) { s.add(k); acc += n; if (acc / tot >= 0.6) break; } return [c, s]; }));
+  return (reachC = { v: ver, scraped: DISTS.filter(d => /scraped/i.test(d.status)), shelf, byOwner, leaders, native, memo: new Map(), rates: null });
+}
+/* Demonstrated cross-sell: across every owner with 2+ brands, how often a brand is stocked at a sister brand's scraped
+   distributor that stocks its category. Split by portfolio size (focused = up to 6 brands), whether the distributor is a
+   native channel for the category, and whether the brand's direct rivals already sell there. These rates value each
+   missing door in "Demonstrated" mode instead of one flat capture rate. */
+function demoRates() {
+  const R = reachIndex(); if (R.rates) return R.rates;
+  const tot = new Map(), hit = new Map(), add = (k, h) => { tot.set(k, (tot.get(k) || 0) + 1); if (h) hit.set(k, (hit.get(k) || 0) + 1); };
+  const scr = new Set(R.scraped.map(d => d.name)), dmk = new Map(DISTS.map(d => [d.name, d.market || "Other"]));
+  for (const [oid, bs] of R.byOwner) {
+    if (bs.length < 2) continue;
+    const size = bs.length <= 6 ? "f" : "s";
+    for (const b of bs) {
+      const mine = new Set(b.dists || []), nat = R.native.get(b.ncat) || new Set();
+      const rv = new Set(rivalsOf(b).filter(x => x.owner_id !== oid).flatMap(x => x.dists || []));
+      const sib = new Set(bs.filter(s => s !== b).flatMap(s => s.dists || []).filter(d => scr.has(d)));
+      for (const d of sib) {
+        if (!mine.has(d) && (R.shelf.get(d)?.get(b.ncat) || 0) < 3) continue;
+        const k = (nat.has(dmk.get(d)) ? "n" : "o") + (rv.has(d) ? "p" : "u"), h = mine.has(d);
+        add(size + k, h); add(k, h); add("all", h);
+      }
+    }
+  }
+  const rate = k => (tot.get(k) || 0) >= 50 ? (hit.get(k) || 0) / tot.get(k) : null;
+  return (R.rates = { tot, hit, rate, get: (focused, nat, prv) => { const k = (nat ? "n" : "o") + (prv ? "p" : "u"); return rate((focused ? "f" : "s") + k) ?? rate(k) ?? rate("all") ?? 0.2; } });
+}
+const isDemo = () => ui.cap === "demo";
+const val = (full, demo) => full === null || full === undefined ? null : isDemo() ? demo : full * ui.cap;
+const capLbl = () => isDemo() ? "demonstrated rates" : Math.round(ui.cap * 100) + "% capture";
+const capSelect = what => `<select id="rcap" aria-label="Capture rate"><option value="demo" ${isDemo() ? "selected" : ""}>Demonstrated cross-sell rates</option>${[0.1, 0.25, 0.5, 1].map(v => `<option value="${v}" ${v === ui.cap ? "selected" : ""}>Flat ${Math.round(v * 100)}% of ${what}</option>`).join("")}</select>`;
+function ratesPanel() {
+  const r = demoRates(), cell = k => { const n = r.tot.get(k) || 0, v = r.rate(k); return `<td class="r num">${v === null ? "—" : pct(v)}<br><span class="faint" style="font-size:11.5px">${n.toLocaleString()} doors</span></td>`; };
+  return `<section class="panel"><header><h2>Demonstrated cross-sell rates</h2><span class="sp"></span><span class="lbl">What multi-brand owners actually achieve today · ${pct(r.rate("all"))} overall</span></header>
+  <div class="body"><p class="muted" style="margin:0 0 10px;font-size:13.5px">Across every owner with 2+ brands: of the sister brands' distributors that stock a brand's category, the share that also carry that brand. "Native" means the distributor's end market is a natural channel for the category; "proven" means the brand's direct rivals already sell there. In Demonstrated mode each missing door is valued at its row's rate.</p>
+  <div class="tw"><table><thead><tr><th>Distributor</th><th class="r">Focused (≤6 brands)</th><th class="r">Sprawling (7+)</th><th class="r">All owners</th></tr></thead><tbody>
+  ${[["np", "Native channel, rivals there"], ["nu", "Native channel, no rivals"], ["op", "Off-channel, rivals there"], ["ou", "Off-channel, no rivals"]].map(([k, l]) => `<tr><td><b>${l}</b></td>${cell("f" + k)}${cell("s" + k)}${cell(k)}</tr>`).join("")}
+  </tbody></table></div></div></section>`;
 }
 function reachOf(c) {
   const R = reachIndex(); if (R.memo.has(c.id)) return R.memo.get(c.id);
@@ -1013,6 +1052,7 @@ function reachOf(c) {
   const cat = c.mix?.cat || {}, tot = Object.values(cat).reduce((a, n) => a + n, 0) || 1;
   let shares = Object.entries(cat).map(([k, n]) => [k, n / tot]).filter(([k, s]) => s >= 0.1 && k !== "Unclassified").sort((a, b) => b[1] - a[1]);
   if (!shares.length && bs.length && bs[0].ncat !== "Unclassified") shares = [[bs[0].ncat, 1]];
+  const main0 = shares[0]?.[0] || bs[0]?.ncat;
   const carried = new Set(bs.flatMap(b => b.dists || []));
   const dmap = new Map(R.scraped.map(d => [d.name, d]));
   const myMkts = new Set([...carried].map(n => dmap.get(n)?.market).filter(Boolean));
@@ -1023,9 +1063,10 @@ function reachOf(c) {
     const m = R.shelf.get(d.name), has = carried.has(d.name);
     if (!has && !shares.some(([k]) => (m?.get(k) || 0) >= 3)) continue;
     const w = Math.max(1, shares.reduce((a, [k, s]) => a + s * (m?.get(k) || 0), 0));
-    const rv = has ? [] : rivals.filter(x => (x.dists || []).includes(d.name));
-    const row = { d, w, has, rv };
-    fit.set(d.name, w);
+    const rvAll = rivals.filter(x => (x.dists || []).includes(d.name)), rv = has ? [] : rvAll;
+    const nat = (R.native.get(main0) || new Set()).has(d.market || "Other");
+    const row = { d, w, has, rv, nat };
+    fit.set(d.name, { w, nat, prv: rvAll.length > 0 });
     if (has || myMkts.has(d.market)) core.push(row);       // same end markets it already sells to: the core whitespace
     else if (rv.length >= 2) adj.push(row);                 // a new end market, where 2+ of its direct rivals already sell
   }
@@ -1037,21 +1078,22 @@ function reachOf(c) {
   const out = { doors: core.filter(r => r.has).length, relevant: core.length, pen: W && Wc ? Wc / W : null, W, Wc, white, adj,
     proven: white.filter(r => r.rv.length).length, mkts: [...myMkts], main, leader: R.leaders.get(main), rev,
     thin: core.filter(r => r.has).length < 3, fit, carried, shares,
-    rpd: rev && Wc && core.filter(r => r.has).length >= 3 ? rev / Wc : null,
+    rpd: rev && Wc && core.filter(r => r.has).length >= 3 ? rev / Wc : null, focused: bs.length <= 6,
     ceiling: rev && Wc && core.filter(r => r.has).length >= 3 ? rev * (W - Wc) / Wc : null, carriedRows: core.filter(r => r.has) };
+  if (out.rpd) { const rt = demoRates(); out.demo = out.rpd * white.reduce((a, x) => a + x.w * rt.get(out.focused, x.nat, x.rv.length > 0), 0); }
+  else out.demo = null;
   R.memo.set(c.id, out); return out;
 }
 const fmtX = v => v >= 10 ? Math.round(v) + "×" : v.toFixed(1) + "×";
 function reachPanel(c) {
   const r = reachOf(c); if (r.pen === null || !r.relevant) return "";
-  const cap = ui.cap;
   return `<section class="panel"><header><h2>Distribution headroom</h2><span class="sp"></span><span class="lbl">Doors that stock ${esc(r.main || "its categories")}${r.leader ? ` · leader ${esc(r.leader.name)} on ${(r.leader.dists || []).length}` : ""}</span></header>
   <div class="gauges" style="margin:0;border:0;border-bottom:1px solid var(--line)">
     <div class="gauge"><b>${r.doors}</b><span class="lbl">Doors now</span></div><div class="gauge"><b>${r.relevant}</b><span class="lbl">Doors that stock its categories</span></div>
     <div class="gauge ${r.pen >= 0.6 ? "g" : r.pen >= 0.3 ? "a" : "r"}"><b>${pct(r.pen)}</b><span class="lbl">Reach (shelf-weighted)</span></div>
     <div class="gauge"><b>${r.white.length}</b><span class="lbl">Missing doors</span></div><div class="gauge g"><b>${r.proven}</b><span class="lbl">Proven: rivals already there</span></div>
-    ${r.ceiling !== null ? `<div class="gauge"><b>${fmtM(r.ceiling * cap)}</b><span class="lbl">Headroom at ${Math.round(cap * 100)}% capture</span></div>` : ""}</div>
-  <div class="body"><p class="muted" style="margin:0 0 10px;font-size:13.5px">Doors are the scraped distributors in the end markets it already sells to (${esc(r.mkts.join(", ") || "none yet")}) that stock its categories. ${r.ceiling !== null ? `At today's ${fmtM(r.rev)} across ${r.doors} doors, filling every missing door would add up to ${fmtM(r.ceiling)} (${fmtX(r.W / r.Wc)} today's revenue). Read it as a ceiling: revenue includes direct and non-distributor sales, and the scrape can miss a listing. ` : r.thin ? "Found on fewer than 3 doors, too few to estimate revenue per door, so headroom is in doors only. " : "No revenue in the market map yet, so headroom is in doors only. "}Proven doors already carry this company's direct competitors, so the category sells there. <a href="#reach">All companies →</a></p>
+    ${r.ceiling !== null ? `<div class="gauge"><b>${fmtM(val(r.ceiling, r.demo))}</b><span class="lbl">Headroom at ${capLbl()}</span></div>` : ""}</div>
+  <div class="body"><p class="muted" style="margin:0 0 10px;font-size:13.5px">Doors are the scraped distributors in the end markets it already sells to (${esc(r.mkts.join(", ") || "none yet")}) that stock its categories. ${r.ceiling !== null ? `At today's ${fmtM(r.rev)} across ${r.doors} doors, filling every missing door would add up to ${fmtM(r.ceiling)} (${fmtX(r.W / r.Wc)} today's revenue); at the rates multi-brand owners actually achieve on doors like these, about ${fmtM(r.demo)}. Read it as a ceiling: revenue includes direct and non-distributor sales, and the scrape can miss a listing. ` : r.thin ? "Found on fewer than 3 doors, too few to estimate revenue per door, so headroom is in doors only. " : "No revenue in the market map yet, so headroom is in doors only. "}Proven doors already carry this company's direct competitors, so the category sells there. <a href="#reach">All companies →</a></p>
   ${r.white.length ? `<div class="tw"><table><thead><tr><th>Missing door</th><th>Channel</th><th class="r">Category shelf</th><th>Rivals already there</th></tr></thead><tbody>
   ${r.white.slice(0, 20).map(x => `<tr><td><b>${distLink(x.d.name)}</b><br><span class="faint" style="font-size:12.5px">${esc(x.d.end_market || x.d.market || "")}</span></td><td class="muted">${CHAN[x.d.channel] || ""}</td><td class="r num">${Math.round(x.w)}</td>
     <td>${x.rv.length ? `<span class="tag tri">Proven</span> ${x.rv.slice(0, 3).map(b => `<a href="#b.${esc(b.id)}">${esc(b.name)}</a>`).join(", ")}${x.rv.length > 3 ? ` +${x.rv.length - 3}` : ""}` : `<span class="faint">None of its rivals yet</span>`}</td></tr>`).join("")}
@@ -1067,7 +1109,7 @@ function reachChart(rows) {
   const X = p => m.l + p * iw, Y = s => m.t + (1 - s / 100) * ih;
   const dot = r => {
     const c = r.c, d = dnaOf(c), x = +X(r.r.pen).toFixed(1), y = +Y(d.score).toFixed(1);
-    const tip = esc(`<b>${esc(c.name)}</b>DNA ${d.score} · reach ${pct(r.r.pen)} · ${r.r.doors} of ${r.r.relevant} doors${r.r.ceiling !== null ? ` · headroom ${fmtM(r.r.ceiling * ui.cap)}` : ""}`);
+    const tip = esc(`<b>${esc(c.name)}</b>DNA ${d.score} · reach ${pct(r.r.pen)} · ${r.r.doors} of ${r.r.relevant} doors${r.r.ceiling !== null ? ` · headroom ${fmtM(val(r.r.ceiling, r.r.demo))}` : ""}`);
     const a = `data-tip="${tip}" data-go="c.${esc(c.id)}"${r.r.thin ? ' opacity=".35"' : ""}`;
     if (c.oclass === "pe") return `<path class="dot" d="M${x} ${y - 7}L${x + 7} ${y}L${x} ${y + 7}L${x - 7} ${y}Z" fill="var(--k-pe)" ${a}/>`;
     if (c.oclass === "family") return `<circle class="dot" cx="${x}" cy="${y}" r="5.5" fill="var(--k-fam)" ${a}/>`;
@@ -1089,10 +1131,10 @@ function viewReach() {
   const base = visible().filter(c => ui.showOut || !dnaOf(c).out);
   let rows = base.map(c => ({ c, r: reachOf(c) })).filter(x => x.r.pen !== null && x.r.relevant > 0);
   if (ui.rmin) rows = rows.filter(x => dnaOf(x.c).score >= +ui.rmin);
-  const key = { head: x => x.r.ceiling === null ? -1 : x.r.ceiling, pen: x => -x.r.pen, proven: x => x.r.proven, missing: x => x.r.white.length, dna: x => dnaOf(x.c).score }[ui.rsort];
+  const key = { head: x => x.r.ceiling === null ? -1 : val(x.r.ceiling, x.r.demo), pen: x => -x.r.pen, proven: x => x.r.proven, missing: x => x.r.white.length, dna: x => dnaOf(x.c).score }[ui.rsort];
   rows.sort((a, b) => key(b) - key(a) || dnaOf(b.c).score - dnaOf(a.c).score);
   const sweet = rows.filter(x => dnaOf(x.c).score >= 70 && x.r.pen < 0.5 && !x.r.thin);
-  const totHead = rows.reduce((a, x) => a + (x.r.ceiling || 0), 0) * ui.cap;
+  const totHead = rows.reduce((a, x) => a + (val(x.r.ceiling, x.r.demo) || 0), 0);
   const pens = rows.map(x => x.r.pen).sort((a, b) => a - b), med = pens.length ? pens[Math.floor(pens.length / 2)] : null;
   const legend = `<div class="olegend"><span><svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:5px"><path d="M6 0L12 6L6 12L0 6Z" fill="var(--k-pe)"/></svg>PE-backed</span><span><i style="background:var(--k-fam);border-radius:50%"></i>Family</span><span><i style="border:1.5px solid var(--ink-3);border-radius:50%;background:none"></i>Other owners</span><span><i style="background:var(--good-soft)"></i>DNA 70+, reach under 50%</span><span>Faint marks: on fewer than 3 doors</span></div>`;
   return `<div class="page-h"><div class="grow"><div class="lbl">${esc(ownSummary())} · ${ui.showOut ? "including" : "excluding"} out-of-scope companies</div><h1>Whitespace</h1>
@@ -1100,8 +1142,8 @@ function viewReach() {
     <button class="tog" type="button" data-act="out" aria-pressed="${ui.showOut}">Include out of scope</button></div>
   <div class="gauges"><div class="gauge"><b>${rows.length}</b><span class="lbl">Companies</span></div><div class="gauge g"><b>${sweet.length}</b><span class="lbl">Great product, under-distributed (3+ doors)</span></div>
     <div class="gauge"><b>${med === null ? "—" : pct(med)}</b><span class="lbl">Median reach</span></div><div class="gauge"><b>${rows.reduce((a, x) => a + x.r.proven, 0).toLocaleString()}</b><span class="lbl">Proven missing doors</span></div>
-    <div class="gauge"><b>${fmtM(totHead)}</b><span class="lbl">Headroom at ${Math.round(ui.cap * 100)}% capture</span></div></div>
-  <div class="bar"><select id="rcap" aria-label="Capture rate">${[0.1, 0.25, 0.5, 1].map(v => `<option value="${v}" ${v === ui.cap ? "selected" : ""}>Capture ${Math.round(v * 100)}% of missing doors</option>`).join("")}</select>
+    <div class="gauge"><b>${fmtM(totHead)}</b><span class="lbl">Headroom at ${capLbl()}</span></div></div>
+  <div class="bar">${capSelect("missing doors")}
     <select id="rmin" aria-label="Minimum DNA">${[["", "Any DNA"], ["45", "DNA 45+ (amber and green)"], ["70", "DNA 70+ (green)"]].map(([k, l]) => `<option value="${k}" ${k === ui.rmin ? "selected" : ""}>${l}</option>`).join("")}</select>
     <select id="rsort" aria-label="Sort">${[["head", "Most headroom ($)"], ["pen", "Lowest reach"], ["proven", "Most proven missing doors"], ["missing", "Most missing doors"], ["dna", "Highest DNA"]].map(([k, l]) => `<option value="${k}" ${k === ui.rsort ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select></div>
   <section class="panel"><header><h2>DNA against reach</h2><span class="sp"></span>${legend}</header><div class="body">${reachChart(rows)}</div></section>
@@ -1109,9 +1151,10 @@ function viewReach() {
   ${rows.slice(0, ui.rlimit).map(x => { const d = dnaOf(x.c); return `<tr class="cons-row" data-go="c.${esc(x.c.id)}"><td><b><a href="#c.${esc(x.c.id)}">${esc(x.c.name)}</a></b><br><small class="faint">${ownerLine(x.c)}</small></td>
     <td class="r"><span class="score ${d.band} num" style="font-size:16px">${d.score}</span></td><td class="r num">${x.r.rev ? fmtM(x.r.rev) : "—"}</td>
     <td class="num" style="white-space:nowrap"><span class="penbar"><i style="width:${Math.round(x.r.pen * 100)}%"></i></span>${pct(x.r.pen)}</td><td class="r num">${x.r.doors} / ${x.r.relevant}</td><td class="r num">${x.r.proven}</td><td class="r num">${x.r.adj.length || "—"}</td>
-    <td class="r num">${x.r.ceiling !== null ? fmtM(x.r.ceiling * ui.cap) : `<span class="faint">${x.r.thin ? "thin" : "—"}</span>`}</td>
+    <td class="r num">${x.r.ceiling !== null ? fmtM(val(x.r.ceiling, x.r.demo)) : `<span class="faint">${x.r.thin ? "thin" : "—"}</span>`}</td>
     <td style="font-size:13px">${x.r.white.slice(0, 3).map(w => esc(w.d.name.replace(/\s*\(.*\)$/, ""))).join(", ")}</td></tr>`; }).join("") || `<tr><td colspan="9" class="empty">Nothing matches. Widen the ownership filter.</td></tr>`}
   </tbody></table></div>${rows.length > ui.rlimit ? `<button class="more" type="button" data-act="rmore">Show ${Math.min(60, rows.length - ui.rlimit)} more of ${rows.length - ui.rlimit}</button>` : ""}</section>
+  ${ratesPanel()}
   <div class="note">How to read it: ${DISTS.filter(d => /scraped/i.test(d.status)).length} of ${DISTS.length} distributors are scraped, and a brand a distributor stocks but the scrape missed shows as a missing door. Doors are weighted by how many brands in the company's categories each distributor stocks. Headroom uses total company revenue, so it overstates for companies with big direct or retail sales.</div>`;
 }
 
@@ -1124,15 +1167,18 @@ function rollupCalc(ids) {
   const M = ids.map(id => CO.get(id)).filter(Boolean).map(c => ({ c, r: reachOf(c) }));
   const union = new Set(M.flatMap(x => [...x.r.carried]));
   const cnt = new Map(); for (const x of M) for (const d of x.r.carried) cnt.set(d, (cnt.get(d) || 0) + 1);
+  const rt = demoRates(), focused = M.reduce((a, x) => a + (reachIndex().byOwner.get(x.c.id) || []).length, 0) <= 6;
   for (const x of M) {
-    x.gain = [...union].filter(d => !x.r.carried.has(d) && x.r.fit.has(d)).map(d => ({ d, w: x.r.fit.get(d), from: M.filter(y => y !== x && y.r.carried.has(d)).map(y => y.c) })).sort((a, b) => b.w - a.w);
-    x.gainW = x.gain.reduce((a, g) => a + g.w, 0); x.gainUsd = x.r.rpd ? x.r.rpd * x.gainW : null;
+    x.gain = [...union].filter(d => !x.r.carried.has(d) && x.r.fit.has(d)).map(d => { const f = x.r.fit.get(d); return { d, w: f.w, p: rt.get(focused, f.nat, f.prv), prv: f.prv, from: M.filter(y => y !== x && y.r.carried.has(d)).map(y => y.c) }; }).sort((a, b) => b.w * b.p - a.w * a.p);
+    x.gainW = x.gain.reduce((a, g) => a + g.w, 0);
+    x.gainUsd = x.r.rpd ? x.r.rpd * x.gainW : null;
+    x.gainDemo = x.r.rpd ? x.r.rpd * x.gain.reduce((a, g) => a + g.w * g.p, 0) : null;
   }
   const matrix = M.map(x => M.map(y => x === y ? null : [...y.r.carried].filter(d => !x.r.carried.has(d) && x.r.fit.has(d)).length));
   const overlap = M.map(x => M.map(y => x === y ? null : cosine(x.c.mix?.cat, y.c.mix?.cat)));
   const R = reachIndex(), h2h = [];
   for (const x of M) for (const b of R.byOwner.get(x.c.id) || []) for (const r of rivalsOf(b)) { const y = M.find(m => m !== x && m.c.id === r.owner_id); if (y && x.c.id < y.c.id) h2h.push([b, r]); }
-  return { M, union, shared: [...cnt.values()].filter(n => n > 1).length, matrix, overlap, h2h };
+  return { M, union, shared: [...cnt.values()].filter(n => n > 1).length, matrix, overlap, h2h, focused };
 }
 function addonCands(ids, limit = 12) {
   const base = rollupCalc(ids), inSet = new Set(ids), union = base.union;
@@ -1143,23 +1189,25 @@ function addonCands(ids, limit = 12) {
     const d = dnaOf(z); if (d.out || d.score < 45) continue;
     if (size && num(z.rev) !== null && num(z.rev) > size) continue;
     const rz = reachOf(z); if (!rz.carried?.size) continue;
-    let givesW$ = 0, givesN = 0, gives$ok = true;
-    for (const x of base.M) { const ds = [...rz.carried].filter(n => !x.r.carried.has(n) && x.r.fit.has(n)); givesN += ds.length; if (x.r.rpd) givesW$ += x.r.rpd * ds.reduce((a, n) => a + x.r.fit.get(n), 0); else if (ds.length) gives$ok = false; }
+    const rt = demoRates(), focused = base.M.reduce((a, x) => a + (reachIndex().byOwner.get(x.c.id) || []).length, 0) + (reachIndex().byOwner.get(z.id) || []).length <= 6;
+    let givesW$ = 0, givesD$ = 0, givesN = 0, gives$ok = true;
+    for (const x of base.M) { const ds = [...rz.carried].filter(n => !x.r.carried.has(n) && x.r.fit.has(n)); givesN += ds.length; if (x.r.rpd) { givesW$ += x.r.rpd * ds.reduce((a, n) => a + x.r.fit.get(n).w, 0); givesD$ += x.r.rpd * ds.reduce((a, n) => { const f = x.r.fit.get(n); return a + f.w * rt.get(focused, f.nat, f.prv); }, 0); } else if (ds.length) gives$ok = false; }
     const getsDs = [...union].filter(n => !rz.carried.has(n) && rz.fit.has(n));
-    const gets$ = rz.rpd ? rz.rpd * getsDs.reduce((a, n) => a + rz.fit.get(n), 0) : null;
+    const gets$ = rz.rpd ? rz.rpd * getsDs.reduce((a, n) => a + rz.fit.get(n).w, 0) : null;
+    const getsD$ = rz.rpd ? rz.rpd * getsDs.reduce((a, n) => { const f = rz.fit.get(n); return a + f.w * rt.get(focused, f.nat, f.prv); }, 0) : null;
     const ov = Math.max(0, ...base.M.map(x => cosine(x.c.mix?.cat, z.mix?.cat)));
-    out.push({ c: z, d, givesN, gives$: givesW$, gives$ok, getsN: getsDs.length, gets$, ov, total$: givesW$ + (gets$ || 0), doors: givesN + getsDs.length });
+    const total$ = givesW$ + (gets$ || 0), totalD = givesD$ + (getsD$ || 0);
+    out.push({ c: z, d, givesN, gives$: givesW$, gives$ok, getsN: getsDs.length, gets$, ov, total$, totalD, value: val(total$, totalD), doors: givesN + getsDs.length });
   }
-  return out.sort((a, b) => b.total$ - a.total$ || b.doors - a.doors).slice(0, limit);
+  return out.sort((a, b) => (b.value || 0) - (a.value || 0) || b.doors - a.doors).slice(0, limit);
 }
-const usd = v => v === null || v === undefined ? "—" : fmtM(v * ui.cap);
 function viewRollup() {
   const ids = ui.roll.filter(id => CO.has(id));
   const q = norm(ui.rq);
   const hits = q.length > 1 ? list().filter(c => !ids.includes(c.id) && norm([c.name, ...(c.brands || [])].join(" ")).includes(q)).sort((a, b) => dnaOf(b).score - dnaOf(a).score).slice(0, 8) : [];
-  const capSel = `<select id="rcap" aria-label="Capture rate">${[0.1, 0.25, 0.5, 1].map(v => `<option value="${v}" ${v === ui.cap ? "selected" : ""}>Capture ${Math.round(v * 100)}% of cross-sell doors</option>`).join("")}</select>`;
+  const capSel = capSelect("cross-sell doors");
   const head = `<div class="page-h"><div class="grow"><div class="lbl">Build a platform</div><h1>Roll-up</h1>
-    <p>Pick the companies you'd put together. For each one, the cross-sell doors are distributors another member already sells to that stock its categories but don't carry it yet, valued at its own revenue per door. Category overlap shows whether the members sell the same things (head-to-head) or complement each other (a broader bag for the same distributors). The best next add-ons are ranked by the cross-sell they'd bring and get.</p></div></div>
+    <p>Pick the companies you'd put together. For each one, the cross-sell doors are distributors another member already sells to that stock its categories but don't carry it yet, valued at its own revenue per door times the rate multi-brand owners actually achieve on doors like that (higher where rivals already sell and in the category's native channels; higher for focused platforms). Category overlap shows whether the members sell the same things (head-to-head) or complement each other (a broader bag for the same distributors). The best next add-ons are ranked by the cross-sell they'd bring and get.</p></div></div>
   <div class="bar"><input class="search" id="rq" type="search" placeholder="Add a company or brand…" value="${esc(ui.rq)}" aria-label="Add a company">${capSel}${ids.length ? `<button class="tog" type="button" data-act="rclear">Clear</button>` : ""}</div>
   ${hits.length ? `<div class="bar">${hits.map(c => `<button class="tog" type="button" data-act="radd" data-id="${esc(c.id)}">+ ${esc(c.name)} <span class="faint">${dnaOf(c).score}</span></button>`).join("")}</div>` : ""}
   ${ids.length ? `<div class="bar">${ids.map(id => `<span class="tag" style="font-size:12px;padding:4px 8px">${esc(CO.get(id).name)} <button type="button" data-act="rdel" data-id="${esc(id)}" aria-label="Remove ${esc(CO.get(id).name)}" style="color:var(--ink-3);margin-left:4px">✕</button></span>`).join("")}</div>` : ""}`;
@@ -1168,7 +1216,7 @@ function viewRollup() {
     return head + `<section class="panel"><header><h2>Start from a platform</h2><span class="sp"></span><span class="lbl">PE-backed, highest DNA, on 3+ doors</span></header><div class="body">${starts.map(c => `<button class="tog" type="button" data-act="radd" data-id="${esc(c.id)}" style="margin:0 6px 6px 0">+ ${esc(c.name)} <span class="faint">${dnaOf(c).score}</span></button>`).join("")}<p class="muted" style="margin:10px 0 0">Or search above, or use "Add to roll-up" on any company page.</p></div></section>`;
   }
   const X = rollupCalc(ids), M = X.M;
-  const rev = M.reduce((a, x) => a + (num(x.c.rev) || 0), 0), xs = M.reduce((a, x) => a + (x.gainUsd || 0), 0);
+  const rev = M.reduce((a, x) => a + (num(x.c.rev) || 0), 0), xs = M.reduce((a, x) => a + (val(x.gainUsd, x.gainDemo) || 0), 0);
   const nb = M.reduce((a, x) => a + (reachIndex().byOwner.get(x.c.id) || []).length, 0);
   const cand = addonCands(ids);
   const short = c => esc(c.name.replace(/\s*\(.*\)$/, "").replace(/,? (Inc|LLC|Corp|Corporation|Co|Company)\.?$/i, ""));
@@ -1178,12 +1226,12 @@ function viewRollup() {
   return head + `<div class="gauges"><div class="gauge"><b>${M.length}</b><span class="lbl">Companies</span></div><div class="gauge"><b>${rev ? fmtM(rev) : "—"}</b><span class="lbl">Combined revenue</span></div>
     <div class="gauge"><b>${nb}</b><span class="lbl">Brands</span></div><div class="gauge"><b>${X.union.size}</b><span class="lbl">Doors combined</span></div>
     <div class="gauge"><b>${X.union.size ? pct(X.shared / X.union.size) : "—"}</b><span class="lbl">Doors shared by 2+</span></div>
-    <div class="gauge g"><b>${fmtM(xs * ui.cap)}</b><span class="lbl">Cross-sell at ${Math.round(ui.cap * 100)}% capture</span></div></div>
+    <div class="gauge g"><b>${fmtM(xs)}</b><span class="lbl">Cross-sell at ${capLbl()}</span></div></div>
   <section class="panel"><header><h2>Cross-sell by member</h2><span class="sp"></span><span class="lbl">Doors a member gains from the others' shelves</span></header>
   <div class="tw"><table><thead><tr><th>Company</th><th class="r">DNA</th><th class="r">Revenue</th><th class="r">Doors now</th><th class="r">Doors gained</th><th class="r">Cross-sell</th><th>Biggest doors gained (via)</th></tr></thead><tbody>
   ${M.map(x => `<tr><td><b><a href="#c.${esc(x.c.id)}">${esc(x.c.name)}</a></b><br><small class="faint">${ownerLine(x.c)}</small></td><td class="r"><span class="score ${dnaOf(x.c).band} num" style="font-size:16px">${dnaOf(x.c).score}</span></td>
-    <td class="r num">${x.c.rev ? fmtM(x.c.rev) : "—"}</td><td class="r num">${x.r.carried.size}</td><td class="r num">${x.gain.length}</td><td class="r num">${x.gainUsd !== null ? usd(x.gainUsd) : `<span class="faint">${x.r.thin ? "thin" : "no revenue"}</span>`}</td>
-    <td style="font-size:13px">${x.gain.slice(0, 4).map(g => `${distLink(g.d)} <span class="faint">(${g.from.map(short).join(", ")})</span>`).join("<br>") || `<span class="faint">None: already on every member door that stocks its categories</span>`}</td></tr>`).join("")}
+    <td class="r num">${x.c.rev ? fmtM(x.c.rev) : "—"}</td><td class="r num">${x.r.carried.size}</td><td class="r num">${x.gain.length}</td><td class="r num">${x.gainUsd !== null ? fmtM(val(x.gainUsd, x.gainDemo)) : `<span class="faint">${x.r.thin ? "thin" : "no revenue"}</span>`}</td>
+    <td style="font-size:13px">${x.gain.slice(0, 4).map(g => `${distLink(g.d)}${g.prv ? ` <span class="tag tri">Proven</span>` : ""} <span class="faint">(${g.from.map(short).join(", ")})</span>`).join("<br>") || `<span class="faint">None: already on every member door that stocks its categories</span>`}</td></tr>`).join("")}
   </tbody></table></div></section>
   ${M.length > 1 ? `<div class="grid2">
     <section class="panel"><header><h2>Who unlocks whom</h2><span class="sp"></span><span class="lbl">Doors the column company opens for the row company</span></header>
@@ -1199,9 +1247,10 @@ function viewRollup() {
   <section class="panel"><header><h2>Best next add-ons</h2><span class="sp"></span><span class="lbl">PE, family, ESOP and private owners · DNA 45+ · no bigger than the platform · ranked by cross-sell both ways</span></header>
   <div class="tw"><table><thead><tr><th>Company</th><th class="r">DNA</th><th class="r">Revenue</th><th class="r">Doors it opens for you</th><th class="r">Doors you open for it</th><th class="r">Cross-sell</th><th class="r">Category overlap</th><th></th></tr></thead><tbody>
   ${cand.map(k => `<tr><td><b><a href="#c.${esc(k.c.id)}">${esc(k.c.name)}</a></b><br><small class="faint">${ownerLine(k.c)}</small></td><td class="r"><span class="score ${k.d.band} num" style="font-size:16px">${k.d.score}</span></td>
-    <td class="r num">${k.c.rev ? fmtM(k.c.rev) : "—"}</td><td class="r num">${k.givesN}</td><td class="r num">${k.getsN}</td><td class="r num">${k.total$ ? fmtM(k.total$ * ui.cap) : "—"}</td><td class="r num">${Math.round(k.ov * 100)}%</td>
+    <td class="r num">${k.c.rev ? fmtM(k.c.rev) : "—"}</td><td class="r num">${k.givesN}</td><td class="r num">${k.getsN}</td><td class="r num">${k.total$ ? fmtM(k.value) : "—"}</td><td class="r num">${Math.round(k.ov * 100)}%</td>
     <td><button class="tog" type="button" data-act="radd" data-id="${esc(k.c.id)}">Add +</button></td></tr>`).join("") || `<tr><td colspan="8" class="faint">No candidates found.</td></tr>`}
   </tbody></table></div></section>
+  ${ratesPanel()}
   <div class="note">Cross-sell values use each company's revenue per door, so they need revenue and 3+ doors ("thin" otherwise), and they inherit the Whitespace caveats: the scrape can miss a listing, and revenue includes direct and retail sales. Brands count only verified and workbook owners, not guesses.</div>`;
 }
 
@@ -1297,10 +1346,10 @@ function viewStrategy(id) {
   const mk = [...r.adj.reduce((m, x) => m.set(x.d.market, [...(m.get(x.d.market) || []), x]), new Map())].sort((a, b) => b[1].length - a[1].length);
   const fixes = d.tests.filter(t => t.v < 2);
   const moves = [];
-  if (r.white.length) moves.push(["Push distribution", `${r.proven} proven missing door${r.proven === 1 ? "" : "s"}${r.ceiling !== null ? `, worth ${fmtM(r.ceiling * ui.cap)} at ${Math.round(ui.cap * 100)}% capture` : ""}`, r.white.slice(0, 3).map(x => x.d.name.replace(/\s*\(.*\)$/, "")).join(", ")]);
+  if (r.white.length) moves.push(["Push distribution", `${r.proven} proven missing door${r.proven === 1 ? "" : "s"}${r.ceiling !== null ? `, worth ${fmtM(val(r.ceiling, r.demo))} at ${capLbl()}` : ""}`, r.white.slice(0, 3).map(x => x.d.name.replace(/\s*\(.*\)$/, "")).join(", ")]);
   if (mk.length) moves.push(["Enter a new end market", `${esc(mk[0][0])}: ${mk[0][1].length} doors where its rivals already sell`, mk[0][1].slice(0, 3).map(x => x.d.name.replace(/\s*\(.*\)$/, "")).join(", ")]);
   if (ext.length) moves.push(["Extend the line", `${esc(ext[0].k)}: stocked at ${ext[0].doors} of its ${r.carried.size} doors`, ext[0].buy.length ? "Buy: " + ext[0].buy.map(x => x.b.owner).join(", ") : "Build, or license"]);
-  if (adds.length) moves.push(["Buy", `${esc(adds[0].c.name)}: opens ${adds[0].givesN} doors, gets ${adds[0].getsN}`, adds[0].total$ ? `${fmtM(adds[0].total$ * ui.cap)} cross-sell at ${Math.round(ui.cap * 100)}%` : ""]);
+  if (adds.length) moves.push(["Buy", `${esc(adds[0].c.name)}: opens ${adds[0].givesN} doors, gets ${adds[0].getsN}`, adds[0].total$ ? `${fmtM(adds[0].value)} cross-sell at ${capLbl()}` : ""]);
   const plan = STRAT.get(id), busy = ui.busy["plan:" + id];
   return `<a class="back" href="#c.${esc(id)}">← ${esc(c.name)}</a>
   <div class="page-h"><div class="grow"><div class="lbl">Strategy · ${ownerLine(c)}</div><h1>${esc(c.name)}</h1>
@@ -1308,7 +1357,7 @@ function viewStrategy(id) {
     <div class="dial"><b class="${d.band}">${d.score}</b><span class="lbl">DNA</span></div></div>
   <div class="gauges"><div class="gauge"><b>${c.rev ? fmtM(c.rev) : "—"}</b><span class="lbl">Revenue</span></div><div class="gauge"><b>${r.pen === null ? "—" : pct(r.pen)}</b><span class="lbl">Reach</span></div>
     <div class="gauge"><b>${r.doors ?? 0} / ${r.relevant ?? 0}</b><span class="lbl">Doors</span></div><div class="gauge g"><b>${r.proven ?? 0}</b><span class="lbl">Proven missing doors</span></div>
-    <div class="gauge"><b>${r.adj?.length ?? 0}</b><span class="lbl">New-market doors</span></div><div class="gauge"><b>${r.ceiling !== null && r.ceiling !== undefined ? fmtM(r.ceiling * ui.cap) : "—"}</b><span class="lbl">Headroom at ${Math.round(ui.cap * 100)}%</span></div></div>
+    <div class="gauge"><b>${r.adj?.length ?? 0}</b><span class="lbl">New-market doors</span></div><div class="gauge"><b>${r.ceiling !== null && r.ceiling !== undefined ? fmtM(val(r.ceiling, r.demo)) : "—"}</b><span class="lbl">Headroom at ${capLbl()}</span></div></div>
   ${moves.length ? `<section class="panel"><header><h2>Where to push</h2><span class="sp"></span><span class="lbl">The biggest move in each direction</span></header><div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">
     ${moves.map(([h, a, b]) => `<div style="border-left:4px solid var(--accent);padding:4px 0 4px 12px"><div class="lbl">${h}</div><p style="margin:4px 0 2px"><b>${a}</b></p><p class="muted" style="margin:0;font-size:13px">${esc(b)}</p></div>`).join("")}</div></section>` : ""}
   <section class="panel"><header><h2>Growth plan</h2><span class="sp"></span><span class="lbl">${plan ? `Written by Claude ${esc(String(plan.at || "").slice(0, 10))}` : "Claude turns the facts on this page into a plan"}</span></header><div class="body">
@@ -1324,7 +1373,7 @@ function viewStrategy(id) {
   ${adds.length ? `<section class="panel"><header><h2>Add-ons that cross-sell</h2><span class="sp"></span><span class="lbl">PE, family, ESOP and private owners · DNA 45+ · no bigger than this company</span></header>
   <div class="tw"><table><thead><tr><th>Company</th><th class="r">DNA</th><th class="r">Revenue</th><th class="r">Doors it opens</th><th class="r">Doors it gets</th><th class="r">Cross-sell</th><th class="r">Category overlap</th></tr></thead><tbody>
   ${adds.map(k => `<tr><td><b><a href="#c.${esc(k.c.id)}">${esc(k.c.name)}</a></b><br><small class="faint">${ownerLine(k.c)}</small></td><td class="r"><span class="score ${k.d.band} num" style="font-size:16px">${k.d.score}</span></td><td class="r num">${k.c.rev ? fmtM(k.c.rev) : "—"}</td>
-    <td class="r num">${k.givesN}</td><td class="r num">${k.getsN}</td><td class="r num">${k.total$ ? fmtM(k.total$ * ui.cap) : "—"}</td><td class="r num">${Math.round(k.ov * 100)}%</td></tr>`).join("")}
+    <td class="r num">${k.givesN}</td><td class="r num">${k.getsN}</td><td class="r num">${k.total$ ? fmtM(k.value) : "—"}</td><td class="r num">${Math.round(k.ov * 100)}%</td></tr>`).join("")}
   </tbody></table></div><div class="body" style="padding-top:0"><a class="tog" href="#rollup:${esc([id, ...adds.slice(0, 2).map(k => k.c.id)].join(","))}">Model it as a roll-up →</a></div></section>` : ""}
   ${fixes.length || priced.length ? `<section class="panel"><header><h2>Fix first</h2><span class="sp"></span><span class="lbl">DNA gaps and pricing</span></header><div class="body">
     ${fixes.map(t => `<p style="margin:0 0 10px"><b>${esc(t.t)}: ${["fail", "partly"][t.v]}.</b> ${esc(ADVICE[t.k] || "")} <span class="faint">${esc(t.why || "")}</span></p>`).join("")}
@@ -1455,7 +1504,7 @@ document.addEventListener("change", e => {
   if (e.target.id === "fam") { ui.fam = e.target.value; render(); }
   if (e.target.id === "seg") { ui.seg = e.target.value; if (ui.fam && SEGOF[ui.fam] !== ui.seg) ui.fam = ""; render(); }
   if (e.target.id === "rev") { ui.rev = e.target.value; render(); }
-  if (e.target.id === "rcap") { ui.cap = +e.target.value; render(); }
+  if (e.target.id === "rcap") { ui.cap = e.target.value === "demo" ? "demo" : +e.target.value; render(); }
   if (e.target.id === "rmin") { ui.rmin = e.target.value; render(); }
   if (e.target.id === "rsort") { ui.rsort = e.target.value; render(); }
   if (e.target.id === "dch") { ui.dch = e.target.value; render(); }

@@ -56,6 +56,16 @@ Prices and reviews do not feed the DNA test yet; coverage is too thin (258 price
 - **Headroom**: today's revenue per weighted door times the weighted doors still missing, scaled by a capture rate (10%, 25%, 50% or 100%). It is a ceiling, not a forecast: revenue includes direct and retail sales, and a listing the scrape missed shows as a missing door. Headroom needs revenue and at least 3 doors; companies on fewer show "thin".
 - **New-market doors**: distributors in end markets the company doesn't sell to yet, where 2 or more of its direct rivals already do. They show on the company page as upside beyond the core headroom, not counted in it.
 
+**Demonstrated cross-sell rates.** Dollar values default to rates measured from the data instead of a flat capture rate:
+- Across every owner with 2 or more brands, the app takes the sister brands' distributors that stock a brand's category and measures the share that also carry that brand.
+- The rate is split by distributor type: is it a native channel for the category (its end market holds most of the category's shelf presence)? Do the brand's direct rivals already sell there?
+- It is also split by portfolio size: focused (up to 6 brands) or sprawling.
+- In v16 the overall rate is 23%. A native channel where rivals already sell runs about 30% for focused owners and 23% for sprawling ones; an off-channel distributor with no rivals runs 6–14%.
+- Each missing or cross-sell door is valued at its row's rate. The rates are recomputed in the app from each import.
+- A flat 10/25/50/100% option is still in the capture menu.
+
+Rates under 50 observations fall back to the broader row.
+
 Every company page has a "Distribution headroom" panel with the missing doors, the rivals already there, and new end markets. The screen's last column is reach.
 
 ## Brand owners
