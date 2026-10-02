@@ -311,7 +311,7 @@ const PRICES = new Map(), priceLoading = new Set();
 let DEALS = [], DISTS = [], SRC = "", loaded = false, ver = 0;
 const OWN = [["pe", "PE"], ["family", "Family"], ["esop", "ESOP"], ["private", "Private"], ["corp", "Corporate"]];
 const ownKey = c => c.oclass === "public" || c.oclass === "sub_private" ? "corp" : c.oclass;
-const ui = { own: new Set(store.get("own", ["pe", "family"])), roll: store.get("roll", []), rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "n", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
+const ui = { own: new Set(store.get("own", ["pe", "family"])), roll: store.get("roll", []), rview: "xs", wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "n", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
   b: { q: "", status: "", tri: "", own: "", fam: "", seg: "", ch: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
 
 /* ---------- DNA ---------- */
@@ -1275,6 +1275,8 @@ function viewRollup() {
     <div class="gauge"><b>${X.union.size ? pct(X.shared / X.union.size) : "—"}</b><span class="lbl">Doors shared by 2+</span></div>
     <div class="gauge g"><b>${fmtM(xs)}</b><span class="lbl">Cross-sell at ${capLbl()}</span></div></div>
   ${rollPlanPanel(ids)}
+  <div class="bar" role="tablist" style="margin:4px 0 14px"><button class="tog" type="button" role="tab" data-act="rview" data-v="xs" aria-pressed="${ui.rview !== "ws"}">Cross-sell</button><button class="tog" type="button" role="tab" data-act="rview" data-v="ws" aria-pressed="${ui.rview === "ws"}">Whitespace</button><span class="faint" style="font-size:13px">${ui.rview === "ws" ? "Distributors none of the members sell to yet, where the platform's products fit" : "Distributors one member already sells to that another member could enter"}</span></div>
+  ${ui.rview === "ws" ? rollWsView(ids, X) : `
   <section class="panel"><header><h2>Cross-sell by member</h2><span class="sp"></span><span class="lbl">Doors a member gains from the others' shelves</span></header>
   <div class="tw"><table><thead><tr><th>Company</th><th class="r">DNA</th><th class="r">Revenue</th><th class="r">Doors now</th><th class="r">Doors gained</th><th class="r">Cross-sell</th><th>Biggest doors gained (via)</th></tr></thead><tbody>
   ${M.map(x => `<tr><td><b><a href="#c.${esc(x.c.id)}">${esc(x.c.name)}</a></b><br><small class="faint">${ownerLine(x.c)}</small></td><td class="r"><span class="score ${dnaOf(x.c).band} num" style="font-size:16px">${dnaOf(x.c).score}</span></td>
@@ -1292,6 +1294,7 @@ function viewRollup() {
     </tbody></table></div></section>
   </div>` : ""}
   ${X.h2h.length ? `<section class="panel"><header><h2>Head-to-head brands</h2><span class="sp"></span><span class="lbl">${X.h2h.length} pairs that compete today: rationalize or position</span></header><div class="body">${X.h2h.slice(0, 30).map(([a, b]) => `<span class="tag" style="font-size:11.5px"><a href="#b.${esc(a.id)}">${esc(a.name)}</a> vs <a href="#b.${esc(b.id)}">${esc(b.name)}</a></span>`).join("")}</div></section>` : ""}
+`}
   <section class="panel"><header><h2>Best next add-ons</h2><span class="sp"></span><span class="lbl">PE, family, ESOP and private owners · DNA 45+ · no bigger than the platform · ranked by cross-sell both ways</span></header>
   <div class="tw"><table><thead><tr><th>Company</th><th class="r">DNA</th><th class="r">Revenue</th><th class="r">Doors it opens for you</th><th class="r">Doors you open for it</th><th class="r">Cross-sell</th><th class="r">Category overlap</th><th></th></tr></thead><tbody>
   ${cand.map(k => `<tr><td><b><a href="#c.${esc(k.c.id)}">${esc(k.c.name)}</a></b><br><small class="faint">${ownerLine(k.c)}</small></td><td class="r"><span class="score ${k.d.band} num" style="font-size:16px">${k.d.score}</span></td>
@@ -1339,6 +1342,7 @@ Members:
 ${M.map(x => `- ${x.c.name} (${x.c.otype}${x.c.sponsor ? ", " + x.c.sponsor : ""}; DNA ${dnaOf(x.c).score}; revenue ${x.c.rev ? fmtM(x.c.rev) : "unknown"}; main categories ${cats(x.c)}; on ${x.r.carried.size} doors; reach ${x.r.pen === null ? "n/a" : pct(x.r.pen)}). Gains ${x.gain.length} doors from the others${x.gainDemo !== null ? `, worth ${fmtM(x.gainDemo)} at demonstrated rates` : " (no revenue or thin, so doors only)"}. Best: ${x.gain.slice(0, 6).map(g => `${g.d} (${pct(g.rtw)} of its SKUs fit${g.prv ? ", rivals already there" : ""}; via ${g.from.map(short).join("/")})`).join("; ") || "none"}.`).join("\n")}
 Who unlocks whom (doors one member opens for another): ${pairs.sort((a, b) => b[2] - a[2]).slice(0, 6).map(([a, b, n]) => `${a} opens ${n} for ${b}`).join("; ") || "n/a"}.
 Category overlap (cosine of SKU mix): ${ov.sort((a, b) => b[2] - a[2]).map(([a, b, v]) => `${a}–${b} ${Math.round(v * 100)}%`).join("; ") || "n/a"}.
+Whitespace (distributors no member sells to that stock members' categories): ${(W => `${W.core.length} in the platform's end markets worth ${fmtM(W.core.reduce((a, o) => a + o.value, 0))} at demonstrated rates; best: ${W.core.slice(0, 8).map(o => `${o.d.name} (fits ${o.fits.slice(0, 2).map(f => f.c.name.replace(/\s*\(.*\)$/, "") + " " + pct(f.rtw)).join(", ")}${o.rv.size ? "; rivals there: " + [...o.rv].slice(0, 2).join(", ") : ""})`).join("; ")}. New end markets: ${W.fresh.length} doors, e.g. ${W.fresh.slice(0, 4).map(o => o.d.name + " (" + o.d.market + ")").join(", ")}`)(rollWhitespace(X))}.
 Head-to-head brands today: ${X.h2h.slice(0, 10).map(([a, b]) => `${a.name} vs ${b.name}`).join("; ") || "none"}.
 Best next add-ons (PE/family/ESOP/private, DNA 45+, no bigger than the platform): ${cand.map(k => `${k.c.name} (${k.c.otype}, DNA ${k.d.score}, revenue ${k.c.rev ? fmtM(k.c.rev) : "unknown"}, opens ${k.givesN} doors for the platform, gets ${k.getsN}, category overlap ${Math.round(k.ov * 100)}%)`).join("; ") || "none"}.`;
 }
@@ -1353,6 +1357,7 @@ ${facts}
 
 Write the roll-up plan in Markdown, about 450 words. Start with one bold sentence: the investment thesis for this exact combination. Then "## " sections, each with 2-5 short bullets naming specific members, brands and distributors from the facts:
 ## Where the cross-sell is (by member: which doors, why they fit, who opens them)
+## Whitespace (distributors none of the members sell to yet: which to attack first and with which brands)
 ## First moves (the 5-8 highest-value brand-into-door moves to make first, in order)
 ## Go-to-market (one sales team or channel specialists; apply the ITW and focused-vs-sprawling evidence)
 ## Rationalize (head-to-head brands and overlapping categories)
@@ -1368,6 +1373,62 @@ Plain language, no hype, no em dashes.`;
     delete ui.busy[key]; render();
     toast(e?.code === "not_granted" ? "Claude isn't allowed on this page" : e?.code === "rate_limited" ? "Claude is busy; try again shortly" : "Claude couldn't answer");
   }
+}
+/* ---------- roll-up whitespace: distributors no member carries where the platform's products fit ----------
+   A door counts when at least one member has a right to win there (10%+ of its SKUs fit). Core = an end market some
+   member already sells to; new = another end market where 2+ of the members' direct rivals already sell. Value =
+   the sum, over members that fit, of revenue per full door x right to win x door size x the demonstrated rate. */
+const WS_STATUS = ["Not started", "Targeted", "In discussion", "Listed", "Passed"];
+function rollWhitespace(X) {
+  const M = X.M, rt = demoRates(), union = X.union, dmap = new Map(DISTS.map(d => [d.name, d]));
+  const mk = new Set([...union].map(n => dmap.get(n)?.market).filter(Boolean));
+  const doors = new Map();
+  for (const x of M) for (const [name, f] of x.r.fit) {
+    if (union.has(name)) continue;
+    const d = dmap.get(name); if (!d) continue;
+    const o = doors.get(name) || doors.set(name, { d, fits: [], value: 0, full: 0, prv: false, rv: new Set() }).get(name);
+    const p = rt.get(X.focused, f.nat, f.prv);
+    o.fits.push({ c: x.c, rtw: f.rtw, p, v: x.r.rpd ? x.r.rpd * f.w * p : null });
+    if (x.r.rpd) { o.value += x.r.rpd * f.w * p; o.full += x.r.rpd * f.w; }
+    if (f.prv) { o.prv = true; for (const b of (reachIndex().byOwner.get(x.c.id) || [])) for (const r of rivalsOf(b)) if ((r.dists || []).includes(name) && !M.some(m => m.c.id === r.owner_id)) o.rv.add(r.name); }
+  }
+  const all = [...doors.values()].map(o => ({ ...o, core: mk.has(o.d.market), fits: o.fits.sort((a, b) => b.rtw - a.rtw) }));
+  const core = all.filter(o => o.core), fresh = all.filter(o => !o.core && o.rv.size >= 2);
+  const by = (a, b) => b.value - a.value || b.fits.length - a.fits.length;
+  return { core: core.sort(by), fresh: fresh.sort(by), mk: [...mk] };
+}
+async function setDoorStatus(rid, door, st) {
+  const r = ROLLS.find(x => x.id === rid); if (!r || !db || !writable) return;
+  const doors = { ...(r.doors || {}) }; if (st === "Not started") delete doors[door]; else doors[door] = st;
+  r.doors = doors; render();
+  try { await db.doc("rollups/" + rid).update({ doors, at: now() }); } catch { toast("Couldn't save the status"); }
+}
+function rollWsView(ids, X) {
+  const W = rollWhitespace(X), list = ui.wsmk === "new" ? W.fresh : W.core;
+  const key = [...ids].sort().join(","), saved = ROLLS.find(r => [...(r.ids || [])].sort().join(",") === key);
+  const st = d => saved?.doors?.[d] || "Not started";
+  const rows = ui.wsst ? list.filter(o => st(o.d.name) === ui.wsst) : list;
+  const sum = xs => xs.reduce((a, o) => a + o.value, 0);
+  const counts = WS_STATUS.map(s => [s, list.filter(o => st(o.d.name) === s).length]);
+  const short = c => esc(c.name.replace(/\s*\(.*\)$/, "").replace(/,? (Inc|LLC|Corp|Corporation|Co|Company)\.?$/i, ""));
+  return `<div class="gauges"><div class="gauge"><b>${W.core.length}</b><span class="lbl">Whitespace doors in its markets</span></div>
+    <div class="gauge g"><b>${W.core.filter(o => o.prv).length}</b><span class="lbl">Proven: rivals already there</span></div>
+    <div class="gauge"><b>${fmtM(sum(W.core))}</b><span class="lbl">Value at demonstrated rates</span></div>
+    <div class="gauge"><b>${W.fresh.length}</b><span class="lbl">Doors in new end markets</span></div>
+    <div class="gauge"><b>${fmtM(sum(W.fresh))}</b><span class="lbl">New-market value</span></div>
+    ${saved ? `<div class="gauge"><b>${counts.filter(([s]) => s === "Listed").map(([, n]) => n)[0]}</b><span class="lbl">Listed so far</span></div>` : ""}</div>
+  <div class="bar"><button class="tog" type="button" data-act="wsmk" data-v="core" aria-pressed="${ui.wsmk !== "new"}">Its end markets (${W.core.length})</button><button class="tog" type="button" data-act="wsmk" data-v="new" aria-pressed="${ui.wsmk === "new"}">New end markets (${W.fresh.length})</button>
+    ${saved ? `<select id="wsst" aria-label="Status filter"><option value="">Any status</option>${counts.map(([s, n]) => `<option value="${s}" ${s === ui.wsst ? "selected" : ""}>${s} (${n})</option>`).join("")}</select>` : `<span class="faint" style="font-size:13px">Save this roll-up to track a status on each door.</span>`}</div>
+  <section class="panel"><header><h2>Whitespace tracker</h2><span class="sp"></span><span class="lbl">${ui.wsmk === "new" ? "Other end markets where 2+ of the members' rivals already sell" : `Platform end markets: ${esc(W.mk.join(", "))}`}</span></header>
+  <div class="tw"><table><thead><tr><th>Door</th><th>Channel</th><th>Members that fit (share of SKUs)</th><th>Rivals already there</th><th class="r">Value</th>${saved ? "<th>Status</th>" : ""}</tr></thead><tbody>
+  ${rows.slice(0, ui.wslimit).map(o => `<tr><td><b>${distLink(o.d.name)}</b><br><span class="faint" style="font-size:12.5px">${esc(o.d.end_market || o.d.market || "")}</span></td>
+    <td class="muted" style="font-size:13px">${esc((CHT.find(([k]) => k === o.d.ctype) || [, CHAN[o.d.channel] || ""])[1])}</td>
+    <td style="font-size:13px">${o.fits.slice(0, 4).map(f => `${short(f.c)} <span class="num faint">${pct(f.rtw)}</span>`).join("<br>")}${o.fits.length > 4 ? `<br><span class="faint">+${o.fits.length - 4}</span>` : ""}</td>
+    <td style="font-size:13px">${o.rv.size ? `<span class="tag tri">Proven</span> ${[...o.rv].slice(0, 3).map(esc).join(", ")}${o.rv.size > 3 ? ` +${o.rv.size - 3}` : ""}` : `<span class="faint">None yet</span>`}</td>
+    <td class="r num">${o.full ? fmtM(val(o.full, o.value)) : "—"}</td>
+    ${saved ? `<td><select data-roll="${esc(saved.id)}" data-wsdoor="${esc(o.d.name)}" aria-label="Status for ${esc(o.d.name)}" ${writable ? "" : "disabled"}>${WS_STATUS.map(s => `<option ${s === st(o.d.name) ? "selected" : ""}>${s}</option>`).join("")}</select></td>` : ""}</tr>`).join("") || `<tr><td colspan="6" class="faint">No whitespace doors here.</td></tr>`}
+  </tbody></table></div>${rows.length > ui.wslimit ? `<button class="more" type="button" data-act="wsmore">Show ${Math.min(40, rows.length - ui.wslimit)} more of ${rows.length - ui.wslimit}</button>` : ""}
+  <p class="faint" style="margin:0;padding:10px 16px 14px;font-size:12.5px">Value adds each fitting member's revenue per full door × its right to win × door size × the ${isDemo() ? "demonstrated rate" : capLbl()}; members with no revenue or under 3 doors count toward fit but not value.</p></section>`;
 }
 function savedRollsPanel(ids) {
   const key = [...ids].sort().join(",");
@@ -1612,6 +1673,9 @@ document.addEventListener("click", e => {
     else if (act === "rclear") { location.hash = "rollup:"; }
     else if (act === "plan") askPlan(a.dataset.id);
     else if (act === "rplan") askRollPlan();
+    else if (act === "rview") { ui.rview = a.dataset.v; render(); }
+    else if (act === "wsmk") { ui.wsmk = a.dataset.v; ui.wslimit = 40; render(); }
+    else if (act === "wsmore") { ui.wslimit += 40; render(); }
     else if (act === "rsave") saveRoll(false);
     else if (act === "rsavenew") saveRoll(true);
     else if (act === "rdelsave") deleteRoll(a.dataset.id);
@@ -1634,6 +1698,8 @@ document.addEventListener("click", e => {
 document.addEventListener("input", e => {
   if (e.target.id === "bq") { ui.b.q = e.target.value; ui.b.limit = 100; const pos = e.target.selectionStart; render(); const q = $("#bq"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
   if (e.target.id === "rname") { ui.rname = e.target.value; return; }
+  if (e.target.matches?.("select[data-wsdoor]")) { setDoorStatus(e.target.dataset.roll, e.target.dataset.wsdoor, e.target.value); return; }
+  if (e.target.id === "wsst") { ui.wsst = e.target.value; render(); return; }
   if (e.target.id === "rq") { ui.rq = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#rq"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
   if (e.target.id === "dq") { ui.dq = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#dq"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
   if (e.target.id === "q") { ui.q = e.target.value; ui.limit = 80; const pos = e.target.selectionStart; render(); const q = $("#q"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } }

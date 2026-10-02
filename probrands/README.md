@@ -15,6 +15,11 @@ Live app: https://claude.ai/artifact/UkLSFqKaS38kQqd4JmvNhk (private to the owne
   - head-to-head brand pairs
   - the best next add-ons: PE, family, ESOP and private owners with DNA 45+, no bigger than the platform, ranked by cross-sell both ways
   - **Save roll-ups**: name a combination and save it. Saved roll-ups live in the `rollups` collection, shared with everyone who can open the page, and list at the bottom of the Roll-up page. A company page links to every saved roll-up it's in.
+  - **Cross-sell / Whitespace switch**: Cross-sell covers distributors one member already sells to that another could enter. Whitespace covers distributors none of the members sell to yet, where at least one member has a right to win (10%+ of its SKUs fit).
+    - Each whitespace door shows which members fit and by how much, the rivals already there ("proven"), its channel type, and its value. Value is the sum over fitting members of revenue per full door × right to win × door size × the demonstrated rate.
+    - Doors are split into the platform's current end markets and new end markets (where 2+ of the members' rivals already sell).
+    - **Tracker**: on a saved roll-up, each whitespace door has a status (Not started, Targeted, In discussion, Listed, Passed), saved on the roll-up's document (`doors` field) and filterable.
+    - The roll-up plan from Claude now covers the whitespace too.
   - **Roll-up plan**: Claude writes a plan for the exact mix selected: thesis, where the cross-sell is, first moves, go-to-market, what to rationalize, next add-ons, and risks. It gets each member's best doors (fit, proof, who opens them), who unlocks whom, category overlap, head-to-head brands, the demonstrated rates with the ITW benchmark, and the next add-ons. Plans are saved in the `rollplans` collection, keyed by the set of members, so the same mix reopens its plan.
 - **Strategy** (from any company page):
   - "Where to push": the biggest move in each direction (distribution, new end market, line extension, add-on)
