@@ -106,6 +106,8 @@ The DNA test's "sold through pro distributors" check still uses the app's own br
 
 ## The DNA test
 
+**Scoring is frozen for now (Oct 2026):** while the market map is still being widened and its quality improved, the checks and their data sources stay as they are. New data (such as the v24 researched channel splits) is shown alongside the score, not fed into it. Revisit when the data settles.
+
 Seven checks, each Pass (full points), Partly (half) or Fail:
 
 | Check | Points | Where it comes from |
