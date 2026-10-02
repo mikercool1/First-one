@@ -2975,10 +2975,10 @@
    "why": "This is ITW Pro Brands itself"
   },
   "major": {
-   "v": 0,
-   "why": "Pro Brands is a small slice of ITW's ~$16B revenue"
+   "v": 2,
+   "why": "Judged as the ITW Pro Brands division, where small-format pro brands are essentially the whole business."
   },
-  "pro_pct": 3,
+  "pro_pct": 90,
   "pull": {
    "v": 2,
    "why": "LPS and Permatex are benchmark pro brands"
