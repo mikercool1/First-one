@@ -57,7 +57,7 @@ Seven checks, each Pass (full points), Partly (half) or Fail:
 
 Claude's judgments for all owners are in `import/judgments.json`. They come from Claude's knowledge plus the workbook facts, without new web research. On a company page you can click any check to change it, which saves as "Your call", or ask Claude to re-check the three judgment calls. Overrides live in the `dna` collection (one document per company), so re-importing the workbook never erases them. Precedence: your call, then a re-check from the page, then the imported judgment, then the data rule.
 
-**DNA workbook.** `Probrands_DNA_v12.xlsx` holds the DNA test in Excel, ready to paste into the market map. It has three sheets:
+**DNA workbook.** `Probrands_DNA_v16.xlsx` holds the DNA test in Excel, ready to paste into the market map. It has three sheets:
 - DNA by owner: every check's result, points, source and reason, keyed by the Master tab's Owner ID.
 - DNA by brand: each brand's owner score plus the three data checks scored for the brand alone, keyed by the Brands tab's Brand ID.
 - How it's scored.
@@ -66,7 +66,7 @@ To rebuild it after an import:
 
 ```
 NODE_PATH=$(npm root -g) node probrands/import/dump_dna.js dna.json
-python3 probrands/import/export_dna.py Professional_Brands_Market_Map_v12.xlsx dna.json probrands/Probrands_DNA_v12.xlsx
+python3 probrands/import/export_dna.py Professional_Brands_Market_Map_v16.xlsx dna.json probrands/Probrands_DNA_v16.xlsx
 ```
 
 The dump scores with the app's own code, so the numbers match the screen. Overrides saved in the app are not included.
@@ -76,13 +76,13 @@ Distributor channels (broadline MRO, trade specialty, retail-leaning) and the en
 ## Data
 
 ```
-python3 probrands/import/build_import.py Professional_Brands_Market_Map_v12.xlsx
+python3 probrands/import/build_import.py Professional_Brands_Market_Map_v16.xlsx
 ```
 
 This writes `import/out/data/*.json`, one file per document in the app's `data` collection: `co-N` (company summaries), `dt-N` (details), `br-N` (every brand), `deals`, `dists` and `index`. Every SKU goes in `import/out/sku/p-N.json`, the `sku` collection, which loads one document at a time when a brand page opens. Lists are split across documents because the database stores at most 256 KB per document; nothing is dropped. Load them with the ArtifactData tool (a `set` of each file). It also writes `import/out/judge/batch-N.json`, the facts behind the judgment calls, for scoring new owners.
 
 Owners come from the Master tab. Clean-up rules:
-- Owners listed twice are merged (16 merges in v10, including DuPont, S.C. Johnson, Kimberly-Clark, Control Solutions, Desco, FPC, FBC Chemical and Protexall).
+- Owners listed twice are merged (17 merges in v16, including DuPont, S.C. Johnson, Kimberly-Clark, Control Solutions, Desco, FPC, FBC Chemical and Protexall).
 - "Unknown" placeholder rows (including "Unknown (…)" variants) get no profile; their brands stay unowned.
 - Brands that only carry an unverified "Likely owner (PRIOR)" join a matching Master owner, or become an owner marked unverified.
 
@@ -90,4 +90,4 @@ The database still holds the earlier version's `companies`, `details` and `meta`
 
 Columns read when the workbook fills them (empty in v9): Est. brand rev, Pro brand rev, EBITDA reported, Platform EBITDA, EBITDA margin, the Master % by trade and % by package format splits, and List price. The app shows each one as soon as it has a value. Mfr part # is shown in the product table.
 
-Loaded now: v12 (1 Oct 2026), with 761 owners, all 3,094 brands, 10,511 SKUs, 438 deals, 60 categories and 3,377 captured prices. Brands: 1,090 verified owner, 78 workbook prior, 1,530 Claude guesses, 64 workbook triage guesses, 332 not identified. 651 brands sell in more than one category. 150 brands have a Claude owner guess that differs from the market map's triage guess. 226 owners have revenue.
+Loaded now: v16 (2 Oct 2026), with 813 owners (55 new, all judged), all 4,093 brands, 14,950 SKUs, 454 deals, 186 distributors and 4,714 captured prices. Brands: 1,136 verified owner, 79 workbook prior, 1,560 Claude guesses, 815 workbook triage guesses, 503 not identified. 412 owners have revenue. DNA bands: 211 green, 369 amber, 233 red. Not yet in the app: the Deep Profiles and Financial Evidence tabs and the Companies validation columns (revenue range, validation confidence and flags, PPP loans).
