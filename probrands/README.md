@@ -7,6 +7,7 @@ Live app: https://claude.ai/artifact/UkLSFqKaS38kQqd4JmvNhk (private to the owne
 ## Pages
 
 - **The screen**: every owner ranked by its DNA score. Green (70+) at the top, amber (45 to 69) in the middle, red (under 45) at the bottom. Companies that fail "pro brands are most of revenue" are out of scope and hidden behind a toggle. Filter by product family, end market or search.
+- **Whitespace**: how far each company is from full distribution, and what filling the gaps could be worth. A chart plots DNA score against reach, so the "great product, under-distributed" corner (DNA 70+, reach under 50%) stands out. The table ranks companies by headroom, lowest reach, or proven missing doors. See "Reach and headroom" below.
 - **Company**: the DNA test check by check, SKU mix (package format, end market, brand, distributor), the brand list with who carries each one, deals, the workbook's write-up and sources.
 - **Brands**: all 3,094 brands, searchable by brand, owner, product, maker or distributor, and filterable by the workbook's triage bucket (for example Actionable candidate), owner status (including where Claude's owner guess and the market map's disagree), owner type, segment, category, format, end market and distributor. Each brand has a page with its owner, where it's sold (with the broadline, specialty and retail split), package formats and every scraped SKU with links to the distributor listing.
 - **Competitors**: every brand page shows the market map's competitor list first (same category, ranked by distributor reach, with each owner's type and sponsor), then up to 8 more rival brands with each one's owner and ownership type (PE, Family, ESOP, Private, Corporate), and the Brands table shows the top 3. Rivals are matched in `import/build_import.py` by how alike their products look on distributor shelves (product categories, hero product and SKU names), ranked higher when they share distributors. Brands with the same owner are left out. Each company page rolls this up into "Who it competes with": the owners of rival brands, ranked by how many of the company's brands they meet.
@@ -33,6 +34,16 @@ Categories come from the market map's normalized categories (Brands tab, Categor
 - **The screen**: shows revenue and staff and can be filtered by revenue band.
 
 Prices and reviews do not feed the DNA test yet; coverage is too thin (258 priced brands, 93 with reviews).
+
+## Reach and headroom
+
+- **Doors**: a door is a scraped distributor, in an end market the company already sells to, that stocks 3 or more brands in a category making up 10% or more of the company's SKUs. Doors that already carry the company always count.
+- **Reach**: the share of those doors that carry the company, weighted by shelf size. A distributor stocking 40 brands in the category counts for more than one stocking 3.
+- **Missing doors**: doors that stock the category but not the company. They are ranked "proven" first, meaning one of the company's direct competitors already sells there.
+- **Headroom**: today's revenue per weighted door times the weighted doors still missing, scaled by a capture rate (10%, 25%, 50% or 100%). It is a ceiling, not a forecast: revenue includes direct and retail sales, and a listing the scrape missed shows as a missing door. Headroom needs revenue and at least 3 doors; companies on fewer show "thin".
+- **New-market doors**: distributors in end markets the company doesn't sell to yet, where 2 or more of its direct rivals already do. They show on the company page as upside beyond the core headroom, not counted in it.
+
+Every company page has a "Distribution headroom" panel with the missing doors, the rivals already there, and new end markets. The screen's last column is reach.
 
 ## Brand owners
 

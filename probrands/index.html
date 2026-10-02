@@ -10,6 +10,7 @@
   --ink:#ece7da; --ink-2:#aaa596; --ink-3:#77736a; --accent:#f2b705; --accent-ink:#141209; --accent-text:#f2b705;
   --good:#46b35f; --mid:#e8860c; --bad:#d9472f; --good-soft:#1c3122; --mid-soft:#3a2a12; --bad-soft:#3b1d17;
   --c1:#f2b705; --c2:#5aa9e6; --c3:#46b35f; --c4:#e8860c; --c5:#b48ee8; --c6:#d9472f; --c7:#3fc1b0; --c8:#c9c27a; --c0:#5d5b53;
+  --k-pe:#bb8b00; --k-fam:#2fa38c;
   --f-display:"Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
   --f-body:"Barlow", "Helvetica Neue", Arial, sans-serif;
   --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
@@ -20,13 +21,13 @@
   --bg:#e4e1d8; --rail:#1a1b18; --panel:#f3f1ea; --panel-2:#ebe8df; --sunk:#d9d5ca; --line:#c3beb1; --line-2:#a9a497;
   --ink:#171611; --ink-2:#55524a; --ink-3:#7c786d; --accent:#f2b705; --accent-ink:#141209; --accent-text:#8a6300;
   --good:#2e8a45; --mid:#b9620a; --bad:#b8321d; --good-soft:#d6ead9; --mid-soft:#f3e0c6; --bad-soft:#f2d6cf;
-  --c1:#c99500; --c2:#2f7fc0; --c3:#2e8a45; --c4:#c96a06; --c5:#7d5bc2; --c6:#b8321d; --c7:#1e9585; --c8:#8c8540; --c0:#a39f93;
+  --c1:#c99500; --c2:#2f7fc0; --c3:#2e8a45; --c4:#c96a06; --c5:#7d5bc2; --c6:#b8321d; --c7:#1e9585; --c8:#8c8540; --c0:#a39f93; --k-pe:#a87b00; --k-fam:#0f8f76;
   color-scheme:light}}
 :root[data-theme="light"]{
   --bg:#e4e1d8; --rail:#1a1b18; --panel:#f3f1ea; --panel-2:#ebe8df; --sunk:#d9d5ca; --line:#c3beb1; --line-2:#a9a497;
   --ink:#171611; --ink-2:#55524a; --ink-3:#7c786d; --accent:#f2b705; --accent-ink:#141209; --accent-text:#8a6300;
   --good:#2e8a45; --mid:#b9620a; --bad:#b8321d; --good-soft:#d6ead9; --mid-soft:#f3e0c6; --bad-soft:#f2d6cf;
-  --c1:#c99500; --c2:#2f7fc0; --c3:#2e8a45; --c4:#c96a06; --c5:#7d5bc2; --c6:#b8321d; --c7:#1e9585; --c8:#8c8540; --c0:#a39f93;
+  --c1:#c99500; --c2:#2f7fc0; --c3:#2e8a45; --c4:#c96a06; --c5:#7d5bc2; --c6:#b8321d; --c7:#1e9585; --c8:#8c8540; --c0:#a39f93; --k-pe:#a87b00; --k-fam:#0f8f76;
   color-scheme:light}
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--ink);margin:0}
@@ -218,6 +219,16 @@ td.rv{font-size:13px;line-height:1.5;white-space:nowrap}
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--accent);color:var(--accent-ink);font:700 13px var(--f-mono);padding:10px 16px;z-index:50;text-transform:uppercase;letter-spacing:.06em}
 .note{border-left:4px solid var(--accent);background:var(--panel);padding:10px 14px;margin-bottom:16px;color:var(--ink-2);font-size:14px}
 .note.warn{border-left-color:var(--mid)}
+#tip{position:fixed;z-index:50;pointer-events:none;background:var(--panel-2);border:1px solid var(--line-2);padding:8px 10px;font-size:13px;color:var(--ink);max-width:280px;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+#tip b{display:block;margin-bottom:2px}
+.qchart{width:100%;height:auto;display:block}
+.qchart .gl{stroke:var(--line);stroke-width:1}
+.qchart .ax{fill:var(--ink-3);font:600 11px var(--f-mono)}
+.qchart .ql{fill:var(--ink-2);font:600 12px var(--f-mono);text-transform:uppercase;letter-spacing:.08em}
+.qchart .dot{cursor:pointer;stroke:var(--panel);stroke-width:2}
+.qchart .dot:hover{stroke:var(--ink)}
+.penbar{display:inline-block;width:80px;height:8px;background:var(--sunk);border:1px solid var(--line);vertical-align:middle;margin-right:6px}
+.penbar i{display:block;height:100%;background:var(--accent)}
 .obar{display:flex;height:12px;min-width:120px;background:var(--sunk);border:1px solid var(--line)}
 .obar i{display:block;height:100%}
 .olegend{display:flex;flex-wrap:wrap;gap:4px 14px;font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2)}
@@ -256,6 +267,7 @@ td.rv{font-size:13px;line-height:1.5;white-space:nowrap}
     <div class="plate"><b>Probrands</b><small>US professional brands · deal screen</small></div>
     <nav class="nav" id="nav">
       <a href="#screen" data-v="screen">The screen<small id="nScreen"></small></a>
+      <a href="#reach" data-v="reach">Whitespace</a>
       <a href="#brands" data-v="brands">Brands<small id="nBrands"></small></a>
       <a href="#cats" data-v="cats">Categories<small id="nCats"></small></a>
       <a href="#dists" data-v="dists">Distributors<small id="nDists"></small></a>
@@ -272,6 +284,7 @@ td.rv{font-size:13px;line-height:1.5;white-space:nowrap}
   <main class="main" id="app"><div class="skel">Loading the market map…</div></main>
 </div>
 <div id="toast" hidden></div>
+<div id="tip" hidden></div>
 
 <script>
 (() => {
@@ -297,7 +310,7 @@ const PRICES = new Map(), priceLoading = new Set();
 let DEALS = [], DISTS = [], SRC = "", loaded = false, ver = 0;
 const OWN = [["pe", "PE"], ["family", "Family"], ["esop", "ESOP"], ["private", "Private"], ["corp", "Corporate"]];
 const ownKey = c => c.oclass === "public" || c.oclass === "sub_private" ? "corp" : c.oclass;
-const ui = { own: new Set(store.get("own", ["pe", "family"])), q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "n", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
+const ui = { own: new Set(store.get("own", ["pe", "family"])), cap: 0.25, rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "n", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
   b: { q: "", status: "", tri: "", own: "", fam: "", seg: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
 
 /* ---------- DNA ---------- */
@@ -421,7 +434,7 @@ function route() {
   if (h.startsWith("web")) return { v: "web", id: h.split(".")[1] || null };
   if (h.startsWith("cat.")) return { v: "cat", id: h.slice(4) };
   if (h.startsWith("d.")) return { v: "dist", id: h.slice(2) };
-  if (["screen", "consolidators", "mix", "brands", "cats", "dists"].includes(h)) return { v: h };
+  if (["screen", "consolidators", "mix", "brands", "cats", "dists", "reach"].includes(h)) return { v: h };
   return { v: "screen" };
 }
 function chrome(r) {
@@ -448,7 +461,7 @@ function viewScreen() {
     && (!q || norm([c.name, ...(c.brands || []), c.sponsor, c.parent, c.category].join(" ")).includes(q)));
   const outN = rows.filter(c => dnaOf(c).out).length;
   const inScope = rows.filter(c => !dnaOf(c).out), outRows = rows.filter(c => dnaOf(c).out);
-  const key = { dna: c => dnaOf(c).score, skus: c => c.skus || 0, brands: c => (c.brands || []).length, name: c => c.name.toLowerCase(), dist: c => c.m?.ndp || 0, rev: c => num(c.rev) ?? -1 }[ui.sort];
+  const key = { dna: c => dnaOf(c).score, skus: c => c.skus || 0, brands: c => (c.brands || []).length, name: c => c.name.toLowerCase(), dist: c => c.m?.ndp || 0, rev: c => num(c.rev) ?? -1, pen: c => reachOf(c).pen ?? 2 }[ui.sort];
   const cmp = (a, b) => { const x = key(a), y = key(b); return (x < y ? -1 : x > y ? 1 : 0) * ui.dir || dnaOf(b).score - dnaOf(a).score; };
   inScope.sort(cmp); outRows.sort(cmp);
   const shown = inScope.slice(0, ui.limit);
@@ -465,7 +478,7 @@ function viewScreen() {
       <span class="hide-m mod"><span class="brs">${esc((c.brands || []).slice(0, 4).join(", "))}</span><small class="faint" style="display:block;font-size:12.5px">${esc(c.model || "Business model not mapped")}${c.rev ? ` · ${fmtM(c.rev)} rev.` : ""}${c.emp_band || c.emp ? ` · ${esc(c.emp_band || Math.round(c.emp).toLocaleString())} staff` : ""}</small></span>
       <span class="num r">${c.skus || 0}</span>
       <span class="num r">${c.m?.ndp || 0}</span>
-      <span class="num r hide-m">${pct(c.m?.hand)}</span>
+      <span class="num r hide-m">${(p => p === null ? "—" : pct(p))(reachOf(c).pen)}</span>
     </a>`;
   };
   return `<div class="page-h"><div class="grow"><div class="lbl">${esc(ownSummary())}</div><h1>The screen</h1>
@@ -487,7 +500,7 @@ function viewScreen() {
     <select id="mkt" aria-label="End market"><option value="">All end markets</option>${mkts.map(f => `<option ${f === ui.mkt ? "selected" : ""}>${esc(f)}</option>`).join("")}</select>
   </div>
   <div class="rows" role="list">
-    <div class="rhead"><span></span>${sortBtn("dna", "DNA")}<span class="lbl">7 checks</span>${sortBtn("name", "Company · owner")}<span class="hide-m">${sortBtn("rev", "Brands · model · size")}</span>${sortBtn("skus", "SKUs", "r")}${sortBtn("dist", "Dist.", "r")}<span class="lbl r hide-m">Hand</span></div>
+    <div class="rhead"><span></span>${sortBtn("dna", "DNA")}<span class="lbl">7 checks</span>${sortBtn("name", "Company · owner")}<span class="hide-m">${sortBtn("rev", "Brands · model · size")}</span>${sortBtn("skus", "SKUs", "r")}${sortBtn("dist", "Dist.", "r")}<span class="r hide-m">${sortBtn("pen", "Reach", "r")}</span></div>
     ${shown.map(row).join("") || `<div class="empty">Nothing matches. Widen the ownership filter or clear the search.</div>`}
     ${inScope.length > shown.length ? `<button class="more" type="button" data-act="more">Show ${Math.min(80, inScope.length - shown.length)} more of ${inScope.length - shown.length}</button>` : ""}
     ${outN ? `<div class="cut"><b>Out of scope · ${outN}</b><span class="muted">Pro brands are a small slice of these companies' sales.</span><span style="flex:1"></span><button class="tog" type="button" data-act="out" aria-pressed="${ui.showOut}">${ui.showOut ? "Hide" : "Show"} them</button></div>${ui.showOut ? outRows.map(row).join("") : ""}` : ""}
@@ -539,6 +552,7 @@ function viewCompany(id) {
       <td>${(b.dists || []).slice(0, 6).map(x => `<span class="tag">${esc(x.replace(/\s*\(.*\)$/, ""))}</span>`).join("")}${(b.dists || []).length > 6 ? `<span class="faint">+${b.dists.length - 6}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="6" class="faint">No brands linked in the map.</td></tr>`}
     </tbody></table></div></section>
   ${dt.size_note || c.size_basis ? `<div class="note">Size: ${esc(c.size_basis || "")}${c.size_basis && dt.size_note ? ". " : ""}${md1(dt.size_note || "")}${c.linkedin ? ` · <a href="${esc(c.linkedin)}" target="_blank" rel="noopener">LinkedIn</a>` : ""}. EBITDA is revenue times the market map's assumed margin for the business model, not a reported figure.</div>` : ""}
+  ${reachPanel(c)}
   ${companyRivals(id)}
   ${likelyOf(id)}
   ${c.rev_mix ? `<section class="panel"><header><h2>Revenue mix</h2><span class="sp"></span><span class="lbl">From the market map</span></header><div class="body mixes">${c.rev_mix.trade ? mixBlock("By trade", rows(c.rev_mix.trade), 100) : ""}${c.rev_mix.fmt ? mixBlock("By package format", rows(c.rev_mix.fmt), 100) : ""}</div></section>` : ""}
@@ -972,6 +986,128 @@ function viewDist(i) {
   </tbody></table></div></section>`;
 }
 
+/* ---------- reach: how penetrated each owner is in the distributors that stock its categories ----------
+   A door is a scraped distributor that stocks 3+ brands in a category making up 10%+ of the owner's SKUs (or that already
+   carries the owner). Doors are weighted by the size of that category shelf, so a big plumbing wholesaler counts for more
+   than a small one. Reach = weighted doors carried / weighted doors that stock the categories. Headroom = today's revenue
+   per weighted door x the weighted doors not carried: a ceiling, scaled by the capture rate picked on the Whitespace page. */
+let reachC = { v: -1 };
+function reachIndex() {
+  if (reachC.v === ver) return reachC;
+  const shelf = new Map(), byOwner = new Map(), leaders = new Map();
+  for (const b of BR.values()) {
+    for (const d of b.dists || []) { const m = shelf.get(d) || shelf.set(d, new Map()).get(d); for (const c of Object.keys(b.allc || {})) if (plays(b, c)) m.set(c, (m.get(c) || 0) + 1); }
+    if (b.owner_id && b.status !== "guess") (byOwner.get(b.owner_id) || byOwner.set(b.owner_id, []).get(b.owner_id)).push(b);
+    for (const c of Object.keys(b.allc || {})) if (plays(b, c)) { const l = leaders.get(c); if (!l || (b.dists || []).length > (l.dists || []).length) leaders.set(c, b); }
+  }
+  return (reachC = { v: ver, scraped: DISTS.filter(d => /scraped/i.test(d.status)), shelf, byOwner, leaders, memo: new Map() });
+}
+function reachOf(c) {
+  const R = reachIndex(); if (R.memo.has(c.id)) return R.memo.get(c.id);
+  const bs = R.byOwner.get(c.id) || [];
+  const cat = c.mix?.cat || {}, tot = Object.values(cat).reduce((a, n) => a + n, 0) || 1;
+  let shares = Object.entries(cat).map(([k, n]) => [k, n / tot]).filter(([k, s]) => s >= 0.1 && k !== "Unclassified").sort((a, b) => b[1] - a[1]);
+  if (!shares.length && bs.length && bs[0].ncat !== "Unclassified") shares = [[bs[0].ncat, 1]];
+  const carried = new Set(bs.flatMap(b => b.dists || []));
+  const dmap = new Map(R.scraped.map(d => [d.name, d]));
+  const myMkts = new Set([...carried].map(n => dmap.get(n)?.market).filter(Boolean));
+  const rivals = [], seen = new Set();
+  for (const b of bs) for (const x of rivalsOf(b)) if (x.owner_id !== c.id && !seen.has(x.id)) { seen.add(x.id); rivals.push(x); }
+  const core = [], adj = [];
+  for (const d of R.scraped) {
+    const m = R.shelf.get(d.name), has = carried.has(d.name);
+    if (!has && !shares.some(([k]) => (m?.get(k) || 0) >= 3)) continue;
+    const w = Math.max(1, shares.reduce((a, [k, s]) => a + s * (m?.get(k) || 0), 0));
+    const rv = has ? [] : rivals.filter(x => (x.dists || []).includes(d.name));
+    const row = { d, w, has, rv };
+    if (has || myMkts.has(d.market)) core.push(row);       // same end markets it already sells to: the core whitespace
+    else if (rv.length >= 2) adj.push(row);                 // a new end market, where 2+ of its direct rivals already sell
+  }
+  const W = core.reduce((a, r) => a + r.w, 0), Wc = core.filter(r => r.has).reduce((a, r) => a + r.w, 0);
+  const sortW = (a, b) => (b.rv.length > 0) - (a.rv.length > 0) || b.w - a.w;
+  const white = core.filter(r => !r.has).sort(sortW);
+  adj.sort((a, b) => b.rv.length - a.rv.length || b.w - a.w);
+  const main = shares[0]?.[0] || bs[0]?.ncat, rev = num(c.rev);
+  const out = { doors: core.filter(r => r.has).length, relevant: core.length, pen: W && Wc ? Wc / W : null, W, Wc, white, adj,
+    proven: white.filter(r => r.rv.length).length, mkts: [...myMkts], main, leader: R.leaders.get(main), rev,
+    thin: core.filter(r => r.has).length < 3,
+    ceiling: rev && Wc && core.filter(r => r.has).length >= 3 ? rev * (W - Wc) / Wc : null, carriedRows: core.filter(r => r.has) };
+  R.memo.set(c.id, out); return out;
+}
+const fmtX = v => v >= 10 ? Math.round(v) + "×" : v.toFixed(1) + "×";
+function reachPanel(c) {
+  const r = reachOf(c); if (r.pen === null || !r.relevant) return "";
+  const cap = ui.cap;
+  return `<section class="panel"><header><h2>Distribution headroom</h2><span class="sp"></span><span class="lbl">Doors that stock ${esc(r.main || "its categories")}${r.leader ? ` · leader ${esc(r.leader.name)} on ${(r.leader.dists || []).length}` : ""}</span></header>
+  <div class="gauges" style="margin:0;border:0;border-bottom:1px solid var(--line)">
+    <div class="gauge"><b>${r.doors}</b><span class="lbl">Doors now</span></div><div class="gauge"><b>${r.relevant}</b><span class="lbl">Doors that stock its categories</span></div>
+    <div class="gauge ${r.pen >= 0.6 ? "g" : r.pen >= 0.3 ? "a" : "r"}"><b>${pct(r.pen)}</b><span class="lbl">Reach (shelf-weighted)</span></div>
+    <div class="gauge"><b>${r.white.length}</b><span class="lbl">Missing doors</span></div><div class="gauge g"><b>${r.proven}</b><span class="lbl">Proven: rivals already there</span></div>
+    ${r.ceiling !== null ? `<div class="gauge"><b>${fmtM(r.ceiling * cap)}</b><span class="lbl">Headroom at ${Math.round(cap * 100)}% capture</span></div>` : ""}</div>
+  <div class="body"><p class="muted" style="margin:0 0 10px;font-size:13.5px">Doors are the scraped distributors in the end markets it already sells to (${esc(r.mkts.join(", ") || "none yet")}) that stock its categories. ${r.ceiling !== null ? `At today's ${fmtM(r.rev)} across ${r.doors} doors, filling every missing door would add up to ${fmtM(r.ceiling)} (${fmtX(r.W / r.Wc)} today's revenue). Read it as a ceiling: revenue includes direct and non-distributor sales, and the scrape can miss a listing. ` : r.thin ? "Found on fewer than 3 doors, too few to estimate revenue per door, so headroom is in doors only. " : "No revenue in the market map yet, so headroom is in doors only. "}Proven doors already carry this company's direct competitors, so the category sells there. <a href="#reach">All companies →</a></p>
+  ${r.white.length ? `<div class="tw"><table><thead><tr><th>Missing door</th><th>Channel</th><th class="r">Category shelf</th><th>Rivals already there</th></tr></thead><tbody>
+  ${r.white.slice(0, 20).map(x => `<tr><td><b>${distLink(x.d.name)}</b><br><span class="faint" style="font-size:12.5px">${esc(x.d.end_market || x.d.market || "")}</span></td><td class="muted">${CHAN[x.d.channel] || ""}</td><td class="r num">${Math.round(x.w)}</td>
+    <td>${x.rv.length ? `<span class="tag tri">Proven</span> ${x.rv.slice(0, 3).map(b => `<a href="#b.${esc(b.id)}">${esc(b.name)}</a>`).join(", ")}${x.rv.length > 3 ? ` +${x.rv.length - 3}` : ""}` : `<span class="faint">None of its rivals yet</span>`}</td></tr>`).join("")}
+  </tbody></table></div>${r.white.length > 20 ? `<p class="faint" style="margin:8px 0 0;font-size:13px">+${r.white.length - 20} smaller doors.</p>` : ""}` : `<p class="muted">On every door that stocks its categories.</p>`}
+  ${r.adj.length ? `<h3 style="margin:16px 0 8px;font-size:18px">New end markets</h3><p class="muted" style="margin:0 0 8px;font-size:13.5px">Doors outside the markets it sells to today where 2 or more of its direct rivals already sell. Upside beyond the core headroom above, not counted in it.</p>
+  <div class="tw"><table><thead><tr><th>End market</th><th class="r">Doors</th><th>Biggest doors</th><th>Rivals there</th></tr></thead><tbody>
+  ${[...r.adj.reduce((m, x) => m.set(x.d.market, [...(m.get(x.d.market) || []), x]), new Map())].sort((a, b) => b[1].length - a[1].length).slice(0, 10).map(([mk, xs]) => `<tr><td><b>${esc(mk)}</b></td><td class="r num">${xs.length}</td><td>${xs.slice(0, 3).map(x => distLink(x.d.name)).join(", ")}</td><td class="muted">${[...new Set(xs.flatMap(x => x.rv.map(b => b.name)))].slice(0, 4).map(esc).join(", ")}</td></tr>`).join("")}
+  </tbody></table></div>` : ""}
+  <p class="faint" style="margin:10px 0 0;font-size:13px">Carried today: ${r.carriedRows.map(x => distLink(x.d.name)).join(", ") || "none"}.</p></div></section>`;
+}
+function reachChart(rows) {
+  const W = 820, H = 400, m = { l: 48, r: 16, t: 16, b: 40 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const X = p => m.l + p * iw, Y = s => m.t + (1 - s / 100) * ih;
+  const dot = r => {
+    const c = r.c, d = dnaOf(c), x = +X(r.r.pen).toFixed(1), y = +Y(d.score).toFixed(1);
+    const tip = esc(`<b>${esc(c.name)}</b>DNA ${d.score} · reach ${pct(r.r.pen)} · ${r.r.doors} of ${r.r.relevant} doors${r.r.ceiling !== null ? ` · headroom ${fmtM(r.r.ceiling * ui.cap)}` : ""}`);
+    const a = `data-tip="${tip}" data-go="c.${esc(c.id)}"${r.r.thin ? ' opacity=".35"' : ""}`;
+    if (c.oclass === "pe") return `<path class="dot" d="M${x} ${y - 7}L${x + 7} ${y}L${x} ${y + 7}L${x - 7} ${y}Z" fill="var(--k-pe)" ${a}/>`;
+    if (c.oclass === "family") return `<circle class="dot" cx="${x}" cy="${y}" r="5.5" fill="var(--k-fam)" ${a}/>`;
+    return `<circle class="dot" cx="${x}" cy="${y}" r="4.5" fill="var(--panel)" style="stroke:var(--ink-3);stroke-width:1.5" ${a}/>`;
+  };
+  const by = k => rows.filter(r => k === "other" ? r.c.oclass !== "pe" && r.c.oclass !== "family" : r.c.oclass === k).map(dot).join("");
+  return `<svg class="qchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="DNA score against distribution reach, one mark per company">
+    <rect x="${m.l}" y="${m.t}" width="${X(0.5) - m.l}" height="${Y(70) - m.t}" fill="var(--good-soft)" opacity=".7"/>
+    ${[0, 25, 45, 70, 100].map(s => `<line class="gl" x1="${m.l}" x2="${W - m.r}" y1="${Y(s)}" y2="${Y(s)}"/><text class="ax" x="${m.l - 8}" y="${Y(s) + 4}" text-anchor="end">${s}</text>`).join("")}
+    ${[0, 0.25, 0.5, 0.75, 1].map(p => `<line class="gl" x1="${X(p)}" x2="${X(p)}" y1="${m.t}" y2="${H - m.b}"/><text class="ax" x="${X(p)}" y="${H - m.b + 18}" text-anchor="middle">${Math.round(p * 100)}%</text>`).join("")}
+    <line x1="${m.l}" x2="${W - m.r}" y1="${Y(70)}" y2="${Y(70)}" stroke="var(--ink-3)" stroke-dasharray="4 4"/><line x1="${X(0.5)}" x2="${X(0.5)}" y1="${m.t}" y2="${H - m.b}" stroke="var(--ink-3)" stroke-dasharray="4 4"/>
+    <text class="ql" x="${m.l + 10}" y="${m.t + 20}">Great product, under-distributed</text>
+    <text class="ax" x="${m.l + iw / 2}" y="${H - 6}" text-anchor="middle">Reach: share of the doors that stock its categories →</text>
+    <text class="ax" transform="translate(14 ${m.t + ih / 2}) rotate(-90)" text-anchor="middle">DNA score →</text>
+    ${by("other")}${by("family")}${by("pe")}
+  </svg>`;
+}
+function viewReach() {
+  const base = visible().filter(c => ui.showOut || !dnaOf(c).out);
+  let rows = base.map(c => ({ c, r: reachOf(c) })).filter(x => x.r.pen !== null && x.r.relevant > 0);
+  if (ui.rmin) rows = rows.filter(x => dnaOf(x.c).score >= +ui.rmin);
+  const key = { head: x => x.r.ceiling === null ? -1 : x.r.ceiling, pen: x => -x.r.pen, proven: x => x.r.proven, missing: x => x.r.white.length, dna: x => dnaOf(x.c).score }[ui.rsort];
+  rows.sort((a, b) => key(b) - key(a) || dnaOf(b.c).score - dnaOf(a.c).score);
+  const sweet = rows.filter(x => dnaOf(x.c).score >= 70 && x.r.pen < 0.5 && !x.r.thin);
+  const totHead = rows.reduce((a, x) => a + (x.r.ceiling || 0), 0) * ui.cap;
+  const pens = rows.map(x => x.r.pen).sort((a, b) => a - b), med = pens.length ? pens[Math.floor(pens.length / 2)] : null;
+  const legend = `<div class="olegend"><span><svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:5px"><path d="M6 0L12 6L6 12L0 6Z" fill="var(--k-pe)"/></svg>PE-backed</span><span><i style="background:var(--k-fam);border-radius:50%"></i>Family</span><span><i style="border:1.5px solid var(--ink-3);border-radius:50%;background:none"></i>Other owners</span><span><i style="background:var(--good-soft)"></i>DNA 70+, reach under 50%</span><span>Faint marks: on fewer than 3 doors</span></div>`;
+  return `<div class="page-h"><div class="grow"><div class="lbl">${esc(ownSummary())} · ${ui.showOut ? "including" : "excluding"} out-of-scope companies</div><h1>Whitespace</h1>
+    <p>How far each company is from full distribution. A door is a scraped distributor that stocks the company's categories; reach is the share of those doors, weighted by shelf size, that already carry it. The shaded corner holds great products most of their channel doesn't stock yet: the buy-and-push-through-distribution plays. Headroom is today's revenue per door times the doors still missing in the end markets it already sells to, scaled by the capture rate; it needs revenue and at least 3 doors. New-market doors are distributors in other end markets where 2+ of its direct rivals already sell.</p></div>
+    <button class="tog" type="button" data-act="out" aria-pressed="${ui.showOut}">Include out of scope</button></div>
+  <div class="gauges"><div class="gauge"><b>${rows.length}</b><span class="lbl">Companies</span></div><div class="gauge g"><b>${sweet.length}</b><span class="lbl">Great product, under-distributed (3+ doors)</span></div>
+    <div class="gauge"><b>${med === null ? "—" : pct(med)}</b><span class="lbl">Median reach</span></div><div class="gauge"><b>${rows.reduce((a, x) => a + x.r.proven, 0).toLocaleString()}</b><span class="lbl">Proven missing doors</span></div>
+    <div class="gauge"><b>${fmtM(totHead)}</b><span class="lbl">Headroom at ${Math.round(ui.cap * 100)}% capture</span></div></div>
+  <div class="bar"><select id="rcap" aria-label="Capture rate">${[0.1, 0.25, 0.5, 1].map(v => `<option value="${v}" ${v === ui.cap ? "selected" : ""}>Capture ${Math.round(v * 100)}% of missing doors</option>`).join("")}</select>
+    <select id="rmin" aria-label="Minimum DNA">${[["", "Any DNA"], ["45", "DNA 45+ (amber and green)"], ["70", "DNA 70+ (green)"]].map(([k, l]) => `<option value="${k}" ${k === ui.rmin ? "selected" : ""}>${l}</option>`).join("")}</select>
+    <select id="rsort" aria-label="Sort">${[["head", "Most headroom ($)"], ["pen", "Lowest reach"], ["proven", "Most proven missing doors"], ["missing", "Most missing doors"], ["dna", "Highest DNA"]].map(([k, l]) => `<option value="${k}" ${k === ui.rsort ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select></div>
+  <section class="panel"><header><h2>DNA against reach</h2><span class="sp"></span>${legend}</header><div class="body">${reachChart(rows)}</div></section>
+  <section class="panel"><div class="tw"><table><thead><tr><th>Company</th><th class="r">DNA</th><th class="r">Revenue</th><th>Reach</th><th class="r">Doors</th><th class="r">Proven missing</th><th class="r">New-market doors</th><th class="r">Headroom</th><th>Biggest missing doors</th></tr></thead><tbody>
+  ${rows.slice(0, ui.rlimit).map(x => { const d = dnaOf(x.c); return `<tr class="cons-row" data-go="c.${esc(x.c.id)}"><td><b><a href="#c.${esc(x.c.id)}">${esc(x.c.name)}</a></b><br><small class="faint">${ownerLine(x.c)}</small></td>
+    <td class="r"><span class="score ${d.band} num" style="font-size:16px">${d.score}</span></td><td class="r num">${x.r.rev ? fmtM(x.r.rev) : "—"}</td>
+    <td class="num" style="white-space:nowrap"><span class="penbar"><i style="width:${Math.round(x.r.pen * 100)}%"></i></span>${pct(x.r.pen)}</td><td class="r num">${x.r.doors} / ${x.r.relevant}</td><td class="r num">${x.r.proven}</td><td class="r num">${x.r.adj.length || "—"}</td>
+    <td class="r num">${x.r.ceiling !== null ? fmtM(x.r.ceiling * ui.cap) : `<span class="faint">${x.r.thin ? "thin" : "—"}</span>`}</td>
+    <td style="font-size:13px">${x.r.white.slice(0, 3).map(w => esc(w.d.name.replace(/\s*\(.*\)$/, ""))).join(", ")}</td></tr>`; }).join("") || `<tr><td colspan="9" class="empty">Nothing matches. Widen the ownership filter.</td></tr>`}
+  </tbody></table></div>${rows.length > ui.rlimit ? `<button class="more" type="button" data-act="rmore">Show ${Math.min(60, rows.length - ui.rlimit)} more of ${rows.length - ui.rlimit}</button>` : ""}</section>
+  <div class="note">How to read it: ${DISTS.filter(d => /scraped/i.test(d.status)).length} of ${DISTS.length} distributors are scraped, and a brand a distributor stocks but the scrape missed shows as a missing door. Doors are weighted by how many brands in the company's categories each distributor stocks. Headroom uses total company revenue, so it overstates for companies with big direct or retail sales.</div>`;
+}
+
 /* ---------- view: SKU mix ---------- */
 function viewMix() {
   const cos = visible().filter(c => ui.showOut || !dnaOf(c).out);
@@ -1001,7 +1137,7 @@ function render() {
   chrome(r);
   if (!loaded) { if (dbState === "off") app.innerHTML = `<div class="empty"><h2>Not connected</h2><p>Probrands keeps the market map in a shared database that loads when this page is opened in Claude while signed in.</p></div>`; return; }
   const y = scrollY;
-  app.innerHTML = r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
+  app.innerHTML = r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
   if (render.last === location.hash) scrollTo(0, y); else scrollTo(0, 0);
   render.last = location.hash;
   if (r.v === "web") bindWeb();
@@ -1065,6 +1201,7 @@ document.addEventListener("click", e => {
   if (a) {
     const act = a.dataset.act;
     if (act === "more") { ui.limit += 80; render(); }
+    else if (act === "rmore") { ui.rlimit += 60; render(); }
     else if (act === "bmore") { ui.b.limit += 100; render(); }
     else if (act === "out") { ui.showOut = !ui.showOut; render(); }
     else if (act === "cycle") cycle(a.dataset.id, a.dataset.k);
@@ -1089,6 +1226,9 @@ document.addEventListener("change", e => {
   if (e.target.id === "fam") { ui.fam = e.target.value; render(); }
   if (e.target.id === "seg") { ui.seg = e.target.value; if (ui.fam && SEGOF[ui.fam] !== ui.seg) ui.fam = ""; render(); }
   if (e.target.id === "rev") { ui.rev = e.target.value; render(); }
+  if (e.target.id === "rcap") { ui.cap = +e.target.value; render(); }
+  if (e.target.id === "rmin") { ui.rmin = e.target.value; render(); }
+  if (e.target.id === "rsort") { ui.rsort = e.target.value; render(); }
   if (e.target.id === "dch") { ui.dch = e.target.value; render(); }
   if (e.target.id === "dmk") { ui.dmk = e.target.value; render(); }
   if (e.target.id === "dsort") { ui.dsort = e.target.value; render(); }
@@ -1099,6 +1239,13 @@ document.addEventListener("change", e => {
   if (e.target.id === "mkt") { ui.mkt = e.target.value; render(); }
 });
 window.addEventListener("hashchange", render);
+document.addEventListener("pointermove", e => {
+  const tip = $("#tip"), el = e.target.closest?.("[data-tip]");
+  if (!el) { tip.hidden = true; return; }
+  tip.innerHTML = el.dataset.tip; tip.hidden = false;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.min(innerWidth - w - 8, e.clientX + 14) + "px"; tip.style.top = Math.max(8, Math.min(innerHeight - h - 8, e.clientY + 14)) + "px";
+});
 function bindWeb() {
   const svg = $("#websvg"); if (!svg) return;
   let drag = null, moved = false;
