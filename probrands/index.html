@@ -1007,7 +1007,11 @@ function reachIndex() {
   }
   // a category's native channels: the end markets holding 60% of its shelf presence
   const native = new Map([...cm].map(([c, m]) => { const tot = [...m.values()].reduce((a, n) => a + n, 0), s = new Set(); let acc = 0; for (const [k, n] of [...m].sort((a, b) => b[1] - a[1])) { s.add(k); acc += n; if (acc / tot >= 0.6) break; } return [c, s]; }));
-  return (reachC = { v: ver, scraped: DISTS.filter(d => /scraped/i.test(d.status)), shelf, byOwner, leaders, native, memo: new Map(), rates: null });
+  const scraped = DISTS.filter(d => /scraped/i.test(d.status)), dn = new Map();
+  for (const b of BR.values()) for (const d of b.dists || []) dn.set(d, (dn.get(d) || 0) + 1);
+  const ns = scraped.map(d => dn.get(d.name) || 0).filter(Boolean).sort((a, b) => a - b), med = ns[Math.floor(ns.length / 2)] || 1;
+  const dsize = new Map(scraped.map(d => [d.name, Math.min(2, Math.max(0.5, Math.sqrt((dn.get(d.name) || 0) / med)))]));  // sqrt of brand count vs the median door, 0.5x-2x
+  return (reachC = { v: ver, scraped, shelf, byOwner, leaders, native, dsize, memo: new Map(), rates: null });
 }
 /* Demonstrated cross-sell: across every owner with 2+ brands, how often a brand is stocked at a sister brand's scraped
    distributor that stocks its category. Split by portfolio size (focused = up to 6 brands), whether the distributor is a
@@ -1046,42 +1050,48 @@ function ratesPanel() {
   ${[["np", "Native channel, rivals there"], ["nu", "Native channel, no rivals"], ["op", "Off-channel, rivals there"], ["ou", "Off-channel, no rivals"]].map(([k, l]) => `<tr><td><b>${l}</b></td>${cell("f" + k)}${cell("s" + k)}${cell(k)}</tr>`).join("")}
   </tbody></table></div></div></section>`;
 }
+/* Right to win: the share of the company's SKUs whose category a door stocks (2+ brands on that shelf). A door's weight
+   is right to win x its size (square root of its brand count against the median door, 0.5x-2x). Revenue per full door
+   = revenue / weighted doors carried; a missing door is worth that x its weight x the demonstrated cross-sell rate. */
 function reachOf(c) {
   const R = reachIndex(); if (R.memo.has(c.id)) return R.memo.get(c.id);
   const bs = R.byOwner.get(c.id) || [];
-  const cat = c.mix?.cat || {}, tot = Object.values(cat).reduce((a, n) => a + n, 0) || 1;
-  let shares = Object.entries(cat).map(([k, n]) => [k, n / tot]).filter(([k, s]) => s >= 0.1 && k !== "Unclassified").sort((a, b) => b[1] - a[1]);
+  const cat = { ...(c.mix?.cat || {}) }; delete cat.Unclassified;
+  const tot = Object.values(cat).reduce((a, n) => a + n, 0);
+  let shares = tot ? Object.entries(cat).map(([k, n]) => [k, n / tot]).sort((a, b) => b[1] - a[1]) : [];
   if (!shares.length && bs.length && bs[0].ncat !== "Unclassified") shares = [[bs[0].ncat, 1]];
-  const main0 = shares[0]?.[0] || bs[0]?.ncat;
+  const main0 = shares[0]?.[0] || bs[0]?.ncat, nat0 = R.native.get(main0) || new Set();
   const carried = new Set(bs.flatMap(b => b.dists || []));
   const dmap = new Map(R.scraped.map(d => [d.name, d]));
   const myMkts = new Set([...carried].map(n => dmap.get(n)?.market).filter(Boolean));
   const rivals = [], seen = new Set();
   for (const b of bs) for (const x of rivalsOf(b)) if (x.owner_id !== c.id && !seen.has(x.id)) { seen.add(x.id); rivals.push(x); }
+  const rt = demoRates(), focused = bs.length <= 6;
   const core = [], adj = [], fit = new Map();
   for (const d of R.scraped) {
     const m = R.shelf.get(d.name), has = carried.has(d.name);
-    if (!has && !shares.some(([k]) => (m?.get(k) || 0) >= 3)) continue;
-    const w = Math.max(1, shares.reduce((a, [k, s]) => a + s * (m?.get(k) || 0), 0));
+    const rcats = shares.filter(([k]) => (m?.get(k) || 0) >= 2);
+    let rtw = rcats.reduce((a, [, s]) => a + s, 0);
+    if (!has && rtw < 0.1) continue;
+    if (has) rtw = Math.max(rtw, 0.1);
+    const size = R.dsize.get(d.name) || 1, w = rtw * size;
     const rvAll = rivals.filter(x => (x.dists || []).includes(d.name)), rv = has ? [] : rvAll;
-    const nat = (R.native.get(main0) || new Set()).has(d.market || "Other");
-    const row = { d, w, has, rv, nat };
-    fit.set(d.name, { w, nat, prv: rvAll.length > 0 });
+    const nat = nat0.has(d.market || "Other"), p = rt.get(focused, nat, rvAll.length > 0);
+    const row = { d, w, rtw, size, rcats, has, rv, nat, p };
+    fit.set(d.name, { w, rtw, nat, prv: rvAll.length > 0 });
     if (has || myMkts.has(d.market)) core.push(row);       // same end markets it already sells to: the core whitespace
     else if (rv.length >= 2) adj.push(row);                 // a new end market, where 2+ of its direct rivals already sell
   }
   const W = core.reduce((a, r) => a + r.w, 0), Wc = core.filter(r => r.has).reduce((a, r) => a + r.w, 0);
-  const sortW = (a, b) => (b.rv.length > 0) - (a.rv.length > 0) || b.w - a.w;
-  const white = core.filter(r => !r.has).sort(sortW);
-  adj.sort((a, b) => b.rv.length - a.rv.length || b.w - a.w);
-  const main = shares[0]?.[0] || bs[0]?.ncat, rev = num(c.rev);
-  const out = { doors: core.filter(r => r.has).length, relevant: core.length, pen: W && Wc ? Wc / W : null, W, Wc, white, adj,
+  const white = core.filter(r => !r.has).sort((a, b) => b.w * b.p - a.w * a.p);
+  adj.sort((a, b) => b.w * b.p - a.w * a.p);
+  const main = main0, rev = num(c.rev), nCar = core.filter(r => r.has).length;
+  const rpd = rev && Wc && nCar >= 3 ? rev / Wc : null;
+  for (const r of [...white, ...adj]) { r.full = rpd ? rpd * r.w : null; r.ev = rpd ? rpd * r.w * r.p : null; }
+  const out = { doors: nCar, relevant: core.length, pen: W && Wc ? Wc / W : null, W, Wc, white, adj,
     proven: white.filter(r => r.rv.length).length, mkts: [...myMkts], main, leader: R.leaders.get(main), rev,
-    thin: core.filter(r => r.has).length < 3, fit, carried, shares,
-    rpd: rev && Wc && core.filter(r => r.has).length >= 3 ? rev / Wc : null, focused: bs.length <= 6,
-    ceiling: rev && Wc && core.filter(r => r.has).length >= 3 ? rev * (W - Wc) / Wc : null, carriedRows: core.filter(r => r.has) };
-  if (out.rpd) { const rt = demoRates(); out.demo = out.rpd * white.reduce((a, x) => a + x.w * rt.get(out.focused, x.nat, x.rv.length > 0), 0); }
-  else out.demo = null;
+    thin: nCar < 3, fit, carried, shares, rpd, focused,
+    ceiling: rpd ? rpd * (W - Wc) : null, demo: rpd ? white.reduce((a, r) => a + r.ev, 0) : null, carriedRows: core.filter(r => r.has) };
   R.memo.set(c.id, out); return out;
 }
 const fmtX = v => v >= 10 ? Math.round(v) + "×" : v.toFixed(1) + "×";
@@ -1090,14 +1100,17 @@ function reachPanel(c) {
   return `<section class="panel"><header><h2>Distribution headroom</h2><span class="sp"></span><span class="lbl">Doors that stock ${esc(r.main || "its categories")}${r.leader ? ` · leader ${esc(r.leader.name)} on ${(r.leader.dists || []).length}` : ""}</span></header>
   <div class="gauges" style="margin:0;border:0;border-bottom:1px solid var(--line)">
     <div class="gauge"><b>${r.doors}</b><span class="lbl">Doors now</span></div><div class="gauge"><b>${r.relevant}</b><span class="lbl">Doors that stock its categories</span></div>
-    <div class="gauge ${r.pen >= 0.6 ? "g" : r.pen >= 0.3 ? "a" : "r"}"><b>${pct(r.pen)}</b><span class="lbl">Reach (shelf-weighted)</span></div>
+    <div class="gauge ${r.pen >= 0.6 ? "g" : r.pen >= 0.3 ? "a" : "r"}"><b>${pct(r.pen)}</b><span class="lbl">Reach (right-to-win weighted)</span></div>
     <div class="gauge"><b>${r.white.length}</b><span class="lbl">Missing doors</span></div><div class="gauge g"><b>${r.proven}</b><span class="lbl">Proven: rivals already there</span></div>
     ${r.ceiling !== null ? `<div class="gauge"><b>${fmtM(val(r.ceiling, r.demo))}</b><span class="lbl">Headroom at ${capLbl()}</span></div>` : ""}</div>
-  <div class="body"><p class="muted" style="margin:0 0 10px;font-size:13.5px">Doors are the scraped distributors in the end markets it already sells to (${esc(r.mkts.join(", ") || "none yet")}) that stock its categories. ${r.ceiling !== null ? `At today's ${fmtM(r.rev)} across ${r.doors} doors, filling every missing door would add up to ${fmtM(r.ceiling)} (${fmtX(r.W / r.Wc)} today's revenue); at the rates multi-brand owners actually achieve on doors like these, about ${fmtM(r.demo)}. Read it as a ceiling: revenue includes direct and non-distributor sales, and the scrape can miss a listing. ` : r.thin ? "Found on fewer than 3 doors, too few to estimate revenue per door, so headroom is in doors only. " : "No revenue in the market map yet, so headroom is in doors only. "}Proven doors already carry this company's direct competitors, so the category sells there. <a href="#reach">All companies →</a></p>
-  ${r.white.length ? `<div class="tw"><table><thead><tr><th>Missing door</th><th>Channel</th><th class="r">Category shelf</th><th>Rivals already there</th></tr></thead><tbody>
-  ${r.white.slice(0, 20).map(x => `<tr><td><b>${distLink(x.d.name)}</b><br><span class="faint" style="font-size:12.5px">${esc(x.d.end_market || x.d.market || "")}</span></td><td class="muted">${CHAN[x.d.channel] || ""}</td><td class="r num">${Math.round(x.w)}</td>
+  <div class="body"><p class="muted" style="margin:0 0 10px;font-size:13.5px">Doors are the scraped distributors in the end markets it already sells to (${esc(r.mkts.join(", ") || "none yet")}) where at least 10% of its SKUs have a right to win. ${r.ceiling !== null ? `At today's ${fmtM(r.rev)} across ${r.doors} doors, filling every missing door would add up to ${fmtM(r.ceiling)} (${fmtX(r.W / r.Wc)} today's revenue); at the rates multi-brand owners actually achieve on doors like these, about ${fmtM(r.demo)}. Read it as a ceiling: revenue includes direct and non-distributor sales, and the scrape can miss a listing. ` : r.thin ? "Found on fewer than 3 doors, too few to estimate revenue per door, so headroom is in doors only. " : "No revenue in the market map yet, so headroom is in doors only. "}Proven doors already carry this company's direct competitors, so the category sells there. <a href="#reach">All companies →</a></p>
+  ${r.white.length ? `<div class="tw"><table><thead><tr><th>Missing door</th><th>Channel</th><th class="r">Right to win</th><th class="r">Door size</th><th class="r">Win rate</th><th class="r">Value</th><th>Rivals already there</th></tr></thead><tbody>
+  ${r.white.slice(0, 20).map(x => `<tr><td><b>${distLink(x.d.name)}</b><br><span class="faint" style="font-size:12.5px">${esc(x.d.end_market || x.d.market || "")}</span></td><td class="muted">${CHAN[x.d.channel] || ""}</td>
+    <td class="r num" data-tip="${esc(`<b>${pct(x.rtw)} of its SKUs fit this door</b>${x.rcats.slice(0, 5).map(([k, s]) => `${esc(k)} ${pct(s)}`).join("<br>")}`)}">${pct(x.rtw)}</td><td class="r num">${x.size.toFixed(1)}×</td><td class="r num">${pct(x.p)}</td>
+    <td class="r num">${x.full !== null ? fmtM(val(x.full, x.ev)) : "—"}</td>
     <td>${x.rv.length ? `<span class="tag tri">Proven</span> ${x.rv.slice(0, 3).map(b => `<a href="#b.${esc(b.id)}">${esc(b.name)}</a>`).join(", ")}${x.rv.length > 3 ? ` +${x.rv.length - 3}` : ""}` : `<span class="faint">None of its rivals yet</span>`}</td></tr>`).join("")}
-  </tbody></table></div>${r.white.length > 20 ? `<p class="faint" style="margin:8px 0 0;font-size:13px">+${r.white.length - 20} smaller doors.</p>` : ""}` : `<p class="muted">On every door that stocks its categories.</p>`}
+  </tbody></table></div>${r.white.length > 20 ? `<p class="faint" style="margin:8px 0 0;font-size:13px">+${r.white.length - 20} smaller doors.</p>` : ""}
+  <p class="faint" style="margin:8px 0 0;font-size:12.5px">Right to win = share of its SKUs whose category the door stocks (hover for the categories). Door size = square root of the door's brand count against the median door (0.5×–2×). Win rate = the demonstrated cross-sell rate for that kind of door. Value = revenue per full door × right to win × door size × ${isDemo() ? "win rate" : capLbl()}.</p>` : `<p class="muted">On every door that stocks its categories.</p>`}
   ${r.adj.length ? `<h3 style="margin:16px 0 8px;font-size:18px">New end markets</h3><p class="muted" style="margin:0 0 8px;font-size:13.5px">Doors outside the markets it sells to today where 2 or more of its direct rivals already sell. Upside beyond the core headroom above, not counted in it.</p>
   <div class="tw"><table><thead><tr><th>End market</th><th class="r">Doors</th><th>Biggest doors</th><th>Rivals there</th></tr></thead><tbody>
   ${[...r.adj.reduce((m, x) => m.set(x.d.market, [...(m.get(x.d.market) || []), x]), new Map())].sort((a, b) => b[1].length - a[1].length).slice(0, 10).map(([mk, xs]) => `<tr><td><b>${esc(mk)}</b></td><td class="r num">${xs.length}</td><td>${xs.slice(0, 3).map(x => distLink(x.d.name)).join(", ")}</td><td class="muted">${[...new Set(xs.flatMap(x => x.rv.map(b => b.name)))].slice(0, 4).map(esc).join(", ")}</td></tr>`).join("")}
@@ -1138,7 +1151,7 @@ function viewReach() {
   const pens = rows.map(x => x.r.pen).sort((a, b) => a - b), med = pens.length ? pens[Math.floor(pens.length / 2)] : null;
   const legend = `<div class="olegend"><span><svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:5px"><path d="M6 0L12 6L6 12L0 6Z" fill="var(--k-pe)"/></svg>PE-backed</span><span><i style="background:var(--k-fam);border-radius:50%"></i>Family</span><span><i style="border:1.5px solid var(--ink-3);border-radius:50%;background:none"></i>Other owners</span><span><i style="background:var(--good-soft)"></i>DNA 70+, reach under 50%</span><span>Faint marks: on fewer than 3 doors</span></div>`;
   return `<div class="page-h"><div class="grow"><div class="lbl">${esc(ownSummary())} · ${ui.showOut ? "including" : "excluding"} out-of-scope companies</div><h1>Whitespace</h1>
-    <p>How far each company is from full distribution. A door is a scraped distributor that stocks the company's categories; reach is the share of those doors, weighted by shelf size, that already carry it. The shaded corner holds great products most of their channel doesn't stock yet: the buy-and-push-through-distribution plays. Headroom is today's revenue per door times the doors still missing in the end markets it already sells to, scaled by the capture rate; it needs revenue and at least 3 doors. New-market doors are distributors in other end markets where 2+ of its direct rivals already sell.</p></div>
+    <p>How far each company is from full distribution. A door is a scraped distributor where at least 10% of the company's SKUs have a right to win (the door stocks their category). Reach is the share of those doors, weighted by right to win and door size, that already carry it. The shaded corner holds great products most of their channel doesn't stock yet: the buy-and-push-through-distribution plays. Headroom is today's revenue per door times the doors still missing in the end markets it already sells to, scaled by the capture rate; it needs revenue and at least 3 doors. New-market doors are distributors in other end markets where 2+ of its direct rivals already sell.</p></div>
     <button class="tog" type="button" data-act="out" aria-pressed="${ui.showOut}">Include out of scope</button></div>
   <div class="gauges"><div class="gauge"><b>${rows.length}</b><span class="lbl">Companies</span></div><div class="gauge g"><b>${sweet.length}</b><span class="lbl">Great product, under-distributed (3+ doors)</span></div>
     <div class="gauge"><b>${med === null ? "—" : pct(med)}</b><span class="lbl">Median reach</span></div><div class="gauge"><b>${rows.reduce((a, x) => a + x.r.proven, 0).toLocaleString()}</b><span class="lbl">Proven missing doors</span></div>
@@ -1169,7 +1182,7 @@ function rollupCalc(ids) {
   const cnt = new Map(); for (const x of M) for (const d of x.r.carried) cnt.set(d, (cnt.get(d) || 0) + 1);
   const rt = demoRates(), focused = M.reduce((a, x) => a + (reachIndex().byOwner.get(x.c.id) || []).length, 0) <= 6;
   for (const x of M) {
-    x.gain = [...union].filter(d => !x.r.carried.has(d) && x.r.fit.has(d)).map(d => { const f = x.r.fit.get(d); return { d, w: f.w, p: rt.get(focused, f.nat, f.prv), prv: f.prv, from: M.filter(y => y !== x && y.r.carried.has(d)).map(y => y.c) }; }).sort((a, b) => b.w * b.p - a.w * a.p);
+    x.gain = [...union].filter(d => !x.r.carried.has(d) && x.r.fit.has(d)).map(d => { const f = x.r.fit.get(d); return { d, w: f.w, rtw: f.rtw, p: rt.get(focused, f.nat, f.prv), prv: f.prv, from: M.filter(y => y !== x && y.r.carried.has(d)).map(y => y.c) }; }).sort((a, b) => b.w * b.p - a.w * a.p);
     x.gainW = x.gain.reduce((a, g) => a + g.w, 0);
     x.gainUsd = x.r.rpd ? x.r.rpd * x.gainW : null;
     x.gainDemo = x.r.rpd ? x.r.rpd * x.gain.reduce((a, g) => a + g.w * g.p, 0) : null;
@@ -1231,7 +1244,7 @@ function viewRollup() {
   <div class="tw"><table><thead><tr><th>Company</th><th class="r">DNA</th><th class="r">Revenue</th><th class="r">Doors now</th><th class="r">Doors gained</th><th class="r">Cross-sell</th><th>Biggest doors gained (via)</th></tr></thead><tbody>
   ${M.map(x => `<tr><td><b><a href="#c.${esc(x.c.id)}">${esc(x.c.name)}</a></b><br><small class="faint">${ownerLine(x.c)}</small></td><td class="r"><span class="score ${dnaOf(x.c).band} num" style="font-size:16px">${dnaOf(x.c).score}</span></td>
     <td class="r num">${x.c.rev ? fmtM(x.c.rev) : "—"}</td><td class="r num">${x.r.carried.size}</td><td class="r num">${x.gain.length}</td><td class="r num">${x.gainUsd !== null ? fmtM(val(x.gainUsd, x.gainDemo)) : `<span class="faint">${x.r.thin ? "thin" : "no revenue"}</span>`}</td>
-    <td style="font-size:13px">${x.gain.slice(0, 4).map(g => `${distLink(g.d)}${g.prv ? ` <span class="tag tri">Proven</span>` : ""} <span class="faint">(${g.from.map(short).join(", ")})</span>`).join("<br>") || `<span class="faint">None: already on every member door that stocks its categories</span>`}</td></tr>`).join("")}
+    <td style="font-size:13px">${x.gain.slice(0, 4).map(g => `${distLink(g.d)} <span class="num">${pct(g.rtw)} fit</span>${g.prv ? ` <span class="tag tri">Proven</span>` : ""} <span class="faint">(${g.from.map(short).join(", ")})</span>`).join("<br>") || `<span class="faint">None: already on every member door that stocks its categories</span>`}</td></tr>`).join("")}
   </tbody></table></div></section>
   ${M.length > 1 ? `<div class="grid2">
     <section class="panel"><header><h2>Who unlocks whom</h2><span class="sp"></span><span class="lbl">Doors the column company opens for the row company</span></header>

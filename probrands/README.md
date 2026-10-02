@@ -50,11 +50,17 @@ Prices and reviews do not feed the DNA test yet; coverage is too thin (258 price
 
 ## Reach and headroom
 
-- **Doors**: a door is a scraped distributor, in an end market the company already sells to, that stocks 3 or more brands in a category making up 10% or more of the company's SKUs. Doors that already carry the company always count.
-- **Reach**: the share of those doors that carry the company, weighted by shelf size. A distributor stocking 40 brands in the category counts for more than one stocking 3.
-- **Missing doors**: doors that stock the category but not the company. They are ranked "proven" first, meaning one of the company's direct competitors already sells there.
-- **Headroom**: today's revenue per weighted door times the weighted doors still missing, scaled by a capture rate (10%, 25%, 50% or 100%). It is a ceiling, not a forecast: revenue includes direct and retail sales, and a listing the scrape missed shows as a missing door. Headroom needs revenue and at least 3 doors; companies on fewer show "thin".
-- **New-market doors**: distributors in end markets the company doesn't sell to yet, where 2 or more of its direct rivals already do. They show on the company page as upside beyond the core headroom, not counted in it.
+- **Right to win** at a door: the share of the company's SKUs whose category that door stocks, meaning it carries 2 or more brands in the category.
+- **Door size**: the square root of the door's brand count against the median door, capped between 0.5× and 2×.
+- **Door weight**: right to win × door size.
+- **Doors**: the scraped distributors, in the end markets the company already sells to, where right to win is at least 10%, plus every door that already carries it.
+- **Reach**: weighted doors carried ÷ weighted doors.
+- **Revenue per full door**: revenue ÷ weighted doors carried.
+- **Value of a missing door**: revenue per full door × its weight × its win rate. The win rate is the demonstrated cross-sell rate below, or a flat capture rate if you pick one.
+- **Proven doors**: doors where one of the company's direct competitors already sells. They carry higher win rates.
+- **Headroom**: the sum over missing doors. Values need revenue and at least 3 doors; companies on fewer show "thin".
+- **New-market doors**: distributors in end markets the company doesn't sell to yet, where 2 or more of its direct rivals already do. They show as upside, not counted in headroom.
+- **Roll-up cross-sell** uses the same door weights and win rates.
 
 **Demonstrated cross-sell rates.** Dollar values default to rates measured from the data instead of a flat capture rate:
 - Across every owner with 2 or more brands, the app takes the sister brands' distributors that stock a brand's category and measures the share that also carry that brand.
