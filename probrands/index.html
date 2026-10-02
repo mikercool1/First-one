@@ -10,7 +10,7 @@
   --ink:#ece7da; --ink-2:#aaa596; --ink-3:#77736a; --accent:#f2b705; --accent-ink:#141209; --accent-text:#f2b705;
   --good:#46b35f; --mid:#e8860c; --bad:#d9472f; --good-soft:#1c3122; --mid-soft:#3a2a12; --bad-soft:#3b1d17;
   --c1:#f2b705; --c2:#5aa9e6; --c3:#46b35f; --c4:#e8860c; --c5:#b48ee8; --c6:#d9472f; --c7:#3fc1b0; --c8:#c9c27a; --c0:#5d5b53;
-  --k-pe:#bb8b00; --k-fam:#2fa38c;
+  --k-pe:#bb8b00; --k-fam:#2fa38c; --ch-pro:#3d7fe0; --ch-mixed:#2aa37a; --ch-retail:#c9792b; --ch-diy:#a070d0;
   --f-display:"Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
   --f-body:"Barlow", "Helvetica Neue", Arial, sans-serif;
   --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
@@ -21,13 +21,13 @@
   --bg:#e4e1d8; --rail:#1a1b18; --panel:#f3f1ea; --panel-2:#ebe8df; --sunk:#d9d5ca; --line:#c3beb1; --line-2:#a9a497;
   --ink:#171611; --ink-2:#55524a; --ink-3:#7c786d; --accent:#f2b705; --accent-ink:#141209; --accent-text:#8a6300;
   --good:#2e8a45; --mid:#b9620a; --bad:#b8321d; --good-soft:#d6ead9; --mid-soft:#f3e0c6; --bad-soft:#f2d6cf;
-  --c1:#c99500; --c2:#2f7fc0; --c3:#2e8a45; --c4:#c96a06; --c5:#7d5bc2; --c6:#b8321d; --c7:#1e9585; --c8:#8c8540; --c0:#a39f93; --k-pe:#a87b00; --k-fam:#0f8f76;
+  --c1:#c99500; --c2:#2f7fc0; --c3:#2e8a45; --c4:#c96a06; --c5:#7d5bc2; --c6:#b8321d; --c7:#1e9585; --c8:#8c8540; --c0:#a39f93; --k-pe:#a87b00; --k-fam:#0f8f76; --ch-pro:#2f6fcf; --ch-mixed:#13895c; --ch-retail:#b0621a; --ch-diy:#8a5cc8;
   color-scheme:light}}
 :root[data-theme="light"]{
   --bg:#e4e1d8; --rail:#1a1b18; --panel:#f3f1ea; --panel-2:#ebe8df; --sunk:#d9d5ca; --line:#c3beb1; --line-2:#a9a497;
   --ink:#171611; --ink-2:#55524a; --ink-3:#7c786d; --accent:#f2b705; --accent-ink:#141209; --accent-text:#8a6300;
   --good:#2e8a45; --mid:#b9620a; --bad:#b8321d; --good-soft:#d6ead9; --mid-soft:#f3e0c6; --bad-soft:#f2d6cf;
-  --c1:#c99500; --c2:#2f7fc0; --c3:#2e8a45; --c4:#c96a06; --c5:#7d5bc2; --c6:#b8321d; --c7:#1e9585; --c8:#8c8540; --c0:#a39f93; --k-pe:#a87b00; --k-fam:#0f8f76;
+  --c1:#c99500; --c2:#2f7fc0; --c3:#2e8a45; --c4:#c96a06; --c5:#7d5bc2; --c6:#b8321d; --c7:#1e9585; --c8:#8c8540; --c0:#a39f93; --k-pe:#a87b00; --k-fam:#0f8f76; --ch-pro:#2f6fcf; --ch-mixed:#13895c; --ch-retail:#b0621a; --ch-diy:#8a5cc8;
   color-scheme:light}
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--ink);margin:0}
@@ -312,7 +312,7 @@ let DEALS = [], DISTS = [], SRC = "", loaded = false, ver = 0;
 const OWN = [["pe", "PE"], ["family", "Family"], ["esop", "ESOP"], ["private", "Private"], ["corp", "Corporate"]];
 const ownKey = c => c.oclass === "public" || c.oclass === "sub_private" ? "corp" : c.oclass;
 const ui = { own: new Set(store.get("own", ["pe", "family"])), roll: store.get("roll", []), rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "n", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
-  b: { q: "", status: "", tri: "", own: "", fam: "", seg: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
+  b: { q: "", status: "", tri: "", own: "", fam: "", seg: "", ch: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
 
 /* ---------- DNA ---------- */
 // Seven checks. Data checks come from the SKU scrape; judgment checks come from Claude, and you can override any of them.
@@ -549,6 +549,7 @@ function viewCompany(id) {
     </section>
     <section class="panel"><header><h2>SKU mix</h2><span class="sp"></span><span class="lbl">${total} SKUs scraped · ${c.m?.nd || 0} distributors</span></header>
       <div class="body mixes">${mixBlock("Package format", rows(mix.fmt), total)}${mixBlock("End market", rows(mix.mkt), total)}${mixBlock("Category", rows(mix.cat), total, 7)}${mixBlock("Brand", rows(mix.brand), total, 7)}${mixBlock("Distributor", rows(mix.dist), total, 7)}</div>
+      ${chTot(mix.ch) ? `<div class="body" style="padding-top:0"><div class="lbl" style="margin:0 0 6px">By channel type · ${esc(chClass(mix.ch))}, ${pct(retailExp(mix.ch))} of SKUs in retail stores and DIY sites</div>${chBar(mix.ch, 240)}<div style="margin-top:8px">${chLegend()}</div><p class="muted" style="margin:6px 0 0;font-size:13px">${CHT.filter(([k]) => mix.ch[k]).map(([k, l]) => `${l} ${pct(mix.ch[k] / chTot(mix.ch))}`).join(" · ")}</p></div>` : ""}
     </section>
   </div>
   <section class="panel"><header><h2>Brands</h2><span class="sp"></span><span class="lbl">${brands.length} in the map</span></header>
@@ -680,6 +681,37 @@ function zoomWeb(k, cx, cy) {
   $("#websvg")?.setAttribute("viewBox", view.map(v => v.toFixed(1)).join(" "));
 }
 
+/* ---------- channels: the market map's channel type per distributor (v20+) ---------- */
+const CHT = [["pro", "Pro", "var(--ch-pro)"], ["mixed", "Mixed pro-DIY", "var(--ch-mixed)"], ["retail", "Retail store", "var(--ch-retail)"], ["diy", "DIY / enthusiast online", "var(--ch-diy)"], ["unknown", "Not classified", "var(--c0)"]];
+const chTot = ch => Object.values(ch || {}).reduce((a, n) => a + n, 0);
+const retailExp = ch => { const n = chTot(ch); return n ? ((ch.retail || 0) + (ch.diy || 0)) / n : null; };
+const chClass = ch => { const r = retailExp(ch); return r === null ? "" : r === 0 ? "Pro-only" : r < 0.25 ? "Pro-led" : r <= 0.5 ? "Mixed" : "Retail-led"; };
+const chBar = (ch, w = 120) => { const n = chTot(ch) || 1; return `<span class="obar" style="min-width:${w}px" title="${CHT.filter(([k]) => ch?.[k]).map(([k, l]) => `${l} ${ch[k]} SKUs`).join(" · ")}">${CHT.map(([k, , c]) => ch?.[k] ? `<i style="width:${(ch[k] / n * 100).toFixed(1)}%;background:${c}"></i>` : "").join("")}</span>`; };
+const chLegend = () => `<div class="olegend">${CHT.slice(0, 4).map(([, l, c]) => `<span><i style="background:${c}"></i>${l}</span>`).join("")}</div>`;
+const median = xs => { const v = xs.filter(x => x !== null && x !== undefined && !isNaN(x)).sort((a, b) => a - b); return v.length ? v[Math.floor(v.length / 2)] : null; };
+function brandChannels(b) {
+  const dct = new Map(DISTS.map(d => [d.name, d.ctype || "unknown"]));
+  const skus = b.p !== undefined && SKU.has(b.p) ? SKU.get(b.p)[b.id] || [] : null;
+  if (b.q !== undefined) loadPrices(b);
+  const prices = b.q !== undefined && PRICES.has(b.q) ? PRICES.get(b.q)[b.id] || [] : [];
+  const ch = skus ? skus.reduce((m, s) => (m[dct.get(s[3]) || "unknown"] = (m[dct.get(s[3]) || "unknown"] || 0) + 1, m), {}) : (b.ch || {});
+  const n = chTot(ch); if (!n && !b.rscreen) return "";
+  const top = (arr, k = 3) => { const m = new Map(); for (const x of arr) if (x) m.set(x, (m.get(x) || 0) + 1); return [...m].sort((a, c) => c[1] - a[1]).slice(0, k).map(([x]) => x); };
+  const rows = CHT.filter(([k]) => ch[k]).map(([k, l, c]) => {
+    const ds = (b.dists || []).filter(d => (dct.get(d) || "unknown") === k), ss = skus ? skus.filter(s => (dct.get(s[3]) || "unknown") === k) : [];
+    const ppo = median(prices.filter(r => r[6] && (dct.get(r[8]) || "unknown") === k).map(r => r[5]));
+    return `<tr><td><span class="olegend"><span><i style="background:${c}"></i><b style="color:var(--ink)">${l}</b></span></span></td><td class="r num">${ds.length}</td><td class="r num">${ch[k]}</td><td class="r num">${pct(ch[k] / n)}</td>
+      <td style="font-size:13px">${skus ? esc(top(ss.map(s => s[1])).join(", ")) : `<span class="faint">loading…</span>`}</td><td style="font-size:13px" class="num">${skus ? esc(top(ss.map(s => s[2])).join(", ")) : ""}</td>
+      <td class="r num">${ppo !== null ? "$" + ppo.toFixed(2) : "—"}</td><td style="font-size:13px">${ds.slice(0, 3).map(distLink).join(", ")}${ds.length > 3 ? ` <span class="faint">+${ds.length - 3}</span>` : ""}</td></tr>`;
+  }).join("");
+  const rs = b.rscreen;
+  return `<section class="panel"><header><h2>SKUs by channel</h2><span class="sp"></span><span class="lbl">${n ? `${esc(chClass(ch))} · ${pct(retailExp(ch))} of SKUs in retail stores and DIY sites` : ""}</span></header>
+  <div class="body">${n ? `<div style="margin:0 0 10px">${chBar(ch, 240)}</div>${chLegend()}` : ""}</div>
+  ${n ? `<div class="tw"><table><thead><tr><th>Channel</th><th class="r">Distributors</th><th class="r">SKUs</th><th class="r">Share</th><th>Top formats</th><th>Common sizes</th><th class="r">Median $/oz</th><th>Where</th></tr></thead><tbody>${rows}</tbody></table></div>` : ""}
+  ${rs ? `<div class="body"><p style="margin:0"><b>Big-box and mass-retail screen:</b> ${esc(rs.tier || "")}${rs.hits ? ` · ${esc(rs.hits)}` : ""}</p>${rs.signals ? `<p class="muted" style="margin:6px 0 0;font-size:13.5px">${esc(rs.signals)}</p>` : ""}</div>` : ""}
+  <p class="faint" style="margin:0;padding:0 16px 14px;font-size:12.5px">Channel type per distributor comes from the market map. Counts are scraped SKUs, so they show where the line is listed, not sales. Median $/oz uses captured prices with a size.</p></section>`;
+}
+
 /* ---------- brands ---------- */
 const STATUS = { verified: ["Owner verified", "From the market map's verified Companies tab"], prior: ["Owner unverified", "The market map's prior, not yet checked"],
   guess: ["Claude's guess", "Claude's best guess from its knowledge and the maker name on listings; not verified"], unknown: ["Owner not identified", "No owner in the market map and no confident guess"] };
@@ -738,7 +770,7 @@ function viewBrands() {
   const all = [...BR.values()];
   const dists = [...new Set(all.flatMap(b => b.dists || []))].sort(), fams = catsIn(f.seg);
   const mkts = [...new Set(all.flatMap(b => b.mkts || []))].sort(), fmts = [...new Set(all.flatMap(b => Object.keys(b.fmt || {})))].sort();
-  let rows = all.filter(b => (!f.tri || b.tri === f.tri) && (!f.status || (f.status === "disagree" ? b.odis : b.status === f.status)) && (!f.own || OCLS[b.oclass] === f.own) && (!f.seg || b.seg === f.seg || Object.entries(b.allc || {}).some(([c, n]) => SEGOF[c] === f.seg && n >= 2)) && (!f.fam || plays(b, f.fam))
+  let rows = all.filter(b => (!f.tri || b.tri === f.tri) && (!f.ch || chClass(b.ch) === f.ch) && (!f.status || (f.status === "disagree" ? b.odis : b.status === f.status)) && (!f.own || OCLS[b.oclass] === f.own) && (!f.seg || b.seg === f.seg || Object.entries(b.allc || {}).some(([c, n]) => SEGOF[c] === f.seg && n >= 2)) && (!f.fam || plays(b, f.fam))
     && (!f.dist || (b.dists || []).includes(f.dist)) && (!f.mkt || (b.mkts || []).includes(f.mkt)) && (!f.fmt || (b.fmt || {})[f.fmt])
     && (!q || norm([b.name, b.owner, b.parent, b.tri_owner, b.ncat, b.cat, b.hero, ...(b.maker || []), ...(b.dists || [])].join(" ")).includes(q)));
   const key = { skus: b => b.skus || 0, dists: b => (b.dists || []).length, name: b => b.name.toLowerCase(), owner: b => (b.owner || "~").toLowerCase() }[f.sort];
@@ -756,14 +788,15 @@ function viewBrands() {
     <select id="btri" aria-label="Workbook triage"><option value="">Any triage bucket</option>${Object.entries(TRI).map(([k, v]) => `<option value="${k}" ${k === f.tri ? "selected" : ""}>${v} (${all.filter(b => b.tri === k).length})</option>`).join("")}</select>
     <select id="bstatus" aria-label="Owner status"><option value="">Any owner status</option>${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === f.status ? "selected" : ""}>${v[0]}</option>`).join("")}<option value="disagree" ${f.status === "disagree" ? "selected" : ""}>Claude and the market map disagree (${all.filter(b => b.odis).length})</option></select>
     ${sel("bown", "Any owner type", ["PE", "Family", "ESOP", "Private", "Corporate", "Unknown"], f.own)}
-    ${sel("bseg", "All segments", segments(), f.seg)}${sel("bfam", "All categories", fams, f.fam)}${sel("bfmt", "All formats", fmts, f.fmt)}${sel("bmkt", "All end markets", mkts, f.mkt)}${sel("bdist", "All distributors", dists, f.dist)}
+    ${sel("bseg", "All segments", segments(), f.seg)}${sel("bch", "Any channel mix", ["Pro-only", "Pro-led", "Mixed", "Retail-led"], f.ch)}${sel("bfam", "All categories", fams, f.fam)}${sel("bfmt", "All formats", fmts, f.fmt)}${sel("bmkt", "All end markets", mkts, f.mkt)}${sel("bdist", "All distributors", dists, f.dist)}
   </div>
-  <section class="panel"><div class="tw"><table class="btable"><thead><tr><th>${sortBtn("name", "Brand")}</th><th>${sortBtn("owner", "Owner")}</th><th>What it is</th><th>Competes with</th><th>Format</th><th class="r">${sortBtn("skus", "SKUs", "r")}</th><th>${sortBtn("dists", "Who carries it")}</th></tr></thead><tbody>
+  <section class="panel"><div class="tw"><table class="btable"><thead><tr><th>${sortBtn("name", "Brand")}</th><th>${sortBtn("owner", "Owner")}</th><th>What it is</th><th>Competes with</th><th>Format</th><th class="r">${sortBtn("skus", "SKUs", "r")}</th><th>${sortBtn("dists", "Who carries it")}</th><th>Channels</th></tr></thead><tbody>
     ${rows.slice(0, f.limit).map(b => `<tr class="cons-row" data-go="b.${esc(b.id)}"><td><b><a href="#b.${esc(b.id)}">${esc(b.name)}</a></b>${b.tri === "actionable" ? `<br><span class="tag tri">Actionable</span>` : ""}${b.scope && b.scope !== "Core" ? `<br><span class="tag">${esc(b.scope)}</span>` : ""}</td>
       <td>${ownerCell(b)}</td><td>${esc(b.ncat)}${b.hero ? `<br><span class="faint">${esc(b.hero)}</span>` : ""}</td>
       <td class="rv">${rivalsOf(b).slice(0, 3).map(x => `<a href="#b.${esc(x.id)}">${esc(x.name)}</a> <span class="faint">${OCLS[x.oclass] || "Unknown"}</span>`).join("<br>") || `<span class="faint">None matched</span>`}</td>
       <td>${esc(b.form || "")}</td><td class="r num">${b.skus || 0}</td>
-      <td>${(b.dists || []).slice(0, 3).map(x => `<span class="tag">${esc(x.replace(/\s*\(.*\)$/, ""))}</span>`).join("")}${(b.dists || []).length > 3 ? `<span class="faint">+${b.dists.length - 3}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="7" class="empty">No brands match.</td></tr>`}
+      <td>${(b.dists || []).slice(0, 3).map(x => `<span class="tag">${esc(x.replace(/\s*\(.*\)$/, ""))}</span>`).join("")}${(b.dists || []).length > 3 ? `<span class="faint">+${b.dists.length - 3}</span>` : ""}</td>
+      <td style="white-space:nowrap">${chTot(b.ch) ? `${chBar(b.ch, 80)}<br><span class="faint" style="font-size:12px">${chClass(b.ch)}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="8" class="empty">No brands match.</td></tr>`}
   </tbody></table></div>
   ${rows.length > f.limit ? `<button class="more" type="button" data-act="bmore">Show ${Math.min(100, rows.length - f.limit)} more of ${rows.length - f.limit}</button>` : ""}</section>`;
 }
@@ -827,6 +860,7 @@ function viewBrand(id) {
     <section class="panel"><header><h2>Package formats</h2></header><div class="body">${mixBlock("By SKU", Object.entries(b.fmt || {}).sort((a, c) => c[1] - a[1]), b.skus || 0)}${b.hand !== undefined ? `<p class="muted" style="margin:10px 0 0">${pct(b.hand)} of SKUs are hand-sized packs.</p>` : ""}</div></section>
   </div>
   ${brandMarket(b)}
+  ${brandChannels(b)}
   ${rivalsPanel(b)}
   <section class="panel"><header><h2>Products</h2><span class="sp"></span><span class="lbl">${b.skus || 0} SKUs on distributor shelves</span></header>
     ${skus === null ? `<div class="body faint">Loading products…</div>` : `<div class="tw"><table><thead><tr><th>Product</th><th>Part #</th><th>Format</th><th>Size</th><th>Category</th><th>Distributor</th><th class="r">List $</th></tr></thead><tbody>
@@ -1616,7 +1650,7 @@ document.addEventListener("change", e => {
   if (e.target.id === "dsort") { ui.dsort = e.target.value; render(); }
   if (e.target.id === "cseg") { ui.cseg = e.target.value; render(); }
   if (e.target.id === "csort") { ui.csort = e.target.value; render(); }
-  const bmap = { btri: "tri", bstatus: "status", bown: "own", bfam: "fam", bseg: "seg", bdist: "dist", bmkt: "mkt", bfmt: "fmt" };
+  const bmap = { btri: "tri", bstatus: "status", bown: "own", bfam: "fam", bseg: "seg", bch: "ch", bdist: "dist", bmkt: "mkt", bfmt: "fmt" };
   if (bmap[e.target.id]) { ui.b[bmap[e.target.id]] = e.target.value; ui.b.limit = 100; render(); }
   if (e.target.id === "mkt") { ui.mkt = e.target.value; render(); }
 });

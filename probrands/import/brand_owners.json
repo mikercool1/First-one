@@ -21982,5 +21982,237 @@
   "sponsor": "",
   "conf": "Low",
   "note": "No recognizable owner from knowledge or listing clues."
+ },
+ "Roots": {
+  "owner": "Plant Health Care",
+  "parent": "PI Industries",
+  "type": "Subsidiary of public",
+  "sponsor": "",
+  "conf": "Medium",
+  "note": "Maker on listings is PHC; Roots line sits with Plant Health Care."
+ },
+ "Becky's Brew": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "Lac Balsam": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "German tree wound product; US importer unclear."
+ },
+ "Main Event": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "McKay": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "Motion Lotion": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "Petro": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "Florel": {
+  "owner": "Lawn and Garden Products Inc",
+  "parent": "",
+  "type": "Private (unknown)",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "Florel ethephon line moved from Bayer to Monterey Lawn and Garden."
+ },
+ "Nu Arbor": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "Peerless Transmission": {
+  "owner": "Tecumseh Products",
+  "parent": "",
+  "type": "Private (unknown)",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "Peerless transmissions historically a Tecumseh line; grease is OEM service part."
+ },
+ "PHC for Trees": {
+  "owner": "Plant Health Care",
+  "parent": "PI Industries",
+  "type": "Subsidiary of public",
+  "sponsor": "",
+  "conf": "Medium",
+  "note": "PHC is the Plant Health Care brand prefix."
+ },
+ "Master": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "Generic name; owner cannot be identified."
+ },
+ "Boar Products": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "Diamond Lustre": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "D'Gel": {
+  "owner": "American Polywater",
+  "parent": "",
+  "type": "Family",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "Cable gel cleaner; possibly Polywater line, maker listed as brand."
+ },
+ "iFUSE": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "Klean Wall": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "M-Pro 7": {
+  "owner": "Hoppe's",
+  "parent": "Revelyst",
+  "type": "PE",
+  "sponsor": "Strategic Value Partners",
+  "conf": "Medium",
+  "note": "Known Hoppe's brand; Revelyst taken private by SVP."
+ },
+ "RD3000": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "SmartRags": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "HCF": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "HydraSol": {
+  "owner": "American Polywater",
+  "parent": "",
+  "type": "Family",
+  "sponsor": "",
+  "conf": "Medium",
+  "note": "Polywater HydraSol is a known cable gel remover."
+ },
+ "Insulgel": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "Maker listed as brand itself; no known parent."
+ },
+ "Slip 2000": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "CleanTex": {
+  "owner": "ITW Chemtronics",
+  "parent": "Illinois Tool Works",
+  "type": "Subsidiary of public",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "Likely Chemtronics CleanTex wipes line."
+ },
+ "Blue Wonder": {
+  "owner": "Blue Wonder Gun Care",
+  "parent": "",
+  "type": "Private (unknown)",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "Brand appears to be its own small private company."
+ },
+ "TouchPoint Plus": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "Viper Bench Rest": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
+ },
+ "VLP": {
+  "owner": "",
+  "parent": "",
+  "type": "Unknown",
+  "sponsor": "",
+  "conf": "Low",
+  "note": "No recognizable owner from clues"
  }
 }

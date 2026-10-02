@@ -12523,5 +12523,2150 @@
    "why": "A negligible slice of Berkshire Hathaway's OxyChem and wider business."
   },
   "pro_pct": 0
+ },
+ "fbc-chemical-corporation": {
+  "pull": {
+   "v": 0,
+   "why": "Regional bulk chemical distributor; Tried and True finishes have little trade name pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Bulk solvent and raw material distribution is not a handheld formulated pro brand."
+  },
+  "major": {
+   "v": 0,
+   "why": "Own branded finishes are a tiny share of a chemical distribution business."
+  },
+  "pro_pct": 5
+ },
+ "brothers-research-corporation": {
+  "pull": {
+   "v": 1,
+   "why": "Duragloss has loyal detailer and fleet following but limited broad trade name recognition."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated appearance consumables fit somewhat, but car care is retail-leaning, not core MRO."
+  },
+  "major": {
+   "v": 2,
+   "why": "Duragloss appearance chemicals are essentially the whole business, a meaningful part sold to pros."
+  },
+  "pro_pct": 60
+ },
+ "farwest-corrosion-control-company": {
+  "pull": {
+   "v": 0,
+   "why": "Cathodic protection systems are engineered purchases, not brands tradespeople ask for by name."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Anodes, equipment and installation services are not handheld formulated consumables."
+  },
+  "major": {
+   "v": 0,
+   "why": "Distribution and engineering services dominate; small-format branded chemicals are negligible."
+  },
+  "pro_pct": 2
+ },
+ "fastenation-inc": {
+  "pull": {
+   "v": 0,
+   "why": "FASTENfoam tape is a minor reseller brand with no professional name pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Converted foam tape from a reseller is not a formulated chemical consumable."
+  },
+  "major": {
+   "v": 0,
+   "why": "Mostly resells Velcro, 3M and Glue Dots; no chemical pro brand business."
+  },
+  "pro_pct": 0
+ },
+ "fiebing-company-inc": {
+  "pull": {
+   "v": 2,
+   "why": "Saddlers and leathercrafters ask for Fiebing's dyes and saddle soap by name."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated handheld consumables, but leathercraft channel is far from ITW's MRO and auto trade."
+  },
+  "major": {
+   "v": 2,
+   "why": "Leather dyes and care products are essentially the whole business."
+  },
+  "pro_pct": 70
+ },
+ "glue-dots-international-llc": {
+  "pull": {
+   "v": 1,
+   "why": "Glue Dots is a known name in packaging and craft, less so with tradespeople."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Consumable adhesive product, but packaging and craft channels sit outside ITW Pro Brands focus."
+  },
+  "major": {
+   "v": 2,
+   "why": "The profiled entity is Glue Dots itself, whose revenue is adhesive dot products."
+  },
+  "pro_pct": 50
+ },
+ "hydrox-laboratories": {
+  "pull": {
+   "v": 0,
+   "why": "Commodity peroxide, alcohol and private label antiseptics carry little professional brand pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Healthcare and retail antiseptics are outside ITW's MRO and trade channel."
+  },
+  "major": {
+   "v": 0,
+   "why": "Mostly private label and retail healthcare products within Rohto's pharma business."
+  },
+  "pro_pct": 5
+ },
+ "hy-per-lube-corporation": {
+  "pull": {
+   "v": 1,
+   "why": "Hy-Per Lube has a following among commercial technicians but is now a Rislone sub-brand."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Handheld formulated automotive additive sold to technicians fits ITW's Pro Brands profile well."
+  },
+  "major": {
+   "v": 1,
+   "why": "Bar's Products sells automotive chemicals mostly through retail, with a partial pro share."
+  },
+  "pro_pct": 35
+ },
+ "hyvac-products-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Vacuum pump oil is a side product; no evidence pros seek the brand."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Mainly vacuum pump equipment and repair, with only a minor oil line."
+  },
+  "major": {
+   "v": 0,
+   "why": "Equipment manufacturing and repair dominate; branded oils are a small share."
+  },
+  "pro_pct": 15
+ },
+ "lamarka-chemical-company": {
+  "pull": {
+   "v": 0,
+   "why": "Judged from workbook facts; no evidence of any professional name recognition."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Judged from workbook facts; hand care could fit if verified as a pro channel product."
+  },
+  "major": {
+   "v": 1,
+   "why": "Judged from workbook facts; facts suggest a small handheld pro business but nothing is verified."
+  },
+  "pro_pct": null
+ },
+ "mid-states-asphalt": {
+  "pull": {
+   "v": 0,
+   "why": "Judged from workbook facts; roofing asphalt has no evident name pull with pros."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Judged from workbook facts; bulk roofing asphalt is not handheld, mostly not ITW territory."
+  },
+  "major": {
+   "v": 1,
+   "why": "Judged from workbook facts; roof coatings partly pro products but size and mix unknown."
+  },
+  "pro_pct": null
+ },
+ "milazzo-industries-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Qik Joe ice melt is known regionally to facilities and contractors, not demanded broadly."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Seasonal bagged ice melt is consumable but bulky and commoditized, a weak ITW fit."
+  },
+  "major": {
+   "v": 1,
+   "why": "Ice melt for facilities and contractors is core, but retail and bulk bags dilute it."
+  },
+  "pro_pct": 40
+ },
+ "the-neverleak-company-lp": {
+  "pull": {
+   "v": 1,
+   "why": "Roofers know Neverleak flashings, but flashings are specified hard goods, not loyalty brands."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Metal and lead flashings are hard goods, not formulated chemicals."
+  },
+  "major": {
+   "v": 0,
+   "why": "Revenue is hard-good flashings; no small-format chemical business."
+  },
+  "pro_pct": 0
+ },
+ "organic-sales-marketing-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Judged from workbook facts; obscure natural cleaner brand with no professional pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Judged from workbook facts; pet odor and household cleaners are consumer, not MRO."
+  },
+  "major": {
+   "v": 1,
+   "why": "Judged from workbook facts; small cleaning brand, pro versus consumer share unclear."
+  },
+  "pro_pct": null
+ },
+ "penn-valley-chemical-co-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Regional jan-san distributor name; customers buy from it, not ask for it."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Full-line jan-san distribution is a channel, not a formulated brand ITW would buy."
+  },
+  "major": {
+   "v": 0,
+   "why": "Distribution of third-party supplies dominates within the larger Aramsco platform."
+  },
+  "pro_pct": 3
+ },
+ "periodic-products-inc": {
+  "pull": {
+   "v": 1,
+   "why": "CuLator is known among pool service pros but is a niche specialty product."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated consumable, but pool chemicals sit outside ITW's MRO and auto channels."
+  },
+  "major": {
+   "v": 2,
+   "why": "CuLator and Chelok pool chemicals are essentially the entire business."
+  },
+  "pro_pct": 60
+ },
+ "pf-harris-manufacturing-co": {
+  "pull": {
+   "v": 0,
+   "why": "Harris pest products are a consumer DIY brand bought off retail shelves."
+  },
+  "itw": {
+   "v": 0,
+   "why": "EPA-registered DIY pest control through retail is outside ITW's pro trade channel."
+  },
+  "major": {
+   "v": 0,
+   "why": "Consumer DIY pest and cleaning products within a retail-focused PurposeBuilt platform."
+  },
+  "pro_pct": 10
+ },
+ "pharmacal-research-laboratories-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Lab-animal facility managers know the brand in a tiny niche."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Cage-wash detergents for vivarium facilities are bulk, not handheld trade consumables."
+  },
+  "major": {
+   "v": 1,
+   "why": "Professional institutional chemicals, but mostly drums and bulk rather than small format."
+  },
+  "pro_pct": 30
+ },
+ "powerfoam-insulation": {
+  "pull": {
+   "v": 0,
+   "why": "Judged from workbook facts; unverified spray foam name with no evident pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Judged from workbook facts; spray foam insulation systems are not handheld consumables."
+  },
+  "major": {
+   "v": 0,
+   "why": "Judged from workbook facts; likely installer or reseller with no small-format brand."
+  },
+  "pro_pct": null
+ },
+ "precision-plus-vacuum-parts-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Private-label pump oils from a parts reseller; buyers want OEM-equivalent parts, not the brand."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Parts reseller inside Atlas Copco; oils are a sideline, not a pro brand."
+  },
+  "major": {
+   "v": 0,
+   "why": "Spare parts dominate, and it is a tiny piece of Atlas Copco."
+  },
+  "pro_pct": 2
+ },
+ "goldenwest-lubricants-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Prolong had infomercial fame but limited current professional demand by name."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Handheld formulated engine treatments and greases fit ITW's automotive Pro Brands well."
+  },
+  "major": {
+   "v": 1,
+   "why": "GoldenWest's contract and industrial blending dilutes the Prolong branded share."
+  },
+  "pro_pct": 30
+ },
+ "redtree-industries": {
+  "pull": {
+   "v": 1,
+   "why": "Marine painters know RedTree brushes, but these are tools, not chemicals."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Brushes and rollers are not formulated chemical consumables."
+  },
+  "major": {
+   "v": 0,
+   "why": "No chemical revenue; it is a brush maker within the Gordon Brush group."
+  },
+  "pro_pct": 0
+ },
+ "rocky-mountain-sunscreen": {
+  "pull": {
+   "v": 0,
+   "why": "Sunscreen sold to camps and resorts lacks tradesperson brand pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Personal care sunscreen sits well outside ITW's MRO and trade channels."
+  },
+  "major": {
+   "v": 0,
+   "why": "Personal care sunscreen is not a professional trade brand business."
+  },
+  "pro_pct": 0
+ },
+ "safeworld-international-inc": {
+  "pull": {
+   "v": 1,
+   "why": "CANGUN1 is known to some painters and contractors as an aerosol accessory."
+  },
+  "itw": {
+   "v": 0,
+   "why": "A pistol-grip tool accessory, not a formulated chemical consumable."
+  },
+  "major": {
+   "v": 0,
+   "why": "Revenue is a non-chemical tool accessory, outside the pro chemical brand scope."
+  },
+  "pro_pct": 0
+ },
+ "santa-rosa-lead-products": {
+  "pull": {
+   "v": 0,
+   "why": "Regional lead flashing fabricator; buyers choose on availability, not brand."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Sheet lead and flashings are metal goods, not formulated consumables."
+  },
+  "major": {
+   "v": 0,
+   "why": "Metals fabrication and wholesale; no small-format chemical revenue."
+  },
+  "pro_pct": 0
+ },
+ "scientific-device-laboratory": {
+  "pull": {
+   "v": 0,
+   "why": "Lab markers and tapes sell to clinical labs, with no trade name pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Lab consumables sold to pathology labs are outside ITW's MRO trade channel."
+  },
+  "major": {
+   "v": 0,
+   "why": "A small acquired line inside StatLab's pathology supplies business."
+  },
+  "pro_pct": 0
+ },
+ "siroflex-inc": {
+  "pull": {
+   "v": 1,
+   "why": "DUO-SIL and HYBRI-SIL are known in window and roofing channels, not widely demanded."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Cartridge sealants for contractors are handheld formulated consumables ITW would value."
+  },
+  "major": {
+   "v": 2,
+   "why": "The profiled Siroflex division sells mostly contractor cartridge sealants."
+  },
+  "pro_pct": 75
+ },
+ "solder-it": {
+  "pull": {
+   "v": 1,
+   "why": "Solder-It is a long-standing niche brand recognized by some technicians."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Solder pastes fit, but butane irons and torches are tools, not consumables."
+  },
+  "major": {
+   "v": 1,
+   "why": "Revenue mixes tools with solder paste and flux chemicals."
+  },
+  "pro_pct": 35
+ },
+ "spray-forget": {
+  "pull": {
+   "v": 1,
+   "why": "Some roofing and pressure-washing contractors know it, but it trails Wet & Forget."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated concentrate, but sold mostly through home-center retail, not trade distribution."
+  },
+  "major": {
+   "v": 0,
+   "why": "A small brand within W.M. Barr's large retail-oriented chemical portfolio."
+  },
+  "pro_pct": 5
+ },
+ "edwards-councilor-co-inc": {
+  "pull": {
+   "v": 2,
+   "why": "Restaurant operators and health inspectors know and ask for Steramine tablets by name."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Handheld formulated consumable, but foodservice sanitation is adjacent to ITW's MRO channel."
+  },
+  "major": {
+   "v": 2,
+   "why": "Steramine sanitizer tablets are essentially the entire business, sold to professionals."
+  },
+  "pro_pct": 90
+ },
+ "tarco": {
+  "pull": {
+   "v": 1,
+   "why": "Roofers know TARCO underlayments, but these are bulk rolls, not loyalty handheld brands."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Roll underlayments and membranes are bulky building products, not handheld consumables."
+  },
+  "major": {
+   "v": 0,
+   "why": "Underlayments and membranes dominate; roof cements are a small share."
+  },
+  "pro_pct": 5
+ },
+ "triax-lubricants-llc": {
+  "pull": {
+   "v": 0,
+   "why": "Tiny lubricant brand with no evidence of professional name demand."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated lubricants fit partly, but mostly bulk engine oils for fleets."
+  },
+  "major": {
+   "v": 1,
+   "why": "Branded lubricants are the business, but much is bulk oil, not small format."
+  },
+  "pro_pct": 30
+ },
+ "rw-beckett-corporation": {
+  "pull": {
+   "v": 2,
+   "why": "Oil heat technicians know and specify Beckett burners and parts by name."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Burners and parts are equipment; chemicals are only a small side catalog."
+  },
+  "major": {
+   "v": 0,
+   "why": "Oil burners and parts dominate; chemicals are a small side line."
+  },
+  "pro_pct": 5
+ },
+ "wizards-products": {
+  "pull": {
+   "v": 1,
+   "why": "Some detailers use Wizards polishes, but brand recognition is modest."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated car care consumables, but sold mostly through auto parts retail."
+  },
+  "major": {
+   "v": 1,
+   "why": "Car care chemicals are the whole business, with retail outweighing pros."
+  },
+  "pro_pct": 40
+ },
+ "zip-chem-products": {
+  "pull": {
+   "v": 2,
+   "why": "Aviation mechanics ask for Cor-Ban and Calla by name; they are specified in MRO."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Handheld aerosol corrosion inhibitors and lubricants for aviation MRO fit ITW Pro Brands squarely."
+  },
+  "major": {
+   "v": 2,
+   "why": "The profiled Zip-Chem division sells aviation maintenance chemicals to professionals."
+  },
+  "pro_pct": 90
+ },
+ "aervoe-industries-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Aervoe and Zynolyte marking paints are known in MRO and forestry but face strong rivals."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Aerosol marking paints and coatings through MRO channels fit ITW's Pro Brands profile."
+  },
+  "major": {
+   "v": 2,
+   "why": "Aerosol paints and coatings, mostly professional and industrial, are the core business."
+  },
+  "pro_pct": 75
+ },
+ "shurhold-industries-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Boat owners and marine detailers know Shurhold, but it is not a trade staple."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated cleaners fit partly, but brush hardware and marine retail are off core."
+  },
+  "major": {
+   "v": 1,
+   "why": "Consumer boat owners dominate, with marine detailers a partial share."
+  },
+  "pro_pct": 30
+ },
+ "thetford-corporation": {
+  "pull": {
+   "v": 1,
+   "why": "Aqua-Kem is well known among RV owners and dealers, less among tradespeople."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Holding-tank chemicals are consumables, but RV retail and OEM channels are not MRO."
+  },
+  "major": {
+   "v": 0,
+   "why": "Toilets and sanitation equipment dominate; chemicals are a minority, mostly consumer."
+  },
+  "pro_pct": 15
+ },
+ "armor-protective-packaging": {
+  "pull": {
+   "v": 1,
+   "why": "Armor VCI is known in industrial packaging, but liquids have limited name pull."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Rust preventive liquids fit, but VCI films and papers dominate and are packaging."
+  },
+  "major": {
+   "v": 1,
+   "why": "Rust liquids are a minority next to VCI films and papers."
+  },
+  "pro_pct": 20
+ },
+ "ames-research-laboratories-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Some contractors and DIYers know AMES coatings, but recognition is regional."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated coatings, but gallon and pail roof coatings are not really handheld."
+  },
+  "major": {
+   "v": 1,
+   "why": "Coatings are the whole business, but sold to DIYers as much as pros."
+  },
+  "pro_pct": 40
+ },
+ "color-craft-ltd": {
+  "pull": {
+   "v": 1,
+   "why": "Custom painters and airbrush artists know Createx, but they are not core trades."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated small bottles, but art and custom paint channels sit outside ITW's MRO."
+  },
+  "major": {
+   "v": 1,
+   "why": "Airbrush paint is the business, with hobbyists and artists outweighing professionals."
+  },
+  "pro_pct": 35
+ },
+ "nakoma-products-llc": {
+  "pull": {
+   "v": 2,
+   "why": "Painters and contractors ask for Preval sprayers by name; it is a category-defining tool."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Handheld aerosol consumable, but Nakoma's portfolio is mostly consumer household brands."
+  },
+  "major": {
+   "v": 0,
+   "why": "Nakoma owns Endust, Rit and Scott's Liquid Gold; Preval pro sales are small."
+  },
+  "pro_pct": 10
+ },
+ "anabec-solutions": {
+  "pull": {
+   "v": 1,
+   "why": "Restoration contractors know Anabec, but it competes with larger brands like Benefect and Concrobium."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated pro consumables, though mostly jugs sold through restoration distributors, not MRO."
+  },
+  "major": {
+   "v": 2,
+   "why": "Restoration chemicals for contractors are essentially the whole business."
+  },
+  "pro_pct": 80
+ },
+ "fastcap-llc": {
+  "pull": {
+   "v": 2,
+   "why": "Finish carpenters and cabinet installers ask for 2P-10 and FastCap tools by name."
+  },
+  "itw": {
+   "v": 1,
+   "why": "2P-10 adhesive fits, but most revenue is woodworking tools, not chemicals."
+  },
+  "major": {
+   "v": 1,
+   "why": "Pro trade products dominate, but chemicals are a minority within mostly tools."
+  },
+  "pro_pct": 25
+ },
+ "mcglaughlin-oil-company": {
+  "pull": {
+   "v": 0,
+   "why": "PetrolGel and regional lubricants carry little professional name demand."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Regional bulk lubricant supplier; small tubes are a minor sideline."
+  },
+  "major": {
+   "v": 0,
+   "why": "Mostly bulk lubricant supply and distribution; small-format share appears small."
+  },
+  "pro_pct": 10
+ },
+ "aviation-devices-electronic-components-llc": {
+  "pull": {
+   "v": 2,
+   "why": "Aircraft maintenance technicians specify Av-DEC Hi-Tak gaskets and sealants by name."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Aviation MRO consumables fit partly, but gaskets and tapes are not classic handheld chemicals."
+  },
+  "major": {
+   "v": 2,
+   "why": "Aerospace MRO sealants and gaskets for technicians are essentially the entire business."
+  },
+  "pro_pct": 70
+ },
+ "qep-co-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Flooring installers know Roberts and QEP, though tools sell more on price than loyalty."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Roberts adhesives fit, but tile tools and bulk flooring products dominate QEP."
+  },
+  "major": {
+   "v": 1,
+   "why": "Pro installation products are core, but adhesives are a minority alongside tools and flooring."
+  },
+  "pro_pct": 25
+ },
+ "abc-compounding-co-inc": {
+  "pull": {
+   "v": 0,
+   "why": "ABC's own brands are distributor-sold commodity cleaners with little professional name pull."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Aerosol degreasers and lubricants fit, but jan-san and private label dominate."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of own brands and private label; small-format pro brands are a partial share."
+  },
+  "pro_pct": 40
+ },
+ "ameripolish-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Known among polished-concrete contractors, but competes with many dye and densifier brands."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Trade-only formulated chemicals, but floor densifiers come in jugs and pails, not handheld."
+  },
+  "major": {
+   "v": 1,
+   "why": "Pro chemical line inside an equipment-led concrete flooring roll-up."
+  },
+  "pro_pct": 30
+ },
+ "chemeisters-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Judged from workbook facts; obscure brand, possibly inactive, little evidence of name demand."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Judged from workbook facts; carpet chemicals are consumable but niche and likely bulk."
+  },
+  "major": {
+   "v": 2,
+   "why": "Judged from workbook facts; tiny firm selling only pro carpet chemicals."
+  },
+  "pro_pct": 90
+ },
+ "industrial-sustainability-group-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Fuel catalyst brand with little evidence fleet techs request it by name."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Consumable fuel additive and grease, but sold direct to fleets, not MRO distributors."
+  },
+  "major": {
+   "v": 2,
+   "why": "Its fuel additive and grease lines are essentially the whole business."
+  },
+  "pro_pct": 85
+ },
+ "mistic-metal-mover-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Loyal following among welders and machinists, but a tiny niche brand."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Handheld cutting fluid sold through welding distributors fits CRC tapping fluid adjacency."
+  },
+  "major": {
+   "v": 2,
+   "why": "The single cutting fluid brand is the entire business."
+  },
+  "pro_pct": 100
+ },
+ "thornell-corporation": {
+  "pull": {
+   "v": 2,
+   "why": "Odorcide and Skunk-Off are requested by name among vets and restoration pros."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated consumable, but vet and restoration channels sit outside ITW's MRO focus."
+  },
+  "major": {
+   "v": 2,
+   "why": "Odor concentrates sold to vets and contractors are essentially all revenue."
+  },
+  "pro_pct": 80
+ },
+ "tec-laboratories-inc": {
+  "pull": {
+   "v": 2,
+   "why": "Tecnu is the name linemen and outdoor crews ask for after poison ivy exposure."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Handheld consumable, but OTC skin product sold largely through retail pharmacy."
+  },
+  "major": {
+   "v": 1,
+   "why": "Pro use is real, yet consumer pharmacy sales likely dominate the owner's mix."
+  },
+  "pro_pct": 30
+ },
+ "ultraseal-international-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Recognized in off-road and fleet tire shops, but competes with many sealants."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated consumable for tire shops, though often sold in bulk dispensing."
+  },
+  "major": {
+   "v": 2,
+   "why": "Tire sealant for commercial and fleet users is the whole business."
+  },
+  "pro_pct": 80
+ },
+ "prorestore-products": {
+  "pull": {
+   "v": 1,
+   "why": "Unsmoke and ProRestore are known to restoration techs but not iconic."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Consumable restoration chemicals, but channel is janitorial and restoration, not MRO."
+  },
+  "major": {
+   "v": 1,
+   "why": "Chemicals are a meaningful but minority part of equipment-heavy Legend Brands."
+  },
+  "pro_pct": 30
+ },
+ "apg-co-inc": {
+  "pull": {
+   "v": 2,
+   "why": "Catchmaster is a top glue board brand pest pros specify by name."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Glue traps are devices, not formulated fluids, and sit outside ITW's channels."
+  },
+  "major": {
+   "v": 1,
+   "why": "Pro pest channel is large, but retail Catchmaster sales are also significant."
+  },
+  "pro_pct": 50
+ },
+ "detectapro": {
+  "pull": {
+   "v": 0,
+   "why": "Commodity detectable pens and tools with little brand pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Mostly plastic tools and PPE, not formulated chemical consumables."
+  },
+  "major": {
+   "v": 0,
+   "why": "Chemical products are a negligible share of a plastics business."
+  },
+  "pro_pct": 5
+ },
+ "empire-manufacturing": {
+  "pull": {
+   "v": 0,
+   "why": "Judged from workbook facts; micro-niche pitch cleaner with little name demand."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Handheld formulated cleaner, but woodworking retail rather than MRO channel."
+  },
+  "major": {
+   "v": 1,
+   "why": "Judged from workbook facts; sold through tool retailers to hobbyists and pros alike."
+  },
+  "pro_pct": 40
+ },
+ "saigers-steam-clean": {
+  "pull": {
+   "v": 1,
+   "why": "Saiger's Sauce has a cult following among carpet cleaners."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated consumable, but powdered carpet chemicals in bulk are off ITW's core."
+  },
+  "major": {
+   "v": 2,
+   "why": "The line is the brand's entire business, distributed by Jon-Don."
+  },
+  "pro_pct": 90
+ },
+ "daubert-chemical-company-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Tectyl is a known undercoating name, but mostly specified by OEMs."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Rust preventives fit, though much volume ships in drums to OEMs."
+  },
+  "major": {
+   "v": 1,
+   "why": "Industrial bulk and OEM adhesives outweigh small-format pro sales."
+  },
+  "pro_pct": 25
+ },
+ "mcgean-rohco-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Cee-Bee is specified in aircraft maintenance manuals, a form of name demand."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Aviation MRO cleaners fit, but mostly drum-sized and specification driven."
+  },
+  "major": {
+   "v": 0,
+   "why": "Plating and metal-finishing chemicals dominate; Cee-Bee is a small share."
+  },
+  "pro_pct": 10
+ },
+ "eldorado-chemical-co-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Defunct since 2007, so there is no current brand demand."
+  },
+  "itw": {
+   "v": 0,
+   "why": "No operating business remains to acquire."
+  },
+  "major": {
+   "v": 0,
+   "why": "Facility ceased operations in 2007; no current revenue."
+  },
+  "pro_pct": null
+ },
+ "hentzen-coatings-inc": {
+  "pull": {
+   "v": 0,
+   "why": "OEM and defense coatings bought by specification, not by tradesperson preference."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Industrial coatings for OEM lines are not handheld MRO consumables."
+  },
+  "major": {
+   "v": 0,
+   "why": "Small-format pro products are a tiny share of OEM coatings sales."
+  },
+  "pro_pct": 2
+ },
+ "justice-brothers-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Recognized by repair shops and racers, but not a must-have brand."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Automotive additives and JB-80 lubricant fit Permatex and CRC shop channels well."
+  },
+  "major": {
+   "v": 2,
+   "why": "Small-format additives and lubricants for shops make up most revenue."
+  },
+  "pro_pct": 70
+ },
+ "qualichem-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Metalworking fluids are chosen by plant engineers on spec and price."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Bulk coolants and water treatment are not handheld consumables."
+  },
+  "major": {
+   "v": 0,
+   "why": "Drum and tote fluids plus water treatment dominate revenue."
+  },
+  "pro_pct": 10
+ },
+ "slipdoctors": {
+  "pull": {
+   "v": 0,
+   "why": "Small anti-slip brand with little evidence of pro name demand."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated floor treatments, but sold direct to facilities and consumers."
+  },
+  "major": {
+   "v": 2,
+   "why": "Anti-slip coatings and treatments are essentially the whole business."
+  },
+  "pro_pct": 60
+ },
+ "tnemec-company-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Specified by engineers for tanks and bridges, not handheld trade demand."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Large-format protective coatings applied by contractors are not ITW's model."
+  },
+  "major": {
+   "v": 0,
+   "why": "Revenue is nearly all specified protective coatings, not small-format products."
+  },
+  "pro_pct": 2
+ },
+ "ultrachem-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Known among compressor maintenance techs, but often sold as OEM fill."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Plant maintenance lubricants fit MRO, but mostly in pails and drums."
+  },
+  "major": {
+   "v": 0,
+   "why": "A small piece of FUCHS SE, a large public lubricants company."
+  },
+  "pro_pct": 1
+ },
+ "vantage-specialty-chemicals": {
+  "pull": {
+   "v": 0,
+   "why": "Precision solvents are qualified by process engineers, not chosen by tradespeople."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Bulk process cleaning solvents for manufacturers, not handheld MRO consumables."
+  },
+  "major": {
+   "v": 0,
+   "why": "Petroferm cleaners are a small share of a specialty ingredients company."
+  },
+  "pro_pct": 3
+ },
+ "plasti-dip-international-inc": {
+  "pull": {
+   "v": 2,
+   "why": "Plasti Dip is a household name that pros and DIYers ask for."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Aerosol and dip coatings fit Rain-X and Permatex aerosol lines well."
+  },
+  "major": {
+   "v": 1,
+   "why": "Branded but sold mainly through retail to consumers and enthusiasts."
+  },
+  "pro_pct": 30
+ },
+ "indium-corporation": {
+  "pull": {
+   "v": 1,
+   "why": "Respected solder brand, but chosen by process engineers in electronics plants."
+  },
+  "itw": {
+   "v": 0,
+   "why": "OEM solder and thermal materials are far from ITW Pro Brands' channels."
+  },
+  "major": {
+   "v": 0,
+   "why": "Small-format pro products are a sliver of an OEM electronics materials business."
+  },
+  "pro_pct": 3
+ },
+ "keco-body-repair-products": {
+  "pull": {
+   "v": 2,
+   "why": "KECO is a leading name among paintless dent repair technicians."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Mostly tools; hot-melt glue sticks are not a formulated chemical fit."
+  },
+  "major": {
+   "v": 0,
+   "why": "Glue sticks are a small share next to tools and training."
+  },
+  "pro_pct": 15
+ },
+ "jnj-industries-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Supplier of commodity wipes and solvents with little name demand."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Electronics cleaning consumables fit partly, but sold to OEM assembly lines."
+  },
+  "major": {
+   "v": 1,
+   "why": "Judged from workbook facts; consumables to electronics plants, partly small format."
+  },
+  "pro_pct": 50
+ },
+ "zephyr-polishes": {
+  "pull": {
+   "v": 2,
+   "why": "Zephyr Pro 40 is widely known and requested by truck polishers."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Handheld polish fits, but truck and RV enthusiast channel is not MRO."
+  },
+  "major": {
+   "v": 2,
+   "why": "Metal polishes and buffing supplies make up the whole business."
+  },
+  "pro_pct": 80
+ },
+ "caig-laboratories-inc": {
+  "pull": {
+   "v": 2,
+   "why": "DeoxIT is the contact cleaner electronics and audio techs ask for by name."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Handheld aerosol contact cleaners fit CRC's electronics line directly."
+  },
+  "major": {
+   "v": 2,
+   "why": "Kano's revenue is mostly small-format pro brands like Kroil and Super Lube."
+  },
+  "pro_pct": 85
+ },
+ "chemsafe-international": {
+  "pull": {
+   "v": 0,
+   "why": "Broad private-label style cleaner line with little brand pull."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Some aerosols and hand cleaners fit, but much is janitorial bulk."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of janitorial bulk, distribution heritage and some small-format pro products."
+  },
+  "pro_pct": 40
+ },
+ "dac-industries": {
+  "pull": {
+   "v": 0,
+   "why": "Small aerosol maker with limited brand recognition among plant workers."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Aerosol mold releases and lubricants for plants fit ITW's Slide and CRC lines."
+  },
+  "major": {
+   "v": 2,
+   "why": "Aerosol pro chemicals appear to be essentially the whole business."
+  },
+  "pro_pct": 85
+ },
+ "granitize-products-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Known to car dealers and detailers, but not a must-have brand."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Car care and service chemicals fit partly, though much is dealer bulk."
+  },
+  "major": {
+   "v": 2,
+   "why": "Branded car care, aviation and mold release products are most revenue."
+  },
+  "pro_pct": 60
+ },
+ "renegade-products-usa": {
+  "pull": {
+   "v": 1,
+   "why": "Rebel polishes have a following among truck chrome polishers."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Handheld polish fits, but enthusiast and truck channel is not MRO."
+  },
+  "major": {
+   "v": 2,
+   "why": "Polishes and detailing chemicals are essentially the whole business."
+  },
+  "pro_pct": 80
+ },
+ "synthetic-lubricants-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Metalworking fluids are selected on spec and price, not by brand."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Drum and pail coolants are not handheld MRO consumables."
+  },
+  "major": {
+   "v": 0,
+   "why": "Bulk metalworking fluids dominate; small-format products are minor."
+  },
+  "pro_pct": 10
+ },
+ "black-bear-company-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Known among government and construction buyers but not a requested trade brand."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Greases fit MRO, but much volume is pails and drums."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of cartridge and bulk greases and oils."
+  },
+  "pro_pct": 40
+ },
+ "bonstone-materials-corp": {
+  "pull": {
+   "v": 2,
+   "why": "Bonstone is a well known name among stone fabricators."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated handheld adhesives, but stone fabrication is outside ITW's MRO focus."
+  },
+  "major": {
+   "v": 2,
+   "why": "Stone adhesives sold to fabricators are essentially the whole business."
+  },
+  "pro_pct": 90
+ },
+ "mon-eco-industries-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Insulation adhesives are bought on spec, little name demand."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated sealants via HVAC distributors fit partly, but many are pails."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of pail mastics and smaller adhesive packages."
+  },
+  "pro_pct": 40
+ },
+ "proto-corporation": {
+  "pull": {
+   "v": 1,
+   "why": "Proto fitting covers are known to insulators, but adhesive has little pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "PVC jacketing is not a formulated chemical consumable."
+  },
+  "major": {
+   "v": 0,
+   "why": "Adhesive is a minor accessory to a PVC jacketing business."
+  },
+  "pro_pct": 5
+ },
+ "radco-industries-llc": {
+  "pull": {
+   "v": 0,
+   "why": "Mil-spec lubricants are bought on specification, not brand preference."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Bulk mil-spec and heat transfer fluids are not handheld MRO products."
+  },
+  "major": {
+   "v": 0,
+   "why": "Heat transfer and mil-spec bulk fluids dominate revenue."
+  },
+  "pro_pct": 15
+ },
+ "washington-alloy-company": {
+  "pull": {
+   "v": 0,
+   "why": "Commodity welding wire with little brand pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Welding consumables are hard goods, not formulated chemicals."
+  },
+  "major": {
+   "v": 0,
+   "why": "Brazing fluxes are a small share of a welding wire business."
+  },
+  "pro_pct": 5
+ },
+ "westpac-materials-llc": {
+  "pull": {
+   "v": 0,
+   "why": "Joint compound is bought on price and availability, not by brand."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Bulk pails and bags of joint compound are not handheld products."
+  },
+  "major": {
+   "v": 1,
+   "why": "Pro-focused, but products are large-format building materials, not small-format."
+  },
+  "pro_pct": 20
+ },
+ "aabaco-environmental-industries": {
+  "pull": {
+   "v": 0,
+   "why": "Distributor of spill and safety supplies with no brand pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "A distributor, not a formulator, so little for ITW to buy."
+  },
+  "major": {
+   "v": 0,
+   "why": "Own-label chemicals are a small share of distribution revenue."
+  },
+  "pro_pct": 10
+ },
+ "aar-composites": {
+  "pull": {
+   "v": 0,
+   "why": "Judged from workbook facts; unverified and possibly inactive, with no evidence of brand demand."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Judged from workbook facts; composite repair adhesives are consumable but niche aerospace."
+  },
+  "major": {
+   "v": 1,
+   "why": "Judged from workbook facts; business scope cannot be verified."
+  },
+  "pro_pct": null
+ },
+ "anson-pdr": {
+  "pull": {
+   "v": 1,
+   "why": "Known in the PDR community, but glue is likely sourced."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Mostly tools and resold glue, not formulated chemical products."
+  },
+  "major": {
+   "v": 0,
+   "why": "Glue is a small share next to tools and showroom sales."
+  },
+  "pro_pct": 15
+ },
+ "aviation-laboratories-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Known to aircraft maintainers, but primarily for oil analysis services."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Aviation maintenance chemicals fit partly, but lab services do not."
+  },
+  "major": {
+   "v": 1,
+   "why": "Oil analysis lab services likely outweigh the chemical product sales."
+  },
+  "pro_pct": 30
+ },
+ "azpects-corp": {
+  "pull": {
+   "v": 1,
+   "why": "EASYJoint is known among hardscape contractors, but competes with larger brands."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated consumable, but hardscape bags and jugs are off ITW's channel."
+  },
+  "major": {
+   "v": 2,
+   "why": "Jointing compounds, sealers and cleaners are the whole US business."
+  },
+  "pro_pct": 70
+ },
+ "california-custom-products-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Purple Metal Polish has a loyal following among aircraft owners and truckers."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Handheld polish fits, but enthusiast channel rather than MRO distribution."
+  },
+  "major": {
+   "v": 2,
+   "why": "Polish and car care products are essentially the whole business."
+  },
+  "pro_pct": 70
+ },
+ "aircraft-specialties-lubricants": {
+  "pull": {
+   "v": 2,
+   "why": "CamGuard is asked for by name among piston aircraft owners and mechanics."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Handheld formulated oil additive fits ITW's automotive and aviation aftermarket lines."
+  },
+  "major": {
+   "v": 2,
+   "why": "CamGuard additives are essentially the entire business."
+  },
+  "pro_pct": 90
+ },
+ "lubrication-technology-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Christo-Lube is specified in mil-spec and aerospace applications."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Handheld specialty greases fit, but sold mostly to OEM and defense."
+  },
+  "major": {
+   "v": 0,
+   "why": "A tiny line inside Quaker Houghton, a large public industrial fluids company."
+  },
+  "pro_pct": 1
+ },
+ "dysol-inc-dba-socomore": {
+  "pull": {
+   "v": 1,
+   "why": "DS-108 is spec-named by aircraft maintainers, but niche and spec-driven rather than loved."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Handheld aerospace cleaning solvents fit ITW's aviation and MRO consumables lines well."
+  },
+  "major": {
+   "v": 1,
+   "why": "Dysol unit is mostly pro solvents, but Socomore parent also sells bulk process chemistry."
+  },
+  "pro_pct": 60
+ },
+ "holt-international-llc": {
+  "pull": {
+   "v": 1,
+   "why": "E-Z Grip is known among aircraft mechanics, but a tiny single-product niche brand."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Handheld formulated consumable for mechanics, sold through MRO and aviation channels."
+  },
+  "major": {
+   "v": 2,
+   "why": "Single-product company selling small bottles of friction drops; essentially all pro brand."
+  },
+  "pro_pct": 95
+ },
+ "flo-kem-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Commodity janitorial chemicals bought on price through jan-san distributors, not by brand."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Jan-san floor care and bulk sanitation chemicals sit outside ITW Pro Brands' focus."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mostly gallon and drum janitorial and food sanitation chemicals; small format is a minority."
+  },
+  "pro_pct": 30
+ },
+ "fuel-quality-services": {
+  "pull": {
+   "v": 1,
+   "why": "FQS biocide is known to fuel techs but bought as a spec chemistry, not a beloved brand."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Fuel additives fit, but much revenue is bulk and filtration services, not handheld."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of bottled additives, test kits and fuel polishing services; small format likely under half."
+  },
+  "pro_pct": 40
+ },
+ "groom-industries": {
+  "pull": {
+   "v": 1,
+   "why": "Perky Spotter has long name recognition among carpet cleaners, but it is a small niche."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Handheld spotter is formulated and consumable, but carpet care is a weak ITW channel fit."
+  },
+  "major": {
+   "v": 2,
+   "why": "Single spotter brand company; revenue is essentially all small-format pro product."
+  },
+  "pro_pct": 90
+ },
+ "hydrite-chemical-co": {
+  "pull": {
+   "v": 0,
+   "why": "Plants buy quat sanitizers on contract and spec, not by asking for the brand."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Bulk food-plant sanitation and commodity chemicals are not an ITW Pro Brands fit."
+  },
+  "major": {
+   "v": 0,
+   "why": "Large chemical manufacturer and distributor; branded sanitizers are a tiny revenue share."
+  },
+  "pro_pct": 2
+ },
+ "magnolia-advanced-materials-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Magnobond is specified by aerospace engineers, not requested by tradespeople at the counter."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated aerospace adhesives are adjacent, but OEM production use rather than MRO handheld."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mostly production-spec epoxies in kits and bulk; small-format pro share is uncertain."
+  },
+  "pro_pct": 40
+ },
+ "pillon-pdr": {
+  "pull": {
+   "v": 1,
+   "why": "Known among PDR technicians, but a small Brazilian brand with limited US pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Tiny Brazilian PDR glue and tool brand, outside ITW's US channel focus."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mostly PDR tools with glue as one line; consumable chemical share is partial."
+  },
+  "pro_pct": 40
+ },
+ "federal-process-corporation": {
+  "pull": {
+   "v": 1,
+   "why": "PLS-2 has a loyal following among some plumbers and maintenance crews but trails Oatey, Rectorseal."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Handheld thread sealant sold through plumbing and MRO distribution is a clean ITW fit."
+  },
+  "major": {
+   "v": 2,
+   "why": "Small sealant maker; revenue is predominantly small-format thread sealants."
+  },
+  "pro_pct": 85
+ },
+ "bio-cide-international-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Chlorine dioxide sanitizers are bought on spec by food and animal-health users, not brand pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Bulk sanitizer chemistry for food and agriculture is outside ITW Pro Brands."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mostly concentrates in jugs and drums; handheld small-format share appears limited."
+  },
+  "pro_pct": 25
+ },
+ "qualitek-international-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Delta solder has some pro recognition, but electronics assembly buys largely on spec."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Solder and flux are consumables, but electronics production is a weak ITW Pro Brands channel."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mostly production solder paste and bar; retail and pro small-format solder is a minority."
+  },
+  "pro_pct": 30
+ },
+ "ramco-insulation-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Insulators know Ramco cements, but they are bought as spec materials, not loved brands."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated trade consumable, but powder cements in bags are not handheld products."
+  },
+  "major": {
+   "v": 2,
+   "why": "Cements are sold in trade-size packs to insulators; nearly all revenue is pro brands."
+  },
+  "pro_pct": 80
+ },
+ "resin-formulators": {
+  "pull": {
+   "v": 0,
+   "why": "Custom aerospace epoxies are spec-driven formulations with no brand pull among mechanics."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Packaged aerospace epoxies are adjacent to ITW, but custom work limits brand value."
+  },
+  "major": {
+   "v": 0,
+   "why": "Captive manufacturing arm of a large distributor; a small share of GracoRoberts revenue."
+  },
+  "pro_pct": 10
+ },
+ "sandstrom-products-company": {
+  "pull": {
+   "v": 0,
+   "why": "Dry-film lubricants are qualified by spec, not requested by name by technicians."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated lubricants fit, but much is coatings for production lines, not handheld MRO."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of aerosols and bulk coatings for OEM processes; small-format share is partial."
+  },
+  "pro_pct": 40
+ },
+ "stabond-corporation": {
+  "pull": {
+   "v": 0,
+   "why": "Aerospace adhesives are engineer-specified; little name pull among tradespeople."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated adhesives are adjacent, but OEM aerospace production is a weaker ITW fit."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mostly kits and bulk adhesives for aerospace production; small-format share is uncertain."
+  },
+  "pro_pct": 40
+ },
+ "chemax-manufacturing-corporation": {
+  "pull": {
+   "v": 1,
+   "why": "Tracit is the known name among heat-tracing contractors, but in a tiny niche."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Trade consumable, but pail-sized heat transfer cement is not a handheld MRO product."
+  },
+  "major": {
+   "v": 2,
+   "why": "Single-focus maker of Tracit cements; revenue is essentially all branded trade product."
+  },
+  "pro_pct": 80
+ },
+ "trim-tex-inc": {
+  "pull": {
+   "v": 2,
+   "why": "Drywall finishers ask for Trim-Tex bead and adhesive by name; a strong trade brand."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Spray adhesive fits, but the business is mainly vinyl bead, not formulated chemicals."
+  },
+  "major": {
+   "v": 1,
+   "why": "Vinyl bead dominates revenue; chemical adhesives and Mud Set are a minority."
+  },
+  "pro_pct": 25
+ },
+ "vaportek-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Known among restoration contractors, but odor control buyers often switch on price."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Consumable cartridges fit loosely, but odor dispensers are a weak ITW channel match."
+  },
+  "major": {
+   "v": 2,
+   "why": "Family company selling branded odor cartridges and units; essentially all pro brand."
+  },
+  "pro_pct": 80
+ },
+ "willey-quick-tools": {
+  "pull": {
+   "v": 0,
+   "why": "Glue sticks are a private-label add-on; technicians buy the tools, not glue brand."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Tool-led PDR supplier with commodity glue sticks; not a formulated chemicals target."
+  },
+  "major": {
+   "v": 0,
+   "why": "Mostly PDR tools; glue is a small, likely private-label part of revenue."
+  },
+  "pro_pct": 10
+ },
+ "zebra-skimmers-corp": {
+  "pull": {
+   "v": 0,
+   "why": "Machinists know Zebra for skimmers; the odor tablets carry little independent pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Mainly equipment maker; coolant tablets are too small to interest ITW."
+  },
+  "major": {
+   "v": 0,
+   "why": "Mostly skimmer equipment; chemicals are a minor add-on to revenue."
+  },
+  "pro_pct": 10
+ },
+ "bg-products-inc": {
+  "pull": {
+   "v": 2,
+   "why": "Dealership service departments and fleets know and request BG by name."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Strong pro automotive consumables, but dealer-service model and equipment differ from ITW's channels."
+  },
+  "major": {
+   "v": 2,
+   "why": "Revenue is overwhelmingly BG-branded service chemicals in small bottles for shops."
+  },
+  "pro_pct": 85
+ },
+ "brillianize-llc": {
+  "pull": {
+   "v": 1,
+   "why": "Known among aviation and display users for acrylic cleaning, but a small niche brand."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Handheld acrylic cleaner for aviation fits alongside ITW's Rain-X and Plexus-type lines."
+  },
+  "major": {
+   "v": 2,
+   "why": "Single-brand company; revenue is essentially all small-format cleaner."
+  },
+  "pro_pct": 90
+ },
+ "isolatek-international": {
+  "pull": {
+   "v": 1,
+   "why": "CAFCO is specified by architects and known to fireproofing contractors, not a handheld brand."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Spray-applied fireproofing in bags is a construction material, not an ITW handheld fit."
+  },
+  "major": {
+   "v": 0,
+   "why": "Revenue is bulk spray-applied fireproofing; small-format pro products are negligible."
+  },
+  "pro_pct": 3
+ },
+ "ek-ekcessories-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Cat Crap has cult recognition with safety eyewear users, but is a small add-on."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Handheld anti-fog consumable fits, but channel leans outdoor retail more than MRO."
+  },
+  "major": {
+   "v": 1,
+   "why": "Lanyards and outdoor accessories are much of revenue; anti-fog is a meaningful minority."
+  },
+  "pro_pct": 30
+ },
+ "ceram-kote-coatings-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Industrial coatings are specified by engineers and applicators, with little name pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Tank and pipe protective coatings are an industrial coatings business, not ITW Pro Brands."
+  },
+  "major": {
+   "v": 0,
+   "why": "Revenue is mostly gallon and bulk industrial coatings; small format is minimal."
+  },
+  "pro_pct": 10
+ },
+ "inland-technology-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Citra-Safe is known in aerospace maintenance, but solvents are often bought on spec."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Formulated aerospace and MRO cleaning solvents fit ITW's maintenance chemicals lines."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of aerosols, quarts and drums for parts washers; small format roughly half."
+  },
+  "pro_pct": 50
+ },
+ "click-bond-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Click Bond is a known name on aircraft lines, but buyers are OEM engineers."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Fastener systems business; adhesive kits are ancillary and not an ITW Pro Brands fit."
+  },
+  "major": {
+   "v": 0,
+   "why": "Revenue is mainly bonded fasteners and tooling; adhesive consumables are a small share."
+  },
+  "pro_pct": 10
+ },
+ "dynamold-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Aerospace mechanics know Dynamold shim and replication products, but it is a narrow niche."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated aerospace MRO consumables fit loosely; much is process materials, not handheld."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of kits and bulk process materials; small-format share likely around half."
+  },
+  "pro_pct": 50
+ },
+ "tr-industries": {
+  "pull": {
+   "v": 1,
+   "why": "Gel-Gloss is a recognized name, but mostly with RV and marine consumers, not pros."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Handheld cleaners and waxes fit format, but channel is retail rather than trade."
+  },
+  "major": {
+   "v": 1,
+   "why": "Small-format brands are all of revenue, but sold mainly to consumers, not professionals."
+  },
+  "pro_pct": 30
+ },
+ "general-sealants-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Sealant tapes are bought on spec or price; little brand pull with users."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Butyl tape converting is not formulated handheld chemistry ITW would target."
+  },
+  "major": {
+   "v": 0,
+   "why": "Revenue is mostly roll tapes and mastics for OEMs and composites, not pro handhelds."
+  },
+  "pro_pct": 15
+ },
+ "dreumex-usa-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Gent-L-Kleen and Dreumex are known in shops, but trail GOJO and Kano's Fast Orange brands."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Hand cleaners for auto and industrial shops are handheld consumables ITW would like."
+  },
+  "major": {
+   "v": 2,
+   "why": "Dreumex USA sells branded hand cleaners in tubs and bottles; essentially all pro brand."
+  },
+  "pro_pct": 85
+ },
+ "integrated-chemistries-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Decontamination cleaners are bought on spec by remediation contractors, not by brand name."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Remediation and abatement chemicals sit outside ITW's MRO and trade focus."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of small containers and drums for contractors; small-format share is partial."
+  },
+  "pro_pct": 40
+ },
+ "american-gas-chemical-co-ltd": {
+  "pull": {
+   "v": 2,
+   "why": "Leak-Tec is a recognized name with HVAC and gas techs who ask for it."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Handheld leak detection fluid for HVAC and gas trades is a classic Pro Brands fit."
+  },
+  "major": {
+   "v": 1,
+   "why": "Leak-Tec is core, but gas monitoring and safety products add a sizable other share."
+  },
+  "pro_pct": 55
+ },
+ "beacon-adhesives-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Fabri-Tac has craft consumer pull; Magna-Tac industrial users buy largely on spec."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated adhesives fit somewhat, but craft retail and OEM channels are not ITW's trade core."
+  },
+  "major": {
+   "v": 1,
+   "why": "Craft glues likely dominate; professional small-format adhesives are a minority."
+  },
+  "pro_pct": 35
+ },
+ "mask-off-company-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Masking tapes are bought on specification, with little professional brand pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Tape and film maker, not formulated chemicals; outside ITW Pro Brands scope."
+  },
+  "major": {
+   "v": 0,
+   "why": "Revenue is tapes and films; small-format pro chemical brands are negligible."
+  },
+  "pro_pct": 0
+ },
+ "mercantile-development-inc": {
+  "pull": {
+   "v": 0,
+   "why": "Industrial wipers are bought on price and spec, not by brand name."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Nonwoven wiper converting is not formulated chemistry and does not fit ITW Pro Brands."
+  },
+  "major": {
+   "v": 0,
+   "why": "Revenue is wipers, not chemicals; small-format pro chemical brands are negligible."
+  },
+  "pro_pct": 0
+ },
+ "metzgermcguire": {
+  "pull": {
+   "v": 1,
+   "why": "MM-80 is known to flooring contractors, but joint fillers are mostly specified by engineers."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Formulated trade consumable, but kit and bulk flooring products are a partial ITW fit."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mostly multi-gallon kits for flooring contractors; small-format handheld share is limited."
+  },
+  "pro_pct": 35
+ },
+ "worldwide-filter-inc": {
+  "pull": {
+   "v": 2,
+   "why": "Mouse Milk has long name loyalty among aviation and fleet mechanics."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Handheld penetrating oil for mechanics is a direct fit next to ITW's CRC and Permatex."
+  },
+  "major": {
+   "v": 1,
+   "why": "Owner is mainly a filtration and lubrication supplier; Mouse Milk is likely a minority."
+  },
+  "pro_pct": 30
+ },
+ "mullen-circle-brand-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Circle Cut has regional recognition in machine shops, but cutting oils compete on price."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Small bottles of cutting and tapping oil through MRO distributors fit ITW well."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of small-format tapping oils and bulk metalworking fluids; roughly half each."
+  },
+  "pro_pct": 50
+ },
+ "murco-wall-products-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Some finishers favor Murco compound, but joint compound is largely a commodity purchase."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Buckets of joint compound and paint are not handheld formulated MRO products."
+  },
+  "major": {
+   "v": 0,
+   "why": "Revenue is bulk joint compound, texture and paint through own yards; small format minimal."
+  },
+  "pro_pct": 10
+ },
+ "timilon-corporation": {
+  "pull": {
+   "v": 0,
+   "why": "FAST-ACT and OdorKlenz have limited brand awareness among facility and hazmat users."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Odor neutralizer consumables fit loosely, but hazmat and consumer channels are weak for ITW."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of consumer laundry, facility and hazmat products; pro small-format share is partial."
+  },
+  "pro_pct": 40
+ },
+ "prist-aerospace-products": {
+  "pull": {
+   "v": 2,
+   "why": "Prist is the generic name pilots and FBOs use for fuel icing inhibitor."
+  },
+  "itw": {
+   "v": 2,
+   "why": "Aerosol aviation additives and windscreen cleaners fit ITW's aviation and MRO lines."
+  },
+  "major": {
+   "v": 1,
+   "why": "Prist division is largely pro brands, but bulk FSII is a significant share."
+  },
+  "pro_pct": 60
+ },
+ "oil-spill-eater-international-corp": {
+  "pull": {
+   "v": 0,
+   "why": "Spill responders and militaries buy bioremediation on spec, not on brand loyalty."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Bulk spill-response bioremediation product is outside ITW's handheld MRO focus."
+  },
+  "major": {
+   "v": 1,
+   "why": "Single-brand company, but sold mostly in drums and totes rather than small format."
+  },
+  "pro_pct": 30
+ },
+ "sterling-lacquer-mfg-co": {
+  "pull": {
+   "v": 0,
+   "why": "Industrial topcoats are bought by spec and color, with little professional brand pull."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Industrial coatings in gallons are not an ITW Pro Brands target."
+  },
+  "major": {
+   "v": 0,
+   "why": "Revenue is gallon and bulk industrial coatings; small-format pro brands are minimal."
+  },
+  "pro_pct": 10
+ },
+ "tiodize-co-inc": {
+  "pull": {
+   "v": 1,
+   "why": "TIOLON is known in aerospace engineering circles, but is spec-driven rather than requested."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Anti-seize and dry-film lubricants fit, but anodizing services dominate the business."
+  },
+  "major": {
+   "v": 0,
+   "why": "Revenue is mostly anodizing processing and fasteners; small-format chemicals are a minor share."
+  },
+  "pro_pct": 20
+ },
+ "aerospace-lubricants-inc": {
+  "pull": {
+   "v": 1,
+   "why": "Tribolube is spec-recognized in aerospace, but much volume is private label."
+  },
+  "itw": {
+   "v": 1,
+   "why": "Specialty greases fit ITW's lubricant lines, but private label and bulk reduce appeal."
+  },
+  "major": {
+   "v": 1,
+   "why": "Mix of branded tubes and private-label bulk grease; small-format pro share is partial."
+  },
+  "pro_pct": 40
+ },
+ "vimasco-corporation": {
+  "pull": {
+   "v": 1,
+   "why": "Insulation contractors know Vimasco mastics, but they are mainly bought on spec."
+  },
+  "itw": {
+   "v": 0,
+   "why": "Pail-size insulation mastics and coatings are not handheld ITW Pro Brands products."
+  },
+  "major": {
+   "v": 1,
+   "why": "Branded trade products, but mostly pails and drums; small-format share is limited."
+  },
+  "pro_pct": 30
  }
 }

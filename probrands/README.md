@@ -76,6 +76,17 @@ Rates under 50 observations fall back to the broader row.
 
 Every company page has a "Distribution headroom" panel with the missing doors, the rivals already there, and new end markets. The screen's last column is reach.
 
+## Channels
+
+From v20 the market map gives every distributor a channel type: Pro, Mixed pro-DIY, Retail store, or DIY / enthusiast online.
+
+- **Brand page**: an "SKUs by channel" panel. For each channel type it shows distributors, scraped SKUs and their share, top package formats, common pack sizes, median $/oz from captured prices, and where the brand is sold. Below that is the market map's big-box and mass-retail screen (tier, retailer hits, consumer signals) where it exists.
+- **Channel mix**: brands and companies are labeled by the share of their SKUs in retail stores and DIY sites. Pro-only is 0%, Pro-led under 25%, Mixed up to 50%, Retail-led over 50%. Mixed pro-DIY distributors don't count as retail.
+- **Brands list**: a channel bar and label per brand, and a channel-mix filter.
+- **Company page**: the SKU split by channel type.
+
+The DNA test's "sold through pro distributors" check still uses the app's own broadline, specialty and retail split.
+
 ## Brand owners
 
 - **Owner verified**: the market map's verified Companies tab (1,089 brands in v10).
@@ -100,7 +111,7 @@ Seven checks, each Pass (full points), Partly (half) or Fail:
 
 Claude's judgments for all owners are in `import/judgments.json`. They come from Claude's knowledge plus the workbook facts, without new web research. On a company page you can click any check to change it, which saves as "Your call", or ask Claude to re-check the three judgment calls. Overrides live in the `dna` collection (one document per company), so re-importing the workbook never erases them. Precedence: your call, then a re-check from the page, then the imported judgment, then the data rule.
 
-**DNA workbook.** `Probrands_DNA_v16.xlsx` holds the DNA test in Excel, ready to paste into the market map. It has three sheets:
+**DNA workbook.** `Probrands_DNA_v20.xlsx` holds the DNA test in Excel, ready to paste into the market map. It has three sheets:
 - DNA by owner: every check's result, points, source and reason, keyed by the Master tab's Owner ID.
 - DNA by brand: each brand's owner score plus the three data checks scored for the brand alone, keyed by the Brands tab's Brand ID.
 - How it's scored.
@@ -109,7 +120,7 @@ To rebuild it after an import:
 
 ```
 NODE_PATH=$(npm root -g) node probrands/import/dump_dna.js dna.json
-python3 probrands/import/export_dna.py Professional_Brands_Market_Map_v16.xlsx dna.json probrands/Probrands_DNA_v16.xlsx
+python3 probrands/import/export_dna.py Professional_Brands_Market_Map_v20.xlsx dna.json probrands/Probrands_DNA_v20.xlsx
 ```
 
 The dump scores with the app's own code, so the numbers match the screen. Overrides saved in the app are not included.
@@ -119,7 +130,7 @@ Distributor channels (broadline MRO, trade specialty, retail-leaning) and the en
 ## Data
 
 ```
-python3 probrands/import/build_import.py Professional_Brands_Market_Map_v16.xlsx
+python3 probrands/import/build_import.py Professional_Brands_Market_Map_v20.xlsx
 ```
 
 This writes `import/out/data/*.json`, one file per document in the app's `data` collection: `co-N` (company summaries), `dt-N` (details), `br-N` (every brand), `deals`, `dists` and `index`. Every SKU goes in `import/out/sku/p-N.json`, the `sku` collection, which loads one document at a time when a brand page opens. Lists are split across documents because the database stores at most 256 KB per document; nothing is dropped. Load them with the ArtifactData tool (a `set` of each file). It also writes `import/out/judge/batch-N.json`, the facts behind the judgment calls, for scoring new owners.
@@ -133,4 +144,4 @@ The database still holds the earlier version's `companies`, `details` and `meta`
 
 Columns read when the workbook fills them (empty in v9): Est. brand rev, Pro brand rev, EBITDA reported, Platform EBITDA, EBITDA margin, the Master % by trade and % by package format splits, and List price. The app shows each one as soon as it has a value. Mfr part # is shown in the product table.
 
-Loaded now: v16 (2 Oct 2026), with 813 owners (55 new, all judged), all 4,093 brands, 14,950 SKUs, 454 deals, 186 distributors and 4,714 captured prices. Brands: 1,136 verified owner, 79 workbook prior, 1,560 Claude guesses, 815 workbook triage guesses, 503 not identified. 412 owners have revenue. DNA bands: 211 green, 369 amber, 233 red. Not yet in the app: the Deep Profiles and Financial Evidence tabs and the Companies validation columns (revenue range, validation confidence and flags, PPP loans).
+Loaded now: v20 (1 Oct 2026), with 955 owners (143 new, all judged), all 4,288 brands, 15,728 SKUs, 519 deals and 201 distributors with channel types. Brands: 1,326 verified owner, 79 workbook prior, 1,511 Claude guesses, 854 workbook triage guesses, 518 not identified. Channel mix: 3,163 pro-only, 118 pro-led, 204 mixed, 803 retail-led. DNA bands: 238 green, 408 amber, 309 red.

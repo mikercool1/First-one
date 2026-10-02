@@ -276,6 +276,14 @@ def market(d):
     return MARKET.get(s(dists.get(d, {}).get("Primary end market")), "Other")
 
 
+# v20+: the workbook's own channel type per distributor (Pro, Mixed pro-DIY, Retail store, DIY / enthusiast online)
+CTYPE = {"Pro": "pro", "Mixed pro-DIY": "mixed", "Retail store": "retail", "DIY / enthusiast online": "diy"}
+
+
+def ctype(d):
+    return CTYPE.get(s(dists.get(d, {}).get("Channel type")), "")
+
+
 FAMILY = {"lubricants": "Lubricants & penetrants", "adhesives": "Adhesives & sealants", "cleaners": "Cleaners & degreasers",
           "hand-care": "Hand care", "sanitation": "Disinfectants & pest", "paints": "Paints & markers", "plumbing": "Plumbing chemicals",
           "hvac": "HVAC/R chemicals", "electrical": "Electrical chemicals", "welding": "Welding & metalworking", "automotive": "Auto & fleet chemicals",
@@ -424,7 +432,8 @@ for oid, o in owners.items():
         "conf": s(m.get("Confidence")) or "Low",
         "brands": [x["name"] for x in brand_rows] or [b.strip() for b in s(m.get("Hero brands")).split(",") if b.strip()],
         "skus": skus, "acq": len(acq.get(oid, [])), "rolled": [s(x["Company"]) for x in rolled],
-        "mix": {"fmt": dict(fmt), "mkt": dict(mkt), "dist": dict(dst.most_common(15)), "cat": dict(fam), "seg": dict(seg), "brand": dict(brd.most_common(15))},
+        "mix": {"fmt": dict(fmt), "mkt": dict(mkt), "dist": dict(dst.most_common(15)), "cat": dict(fam), "seg": dict(seg), "brand": dict(brd.most_common(15)),
+                "ch": dict(collections.Counter(ctype(d) or "unknown" for d, v in dst.items() for _ in range(v)))},
         "m": {"hand": r1(hand / skus, 3) if skus else None, "cons": r1(cons / skus, 3) if skus else None, "pro": r1(pro / skus, 3) if skus else None,
               "nd": len(dst), "ndp": nd_pro, "maxbd": max_bd,
               "broad": r1(sum(v for d, v in dst.items() if channel(d) == "broadline") / skus, 3) if skus else None},
@@ -520,6 +529,9 @@ for b in brands:
            "wb_basis": s(b.get("Owner basis")),
            "hero": s(b.get("Known for (hero product)"), 160), "form": s(b.get("Primary form factor")), "fmt": dict(fm), "skus": len(ps),
            "dists": [d for d, _ in bd.most_common()], "mkts": sorted({market(d) for d in bd}), "scope": s(b.get("Scope flag")),
+           "ch": dict(collections.Counter(ctype(s(p.get("Distributor"))) or "unknown" for p in ps)),
+           "rscreen": {k: v for k, v in {"tier": s(b.get("Retail screen tier (big-box/mass search)")), "hits": s(b.get("Retail screen hits"), 200),
+                       "signals": s(b.get("Consumer signals (screen)"), 300)}.items() if v},
            "maker": [m for m, _ in maker[name].most_common(2)], "tri": TRIAGE.get(s(b.get("Triage bucket (single-source)"))),
            "tri_owner": s(b.get("Triage owner guess")), "tri_type": s(b.get("Triage owner type guess")), "tri_conf": s(b.get("Triage confidence")), "rev": r1(n(b.get("Est. brand rev ($M)"))),
            "hand": r1(sum(handheld(p) for p in ps) / len(ps), 2) if ps else None}
@@ -646,7 +658,7 @@ for cid, j in judgments.items():
     if cid in out_co:
         out_co[cid]["judge"] = j
 
-dist_out = [{"name": k, "market": market(k), "end_market": s(v.get("Primary end market")), "channel": channel(k),
+dist_out = [{"name": k, "market": market(k), "end_market": s(v.get("Primary end market")), "channel": channel(k), "ctype": ctype(k),
              "status": s(v.get("Scrape status")), "skus": int(n(v.get("SKUs scraped")) or 0),
              **{k2: v2 for k2, v2 in {"web": s(v.get("Website")), "secondary": s(v.get("Secondary markets"), 200),
                                       "scope": s(v.get("Chemical categories to scrape"), 200), "priority": s(v.get("Scrape priority")),
