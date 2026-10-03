@@ -68,6 +68,8 @@ tr.tot td{border-top:2px solid var(--line-2);background:var(--panel-2)}
 .role.g{border-color:var(--good);color:var(--good)}.role.r{border-color:var(--bad);color:var(--bad)}.role.a{border-color:var(--mid);color:var(--mid)}
 .revbtn{font:inherit;color:inherit;border-bottom:1px dashed var(--ink-3);cursor:pointer}.revbtn:hover{color:var(--accent-text);border-bottom-color:var(--accent)}
 .revform{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}.revform input{width:110px;text-align:right}.revform .u{color:var(--ink-3)}
+.enggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px 16px}
+.engf{display:grid;gap:4px}.engf span:nth-child(2){display:flex;align-items:center;gap:6px}.engf small{font-size:11.5px}
 ol.rk{list-style:none;margin:0;padding:0;counter-reset:r}
 ol.rk li{counter-increment:r;display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--line)}
 ol.rk li::before{content:counter(r);font:600 11px var(--f-mono);color:var(--ink-3)}
@@ -292,6 +294,7 @@ td.rv{font-size:13px;line-height:1.5;white-space:nowrap}
       <a href="#screen" data-v="screen">The screen<small id="nScreen"></small></a>
       <a href="#reach" data-v="reach">Whitespace</a>
       <a href="#rollup" data-v="rollup">Roll-up<small id="nRoll"></small></a>
+      <a href="#engine" data-v="engine">Engine</a>
       <a href="#brands" data-v="brands">Brands<small id="nBrands"></small></a>
       <a href="#cats" data-v="cats">Categories<small id="nCats"></small></a>
       <a href="#ems" data-v="ems">End markets</a>
@@ -471,6 +474,100 @@ async function saveRev(id, raw) {
   } catch (e) { toast(e?.code === "permission_denied" || e?.code === "not_granted" ? "You can view but not edit" : "Couldn't save the revenue"); }
 }
 
+/* ---------- Engine: a simple LBO on any roll-up ----------
+   Entry: each business at its revenue × margin (25% unless set) × entry multiple (13× unless set). Synergies from the
+   deal screen (cross-sell gross profit, price, procurement), each switchable. Debt = leverage (5.5×) × synergized
+   EBITDA. Fees: deal fees on enterprise value, debt fees on the debt. Projection: revenue grows (6%), margin expands
+   (25 bps a year), synergies grow with revenue. Exit at a multiple (18×) of exit-year EBITDA (year 3). Debt is held
+   flat (no cash sweep), so the returns come from EBITDA growth and multiple expansion, a conservative simplification. */
+const ENG_DEF = { lev: 5.5, mult: 13, margin: 0.25, g: 0.06, mx: 0.0025, exitX: 18, exitY: 3, dealFee: 0.02, debtFee: 0.0225, syn: true, synXs: true, synPr: true, synPc: true };
+const eng = () => (ui.eng ??= { ...ENG_DEF, ...store.get("eng", {}), per: store.get("engper", {}) });
+const engSave = () => { const E = eng(); const { per, ...rest } = E; store.set("eng", rest); store.set("engper", per); };
+function engIds() {
+  const E = eng();
+  if (E.src && E.src !== "cur") { const r = ROLLS.find(x => x.id === E.src); if (r) return (r.ids || []).filter(id => CO.has(id)); }
+  return ui.roll.filter(id => CO.has(id));
+}
+function engSyn(ids) {
+  if (ids.length < 2) return { xs: 0, vol: 0, price: 0, proc: 0 };
+  const X = rollupCalc(ids), xs = X.M.reduce((a, x) => a + (val(x.gainUsd, x.gainDemo) || 0), 0);
+  const price = rollPriceCalc(ids).mem.reduce((a, m) => a + (m.lever || 0), 0);
+  loadProduct(); const PC = procCalc(ids), proc = PC && PC.M.length >= 2 ? PC.T.tot : 0;
+  return { xs, vol: xs * (ui.gm ?? 0.65), price, proc, scen: PC?.T.scen };
+}
+function engCalc(ids, over = {}) {
+  const E = { ...eng(), ...over }, per = E.per || {};
+  const biz = ids.map(id => { const c = CO.get(id), p = per[id] || {}, rev = num(c.rev) || 0, m = p.m ?? E.margin, x = p.x ?? E.mult, eb = rev * m; return { c, rev, m, x, eb, ev: eb * x, own: p.m !== undefined || p.x !== undefined }; });
+  const rev0 = biz.reduce((a, b) => a + b.rev, 0), eb0 = biz.reduce((a, b) => a + b.eb, 0), ev = biz.reduce((a, b) => a + b.ev, 0);
+  const S = over.S || engSyn(ids), syn = E.syn ? (E.synXs ? S.vol : 0) + (E.synPr ? S.price : 0) + (E.synPc ? S.proc : 0) : 0;
+  const ebPF = eb0 + syn, debt = E.lev * ebPF, fees = ev * E.dealFee + debt * E.debtFee, eq = ev + fees - debt;
+  const m0 = rev0 ? eb0 / rev0 : 0, years = [];
+  for (let t = 0; t <= Math.max(5, E.exitY); t++) { const r = rev0 * (1 + E.g) ** t, m = m0 + E.mx * t, s = syn * (1 + E.g) ** t; years.push({ t, r, m, base: r * m, s, eb: r * m + s }); }
+  const ex = years[E.exitY], exitEV = ex.eb * E.exitX, exitEq = exitEV - debt, moic = eq > 0 ? exitEq / eq : null, irr = moic && moic > 0 ? moic ** (1 / E.exitY) - 1 : null;
+  return { E, biz, rev0, eb0, ev, S, syn, ebPF, debt, fees, eq, years, ex, exitEV, exitEq, moic, irr, gain: exitEq - eq };
+}
+function viewEngine() {
+  const E = eng(), ids = engIds(), saved = ROLLS.slice().sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  const src = `<select id="engsrc" aria-label="Roll-up to model"><option value="cur" ${!E.src || E.src === "cur" ? "selected" : ""}>Current roll-up selection (${ui.roll.filter(id => CO.has(id)).length})</option>${saved.map(r => `<option value="${esc(r.id)}" ${E.src === r.id ? "selected" : ""}>${esc(r.name || "Untitled")} (${(r.ids || []).length})</option>`).join("")}</select>`;
+  const head = `<div class="page-h"><div class="grow"><div class="lbl">Simple LBO</div><h1>Engine</h1><p>Buy the roll-up, lever it on synergized EBITDA, grow it and sell it. Pick a roll-up, then change any input; nothing here changes the roll-up itself.</p></div></div>
+  <div class="bar"><span class="lbl">Model</span>${src}<a class="tog" href="#rollup">Edit the roll-up →</a><button class="tog" type="button" data-act="engreset">Reset to base case</button></div>`;
+  if (!ids.length) return head + `<section class="panel"><div class="body"><p class="muted" style="margin:0">No companies in this roll-up. Build one on the <a href="#rollup">Roll-up</a> tab, or pick a saved roll-up above.</p></div></section>`;
+  const R = engCalc(ids), inp = (k, v, step, w = 80, unit = "") => `<input data-eng="${k}" type="number" step="${step}" value="${v}" style="width:${w}px;text-align:right">${unit ? `<span class="faint">${unit}</span>` : ""}`;
+  const pc = v => +(v * 100).toFixed(2);
+  const field = (l, html, note = "") => `<label class="engf"><span class="lbl">${l}</span><span>${html}</span>${note ? `<small class="faint">${note}</small>` : ""}</label>`;
+  const assumptions = `<section class="panel"><header><h2>Assumptions</h2><span class="sp"></span><span class="lbl">Base case in brackets</span></header><div class="body enggrid">
+    ${field("EBITDA margin", inp("margin", pc(E.margin), 0.5, 70, "%"), "Each business unless set below (25%)")}
+    ${field("Entry multiple", inp("mult", E.mult, 0.5, 70, "×"), "EV / EBITDA per business (13×)")}
+    ${field("Leverage", inp("lev", E.lev, 0.25, 70, "×"), "Debt / synergized EBITDA (5.5×)")}
+    ${field("Revenue growth", inp("g", pc(E.g), 0.5, 70, "% a year"), "(6%)")}
+    ${field("Margin expansion", inp("mx", Math.round(E.mx * 10000), 5, 70, "bps a year"), "(25 bps)")}
+    ${field("Exit multiple", inp("exitX", E.exitX, 0.5, 70, "×"), "(18×)")}
+    ${field("Exit year", `<select data-eng="exitY">${[2, 3, 4, 5].map(y => `<option ${y === E.exitY ? "selected" : ""}>${y}</option>`).join("")}</select>`, "(year 3)")}
+    ${field("Deal fees", inp("dealFee", pc(E.dealFee), 0.25, 70, "% of EV"), "(2%)")}
+    ${field("Debt fees", inp("debtFee", pc(E.debtFee), 0.25, 70, "% of debt"), "(2.25%)")}
+  </div></section>`;
+  const synRow = (k, l, v, note) => `<tr${!E.syn || !E[k] ? ' class="faint"' : ""}><td><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-engc="${k}" ${E[k] ? "checked" : ""} ${E.syn ? "" : "disabled"}> ${l}</label></td><td class="r num">${fmtM1(v)}</td><td class="faint">${note}</td></tr>`;
+  const synergies = `<section class="panel"><header><h2>Synergies</h2><span class="sp"></span><label class="lbl" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-engc="syn" ${E.syn ? "checked" : ""}> From the deal screen</label></header>
+    ${ids.length < 2 ? `<div class="body faint">Synergies need two or more companies.</div>` : `<div class="tw"><table><tbody>
+    ${synRow("synXs", "Cross-sell gross profit", R.S.vol, `${fmtM(R.S.xs)} of cross-sell revenue at ${capLbl()} × ${Math.round((ui.gm ?? 0.65) * 100)}% gross margin (set on Roll-up → Platform)`)}
+    ${synRow("synPr", "Price", R.S.price, "Each member's price lever, 100% to EBITDA")}
+    ${synRow("synPc", "Procurement", R.S.proc, `${esc(PSCEN[R.S.scen || "d1"]?.l || "")} scenario, 100% to EBITDA (set on Roll-up → Procurement)`)}
+    <tr class="tot"><td><b>Synergies counted</b></td><td class="r num"><b>${fmtM1(R.syn)}</b></td><td class="faint">${R.eb0 ? `${(R.syn / R.eb0 * 100).toFixed(0)}% on top of standalone EBITDA` : ""}</td></tr></tbody></table></div>`}</section>`;
+  const bizT = `<section class="panel"><header><h2>What you're buying</h2><span class="sp"></span><span class="lbl">Revenue is shared with the CRM · margin and multiple per business</span></header><div class="tw"><table><thead><tr><th>Business</th><th class="r">Revenue</th><th class="r">Margin</th><th class="r">EBITDA</th><th class="r">Multiple</th><th class="r">Price (EV)</th></tr></thead><tbody>
+    ${R.biz.map(b => `<tr><td><a href="#c.${esc(b.c.id)}"><b>${esc(b.c.name)}</b></a>${b.own ? ` <button class="linkbtn faint" type="button" data-act="engperreset" data-id="${esc(b.c.id)}" title="Back to the defaults">reset</button>` : ""}</td><td class="r num">${revCell(b.c)}</td>
+      <td class="r"><input data-engm="${esc(b.c.id)}" type="number" step="0.5" value="${pc(b.m)}" style="width:64px;text-align:right"><span class="faint">%</span></td><td class="r num">${fmtM1(b.eb)}</td>
+      <td class="r"><input data-engx="${esc(b.c.id)}" type="number" step="0.5" value="${b.x}" style="width:64px;text-align:right"><span class="faint">×</span></td><td class="r num">${fmtM(b.ev)}</td></tr>`).join("")}
+    <tr class="tot"><td><b>Combined</b></td><td class="r num"><b>${fmtM(R.rev0)}</b></td><td class="r num">${R.rev0 ? (R.eb0 / R.rev0 * 100).toFixed(1) + "%" : "—"}</td><td class="r num"><b>${fmtM1(R.eb0)}</b></td><td class="r num">${R.eb0 ? (R.ev / R.eb0).toFixed(1) + "×" : "—"}</td><td class="r num"><b>${fmtM(R.ev)}</b></td></tr>
+    </tbody></table></div>${R.biz.some(b => !b.rev) ? `<div class="body faint" style="padding-top:6px">No revenue for ${R.biz.filter(b => !b.rev).map(b => esc(b.c.name)).join(", ")}: click the revenue to add it.</div>` : ""}</section>`;
+  const su = `<section class="panel"><header><h2>Sources and uses</h2></header><div class="tw"><table><tbody>
+    <tr><td>Purchase price (EV)</td><td class="r num">${fmtM(R.ev)}</td><td class="faint">${R.eb0 ? (R.ev / R.eb0).toFixed(1) + "× standalone EBITDA" : ""} · ${R.ebPF ? (R.ev / R.ebPF).toFixed(1) + "× synergized" : ""}</td></tr>
+    <tr><td>Deal fees</td><td class="r num">${fmtM1(R.ev * R.E.dealFee)}</td><td class="faint">${pc(R.E.dealFee)}% of EV</td></tr>
+    <tr><td>Debt fees</td><td class="r num">${fmtM1(R.debt * R.E.debtFee)}</td><td class="faint">${pc(R.E.debtFee)}% of debt</td></tr>
+    <tr class="tot"><td><b>Total uses</b></td><td class="r num"><b>${fmtM(R.ev + R.fees)}</b></td><td></td></tr>
+    <tr><td>Debt</td><td class="r num">${fmtM(R.debt)}</td><td class="faint">${R.E.lev}× synergized EBITDA of ${fmtM1(R.ebPF)}</td></tr>
+    <tr class="tot"><td><b>Equity required</b></td><td class="r num"><b>${fmtM(R.eq)}</b></td><td class="faint">${R.ev + R.fees ? pct(R.eq / (R.ev + R.fees)) + " of total uses" : ""}</td></tr>
+  </tbody></table></div></section>`;
+  const Y = R.years.slice(0, Math.max(R.E.exitY, 3) + 1);
+  const proj = `<section class="panel"><header><h2>Projection</h2><span class="sp"></span><span class="lbl">Synergies grow with revenue · debt held flat</span></header><div class="tw"><table><thead><tr><th></th>${Y.map(y => `<th class="r">${y.t === 0 ? "Entry" : "Year " + y.t}${y.t === R.E.exitY ? " · exit" : ""}</th>`).join("")}</tr></thead><tbody>
+    <tr><td>Revenue</td>${Y.map(y => `<td class="r num">${fmtM(y.r)}</td>`).join("")}</tr>
+    <tr><td>EBITDA margin</td>${Y.map(y => `<td class="r num">${(y.m * 100).toFixed(2)}%</td>`).join("")}</tr>
+    <tr><td>Standalone EBITDA</td>${Y.map(y => `<td class="r num">${fmtM1(y.base)}</td>`).join("")}</tr>
+    <tr><td>Synergies</td>${Y.map(y => `<td class="r num">${fmtM1(y.s)}</td>`).join("")}</tr>
+    <tr class="tot"><td><b>EBITDA</b></td>${Y.map(y => `<td class="r num"><b>${fmtM1(y.eb)}</b></td>`).join("")}</tr>
+    <tr><td>Net debt / EBITDA</td>${Y.map(y => `<td class="r num">${y.eb ? (R.debt / y.eb).toFixed(1) + "×" : "—"}</td>`).join("")}</tr>
+  </tbody></table></div></section>`;
+  const sens = (() => { const xs = [R.E.exitX - 4, R.E.exitX - 2, R.E.exitX, R.E.exitX + 2].filter(v => v > 0), ys = [2, 3, 4, 5];
+    return `<section class="panel"><header><h2>MOIC sensitivity</h2><span class="sp"></span><span class="lbl">Exit multiple × exit year</span></header><div class="tw"><table><thead><tr><th>Exit multiple</th>${ys.map(y => `<th class="r">Year ${y}</th>`).join("")}</tr></thead><tbody>
+    ${xs.map(x => `<tr><td><b>${x}×</b></td>${ys.map(y => { const r = engCalc(ids, { exitX: x, exitY: y, S: R.S }); const hi = x === R.E.exitX && y === R.E.exitY; return `<td class="r num"${hi ? ' style="background:var(--accent-soft, rgba(242,183,5,.15));font-weight:700"' : ""}>${r.moic !== null ? r.moic.toFixed(2) + "×" : "—"}</td>`; }).join("")}</tr>`).join("")}
+    </tbody></table></div></section>`; })();
+  const out = `<div class="gauges"><div class="gauge"><b>${fmtM(R.ev)}</b><span class="lbl">Purchase price</span></div><div class="gauge"><b>${fmtM(R.debt)}</b><span class="lbl">Debt · ${R.E.lev}× synergized</span></div>
+    <div class="gauge"><b>${fmtM(R.eq)}</b><span class="lbl">Equity required</span></div><div class="gauge"><b>${fmtM(R.exitEq)}</b><span class="lbl">Exit equity · year ${R.E.exitY} at ${R.E.exitX}×</span></div>
+    <div class="gauge g"><b>${R.moic !== null ? R.moic.toFixed(2) + "×" : "—"}</b><span class="lbl">MOIC</span></div><div class="gauge g"><b>${R.irr !== null ? (R.irr * 100).toFixed(1) + "%" : "—"}</b><span class="lbl">IRR</span></div>
+    <div class="gauge"><b>${fmtM(R.gain)}</b><span class="lbl">Total return (profit)</span></div></div>`;
+  return head + out + `<div class="grid2">${assumptions}${synergies}</div>${bizT}<div class="grid2">${su}${sens}</div>${proj}
+  <div class="note">Simplified on purpose: debt is held flat (no cash sweep, no interest), so equity value at exit is exit EV less entry debt. Margins and multiples are estimates you set; revenue comes from the market map or what you've set here or in the CRM.</div>`;
+}
+
 /* ---------- show-all toggles and cross-links ----------
    Long lists show their top rows with a "Show all" button. Every name that has a page links to it: package formats
    (#fmt.N), the scrape's end markets (to the matching end-market profile), segments (Categories, filtered), categories,
@@ -573,7 +670,7 @@ function route() {
   if (h.startsWith("d.")) return { v: "dist", id: h.slice(2) };
   if (h.startsWith("s.")) return { v: "strategy", id: h.slice(2) };
   if (h.startsWith("rollup")) { const ids = h.split(":")[1]; if (ids !== undefined) { ui.roll = ids.split(",").filter(x => CO.has(x) || !loaded); store.set("roll", ui.roll); } return { v: "rollup" }; }
-  if (["screen", "consolidators", "mix", "brands", "cats", "dists", "reach", "pricing", "premium", "ems", "product"].includes(h)) return { v: h };
+  if (["engine", "screen", "consolidators", "mix", "brands", "cats", "dists", "reach", "pricing", "premium", "ems", "product"].includes(h)) return { v: h };
   if (h.startsWith("em.")) return { v: "em", id: h.slice(3) };
   if (h.startsWith("fmt.")) return { v: "fmt", id: h.slice(4) };
   return { v: "screen" };
@@ -2656,7 +2753,7 @@ function render() {
   chrome(r);
   if (!loaded) { if (dbState === "off") app.innerHTML = `<div class="empty"><h2>Not connected</h2><p>Probrands keeps the market map in a shared database that loads when this page is opened in Claude while signed in.</p></div>`; return; }
   const y = scrollY;
-  app.innerHTML = r.v === "fmt" ? viewFmt(r.id) : r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "ems" ? viewEms() : r.v === "product" ? viewProduct() : r.v === "em" ? viewEm(r.id) : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "mix" ? viewMix() : viewScreen();
+  app.innerHTML = r.v === "engine" ? viewEngine() : r.v === "fmt" ? viewFmt(r.id) : r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "ems" ? viewEms() : r.v === "product" ? viewProduct() : r.v === "em" ? viewEm(r.id) : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "mix" ? viewMix() : viewScreen();
   if (render.last === location.hash) scrollTo(0, y); else scrollTo(0, 0);
   render.last = location.hash;
 }
@@ -2733,6 +2830,8 @@ document.addEventListener("click", e => {
     else if (act === "revsave") saveRev(a.dataset.id, document.querySelector(".revin")?.value ?? "");
     else if (act === "revcancel") { ui.revEdit = null; render(); }
     else if (act === "revreset") saveRev(a.dataset.id, null);
+    else if (act === "engreset") { const src = eng().src; ui.eng = { ...ENG_DEF, src, per: {} }; engSave(); render(); }
+    else if (act === "engperreset") { delete eng().per[a.dataset.id]; engSave(); render(); }
     else if (act === "pscen") { ui.pscen = a.dataset.v; render(); }
     else if (act === "psmall") { ui.psmall = ui.psmall === false; render(); }
     else if (act === "ppos") { ui.pp.pos = ui.pp.pos === a.dataset.v ? "" : a.dataset.v; ui.pp.limit = 100; render(); }
@@ -2776,6 +2875,11 @@ document.addEventListener("keydown", e => {
 });
 document.addEventListener("toggle", e => { const k = e.target?.dataset?.k; if (k && e.target.tagName === "DETAILS") e.target.open ? OPEN.add(k) : OPEN.delete(k); }, true);
 document.addEventListener("change", e => {
+  { const t = e.target, E = ui.eng ? eng() : null;
+    if (t.id === "engsrc") { eng().src = t.value; engSave(); render(); return; }
+    if (E && t.dataset.eng) { const k = t.dataset.eng, v = parseFloat(t.value); if (!isNaN(v)) { E[k] = ["margin", "g", "dealFee", "debtFee"].includes(k) ? v / 100 : k === "mx" ? v / 10000 : k === "exitY" ? Math.round(v) : v; engSave(); } render(); return; }
+    if (E && (t.dataset.engm || t.dataset.engx)) { const id = t.dataset.engm || t.dataset.engx, v = parseFloat(t.value); E.per[id] = { ...(E.per[id] || {}) }; if (!isNaN(v)) { if (t.dataset.engm) E.per[id].m = v / 100; else E.per[id].x = v; } engSave(); render(); return; }
+    if (E && t.dataset.engc) { E[t.dataset.engc] = t.checked; engSave(); render(); return; } }
   if (e.target.id === "rgm") { ui.gm = +e.target.value; render(); }
   if (e.target.id === "fam") { ui.fam = e.target.value; render(); }
   if (e.target.id === "seg") { ui.seg = e.target.value; if (ui.fam && SEGOF[ui.fam] !== ui.seg) ui.fam = ""; render(); }
