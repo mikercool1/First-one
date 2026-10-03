@@ -1232,7 +1232,62 @@ if "Product Category" in wb.sheetnames:  # v31+: packaging, chemistry, raw mater
     product_doc = {"title": s(rows[0][0], 300), "intro": s(rows[1][0], 1200), "formats": fmts, "fcols": BH[3:], "fmix": fmix, "fnote": fnote,
                    "chem_cols": [s(x) for x in C[ch][1:10]], "chem": chem, "rmf": rmf, "rmf_note": s(D[1][0], 900) if len(D) > 1 else "",
                    "syn_note": s(E[1][0], 1200), "rates": rates, "syn": syn}
-    os.makedirs(f"{OUT}/product", exist_ok=True)
+    # map each category's raw materials (study section 11) onto the section-D families, so a roll-up can see which
+    # inputs its members share. Families are matched by keywords, preferring families that list the category.
+    FAM_KW = [["binder", "latex", "acrylic emulsion", "vae", "alkyd", "emulsion", "pva", "acrylic polymer", "acrylic resin"],
+        ["hydrocarbon", "mineral spirits", "aliphatic", "aromatic", "naphtha", "isoparaffin", "heptane", "hexane", "toluene", "xylene", "kerosene", "distillate"],
+        ["pigment", "tio2", "titanium dioxide", "carbon black", "dye", "colorant", "fluorescent", "iron oxide"],
+        ["carbonate", "caco3", "talc", "clay", "silica", "gypsum", "cement", "filler", "pumice", "sand", "kaolin", "mica", "perlite", "diatom", "aggregate", "vermiculite", "ceramic", "boron nitride", "fluoride"],
+        ["propellant", "lpg", "dme", "co2", "hfc", "hfo", "propane", "butane", "152a", "134a", "nitrogen", "dimethyl ether"],
+        ["epoxy", "polyester", "vinyl ester", "hardener", "curative", "bisphenol", "resin", "glycidyl", "diluent"],
+        ["base oil", "mineral oil", "pao", "synthetic oil", "naphthenic", "paraffinic", "poe", "polyol ester", "oil", "pag", "pve", "base fluid"],
+        ["fragrance", "limonene", "terpene", "citrus", "pine oil", "perfume"],
+        ["tin", "zinc", "copper", "silver", "aluminium", "aluminum", "metal", "nickel", "alloy", "brass", "bronze", "cuprous", "oxide"],
+        ["pesticide", "insecticide", "herbicide", "active ingredient", "pyrethroid", "glyphosate", "reagent", "technical-grade", "dpd", "indicator"],
+        ["silicone", "pdms", "siloxane", "silane", "silanol"],
+        ["isopropyl", "ipa", "ethanol", "methanol", "alcohol"],
+        ["polyurethane", "mdi", "polyol", "prepolymer", "isocyanate", "stp", "ms polymer", "urethane", "tdi"],
+        ["quat", "quaternary", "adbac", "ddac", "disinfect", "hypochlorite", "bleach", "peroxide", "biocide", "antimicrobial", "chlorine", "fungicide", "algaecide"],
+        ["surfactant", "emulsifier", "ethoxylate", "las", "sles", "betaine", "amine oxide", "soap", "nonionic", "anionic", "sulfonate", "amphoteric"],
+        ["nonwoven", "fibre", "fiber", "cellulose", "spunlace", "spunbond", "substrate", "cloth", "fabric", "pulp"],
+        ["thickener", "rheology", "fumed silica", "thixotrop", "lithium soap", "gum", "wax", "xanthan", "bentonite", "cellulosic", "polyacrylamide", "polyacrylate"],
+        ["rubber", "sbr", "butyl", "pvc", "polyethylene", "thermoplastic", "neoprene", "polychloroprene", "styrene-butadiene", "abs", "eva", "polypropylene"],
+        ["acetone", "mek", "thf", "glycol ether", "ester", "ketone", "oxygenated", "butyl glycol", "dpm", "pnb", "cyclohexanone"],
+        ["acid", "caustic", "hydroxide", "phosphoric", "hcl", "hydrochloric", "citric", "sulfamic", "alkali", "soda ash", "silicate", "metasilicate", "koh", "naoh"],
+        ["salt", "chloride", "nacl", "cacl2", "mgcl2", "nitrite", "urea", "acetate", "sodium chloride", "potassium chloride", "magnesium"],
+        ["inhibitor", "chelant", "edta", "glda", "mgda", "drier", "stabiliser", "stabilizer", "preservative", "antioxidant", "catalyst", "crosslinker", "adhesion promoter", "builder", "gluconate", "uv absorber", "additive", "flux activator", "activator", "azole", "triazole", "sulfite", "neutralising amine", "neutralizing amine", "deha"],
+        ["water"],
+        ["glycol", "propylene glycol", "ethylene glycol", "glycerin", "glycerine"],
+        ["asphalt", "bitumen", "tar"],
+        ["plasticizer", "plasticiser", "dinp", "didp", "dotp", "phthalate"],
+        ["packaging", "container", "cartridge", "can "],
+        ["cyanoacrylate", "methacrylate", "mma", "monomer", "acrylate"],
+        ["ptfe", "fluoro", "pfpe", "fluoropolymer", "teflon"],
+        ["enzyme", "microbial", "bacteria", "culture", "spore"],
+        ["graphite", "carbon", "molybdenum", "moly"]]
+    fam_names = [r[0] for r in rmf]
+    kw_of = {i: FAM_KW[i] for i in range(min(len(FAM_KW), len(fam_names)))}
+    cats_of = {i: set(r[4]) for i, r in enumerate(rmf)}
+    def fam_for(name, cat):
+        t = " " + name.lower().replace("/", " ").replace(",", " ") + " "
+        sc = {i: sum((2 if " " in k.strip() else 1) for k in kws if k in t) for i, kws in kw_of.items()}
+        sc = {i: v for i, v in sc.items() if v}
+        if not sc: return None
+        first = {i: min(t.find(k) for k in kw_of[i] if k in t) for i in sc}  # a mixed row goes to the material named first
+        lead = min(first, key=first.get)
+        pref = {i: v + (1 if cat in cats_of.get(i, ()) else 0) + (1.5 if i == lead else 0) for i, v in sc.items()}
+        return max(pref, key=lambda i: (pref[i], -i))
+    rmc, unm = {}, 0
+    for ci, st in study_out.items():
+        rows_ = []
+        for rm in st.get("rms", []):
+            f = fam_for(rm[0], st["name"])
+            if f is None: unm += 1
+            rows_.append([f, rm[2] or 0, rm[5] or "", rm[0][:120], rm[3][:200]])
+        if rows_: rmc[ci] = rows_
+    print("raw materials mapped to families:", sum(len(v) for v in rmc.values()), "rows,", unm, "unmatched")
+    os.makedirs(f"{OUT}/product", exist_ok=True)  # the family mapping rides in its own doc (docs cap at 256 KB)
+    json.dump({"fams": fam_names, "rmc": rmc, "updated_at": NOW}, open(f"{OUT}/product/rmc.json", "w"), separators=(",", ":"), default=str)
     json.dump({**product_doc, "updated_at": NOW}, open(f"{OUT}/product/main.json", "w"), separators=(",", ":"), default=str)
     print("product category:", len(fmts), "formats,", len(fmix), "format mixes,", len(chem), "chemistry rows,", len(rmf), "raw-material families,", len(syn), "synergy rows | KB", len(json.dumps(product_doc, default=str)) // 1024)
 if ems_doc:

@@ -314,7 +314,7 @@ const PRICES = new Map(), priceLoading = new Set();
 let DEALS = [], DISTS = [], SRC = "", loaded = false, ver = 0;
 const OWN = [["pe", "PE"], ["family", "Family"], ["esop", "ESOP"], ["private", "Private"], ["corp", "Corporate"]];
 const ownKey = c => c.oclass === "public" || c.oclass === "sub_private" ? "corp" : c.oclass;
-const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", pp: { q: "", min: "M", sort: "lead", seg: "", cat: "", own: "", pos: "", limit: 100 }, roll: store.get("roll", []), rview: "xs", wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "attr", emcol: null, syn: { src: "default", rm: 0.02, fr8: 0.03, rev: {}, fr: {} }, sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
+const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", pp: { q: "", min: "M", sort: "lead", seg: "", cat: "", own: "", pos: "", limit: 100 }, roll: store.get("roll", []), rview: "xs", wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "attr", emcol: null, syn: { src: "default", rm: 0.02, fr8: 0.03, rmc: 0.03, rms: 0.015, rmx: 0.005, rev: {}, fr: {} }, sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
   b: { q: "", status: "", tri: "", own: "", fam: "", seg: "", ch: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
 
 /* ---------- DNA ---------- */
@@ -1185,7 +1185,9 @@ let PRODUCT = null, productLoading = false;
 function loadProduct() {
   if (PRODUCT || productLoading || !db) return;
   productLoading = true;
-  db.doc("product/main").get().then(d => { PRODUCT = d.exists ? d.data() : { missing: true }; }).catch(() => { PRODUCT = { missing: true }; }).finally(() => { productLoading = false; render(); });
+  Promise.all([db.doc("product/main").get(), db.doc("product/rmc").get()])
+    .then(([d, r]) => { PRODUCT = d.exists ? { ...d.data(), ...(r.exists ? r.data() : {}) } : { missing: true }; })
+    .catch(() => { PRODUCT = { missing: true }; }).finally(() => { productLoading = false; render(); });
 }
 function synRows() {
   const P = PRODUCT, S = ui.syn, fr = P.formats.map(f => S.fr[f.name] ?? f.kv["Savings rate used in calculator"] ?? 0);
@@ -1205,7 +1207,7 @@ function synRows() {
   return rows.sort((a, b) => b.tot - a.tot);
 }
 function viewProduct() {
-  loadProduct(); const P = PRODUCT;
+  loadProduct(); const P = PRODUCT; ui.syn.src = "default";
   const head = `<div class="page-h"><div class="grow"><div class="lbl">What the products are made of</div><h1>Product</h1>
     <p>What the products are made of: the bill of materials for each package format, the format mix by category, chemistry and cost structure, the raw materials bought most across categories, and a procurement synergy calculator for a roll-up. Costs, shares and savings rates are research estimates unless a source is cited.</p></div></div>`;
   if (!P) return head + `<section class="panel"><div class="body faint">Loading…</div></section>`;
@@ -1214,9 +1216,11 @@ function viewProduct() {
   const pane = (h, lbl, body, id) => `<section class="panel"${id ? ` id="${id}"` : ""}><header><h2>${h}</h2><span class="sp"></span>${lbl ? `<span class="lbl">${lbl}</span>` : ""}</header>${body}</section>`;
   const nfmt = v => v === null || v === undefined || v === "" ? "—" : esc(String(v));
   const rollN = ui.roll.filter(x => CO.has(x)).length;
-  const calc = pane("Procurement synergy calculator", "Edit the rates and revenue; nothing is saved", `<div class="body">
-    <p class="muted" style="margin:0 0 10px;font-size:13.5px">${esc(P.syn_note)}</p>
-    <div class="bar" style="margin:0 0 10px"><select data-syn="src" aria-label="Revenue source"><option value="default" ${S.src !== "roll" ? "selected" : ""}>Revenue: workbook's mid-market default</option><option value="roll" ${S.src === "roll" ? "selected" : ""} ${rollN ? "" : "disabled"}>Revenue: current roll-up${rollN ? ` (${rollN} companies)` : " (none selected)"}</option></select>
+  const calc = pane("Market-level synergy (illustrative)", "The workbook's top-down sizing · edit rates and revenue; nothing is saved", `<div class="body">
+    <div class="note" style="margin:0 0 12px">For a specific set of companies, use <a href="#rollup" data-act="rview" data-v="pc"><b>Roll-up → Procurement</b></a>${rollN ? ` (${rollN} selected)` : ""}: it finds the pack formats, raw-material families and distributors the members actually share and only counts savings there.</div>
+    <p class="muted" style="margin:0 0 6px;font-size:13.5px"><b>How this table works.</b> It asks what pooled buying could save across the whole mid-market universe, category by category. For each category: revenue × packaging % of sales × the category's packaging savings rate, plus revenue × raw materials % × the pooled-buying rate, plus revenue × freight % × the freight rate. A category's packaging rate is its pack-format mix (format mix table) weighted by each format's savings rate (component library). It assumes everything in a category is pooled, so it is a ceiling, not a deal number.</p>
+    <p class="faint" style="margin:0 0 10px;font-size:12.5px">${esc(P.syn_note)}</p>
+    <div class="bar" style="margin:0 0 10px">
       <label class="lbl" style="display:flex;gap:6px;align-items:center">Raw-material rate <input data-syn="rm" type="number" step="0.005" min="0" max="0.2" value="${S.rm}" style="width:80px"></label>
       <label class="lbl" style="display:flex;gap:6px;align-items:center">Freight rate <input data-syn="fr8" type="number" step="0.005" min="0" max="0.2" value="${S.fr8}" style="width:80px"></label>
       ${Object.keys(S.rev).length || Object.keys(S.fr).length ? `<button class="tog" type="button" data-act="synreset">Reset edits</button>` : ""}</div>
@@ -1249,10 +1253,108 @@ function viewProduct() {
   const rmf = pane("Most common raw materials", "Families across categories · est. US pro spend pool", `<div class="body" style="padding-bottom:0"><p class="muted" style="margin:0;font-size:13px">${esc(P.rmf_note || "")}</p></div><div class="tw"><table style="font-size:13px"><thead><tr><th>Raw-material family</th><th class="r">Categories</th><th class="r">Spend pool</th><th>Most-cited suppliers</th><th>Commodity / specialty</th></tr></thead><tbody>
     ${P.rmf.map(([n, k, sp, sup, cats, cs]) => `<tr><td><b>${esc(n)}</b><details><summary class="faint" style="cursor:pointer;font-size:11.5px">${k} categories</summary><p style="margin:4px 0 0;font-size:12.5px">${cats.map(c => catByName(c)).join(", ")}</p></details></td><td class="r num">${k ?? "—"}</td><td class="r num">${sp ? fmtM(sp) : "—"}</td><td style="font-size:12.5px">${esc(sup)}</td><td style="font-size:12.5px">${esc(cs)}</td></tr>`).join("")}
     </tbody></table></div>`, "rmf");
-  return head + `<div class="bar" style="margin:0 0 12px">${[["syn", "Synergy calculator"], ["comps", "Packaging components"], ["fmix", "Format mix"], ["chem", "Chemistry & cost"], ["rmf", "Raw materials"]].map(([k, l]) => `<a class="tog" href="#product" data-jump="${k}" style="text-decoration:none">${l}</a>`).join("")}</div>
+  return head + `<div class="bar" style="margin:0 0 12px">${[["syn", "Market-level synergy"], ["comps", "Packaging components"], ["fmix", "Format mix"], ["chem", "Chemistry & cost"], ["rmf", "Raw materials"]].map(([k, l]) => `<a class="tog" href="#product" data-jump="${k}" style="text-decoration:none">${l}</a>`).join("")}</div>
   <div class="gauges"><div class="gauge"><b>${P.formats.filter(f => f.comps.length).length}</b><span class="lbl">Package formats mapped</span></div><div class="gauge"><b>${P.rmf.length}</b><span class="lbl">Raw-material families</span></div>
-    <div class="gauge"><b>${fmtM(P.rmf.reduce((a, r) => a + (r[2] || 0), 0))}</b><span class="lbl">Raw-material spend pools, summed</span></div><div class="gauge g"><b>${fmtM1(T("tot"))}</b><span class="lbl">Procurement synergy (${S.src === "roll" ? "roll-up" : "default"})</span></div></div>
+    <div class="gauge"><b>${fmtM(P.rmf.reduce((a, r) => a + (r[2] || 0), 0))}</b><span class="lbl">Raw-material spend pools, summed</span></div><div class="gauge g"><b>${fmtM1(T("tot"))}</b><span class="lbl">Market-level synergy, illustrative</span></div></div>
   ${calc}${comps}${fmix}${chem}${rmf}`;
+}
+
+
+/* ---------- roll-up procurement synergy: from the members' actual overlaps ----------
+   1. Each member's revenue is split across categories by its scraped SKU mix; the Product tab's cost structure gives
+      its packaging, raw-material and freight spend in each category.
+   2. Packaging spend is split by the member's own pack formats (scrape); raw-material spend by the category's raw
+      materials (study section 11), grouped into the Product tab's raw-material families.
+   3. An input saves money only when 2+ members buy it. The smaller buyers move onto the largest buyer's contract and
+      get the full savings rate on their spend; the largest buyer gets the same rate on as much of its own spend as the
+      others add (pooling lifts its volume at most twofold): saving = rate x min(total, 2 x (total - largest)).
+   4. Freight saves only on lanes to distributors that 2+ members already sell to, pooled by the same rule. */
+const FMT_MAP = { "Aerosol": "Aerosol", "Bottle/Liquid": "Bottle / jug", "Cartridge": "Cartridge", "Squeeze tube": "Squeeze tube", "Paste/Can": "Paste can / tub", "Kit": "Kit", "Powder": "Powder / bag", "Wipe": "Wipes", "Marker/Paint stick": "Marker", "Other": "Other" };
+const pool = xs => { const t = xs.reduce((a, x) => a + x, 0), m = Math.max(0, ...xs), n = xs.filter(x => x > 0).length; return { t, m, n, base: n >= 2 ? Math.min(t, 2 * (t - m)) : 0 }; };
+function procCalc(ids) {
+  const P = PRODUCT; if (!P || P.missing) return null;
+  const S = ui.syn, frate = f => S.fr[f] ?? P.formats.find(x => x.name === f)?.kv["Savings rate used in calculator"] ?? 0;
+  const trate = t => /^comm/i.test(t) ? S.rmc : /^semi/i.test(t) ? S.rms : /^spec/i.test(t) ? S.rmx : S.rms;
+  const ex = [], M = [];
+  const all = new Set(); const doorsOf = new Map(ids.map(id => [id, reachOf(CO.get(id)).carried || new Set()]));
+  for (const id of ids) {
+    const c = CO.get(id), rev = num(c.rev); if (!rev) { ex.push(c); continue; }
+    let w = Object.entries(c.mix?.cat || {}).map(([k, n]) => [CATNAMES.indexOf(k), n]).filter(([ci]) => ci >= 0 && P.syn[ci]);
+    if (!w.length) w = (reachIndex().byOwner.get(id) || []).map(b => [CATNAMES.indexOf(b.ncat), 1]).filter(([ci]) => ci >= 0 && P.syn[ci]);
+    const tw = w.reduce((a, [, n]) => a + n, 0); if (!tw) { ex.push(c); continue; }
+    const cats = {}; for (const [ci, n] of w) cats[ci] = (cats[ci] || 0) + rev * n / tw;
+    let pack = 0, rm = 0, fr = 0; const fam = {};
+    for (const [ci, r] of Object.entries(cats)) {
+      const v = P.syn[ci]; pack += r * v[3]; fr += r * v[4]; const rmS = r * v[2]; rm += rmS;
+      const rows = P.rmc?.[ci] || [], tot = rows.reduce((a, x) => a + (x[1] || 0), 0);
+      if (!rows.length || !tot) { const k = "u:" + ci; fam[k] = fam[k] || { spend: 0, t: {} }; fam[k].spend += rmS; fam[k].t.Semi = (fam[k].t.Semi || 0) + rmS; continue; }
+      for (const [f, sh, ty] of rows) { const k = f === null ? "u:" + ci : f, x = rmS * (sh || 0) / tot; fam[k] = fam[k] || { spend: 0, t: {} }; fam[k].spend += x; fam[k].t[ty || "Semi"] = (fam[k].t[ty || "Semi"] || 0) + x; }
+    }
+    const fm = Object.entries(c.mix?.fmt || {}).map(([k, n]) => [FMT_MAP[k] || "Other", n]), fn = fm.reduce((a, [, n]) => a + n, 0);
+    const fmts = {};
+    if (fn) for (const [f, n] of fm) fmts[f] = (fmts[f] || 0) + pack * n / fn;
+    else for (const [ci, r] of Object.entries(cats)) { const mix = P.fmix[ci]; if (!mix) continue; P.fcols.forEach((f, j) => { fmts[f] = (fmts[f] || 0) + r * P.syn[ci][3] * (mix[2 + j] || 0); }); }
+    M.push({ c, rev, cats, pack, rm, fr, fam, fmts });
+  }
+  for (const m of M) {
+    const mine = doorsOf.get(m.c.id), others = new Set(M.filter(o => o !== m).flatMap(o => [...doorsOf.get(o.c.id)]));
+    m.doors = mine.size; m.sharedDoors = [...mine].filter(d => others.has(d)).length; m.shareD = mine.size ? m.sharedDoors / mine.size : 0;
+  }
+  const packRows = [...new Set(M.flatMap(m => Object.keys(m.fmts)))].map(f => { const xs = M.map(m => m.fmts[f] || 0), p = pool(xs), r = frate(f); return { f, xs, ...p, rate: r, save: p.base * r }; }).sort((a, b) => b.save - a.save || b.t - a.t);
+  const rmRows = [...new Set(M.flatMap(m => Object.keys(m.fam)))].map(k => {
+    const xs = M.map(m => m.fam[k]?.spend || 0), p = pool(xs), ty = {};
+    for (const m of M) for (const [t, v] of Object.entries(m.fam[k]?.t || {})) ty[t] = (ty[t] || 0) + v;
+    const tt = Object.values(ty).reduce((a, v) => a + v, 0) || 1, rate = Object.entries(ty).reduce((a, [t, v]) => a + trate(t) * v / tt, 0);
+    const name = String(k).startsWith("u:") ? `Other inputs specific to ${CATNAMES[k.slice(2)]}` : P.fams[k];
+    return { k, name, xs, ...p, ty, rate, save: p.base * rate, sup: String(k).startsWith("u:") ? "" : P.rmf[k]?.[3] || "" };
+  }).sort((a, b) => b.save - a.save || b.t - a.t);
+  const frX = M.map(m => m.fr * m.shareD), frP = pool(frX);  // shared-lane freight pools like any other input
+  const frRows = M.map((m, i) => ({ m, spend: m.fr, shared: frX[i], save: frP.t ? frP.base * S.fr8 * frX[i] / frP.t : 0 }));
+  const T = { rev: M.reduce((a, m) => a + m.rev, 0), pack: packRows.reduce((a, r) => a + r.save, 0), rm: rmRows.reduce((a, r) => a + r.save, 0), fr: frRows.reduce((a, r) => a + r.save, 0) };
+  T.tot = T.pack + T.rm + T.fr;
+  T.packShared = packRows.filter(r => r.n >= 2).reduce((a, r) => a + r.t, 0); T.packAll = packRows.reduce((a, r) => a + r.t, 0);
+  T.rmShared = rmRows.filter(r => r.n >= 2).reduce((a, r) => a + r.t, 0); T.rmAll = rmRows.reduce((a, r) => a + r.t, 0);
+  return { M, ex, packRows, rmRows, frRows, T };
+}
+function rollProcView(ids, X) {
+  loadProduct(); if (!PRODUCT) return `<section class="panel"><div class="body faint">Loading the product data…</div></section>`;
+  const R = procCalc(ids); if (!R) return `<section class="panel"><div class="body faint">No product data loaded.</div></section>`;
+  const { M, ex, packRows, rmRows, frRows, T } = R, S = ui.syn, L = "ABCDEFGHIJKLMNOP";
+  if (M.length < 2) return `<section class="panel"><div class="body"><p class="muted" style="margin:0">Procurement synergy needs at least two members with revenue.${ex.length ? ` No revenue for ${ex.map(c => esc(c.name)).join(", ")}.` : ""}</p></div></section>`;
+  const tag = i => `<span class="tag" style="font-size:10.5px;padding:0 4px">${L[i]}</span>`;
+  const memCols = M.map((m, i) => `<th class="r" title="${esc(m.c.name)}">${tag(i)}</th>`).join("");
+  const cell = (v, r) => `<td class="r num${v > 0 ? "" : " faint"}" style="${v > 0 && v === r.m && r.n >= 2 ? "font-weight:700" : ""}">${v > 0 ? fmtM1(v) : "—"}</td>`;
+  const lead = r => r.n >= 2 ? `${Math.round(r.m / r.t * 100)}%` : "—";
+  const how = `<section class="panel"><header><h2>How the procurement synergy is worked out</h2></header><div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;font-size:13.5px">
+    <div><div class="lbl" style="margin:0 0 4px">1 · What each member buys</div>Revenue is split across categories by the member's scraped SKU mix. Each category's cost structure (Product tab) gives its packaging, raw-material and freight spend.</div>
+    <div><div class="lbl" style="margin:0 0 4px">2 · Which inputs overlap</div>Packaging is split by the member's own pack formats. Raw materials follow its categories' raw-material lists, grouped into ${PRODUCT.fams.length} families (surfactants, propellants, base oils…). Freight follows the distributors it ships to.</div>
+    <div><div class="lbl" style="margin:0 0 4px">3 · Where pooling pays</div>Only inputs that 2+ members buy save money. The smaller buyers move onto the largest buyer's contract and get the full rate; the largest buyer gets the rate on as much of its own spend as the others add: <span class="num">rate × min(total, 2 × (total − largest))</span>.</div>
+    <div><div class="lbl" style="margin:0 0 4px">4 · Rates</div>Packaging: the Product tab's savings rate per format. Raw materials: ${pct(S.rmc)} commodity, ${(S.rms * 100).toFixed(1)}% semi-specialty, ${(S.rmx * 100).toFixed(1)}% specialty. Freight: ${pct(S.fr8)} on lanes to distributors 2+ members ship to, pooled by the same rule. Edit them below.</div></div></section>`;
+  const rates = `<details class="panel" style="padding:0"><summary style="padding:14px 18px;cursor:pointer"><b>Edit the rates</b> <span class="faint">· nothing is saved</span></summary><div class="body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">
+    ${[["rmc", "Raw mat., commodity"], ["rms", "Raw mat., semi-specialty"], ["rmx", "Raw mat., specialty"], ["fr8", "Freight, shared lanes"]].map(([k, l]) => `<label class="lbl" style="display:grid;gap:3px">${l}<input data-syn="${k}" type="number" step="0.005" min="0" max="0.3" value="${S[k]}"></label>`).join("")}
+    ${PRODUCT.formats.map(f => `<label class="lbl" style="display:grid;gap:3px">Pack: ${esc(f.name)}<input data-synf="${esc(f.name)}" type="number" step="0.005" min="0" max="0.3" value="${S.fr[f.name] ?? f.kv["Savings rate used in calculator"] ?? 0}"></label>`).join("")}
+    <button class="tog" type="button" data-act="synreset" style="align-self:end">Reset rates</button></div></details>`;
+  return how + `<div class="gauges"><div class="gauge g"><b>${fmtM1(T.tot)}</b><span class="lbl">Procurement synergy · ${(T.tot / T.rev * 100).toFixed(2)}% of ${fmtM(T.rev)}</span></div>
+    <div class="gauge"><b>${fmtM1(T.pack)}</b><span class="lbl">Packaging · ${pct(T.packAll ? T.packShared / T.packAll : 0)} of spend is in formats 2+ members buy</span></div><div class="gauge"><b>${fmtM1(T.rm)}</b><span class="lbl">Raw materials · ${pct(T.rmAll ? T.rmShared / T.rmAll : 0)} of spend is in families 2+ members buy</span></div>
+    <div class="gauge"><b>${fmtM1(T.fr)}</b><span class="lbl">Freight on shared lanes</span></div></div>
+  ${ex.length ? `<div class="note">Left out for lack of revenue: ${ex.map(c => esc(c.name)).join(", ")}.</div>` : ""}
+  <section class="panel"><header><h2>What each member buys</h2><span class="sp"></span><span class="lbl">Estimated annual spend from revenue × category cost structure</span></header><div class="tw"><table><thead><tr><th>Member</th><th class="r">Revenue</th><th>Main categories</th><th class="r">Packaging</th><th>Main formats</th><th class="r">Raw materials</th><th class="r">Freight</th><th class="r">Doors shared</th></tr></thead><tbody>
+    ${M.map((m, i) => `<tr><td>${tag(i)} <b><a href="#c.${esc(m.c.id)}">${esc(m.c.name)}</a></b></td><td class="r num">${fmtM(m.rev)}</td><td style="font-size:12.5px">${Object.entries(m.cats).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([ci, r]) => `${esc(CATNAMES[ci])} <span class="faint num">${pct(r / m.rev)}</span>`).join("<br>")}</td>
+      <td class="r num">${fmtM1(m.pack)}</td><td style="font-size:12.5px">${Object.entries(m.fmts).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([f, v]) => `${esc(f)} <span class="faint num">${pct(v / (m.pack || 1))}</span>`).join("<br>")}</td>
+      <td class="r num">${fmtM1(m.rm)}</td><td class="r num">${fmtM1(m.fr)}</td><td class="r num">${m.sharedDoors} of ${m.doors}</td></tr>`).join("")}
+  </tbody></table></div></section>
+  <section class="panel"><header><h2>Shared packaging</h2><span class="sp"></span><span class="lbl">Spend by pack format · bold = largest buyer · <a href="#product">component library</a></span></header><div class="tw"><table><thead><tr><th>Format</th>${memCols}<th class="r">Total</th><th class="r">Largest buyer's share</th><th class="r">Rate</th><th class="r">Saving</th></tr></thead><tbody>
+    ${packRows.map(r => `<tr${r.n < 2 ? ' class="faint"' : ""}><td><b>${esc(r.f)}</b>${r.n < 2 ? `<br><span style="font-size:12px">one buyer, nothing to pool</span>` : ""}</td>${r.xs.map(v => cell(v, r)).join("")}<td class="r num">${fmtM1(r.t)}</td><td class="r num">${lead(r)}</td><td class="r num">${(r.rate * 100).toFixed(1)}%</td><td class="r num"><b>${r.save ? fmtM1(r.save) : "—"}</b></td></tr>`).join("")}
+  </tbody></table></div></section>
+  <section class="panel"><header><h2>Shared raw materials</h2><span class="sp"></span><span class="lbl">Spend by raw-material family · rate blends commodity, semi-specialty and specialty</span></header><div class="tw" style="max-height:620px"><table><thead><tr><th>Raw-material family</th>${memCols}<th class="r">Total</th><th class="r">Largest buyer's share</th><th>Mix</th><th class="r">Rate</th><th class="r">Saving</th></tr></thead><tbody>
+    ${rmRows.map(r => { const tt = Object.values(r.ty).reduce((a, v) => a + v, 0) || 1; return `<tr${r.n < 2 ? ' class="faint"' : ""}><td><b>${esc(r.name)}</b>${r.sup ? `<br><span class="faint" style="font-size:12px">${esc(r.sup)}</span>` : ""}</td>${r.xs.map(v => cell(v, r)).join("")}<td class="r num">${fmtM1(r.t)}</td><td class="r num">${lead(r)}</td>
+      <td style="font-size:12px;white-space:nowrap">${Object.entries(r.ty).sort((a, b) => b[1] - a[1]).map(([t, v]) => `${esc(t)} ${Math.round(v / tt * 100)}%`).join("<br>")}</td><td class="r num">${(r.rate * 100).toFixed(1)}%</td><td class="r num"><b>${r.save ? fmtM1(r.save) : "—"}</b></td></tr>`; }).join("")}
+  </tbody></table></div></section>
+  <section class="panel"><header><h2>Freight on shared lanes</h2><span class="sp"></span><span class="lbl">Only shipments to distributors another member also sells to · saving split by shared-lane spend</span></header><div class="tw"><table><thead><tr><th>Member</th><th class="r">Freight spend</th><th class="r">Doors shared</th><th class="r">Freight on shared lanes</th><th class="r">Saving</th></tr></thead><tbody>
+    ${frRows.map((r, i) => `<tr><td>${tag(i)} ${esc(r.m.c.name)}</td><td class="r num">${fmtM1(r.spend)}</td><td class="r num">${r.m.sharedDoors} of ${r.m.doors}</td><td class="r num">${fmtM1(r.shared)}</td><td class="r num"><b>${r.save ? fmtM1(r.save) : "—"}</b></td></tr>`).join("")}
+  </tbody></table></div></section>
+  ${rates}
+  <div class="note">Spend is estimated from revenue and the Product tab's typical cost structure by category, not from the companies' own purchasing data; confirm with their actual spend cubes in diligence. Raw materials are matched to families by name. Rates are research estimates.</div>`;
 }
 
 /* ---------- view: distributors (who carries what, and whose brands fill each shelf) ---------- */
@@ -1589,10 +1691,10 @@ function viewRollup() {
     <div class="gauge"><b>${nb}</b><span class="lbl">Brands</span></div><div class="gauge"><b>${X.union.size}</b><span class="lbl">Doors combined</span></div>
     <div class="gauge"><b>${X.union.size ? pct(X.shared / X.union.size) : "—"}</b><span class="lbl">Doors shared by 2+</span></div>
     <div class="gauge g"><b>${fmtM(xs)}</b><span class="lbl">Cross-sell at ${capLbl()}</span></div>
-    ${(() => { loadProduct(); if (!PRODUCT || PRODUCT.missing) return ""; const src = ui.syn.src; ui.syn.src = "roll"; const t = synRows().reduce((a, r) => a + r.tot, 0); ui.syn.src = src; return `<a class="gauge g" href="#product" data-act="synroll" style="text-decoration:none"><b>${fmtM1(t)}</b><span class="lbl">Procurement synergy · open calculator</span></a>`; })()}</div>
+    ${(() => { loadProduct(); const R = procCalc(ids); if (!R || R.M.length < 2) return ""; return `<button type="button" class="gauge g" data-act="rview" data-v="pc" style="text-align:left;cursor:pointer"><b>${fmtM1(R.T.tot)}</b><span class="lbl">Procurement synergy · see the overlaps</span></button>`; })()}</div>
   ${rollPlanPanel(ids)}
-  <div class="bar" role="tablist" style="margin:4px 0 14px"><button class="tog" type="button" role="tab" data-act="rview" data-v="xs" aria-pressed="${ui.rview === "xs"}">Cross-sell</button><button class="tog" type="button" role="tab" data-act="rview" data-v="ws" aria-pressed="${ui.rview === "ws"}">Whitespace</button><button class="tog" type="button" role="tab" data-act="rview" data-v="pr" aria-pressed="${ui.rview === "pr"}">Pricing</button><span class="faint" style="font-size:13px">${ui.rview === "pr" ? "The good / better / best ladder the members build together, and each one's price lever" : ui.rview === "ws" ? "Distributors none of the members sell to yet, where the platform's products fit" : "Distributors one member already sells to that another member could enter"}</span></div>
-  ${ui.rview === "pr" ? rollPriceView(ids, X) : ui.rview === "ws" ? rollWsView(ids, X) : `
+  <div class="bar" role="tablist" style="margin:4px 0 14px"><button class="tog" type="button" role="tab" data-act="rview" data-v="xs" aria-pressed="${ui.rview === "xs"}">Cross-sell</button><button class="tog" type="button" role="tab" data-act="rview" data-v="ws" aria-pressed="${ui.rview === "ws"}">Whitespace</button><button class="tog" type="button" role="tab" data-act="rview" data-v="pr" aria-pressed="${ui.rview === "pr"}">Pricing</button><button class="tog" type="button" role="tab" data-act="rview" data-v="pc" aria-pressed="${ui.rview === "pc"}">Procurement</button><span class="faint" style="font-size:13px">${ui.rview === "pc" ? "Packaging, raw materials and freight the members could buy together" : ui.rview === "pr" ? "The good / better / best ladder the members build together, and each one's price lever" : ui.rview === "ws" ? "Distributors none of the members sell to yet, where the platform's products fit" : "Distributors one member already sells to that another member could enter"}</span></div>
+  ${ui.rview === "pc" ? rollProcView(ids, X) : ui.rview === "pr" ? rollPriceView(ids, X) : ui.rview === "ws" ? rollWsView(ids, X) : `
   <section class="panel"><header><h2>Cross-sell by member</h2><span class="sp"></span><span class="lbl">Doors a member gains from the others' shelves</span></header>
   <div class="tw"><table><thead><tr><th>Company</th><th class="r">DNA</th><th class="r">Revenue</th><th class="r">Doors now</th><th class="r">Doors gained</th><th class="r">Cross-sell</th><th>Biggest doors gained (via)</th></tr></thead><tbody>
   ${M.map(x => `<tr><td><b><a href="#c.${esc(x.c.id)}">${esc(x.c.name)}</a></b><br><small class="faint">${ownerLine(x.c)}</small></td><td class="r"><span class="score ${dnaOf(x.c).band} num" style="font-size:16px">${dnaOf(x.c).score}</span></td>
@@ -1999,7 +2101,7 @@ function viewPrice(ci) {
    price lever closes half the gap to that quartile, capped at 5%, on the share of the company's priced items in the
    category: a list-price estimate before any volume loss, not a forecast. */
 const GBB = [["Good", "0.80× and under"], ["Better", "0.80× to 1.25×"], ["Best", "1.25× and up"]];
-const fmtM1 = v => { v = num(v); return v !== null && v < 10 ? "$" + v.toFixed(1).replace(/\.0$/, "") + "M" : fmtM(v); };
+const fmtM1 = v => { v = num(v); return v === null ? fmtM(v) : v > 0 && v < 1 ? "$" + Math.round(v * 1000) + "K" : v < 10 ? "$" + v.toFixed(1).replace(/\.0$/, "") + "M" : fmtM(v); };
 const gbbOf = ix => ix <= 0.8 ? 0 : ix >= 1.25 ? 2 : 1;
 let PLEARN = null;
 const priceCache = { src: null, st: new Map(), byBrand: null };
@@ -2408,7 +2510,7 @@ document.addEventListener("click", e => {
     else if (act === "ppos") { ui.pp.pos = ui.pp.pos === a.dataset.v ? "" : a.dataset.v; ui.pp.limit = 100; render(); }
     else if (act === "emcol") { ui.emcol = a.dataset.v === "" ? null : +a.dataset.v; render(); }
     else if (act === "synroll") { ui.syn.src = "roll"; location.hash = "product"; }
-    else if (act === "synreset") { ui.syn.rev = {}; ui.syn.fr = {}; render(); }
+    else if (act === "synreset") { Object.assign(ui.syn, { rev: {}, fr: {}, rm: 0.02, fr8: 0.03, rmc: 0.03, rms: 0.015, rmx: 0.005 }); render(); }
     else if (act === "cwreset") { store.set("cw", null); render(); }
     else if (act === "ppmore") { ui.pp.limit += 100; render(); }
     else if (act === "wsmk") { ui.wsmk = a.dataset.v; ui.wslimit = 40; render(); }
