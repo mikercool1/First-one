@@ -59,7 +59,9 @@ body.hbmode{overflow:hidden}
 body.hbmode .shell,body.hbmode #toast,body.hbmode #tip{display:none}
 .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
 @media (max-width:1100px){.grid3{grid-template-columns:minmax(0,1fr)}}
-.bridge{width:100%;height:auto;display:block}.bridge .bv{font:600 13px var(--f-mono);fill:var(--ink)}.bridge .bl{font:600 10.5px var(--f-mono);fill:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+.bridge{width:100%;height:auto;display:block}
+.bridgewrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:center}
+@media (max-width:1000px){.bridgewrap{grid-template-columns:minmax(0,1fr)}}.bridge .bv{font:600 13px var(--f-mono);fill:var(--ink)}.bridge .bl{font:600 10.5px var(--f-mono);fill:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
 tr.tot td{border-top:2px solid var(--line-2);background:var(--panel-2)}
 .arch{border-bottom:1px solid var(--line)}.arch h3{margin:0 0 8px}.arch table td{padding:6px 8px}
 .role{display:inline-block;font:600 10.5px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border:1px solid var(--line-2);color:var(--ink-2)}
@@ -335,7 +337,7 @@ const PRICES = new Map(), priceLoading = new Set();
 let DEALS = [], DISTS = [], SRC = "", loaded = false, ver = 0;
 const OWN = [["pe", "PE"], ["family", "Family"], ["esop", "ESOP"], ["private", "Private"], ["corp", "Corporate"]];
 const ownKey = c => c.oclass === "public" || c.oclass === "sub_private" ? "corp" : c.oclass;
-const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", pp: { q: "", min: "M", sort: "lead", seg: "", cat: "", own: "", pos: "", limit: 100 }, roll: store.get("roll", []), rview: "pf", wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "attr", emcol: null, syn: { src: "default", rm: 0.02, fr8: 0.03, rmc: 0.03, rms: 0.015, rmx: 0.005, rev: {}, fr: {} }, sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
+const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", pp: { q: "", min: "M", sort: "lead", seg: "", cat: "", own: "", pos: "", limit: 100 }, roll: store.get("roll", []), rview: "pf", gm: 0.65, wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "attr", emcol: null, syn: { src: "default", rm: 0.02, fr8: 0.03, rmc: 0.03, rms: 0.015, rmx: 0.005, rev: {}, fr: {} }, sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
   b: { q: "", status: "", tri: "", own: "", fam: "", seg: "", ch: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
 
 /* ---------- DNA ---------- */
@@ -430,7 +432,7 @@ function hbars(rows, total, fmt = v => v, link = null) {
    (#fmt.N), the scrape's end markets (to the matching end-market profile), segments (Categories, filtered), categories,
    distributors and brands. */
 const OPEN = new Set();
-const fold = (h, lbl, body, open = false) => `<section class="panel"><details${open ? " open" : ""}><summary class="dsum"><h2>${h}</h2><span class="sp"></span>${lbl ? `<span class="lbl">${lbl}</span>` : ""}<span class="lbl dmark"></span></summary>${body}</details></section>`;
+const fold = (h, lbl, body, open = false, key = "") => `<section class="panel"><details${open || (key && OPEN.has(key)) ? " open" : ""}${key ? ` data-k="${esc(key)}"` : ""}><summary class="dsum"><h2>${h}</h2><span class="sp"></span>${lbl ? `<span class="lbl">${lbl}</span>` : ""}<span class="lbl dmark"></span></summary>${body}</details></section>`;
 const capList = (arr, n, key) => OPEN.has(key) ? arr : arr.slice(0, n);
 const showAll = (len, n, key, noun = "") => len > n ? `<button class="more" type="button" data-act="showall" data-k="${esc(key)}">${OPEN.has(key) ? "Show fewer" : `Show all ${len}${noun ? " " + noun : ""}`}</button>` : "";
 const SCR2EM = { "Industrial MRO": "Industrial MRO", "Facilities & jan-san": "Facilities & Jan-San", "Construction": "Construction & Contractor", "Plumbing": "Plumbing", "HVAC/R": "HVAC/R",
@@ -1727,7 +1729,7 @@ function viewRollup() {
     <div class="gauge"><b>${X.union.size ? pct(X.shared / X.union.size) : "—"}</b><span class="lbl">Doors shared by 2+</span></div>
     <div class="gauge g"><b>${fmtM(xs)}</b><span class="lbl">Cross-sell at ${capLbl()}</span></div>
     ${(() => { loadProduct(); const R = procCalc(ids); if (!R || R.M.length < 2) return ""; return `<button type="button" class="gauge g" data-act="rview" data-v="pc" style="text-align:left;cursor:pointer"><b>${fmtM1(R.T.tot)}</b><span class="lbl">Procurement synergy · see the overlaps</span></button>`; })()}</div>
-  ${rollPlanPanel(ids)}
+  ${rollSaveBar(ids)}
   <div class="bar" role="tablist" style="margin:4px 0 14px"><button class="tog" type="button" role="tab" data-act="rview" data-v="pf" aria-pressed="${ui.rview === "pf"}">Platform</button><button class="tog" type="button" role="tab" data-act="rview" data-v="xs" aria-pressed="${ui.rview === "xs"}">Cross-sell</button><button class="tog" type="button" role="tab" data-act="rview" data-v="ws" aria-pressed="${ui.rview === "ws"}">Whitespace</button><button class="tog" type="button" role="tab" data-act="rview" data-v="pr" aria-pressed="${ui.rview === "pr"}">Pricing</button><button class="tog" type="button" role="tab" data-act="rview" data-v="ba" aria-pressed="${ui.rview === "ba"}">Brand architecture</button><button class="tog" type="button" role="tab" data-act="rview" data-v="sk" aria-pressed="${ui.rview === "sk"}">SKU overlap</button><button class="tog" type="button" role="tab" data-act="rview" data-v="pc" aria-pressed="${ui.rview === "pc"}">Procurement</button><span class="faint" style="font-size:13px">${ui.rview === "pf" ? "The members side by side, where the revenue sits, and the value bridge" : ui.rview === "ba" ? "Which brand leads each shared category, and what the others become" : ui.rview === "sk" ? "The same product from two members: category, format and pack size" : ui.rview === "pc" ? "Packaging, raw materials and freight the members could buy together" : ui.rview === "pr" ? "The good / better / best ladder the members build together, and each one's price lever" : ui.rview === "ws" ? "Distributors none of the members sell to yet, where the platform's products fit" : "Distributors one member already sells to that another member could enter"}</span></div>
   ${ui.rview === "pf" ? rollPlatformView(ids, X) : ui.rview === "ba" ? rollArchView(ids, X) : ui.rview === "sk" ? rollSkuView(ids, X) : ui.rview === "pc" ? rollProcView(ids, X) : ui.rview === "pr" ? rollPriceView(ids, X) : ui.rview === "ws" ? rollWsView(ids, X) : `
   <section class="panel"><header><h2>Cross-sell by member</h2><span class="sp"></span><span class="lbl">Doors a member gains from the others' shelves</span></header>
@@ -1754,6 +1756,7 @@ function viewRollup() {
     <td class="r num">${k.c.rev ? fmtM(k.c.rev) : "—"}</td><td class="r num">${k.givesN}</td><td class="r num">${k.getsN}</td><td class="r num">${k.total$ ? fmtM(k.value) : "—"}</td><td class="r num">${Math.round(k.ov * 100)}%</td>
     <td><button class="tog" type="button" data-act="radd" data-id="${esc(k.c.id)}">Add +</button></td></tr>`).join("") || `<tr><td colspan="8" class="faint">No candidates found.</td></tr>`}
   </tbody></table></div></section>
+  ${rollPlanPanel(ids)}
   ${ratesPanel()}
   ${savedRollsPanel(ids)}
   <div class="note">Cross-sell values use each company's revenue per door, so they need revenue and 3+ doors ("thin" otherwise), and they inherit the Whitespace caveats: the scrape can miss a listing, and revenue includes direct and retail sales. Brands count only verified and workbook owners, not guesses.</div>`;
@@ -1896,15 +1899,17 @@ function savedRollsPanel(ids) {
     <td class="r">${writable ? `<button class="tog" type="button" data-act="rdelsave" data-id="${esc(r.id)}" aria-label="Delete ${esc(r.name)}">Delete</button>` : ""}</td></tr>`; }).join("")}
   </tbody></table></div></section>`;
 }
+function rollSaveBar(ids) {
+  const key2 = [...ids].sort().join(","), same = ROLLS.find(r => [...(r.ids || [])].sort().join(",") === key2);
+  return writable ? `<div class="bar"><input class="search" id="rname" type="text" placeholder="${esc(same ? same.name : "Name this roll-up…")}" value="${esc(ui.rname || "")}" aria-label="Roll-up name" style="flex:1 1 200px">
+    <button class="tog" type="button" data-act="rsave">${same ? "Update saved roll-up" : "Save roll-up"}</button>${same ? `<button class="tog" type="button" data-act="rsavenew">Save as new</button>` : ""}</div>` : "";
+}
 function rollPlanPanel(ids) {
   const key = rollKey(ids); loadRollPlan(key);
   const plan = RPLAN.get(key), busy = ui.busy[key];
-  const key2 = [...ids].sort().join(","), same = ROLLS.find(r => [...(r.ids || [])].sort().join(",") === key2);
-  return `<section class="panel"><header><h2>Roll-up plan</h2><span class="sp"></span><span class="lbl">${plan ? `Written by Claude ${esc(String(plan.at || "").slice(0, 10))} for this exact mix` : "Claude turns this mix's cross-sell into a plan"}</span></header><div class="body">
+  return fold("Claude's roll-up plan", plan ? `Written ${esc(String(plan.at || "").slice(0, 10))} for this exact mix` : "Claude turns this mix's cross-sell into a plan", `<div class="body">
     ${busy ? `<p class="muted">${esc(busy)}</p><div id="plandraft">${mdPlan(ui.planDraft)}</div>` : plan ? mdPlan(plan.text) : `<p class="muted" style="margin:0">No plan for this mix yet. It uses each member's best doors (fit, proof, who opens them), who unlocks whom, category overlap, head-to-head brands, the demonstrated rates and the next add-ons.</p>`}
-    <div class="bar" style="margin:12px 0 0">${sample && !busy ? `<button class="tog" type="button" data-act="rplan">${plan ? "Rewrite the plan" : "Ask Claude for a roll-up plan"}</button>` : ""}
-      ${writable ? `<input class="search" id="rname" type="text" placeholder="${esc(same ? same.name : "Name this roll-up…")}" value="${esc(ui.rname || "")}" aria-label="Roll-up name" style="flex:1 1 200px">
-      <button class="tog" type="button" data-act="rsave">${same ? "Update saved roll-up" : "Save roll-up"}</button>${same ? `<button class="tog" type="button" data-act="rsavenew">Save as new</button>` : ""}` : `<span class="faint">You can view but not save roll-ups.</span>`}</div></div></section>`;
+    ${sample && !busy ? `<div class="bar" style="margin:12px 0 0"><button class="tog" type="button" data-act="rplan">${plan ? "Rewrite the plan" : "Ask Claude for a roll-up plan"}</button></div>` : ""}</div>`, !!busy, "rplan");
 }
 function loadPlan(id) {
   if (!db || STRAT.has(id) || stratLoading.has(id)) return;
@@ -2235,6 +2240,15 @@ What the market map shows about pricing: ${priceLessons(true).join(" ")}`;
    weight (right to win x door size), so it is an estimate of exposure, not reported sales. The value bridge stacks
    the levers the other tabs size: cross-sell (at the capture setting), price (each member's lever, capped at 5% a
    category) and procurement savings, each with how far to trust it. */
+function waterfall(steps, fmt, label) {
+  const W = 640, H = 230, pad = 24, n = steps.length, bw = Math.min(120, (W - pad * 2) / n * 0.72), gap = (W - pad * 2 - bw * n) / Math.max(1, n - 1);
+  const mx = Math.max(1, ...steps.map((s, i) => s[2] === "add" ? steps.slice(0, i + 1).filter(t => t[2] !== "total").reduce((a, t) => a + t[1], 0) : s[1])) * 1.1, Y = v => H - 34 - v / mx * (H - 64);
+  let acc = 0;
+  const bars = steps.map(([l, v, k], i) => { const x = pad + i * (bw + gap); let y0, y1; if (k === "base" || k === "total") { y0 = 0; y1 = v; acc = v; } else { y0 = acc; y1 = acc + v; acc = y1; }
+    const col = k === "add" ? "var(--good)" : k === "total" ? "var(--accent)" : "var(--ink-3)";
+    return `<rect x="${x.toFixed(1)}" y="${Y(y1).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1, Y(y0) - Y(y1)).toFixed(1)}" fill="${col}"/><text x="${(x + bw / 2).toFixed(1)}" y="${(Y(y1) - 6).toFixed(1)}" text-anchor="middle" class="bv">${k === "add" ? "+" : ""}${fmt(v)}</text><text x="${(x + bw / 2).toFixed(1)}" y="${H - 12}" text-anchor="middle" class="bl">${esc(l)}</text>`; }).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" class="bridge" role="img" aria-label="${esc(label)}">${bars}</svg>`;
+}
 function rollDoorRev(M) {
   const by = new Map(), per = [];
   for (const x of M) {
@@ -2259,11 +2273,11 @@ function rollPlatformView(ids, X) {
   const steps = [["Combined revenue today", rev, "base", "Reported or estimated revenue in the market map"], ["Cross-sell", xs, "add", `At ${capLbl()} · Medium: doors are real, the win rate is what multi-brand owners achieve`],
     ["Price", price, "add", "Each member's lever: up to half the gap to its category's upper quartile, 5% at most · Low to medium: list prices, not net"],
     ["Pro forma revenue", rev + xs + price, "total", ""]];
-  const W = 640, H = 230, pad = 34, bw = 110, gap = (W - pad * 2 - bw * steps.length) / (steps.length - 1), mx = Math.max(1, rev + xs + price) * 1.08, Y = v => H - 30 - v / mx * (H - 60);
-  let acc = 0; const bars = steps.map(([l, v, k], i) => { const x = pad + i * (bw + gap); let y0, y1; if (k === "base" || k === "total") { y0 = 0; y1 = v; acc = v; } else { y0 = acc; y1 = acc + v; acc = y1; }
-    const col = k === "add" ? "var(--good)" : k === "total" ? "var(--accent)" : "var(--ink-3)";
-    return `<rect x="${x}" y="${Y(y1).toFixed(1)}" width="${bw}" height="${Math.max(1, Y(y0) - Y(y1)).toFixed(1)}" fill="${col}"/><text x="${x + bw / 2}" y="${(Y(y1) - 6).toFixed(1)}" text-anchor="middle" class="bv">${k === "add" ? "+" : ""}${fmtM(v)}</text><text x="${x + bw / 2}" y="${H - 10}" text-anchor="middle" class="bl">${esc(l)}</text>`; }).join("");
-  const bridge = `<svg viewBox="0 0 ${W} ${H}" class="bridge" role="img" aria-label="Revenue bridge">${bars}</svg>`;
+  const bridge = waterfall(steps, fmtM, "Revenue bridge");
+  // day-one EBITDA: cross-sell volume at a gross margin (50-80%, midpoint by default), price and cost savings in full
+  const gm = ui.gm ?? 0.65, vol = xs * gm, eb = vol + price + (proc || 0);
+  const ebSteps = [["Cross-sell GP", vol, "add"], ["Price", price, "add"], ["Cost savings", proc || 0, "add"], ["Day-one EBITDA upside", eb, "total"]];
+  const at = g => xs * g + price + (proc || 0);
   const memRow = x => { const c = x.c, p = D.per.find(r => r.x === x), d = dnaOf(c), pr = num(c.prorev); return `<tr><td><b><a href="#c.${esc(c.id)}">${short(c)}</a></b><br><small class="faint">${ownerLine(c)}</small></td><td class="r"><span class="score ${d.band} num" style="font-size:15px">${d.score}</span></td>
     <td class="r num">${fmtM(c.rev)}</td><td class="r num">${pr ? fmtM(pr) : "—"}</td><td class="r num">${num(c.ret_pct) !== null ? Math.round(c.ret_pct) + "%" : "—"}</td><td class="r num">${num(c.emp) ? (+c.emp).toLocaleString() : "—"}</td>
     <td class="r num">${(reachIndex().byOwner.get(c.id) || []).length}</td><td class="r num">${c.skus || 0}</td><td class="r num">${x.r.carried.size}</td>
@@ -2274,15 +2288,23 @@ function rollPlatformView(ids, X) {
   <tr class="tot"><td><b>Platform</b></td><td></td><td class="r num"><b>${fmtM(rev)}</b></td><td class="r num"><b>${fmtM(pro)}</b></td><td class="r num">${rev ? Math.round((1 - pro / rev) * 100) + "%" : "—"}</td><td class="r num">${emp ? emp.toLocaleString() : "—"}</td><td class="r num">${nb}</td><td class="r num">${sk}</td><td class="r num">${X.union.size}</td>
     <td>${D.rows[0] ? `${L.dist(D.rows[0].d)} <span class="faint num">${pct(D.rows[0].v / rev)}</span>` : "—"}</td><td class="r num"><b>${rev ? pct(top3 / rev) : "—"}</b></td></tr>
   </tbody></table></div></section>
-  <div class="grid2">
-    <section class="panel"><header><h2>Value bridge</h2><span class="sp"></span><span class="lbl">Revenue · ${capLbl()}</span></header><div class="body">${bridge}
-      <table style="font-size:13px;margin-top:6px"><tbody>${steps.filter(s => s[2] === "add").map(([l, v, , n]) => `<tr><td><b>${l}</b></td><td class="r num">+${fmtM(v)}</td><td class="faint">${n}</td></tr>`).join("")}
-      <tr><td><b>Procurement</b></td><td class="r num">${proc !== null ? fmtM1(proc) : "—"}</td><td class="faint">Cost saving a year, from shared pack formats, raw materials and freight lanes · Low: research rates, spend estimated from revenue. <a href="#rollup" data-act="rview" data-v="pc">See it</a></td></tr>
-      <tr><td><b>SKU overlap</b></td><td class="r num">—</td><td class="faint">Not sized: the overlapping products are listed on the <a href="#rollup" data-act="rview" data-v="sk">SKU overlap</a> tab for a judgment call.</td></tr></tbody></table></div></section>
-    <section class="panel"><header><h2>Where the revenue sits</h2><span class="sp"></span><span class="lbl">Estimated · top 3 doors ${rev ? pct(top3 / rev) : "—"} · top 10 ${rev ? pct(top10 / rev) : "—"}</span></header><div class="body">
+  <section class="panel"><header><h2>Where the revenue sits</h2><span class="sp"></span><span class="lbl">Estimated · top 3 doors ${rev ? pct(top3 / rev) : "—"} · top 10 ${rev ? pct(top10 / rev) : "—"}</span></header><div class="body">
       ${hbars(capList(D.rows, 10, "rdr").map(r => [r.d, Math.round(r.v)]), rev, v => fmtM(v), n => `${L.dist(n)}${(() => { const e = D.rows.find(r => r.d === n); return e && e.who.length > 1 ? ` <small class="faint">· ${e.who.length} members</small>` : ""; })()}`)}${showAll(D.rows.length, 10, "rdr", "doors")}
       <p class="faint" style="margin:10px 0 0;font-size:12.5px">Each member's revenue spread over the distributors that carry it by door weight (how much of its range the door stocks × the door's size). A door several members share is exposure that grows with the roll-up: one buyer's line review now touches all of them.</p></div></section>
-  </div>`;
+  <section class="panel"><header><h2>Value bridge</h2><span class="sp"></span><span class="lbl">Revenue · ${capLbl()}</span></header><div class="body bridgewrap">${bridge}
+      <table style="font-size:13px"><tbody>${steps.filter(s => s[2] === "add").map(([l, v, , n]) => `<tr><td><b>${l}</b></td><td class="r num">+${fmtM(v)}</td><td class="faint">${n}</td></tr>`).join("")}
+      <tr><td><b>Procurement</b></td><td class="r num">${proc !== null ? fmtM1(proc) : "—"}</td><td class="faint">Cost saving a year, from shared pack formats, raw materials and freight lanes · Low: research rates, spend estimated from revenue. <a href="#rollup" data-act="rview" data-v="pc">See it</a></td></tr>
+      <tr><td><b>SKU overlap</b></td><td class="r num">—</td><td class="faint">Not sized: the overlapping products are listed on the <a href="#rollup" data-act="rview" data-v="sk">SKU overlap</a> tab for a judgment call.</td></tr></tbody></table></div></section>
+  <section class="panel"><header><h2>Day-one EBITDA upside</h2><span class="sp"></span>
+      <label class="lbl" style="display:flex;gap:8px;align-items:center">Gross margin on cross-sell volume <select id="rgm" aria-label="Gross margin on cross-sell volume">${[0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8].map(g => `<option value="${g}" ${Math.abs(g - gm) < 0.001 ? "selected" : ""}>${Math.round(g * 100)}%${g === 0.65 ? " (midpoint)" : ""}</option>`).join("")}</select></label></header>
+    <div class="body bridgewrap">${waterfall(ebSteps, fmtM1, "EBITDA upside")}
+      <table style="font-size:13px"><tbody>
+      <tr><td><b>Cross-sell volume</b></td><td class="r num">+${fmtM1(vol)}</td><td class="faint">${fmtM(xs)} of new revenue × ${Math.round(gm * 100)}% gross margin. Pro brands run 50–80%; ${Math.round(gm * 100)}% ${gm === 0.65 ? "is the midpoint" : "is your setting"}.</td></tr>
+      <tr><td><b>Price</b></td><td class="r num">+${fmtM1(price)}</td><td class="faint">100% to the bottom line: same units, higher price.</td></tr>
+      <tr><td><b>Cost savings</b></td><td class="r num">+${fmtM1(proc || 0)}</td><td class="faint">100% to the bottom line: procurement on shared packaging, raw materials and freight.</td></tr>
+      <tr class="tot"><td><b>Day-one EBITDA upside</b></td><td class="r num"><b>${fmtM1(eb)}</b></td><td class="faint">At 50% gross margin ${fmtM1(at(0.5))} · at 80% ${fmtM1(at(0.8))}${rev ? ` · ${(eb / rev * 100).toFixed(1)}% of combined revenue` : ""}.</td></tr>
+      </tbody></table>
+      <p class="faint" style="margin:10px 0 0;font-size:12.5px">Run-rate once the levers are in place, before one-off costs to get there (listing fees, slotting, integration). Cross-sell follows the capture setting at the top of the page.</p></div></section>`;
 }
 
 /* Brand architecture: in every category two or more members sell in, which brand leads and what the others become.
@@ -2666,7 +2688,9 @@ document.addEventListener("input", e => {
   if (e.target.id === "dq") { ui.dq = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#dq"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
   if (e.target.id === "q") { ui.q = e.target.value; ui.limit = 80; const pos = e.target.selectionStart; render(); const q = $("#q"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } }
 });
+document.addEventListener("toggle", e => { const k = e.target?.dataset?.k; if (k && e.target.tagName === "DETAILS") e.target.open ? OPEN.add(k) : OPEN.delete(k); }, true);
 document.addEventListener("change", e => {
+  if (e.target.id === "rgm") { ui.gm = +e.target.value; render(); }
   if (e.target.id === "fam") { ui.fam = e.target.value; render(); }
   if (e.target.id === "seg") { ui.seg = e.target.value; if (ui.fam && SEGOF[ui.fam] !== ui.seg) ui.fam = ""; render(); }
   if (e.target.id === "rev") { ui.rev = e.target.value; render(); }
