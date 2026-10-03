@@ -584,6 +584,7 @@ tr:hover .rowx{opacity:1}
 .step.run .sn{background:transparent}
 .skeleton{padding:60px 0;color:var(--ink-3)}
 
+[hidden]{display:none!important}
 /* ---------- Probrands skin: left rail with hazard stripe and brand plate, stencil type, square controls ---------- */
 body{font-size:15px}
 a{color:var(--accent-text)}
@@ -2389,7 +2390,7 @@ function enhanceBtn(c, key, label = "Enhance") {
 function secMeta(c, key) {
   const m = (c.section_meta || {})[key];
   const err = runs[runKey(c.id, key)]?.error;
-  return (m ? `<span class="faint" style="font-size:12px" title="${esc(m.note || "")}">Enhanced ${fmtDate(m.at)}</span>` : "")
+  return (m?.at ? `<span class="faint" style="font-size:12px" title="${esc(m.note || "")}">Enhanced ${fmtDate(m.at)}</span>` : "")
     + (err ? `<span class="pill warn" role="alert">${esc(err)}</span><button class="btn sm ghost" data-act="dismisssec" data-k="${key}">Dismiss</button>` : "");
 }
 const LABELS = { products: "product catalog", product_em_map: "where products go", business_model: "business model", sectors: "business lines by sector", primary_sector: "primary sector", total_revenue_usd_m: "revenue", total_revenue_year: "revenue year", total_revenue_basis: "revenue basis", employees_total: "employee count", end_markets_total_platform: "end-market mix", end_market_buckets: "end-market mix", revenue_by_business: "segment split", revenue_by_product: "product split", chemistries: "product list", addon_ideas: "add-on ideas", acquisitions: "deal list", what_it_is: "description", bluntly: "blunt take", profile_md: "write-up", pe_sponsor: "sponsor", pe_entry_year: "entry year" };
