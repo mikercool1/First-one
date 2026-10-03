@@ -57,6 +57,19 @@ h3{font-size:17px;font-weight:800}
 #hbhost iframe{display:block;width:100%;height:100%;border:0}
 body.hbmode{overflow:hidden}
 body.hbmode .shell,body.hbmode #toast,body.hbmode #tip{display:none}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+@media (max-width:1100px){.grid3{grid-template-columns:minmax(0,1fr)}}
+ol.rk{list-style:none;margin:0;padding:0;counter-reset:r}
+ol.rk li{counter-increment:r;display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--line)}
+ol.rk li::before{content:counter(r);font:600 11px var(--f-mono);color:var(--ink-3)}
+ol.rk li span{min-width:0;font:500 14px/1.3 var(--f-body);color:var(--ink)}ol.rk li small{display:block;color:var(--ink-3);font-size:12px}
+ol.rk li b{font:600 14px var(--f-mono)}
+details > summary.dsum{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;list-style:none;background:var(--panel-2)}
+details > summary.dsum::-webkit-details-marker{display:none}
+details[open] > summary.dsum{border-bottom:1px solid var(--line)}
+summary.dsum .dmark::after{content:"Open +"}details[open] > summary.dsum .dmark::after{content:"Close −"}
+summary.dsum h2{margin:0}
+.taglinks a{color:inherit;text-decoration:none}.taglinks a:hover{color:var(--accent-text);text-decoration:underline}
 .hbgo{display:block;margin:4px 12px 14px;padding:10px 12px;border:1px dashed #4b4c45;border-radius:3px;text-decoration:none;color:#ece7da}
 .hbgo:hover{border-color:#7fd1c7;background:#1a1b18}
 .hbgo b{display:block;font:800 16px/1 var(--f-display);text-transform:uppercase;letter-spacing:.04em;color:#7fd1c7}
@@ -181,6 +194,7 @@ td b{font-weight:700}
 td.rv{font-size:13px;line-height:1.5;white-space:nowrap}
 .tag.tri{border-color:var(--good);color:var(--good)}
 .mixes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px}
+.mixes.m4{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
 .mix h3{margin-bottom:8px}
 .stack{display:flex;height:22px;border:1px solid var(--line-2);margin-bottom:10px;overflow:hidden}
 .stack i{display:block;height:100%}
@@ -407,17 +421,82 @@ function agg(cos, field, limit) {
   const rows = [...m].sort((a, b) => b[1] - a[1]); return limit ? rows.slice(0, limit) : rows;
 }
 const PAL = ["var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c5)", "var(--c6)", "var(--c7)", "var(--c8)"];
-function mixBlock(title, rows, total, cap = 8) {
+function mixBlock(title, rows, total, cap = 8, link = null) {
   if (!rows.length) return `<div class="mix"><h3>${esc(title)}</h3><p class="faint">No SKUs scraped.</p></div>`;
   const head = rows.slice(0, cap), rest = rows.slice(cap).reduce((a, r) => a + r[1], 0);
   const parts = [...head.map((r, i) => [r[0], r[1], PAL[i % PAL.length]]), ...(rest ? [["Everything else", rest, "var(--c0)"]] : [])];
   return `<div class="mix"><h3>${esc(title)}</h3>
     <div class="stack" role="img" aria-label="${esc(title)}">${parts.map(p => `<i style="width:${(p[1] / total * 100).toFixed(2)}%;background:${p[2]}" title="${esc(p[0])}: ${p[1]} SKUs"></i>`).join("")}</div>
-    <ul class="legend">${parts.map(p => `<li><i class="sw" style="background:${p[2]}"></i><span>${esc(p[0])}</span><span class="num">${p[1]}</span><span class="num">${Math.round(p[1] / total * 100)}%</span></li>`).join("")}</ul></div>`;
+    <ul class="legend">${parts.map(p => `<li><i class="sw" style="background:${p[2]}"></i><span>${link && p[0] !== "Everything else" ? link(p[0]) : esc(p[0])}</span><span class="num">${p[1]}</span><span class="num">${Math.round(p[1] / total * 100)}%</span></li>`).join("")}</ul></div>`;
 }
-function hbars(rows, total, fmt = v => v) {
+function hbars(rows, total, fmt = v => v, link = null) {
   const max = Math.max(1, ...rows.map(r => r[1]));
-  return `<ul class="hbars">${rows.map(r => `<li><span title="${esc(r[0])}">${esc(r[0])}</span><span class="track"><span class="fill" style="width:${(r[1] / max * 100).toFixed(1)}%"></span></span><span class="num">${fmt(r[1])}</span><span class="num">${total ? Math.round(r[1] / total * 100) + "%" : ""}</span></li>`).join("")}</ul>`;
+  return `<ul class="hbars">${rows.map(r => `<li><span title="${esc(r[0])}">${link ? link(r[0]) : esc(r[0])}</span><span class="track"><span class="fill" style="width:${(r[1] / max * 100).toFixed(1)}%"></span></span><span class="num">${fmt(r[1])}</span><span class="num">${total ? Math.round(r[1] / total * 100) + "%" : ""}</span></li>`).join("")}</ul>`;
+}
+
+/* ---------- show-all toggles and cross-links ----------
+   Long lists show their top rows with a "Show all" button. Every name that has a page links to it: package formats
+   (#fmt.N), the scrape's end markets (to the matching end-market profile), segments (Categories, filtered), categories,
+   distributors and brands. */
+const OPEN = new Set();
+const fold = (h, lbl, body, open = false) => `<section class="panel"><details${open ? " open" : ""}><summary class="dsum"><h2>${h}</h2><span class="sp"></span>${lbl ? `<span class="lbl">${lbl}</span>` : ""}<span class="lbl dmark"></span></summary>${body}</details></section>`;
+const capList = (arr, n, key) => OPEN.has(key) ? arr : arr.slice(0, n);
+const showAll = (len, n, key, noun = "") => len > n ? `<button class="more" type="button" data-act="showall" data-k="${esc(key)}">${OPEN.has(key) ? "Show fewer" : `Show all ${len}${noun ? " " + noun : ""}`}</button>` : "";
+const SCR2EM = { "Industrial MRO": "Industrial MRO", "Facilities & jan-san": "Facilities & Jan-San", "Construction": "Construction & Contractor", "Plumbing": "Plumbing", "HVAC/R": "HVAC/R",
+  "Electrical": "Electrical & Telecom", "Auto & fleet": "Automotive & Fleet", "Welding": "Welding & Fabrication", "Water & pool": "Water & Wastewater", "Marine & aviation": "Marine",
+  "Farm & landscape": "Agriculture, Turf & Pool", "Electronics & lab": "Electronics & Lab" };
+const FMTS = ["Bottle/Liquid", "Aerosol", "Paste/Can", "Cartridge", "Kit", "Squeeze tube", "Marker/Paint stick", "Powder", "Wipe", "Other"];
+const lnk = (href, label) => href ? `<a href="${href}">${esc(label)}</a>` : esc(label);
+const L = {
+  fmt: n => lnk(FMTS.includes(n) ? "#fmt." + FMTS.indexOf(n) : "", n),
+  mkt: n => { const i = emIx(SCR2EM[n] || n); return lnk(i < 0 ? "" : "#em." + i, n); },
+  seg: n => segments().includes(n) ? `<a href="#cats" data-cseg="${esc(n)}">${esc(n)}</a>` : esc(n),
+  cat: n => CATNAMES.includes(n) ? `<a href="${catHref(n)}">${esc(n)}</a>` : esc(n),
+  dist: n => { const i = distIx(n); return lnk(i < 0 ? "" : "#d." + i, n.replace(/\s*\(.*\)$/, "")); },
+  brand: n => { const id = brandByName.get(norm(n)); return lnk(id ? "#b." + id : "", n); },
+  co: n => { const c = [...CO.values()].find(x => x.name === n); return lnk(c ? "#c." + c.id : "", n); },
+};
+
+/* ---------- view: a package format ----------
+   Brand-level: each brand's scraped SKUs in the format, attributed to its owner, primary category and segment. The
+   packaging bill of materials comes from the Product tab's component library. All owners; the ownership filter on the
+   left doesn't apply, so the ownership split shows the whole market. */
+function viewFmt(i) {
+  const name = FMTS[+i]; if (!name) return `<a class="back" href="#mix">← SKU mix</a><div class="empty">No such format.</div>`;
+  loadProduct(); const P = PRODUCT, lib = P && !P.missing ? P.formats.find(f => f.name === FMT_MAP[name]) : null;
+  const bs = [...BR.values()].filter(b => (b.fmt?.[name] || 0) > 0);
+  const n = b => b.fmt[name], tot = bs.reduce((a, b) => a + n(b), 0), all = [...BR.values()].reduce((a, b) => a + Object.values(b.fmt || {}).reduce((x, y) => x + y, 0), 0);
+  const sum = key => { const m = new Map(); for (const b of bs) { const k = key(b); if (k) m.set(k, (m.get(k) || 0) + n(b)); } return [...m].sort((a, b) => b[1] - a[1]); };
+  const own = sum(b => (BMIX.find(([k]) => k === (OCLS[b.oclass] || "Unknown")) || [, "Owner not identified"])[1]);
+  const seg = sum(b => b.seg), cat = sum(b => b.ncat), owners = sum(b => b.owner_id && CO.has(b.owner_id) ? CO.get(b.owner_id).name : null);
+  const dist = (() => { const m = new Map(); for (const b of bs) for (const d of b.dists || []) m.set(d, (m.get(d) || 0) + n(b) / (b.dists.length || 1)); return [...m].sort((a, b) => b[1] - a[1]).map(([k, v]) => [k, Math.round(v)]); })();
+  const heavy = bs.filter(b => n(b) / (b.skus || 1) >= 0.5).length;
+  const fi = P && !P.missing ? P.fcols.indexOf(FMT_MAP[name]) : -1;
+  const catMix = fi < 0 ? [] : Object.entries(P.fmix).map(([ci, v]) => [CATNAMES[ci], Math.round((v[1] || 0) * (v[2 + fi] || 0))]).filter(r => r[0] && r[1] > 0).sort((a, b) => b[1] - a[1]);
+  const kv = lib?.kv || {};
+  const pane = (h, lbl, body) => `<section class="panel"><header><h2>${h}</h2><span class="sp"></span>${lbl ? `<span class="lbl">${lbl}</span>` : ""}</header>${body}</section>`;
+  return `<a class="back" href="#mix">← SKU mix</a>
+  <div class="page-h"><div class="grow"><div class="lbl">Package format${lib ? " · " + esc(lib.full) : ""}</div><h1>${esc(name)}</h1>
+    <p>${lib?.desc ? esc(lib.desc) : "Every brand the scrape found selling in this format, who owns them, which categories and shelves they sit on, and what the package is made of."}</p></div></div>
+  <div class="gauges"><div class="gauge"><b>${tot.toLocaleString()}</b><span class="lbl">SKUs</span></div><div class="gauge"><b>${all ? Math.round(tot / all * 100) : 0}%</b><span class="lbl">Of all scraped SKUs</span></div>
+    <div class="gauge"><b>${bs.length}</b><span class="lbl">Brands</span></div><div class="gauge"><b>${heavy}</b><span class="lbl">Brands mostly in it</span></div>
+    <div class="gauge"><b>${owners.length}</b><span class="lbl">Owners</span></div>${kv["Packaging % of COGS"] ? `<div class="gauge"><b style="font-size:20px">${esc(String(kv["Packaging % of COGS"]).split(/[;(]/)[0].slice(0, 18))}</b><span class="lbl">Packaging % of COGS</span></div>` : ""}</div>
+  ${pane("Who sells it", `${tot.toLocaleString()} SKUs · all owners`, `<div class="body mixes">${mixBlock("Owner type", own, tot, 6)}${mixBlock("Segment", seg, tot, 8, L.seg)}${mixBlock("Category", cat, tot, 8, L.cat)}</div>`)}
+  <div class="grid2">
+    ${pane("Top owners", "By SKUs in this format", `<div class="body">${hbars(capList(owners, 15, "fo" + i), tot, v => v, L.co)}${showAll(owners.length, 15, "fo" + i, "owners")}</div>`)}
+    ${pane("Top brands", "By SKUs in this format", `<div class="body">${hbars(capList(sum(b => b.name), 15, "fb" + i), tot, v => v, L.brand)}${showAll(bs.length, 15, "fb" + i, "brands")}</div>`)}
+  </div>
+  <div class="grid2">
+    ${pane("Where it's sold", "Distributors carrying these brands · SKUs spread across each brand's distributors", `<div class="body">${hbars(capList(dist, 15, "fd" + i), tot, v => v, L.dist)}${showAll(dist.length, 15, "fd" + i, "distributors")}</div>`)}
+    ${catMix.length ? pane("Categories that use it", "Category SKUs × this format's share of them (Product tab mix)", `<div class="body">${hbars(capList(catMix, 15, "fc" + i), catMix.reduce((a, r) => a + r[1], 0), v => v, L.cat)}${showAll(catMix.length, 15, "fc" + i, "categories")}</div>`) : ""}
+  </div>
+  ${lib ? pane("What the package is made of", `<a href="#product">Component library on the Product tab</a>`, `<div class="body">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:0 0 12px">${["Packaging % of COGS", "Typical savings (research)"].filter(k => kv[k]).map(k => `<div><div class="lbl" style="margin:0 0 3px">${esc(k)}</div><p style="margin:0;font-size:13.5px">${esc(String(kv[k]))}</p></div>`).join("")}</div>
+    ${["Filling / co-packing", "Synergy levers"].filter(k => kv[k]).map(k => `<details style="margin:0 0 8px"><summary class="lbl" style="cursor:pointer">${esc(k)}</summary><p style="margin:6px 0 0;font-size:13.5px">${esc(String(kv[k]))}</p></details>`).join("")}
+    <details><summary class="lbl" style="cursor:pointer">Bill of materials · ${lib.comps.length} components</summary><div class="tw" style="margin-top:8px"><table style="font-size:12.5px"><thead><tr><th>Component</th><th>Material</th><th>Spec notes</th><th>Main suppliers</th><th>Upstream</th><th>Unit cost</th><th class="r">% of pack</th><th>Concentration</th><th>Lead time & risks</th></tr></thead><tbody>
+      ${lib.comps.map(c => `<tr>${c.map((x, j) => `<td${j === 6 ? ' class="r num"' : ""}>${j === 0 ? `<b>${esc(x)}</b>` : esc(x ?? "—")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+    ${lib.src ? `<p class="faint" style="font-size:12px;margin:8px 0 0">${esc(lib.src)}</p>` : ""}</details></div>`) : P ? "" : pane("What the package is made of", "", `<div class="body faint">Loading…</div>`)}
+  <div class="note">Counts are scraped SKUs by brand. Other formats: ${FMTS.filter(f => f !== name).map(f => L.fmt(f)).join(" · ")}.</div>`;
 }
 
 /* ---------- consolidators ---------- */
@@ -459,10 +538,11 @@ function route() {
   if (h.startsWith("rollup")) { const ids = h.split(":")[1]; if (ids !== undefined) { ui.roll = ids.split(",").filter(x => CO.has(x) || !loaded); store.set("roll", ui.roll); } return { v: "rollup" }; }
   if (["screen", "consolidators", "mix", "brands", "cats", "dists", "reach", "pricing", "premium", "ems", "product"].includes(h)) return { v: h };
   if (h.startsWith("em.")) return { v: "em", id: h.slice(3) };
+  if (h.startsWith("fmt.")) return { v: "fmt", id: h.slice(4) };
   return { v: "screen" };
 }
 function chrome(r) {
-  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v === "cat" ? "cats" : r.v === "price" || r.v === "premium" ? "pricing" : r.v === "em" ? "ems" : r.v === "dist" ? "dists" : r.v === "strategy" ? "screen" : r.v) ? "page" : "false"));
+  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v === "cat" ? "cats" : r.v === "price" || r.v === "premium" ? "pricing" : r.v === "em" ? "ems" : r.v === "fmt" ? "mix" : r.v === "dist" ? "dists" : r.v === "strategy" ? "screen" : r.v) ? "page" : "false"));
   const counts = {}; for (const c of list()) counts[ownKey(c)] = (counts[ownKey(c)] || 0) + 1;
   $("#ownChips").innerHTML = OWN.map(([k, l]) => `<button class="chip" type="button" data-own="${k}" aria-pressed="${ui.own.has(k)}">${l}<small>${counts[k] || 0}</small></button>`).join("");
   $("#nBrands").textContent = BR.size || "";
@@ -570,7 +650,7 @@ function viewCompany(id) {
       ${c.judge?.pro_pct !== undefined && c.judge?.pro_pct !== null ? `<div class="test"><div class="why">Claude's rough estimate: <b>${esc(c.judge.pro_pct)}%</b> of revenue is small-format pro products. Judgment calls come from Claude's knowledge and the workbook, not new research.</div></div>` : ""}
     </section>
     <section class="panel"><header><h2>SKU mix</h2><span class="sp"></span><span class="lbl">${total} SKUs scraped · ${c.m?.nd || 0} distributors</span></header>
-      <div class="body mixes">${mixBlock("Package format", rows(mix.fmt), total)}${mixBlock("End market", rows(mix.mkt), total)}${mixBlock("Category", rows(mix.cat), total, 7)}${mixBlock("Brand", rows(mix.brand), total, 7)}${mixBlock("Distributor", rows(mix.dist), total, 7)}</div>
+      <div class="body mixes">${mixBlock("Package format", rows(mix.fmt), total, 8, L.fmt)}${mixBlock("End market", rows(mix.mkt), total, 8, L.mkt)}${mixBlock("Category", rows(mix.cat), total, 7, L.cat)}${mixBlock("Brand", rows(mix.brand), total, 7, L.brand)}${mixBlock("Distributor", rows(mix.dist), total, 7, L.dist)}</div>
       ${c.ret_pct !== undefined || c.ch_class ? `<div class="body" style="padding-top:0"><div class="lbl" style="margin:0 0 6px">Channel split (market map research)</div><p style="margin:0"><b>${esc(coClass(c))}</b>${c.ret_pct !== undefined ? ` · about ${Math.round(c.ret_pct)}% of revenue through retail` : ""}${c.prorev ? ` · pro-channel revenue ~${fmtM(c.prorev)}` : ""}${c.ch_conf ? ` · ${esc(c.ch_conf)} confidence` : ""}</p>${dt.ch_basis ? `<p class="muted" style="margin:4px 0 0;font-size:13px">${esc(dt.ch_basis.split(" | ")[0])}${dt.ch_basis.includes("| Retail:") ? `<br><b>Key retail customers:</b> ${esc(dt.ch_basis.split("| Retail:")[1].trim())}` : ""}</p>` : ""}</div>` : ""}
       ${chTot(mix.ch) ? `<div class="body" style="padding-top:0"><div class="lbl" style="margin:0 0 6px">SKUs by channel type (scrape) · ${pct(retailExp(mix.ch))} of SKUs in retail stores and DIY sites</div>${chBar(mix.ch, 240)}<div style="margin-top:8px">${chLegend()}</div><p class="muted" style="margin:6px 0 0;font-size:13px">${CHT.filter(([k]) => mix.ch[k]).map(([k, l]) => `${l} ${pct(mix.ch[k] / chTot(mix.ch))}`).join(" · ")}</p></div>` : ""}
     </section>
@@ -578,7 +658,7 @@ function viewCompany(id) {
   <section class="panel"><header><h2>Brands</h2><span class="sp"></span><span class="lbl">${brands.length} in the map</span></header>
     <div class="tw"><table><thead><tr><th>Brand</th><th>What it is</th><th>Hero product</th><th>Format</th><th class="r">SKUs</th><th>Who carries it</th></tr></thead><tbody>
     ${brands.map(b => `<tr><td><b>${brandLink(b.name)}</b>${priceBadgeByName(b.name, { x: true }) ? `<br>${priceBadgeByName(b.name, { x: true })}` : ""}${b.verified ? "" : `<br><span class="unv">owner unverified</span>`}</td><td>${b.ncat ? catLink(b.ncat) : esc(b.cat || b.family || "")}</td><td class="muted">${esc(b.hero)}</td><td>${esc(b.form)}</td><td class="r num">${b.skus}</td>
-      <td>${(b.dists || []).slice(0, 6).map(x => `<span class="tag">${esc(x.replace(/\s*\(.*\)$/, ""))}</span>`).join("")}${(b.dists || []).length > 6 ? `<span class="faint">+${b.dists.length - 6}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="6" class="faint">No brands linked in the map.</td></tr>`}
+      <td class="taglinks">${(b.dists || []).slice(0, 6).map(x => `<span class="tag">${L.dist(x)}</span>`).join("")}${(b.dists || []).length > 6 ? `<span class="faint">+${b.dists.length - 6}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="6" class="faint">No brands linked in the map.</td></tr>`}
     </tbody></table></div></section>
   ${dt.size_note || c.size_basis ? `<div class="note">Size: ${esc(c.size_basis || "")}${c.size_basis && dt.size_note ? ". " : ""}${md1(dt.size_note || "")}${c.linkedin ? ` · <a href="${esc(c.linkedin)}" target="_blank" rel="noopener">LinkedIn</a>` : ""}.</div>` : ""}
   ${reachPanel(c)}
@@ -590,7 +670,7 @@ function viewCompany(id) {
   </tbody></table></div></section>` : ""}
   ${c.rolled?.length ? `<div class="note">Rolled into ${esc(c.name)}: ${esc(c.rolled.join("; "))}.</div>` : ""}
   ${dt.profile ? `<section class="panel"><header><h2>Write-up</h2><span class="sp"></span><span class="lbl">From the market map</span></header><div class="body prose">${md(dt.profile)}</div></section>` : ""}
-  ${(dt.evidence || []).length ? `<section class="panel"><header><h2>Sources</h2></header><div class="body"><ul class="srcs">${dt.evidence.map(e => `<li><span class="tag">${esc(e.metric)}</span>${esc(e.value)}${e.quote ? ` <span class="faint">“${esc(e.quote)}”</span>` : ""}${e.url ? ` <a href="${esc(e.url)}" target="_blank" rel="noopener">source</a>` : ""}</li>`).join("")}</ul></div></section>` : ""}`;
+  ${(dt.evidence || []).length ? `<section class="panel"><details><summary class="dsum"><h2>Sources</h2><span class="sp"></span><span class="lbl">${dt.evidence.length} · open</span></summary><div class="body"><ul class="srcs">${dt.evidence.map(e => `<li><span class="tag">${esc(e.metric)}</span>${esc(e.value)}${e.quote ? ` <span class="faint">“${esc(e.quote)}”</span>` : ""}${e.url ? ` <a href="${esc(e.url)}" target="_blank" rel="noopener">source</a>` : ""}</li>`).join("")}</ul></div></details></section>` : ""}`;
 }
 function md(t) {
   return String(t).split(/\n\s*\n/).map(p => "<p>" + esc(p).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>") + "</p>").join("");
@@ -608,18 +688,18 @@ function viewConsolidators() {
   <div class="gauges"><div class="gauge"><b>${rows.filter(r => r.n).length}</b><span class="lbl">Active buyers</span></div><div class="gauge"><b>${deals.length}</b><span class="lbl">Add-on deals</span></div>
     <div class="gauge"><b>${deals.filter(d => d.year >= YEAR - 3).length}</b><span class="lbl">In the last 3 yrs</span></div><div class="gauge"><b>${sps.length}</b><span class="lbl">PE sponsors</span></div></div>
   <section class="panel"><header><h2>Brand buyers</h2></header><div class="tw"><table><thead><tr><th>#</th><th>Consolidator</th><th>DNA</th><th class="r">Add-ons</th><th class="r">Last 5 yrs</th><th class="r">Brands now</th><th>Latest</th><th>Brands bought</th></tr></thead><tbody>
-    ${rows.slice(0, 60).map((r, i) => { const d = dnaOf(r.c); return `<tr class="cons-row" data-go="web.${esc(r.c.id)}"><td class="rank">${i + 1}</td><td><b>${esc(r.c.name)}</b><br><small class="muted">${ownerLine(r.c)}</small></td><td><span class="score ${d.band} num" style="font-size:22px">${d.score}</span></td>
+    ${capList(rows.slice(0, 60), 15, "cons").map((r, i) => { const d = dnaOf(r.c); return `<tr class="cons-row" data-go="web.${esc(r.c.id)}"><td class="rank">${i + 1}</td><td><b>${esc(r.c.name)}</b><br><small class="muted">${ownerLine(r.c)}</small></td><td><span class="score ${d.band} num" style="font-size:22px">${d.score}</span></td>
       <td class="r num">${r.n}</td><td class="r num">${r.recent}</td><td class="r num">${r.brands}</td><td class="num">${r.last || "—"}</td><td class="muted" style="max-width:320px">${esc(r.deals.slice(0, 4).map(x => x.target.replace(/\s*\(.*?\)/g, "")).join(", "))}${r.deals.length > 4 ? "…" : ""}</td></tr>`; }).join("") || `<tr><td colspan="8" class="faint">No consolidators for these owners.</td></tr>`}
-  </tbody></table></div></section>
+  </tbody></table></div><div class="body" style="padding-top:6px">${showAll(Math.min(rows.length, 60), 15, "cons", "buyers")}</div></section>
   <div class="grid2">
     <section class="panel"><header><h2>PE sponsors</h2><span class="sp"></span><span class="lbl">Platforms held</span></header><div class="tw"><table><thead><tr><th>Sponsor</th><th>Platforms</th></tr></thead><tbody>
-      ${sps.map(s => `<tr><td><b>${esc(s.name)}</b></td><td>${s.cos.map(c => `<a href="#web.${esc(c.id)}">${esc(c.name)}</a>${c.pe_year ? ` <span class="faint num">${esc(c.pe_year)}</span>` : ""}`).join("<br>")}</td></tr>`).join("") || `<tr><td colspan="2" class="faint">No PE-owned companies in this filter.</td></tr>`}
-    </tbody></table></div></section>
+      ${capList(sps, 10, "csp").map(s => `<tr><td><b>${esc(s.name)}</b></td><td>${s.cos.map(c => `<a href="#web.${esc(c.id)}">${esc(c.name)}</a>${c.pe_year ? ` <span class="faint num">${esc(c.pe_year)}</span>` : ""}`).join("<br>")}</td></tr>`).join("") || `<tr><td colspan="2" class="faint">No PE-owned companies in this filter.</td></tr>`}
+    </tbody></table></div><div class="body" style="padding-top:6px">${showAll(sps.length, 10, "csp", "sponsors")}</div></section>
     <section class="panel"><header><h2>Add-ons by year</h2></header><div class="body">${yrs.length ? hbars(yrs.map(([y, v]) => [String(y), v]), 0) : `<p class="faint">No dated add-ons.</p>`}</div></section>
   </div>
   <section class="panel"><header><h2>Deal log</h2><span class="sp"></span><span class="lbl">${deals.length} add-ons</span></header><div class="tw"><table><thead><tr><th>Date</th><th>Buyer</th><th>Target</th><th>Type</th><th class="r">Value</th></tr></thead><tbody>
-    ${deals.sort((a, b) => String(b.date).localeCompare(String(a.date))).map(x => `<tr><td class="num">${esc(x.date)}</td><td><a href="#c.${esc(x.acq_id)}">${esc(CO.get(x.acq_id).name)}</a></td><td><b>${esc(x.target)}</b>${x.brands ? `<br><span class="faint">${esc(x.brands)}</span>` : ""}</td><td class="muted">${esc(x.type)}</td><td class="r num">${x.value ? fmtM(x.value) : "—"}</td></tr>`).join("")}
-  </tbody></table></div></section>`;
+    ${capList(deals.sort((a, b) => String(b.date).localeCompare(String(a.date))), 15, "cdl").map(x => `<tr><td class="num">${esc(x.date)}</td><td><a href="#c.${esc(x.acq_id)}">${esc(CO.get(x.acq_id).name)}</a></td><td><b>${esc(x.target)}</b>${x.brands ? `<br><span class="faint">${esc(x.brands)}</span>` : ""}</td><td class="muted">${esc(x.type)}</td><td class="r num">${x.value ? fmtM(x.value) : "—"}</td></tr>`).join("")}
+  </tbody></table></div><div class="body" style="padding-top:6px">${showAll(deals.length, 15, "cdl", "deals")}</div></section>`;
 }
 
 /* ---------- view: the web ---------- */
@@ -791,8 +871,8 @@ function companyRivals(id) {
   if (!rows.length) return "";
   return `<section class="panel"><header><h2>Who it competes with</h2><span class="sp"></span><span class="lbl">Owners of rival brands · ${ownMix(rows.map(r => r.x))}</span></header>
   <div class="tw"><table><thead><tr><th>Rival owner</th><th>Their brands</th><th>Against our</th></tr></thead><tbody>
-  ${rows.map(r => `<tr><td>${ownerCell(r.x)}</td><td>${[...r.theirs].slice(0, 5).map(n => brandLink(n)).join(", ")}</td><td class="muted">${[...r.meet].slice(0, 5).map(esc).join(", ")}${r.meet.size > 5 ? ` +${r.meet.size - 5}` : ""}</td></tr>`).join("")}
-  </tbody></table></div></section>`;
+  ${capList(rows, 6, "cr" + id).map(r => `<tr><td>${ownerCell(r.x)}</td><td>${[...r.theirs].slice(0, 5).map(n => brandLink(n)).join(", ")}</td><td class="muted">${[...r.meet].slice(0, 5).map(n => brandLink(n)).join(", ")}${r.meet.size > 5 ? ` +${r.meet.size - 5}` : ""}</td></tr>`).join("")}
+  </tbody></table></div><div class="body" style="padding-top:6px">${showAll(rows.length, 6, "cr" + id, "rivals")}</div></section>`;
 }
 function viewBrands() {
   const f = ui.b, q = norm(f.q);
@@ -871,7 +951,7 @@ function viewBrand(id) {
   const co = b.owner_id && CO.get(b.owner_id), dmap = new Map(DISTS.map(d => [d.name, d]));
   const sibs = [...BR.values()].filter(x => x.id !== id && ((b.owner_id && x.owner_id === b.owner_id) || (!b.owner_id && b.owner && norm(x.owner) === norm(b.owner)))).sort((a, c) => (c.skus || 0) - (a.skus || 0));
   const dcount = new Map(); for (const s of skus || []) dcount.set(s[3], (dcount.get(s[3]) || 0) + 1);
-  const distRows = (b.dists || []).map(d => [d.replace(/\s*\(.*\)$/, ""), dcount.get(d) || 0]);
+  const distRows = (b.dists || []).map(d => [d, dcount.get(d) || 0]).sort((x, y) => y[1] - x[1]);
   const ch = { broadline: 0, specialty: 0, retail: 0 }; for (const d of b.dists || []) ch[dmap.get(d)?.channel || "specialty"] += dcount.get(d) || 0;
   const chT = ch.broadline + ch.specialty + ch.retail;
   const chLine = chT ? `<p class="muted" style="margin:0 0 10px">Broadline MRO <b>${Math.round(ch.broadline / chT * 100)}%</b> · Trade specialty <b>${Math.round(ch.specialty / chT * 100)}%</b> · Retail-leaning <b>${Math.round(ch.retail / chT * 100)}%</b> of SKUs</p>` : "";
@@ -889,9 +969,9 @@ function viewBrand(id) {
   ${b.wb ? `<div class="note${b.odis ? " warn" : ""}">${b.odis ? "<b>Claude and the market map disagree.</b> " : ""}The market map's best owner: <b>${esc(b.wb[0])}</b>${b.wb[1] ? " · " + esc(b.wb[1]) : ""} (${{ t: "triage guess, unverified", p: "prior knowledge, unverified", v: "verified" }[b.wb[2]] || esc(b.wb[2])}).</div>` : ""}
   ${co ? `<div class="note">Owned by <a href="#c.${esc(co.id)}"><b>${esc(co.name)}</b></a> · ${ownerLine(co)}${b.status === "guess" ? ` · <span class="st st-guess">${esc(stLabel(b))}, not verified</span>` : ""}</div>` : ""}
   <div class="grid2">
-    <section class="panel"><header><h2>Where it's sold</h2><span class="sp"></span><span class="lbl">${(b.dists || []).length} distributors</span></header><div class="body">${chLine}${distRows.length ? hbars(distRows, b.skus || 0) + `<p class="muted" style="margin:10px 0 0;font-size:13px">Open a distributor: ${(b.dists || []).map(d => distLink(d)).join(", ")}</p>` : `<p class="faint">Not found on a scraped distributor.</p>`}
-      ${(b.mkts || []).length ? `<div class="lbl" style="margin:12px 0 6px">End markets</div>${b.mkts.map(m => `<span class="tag">${esc(m)}</span>`).join("")}` : ""}</div></section>
-    <section class="panel"><header><h2>Package formats</h2></header><div class="body">${mixBlock("By SKU", Object.entries(b.fmt || {}).sort((a, c) => c[1] - a[1]), b.skus || 0)}${b.hand !== undefined ? `<p class="muted" style="margin:10px 0 0">${pct(b.hand)} of SKUs are hand-sized packs.</p>` : ""}</div></section>
+    <section class="panel"><header><h2>Where it's sold</h2><span class="sp"></span><span class="lbl">${(b.dists || []).length} distributors</span></header><div class="body">${chLine}${distRows.length ? hbars(capList(distRows, 12, "bd" + id), b.skus || 0, v => v, L.dist) + showAll(distRows.length, 12, "bd" + id, "distributors") : `<p class="faint">Not found on a scraped distributor.</p>`}
+      ${(b.mkts || []).length ? `<div class="lbl" style="margin:12px 0 6px">End markets</div><div class="taglinks">${b.mkts.map(m => `<span class="tag">${L.mkt(m)}</span>`).join("")}</div>` : ""}</div></section>
+    <section class="panel"><header><h2>Package formats</h2></header><div class="body">${mixBlock("By SKU", Object.entries(b.fmt || {}).sort((a, c) => c[1] - a[1]), b.skus || 0, 8, L.fmt)}${b.hand !== undefined ? `<p class="muted" style="margin:10px 0 0">${pct(b.hand)} of SKUs are hand-sized packs.</p>` : ""}</div></section>
   </div>
   ${brandMarket(b)}
   ${brandChannels(b)}
@@ -1033,7 +1113,9 @@ function viewCat(i) {
   for (const b of bs) { const k = b.owner_id || (b.owner ? "n:" + norm(b.owner) : "u:" + b.id); const o = owners.get(k) || owners.set(k, { x: b, brands: [], skus: 0, known: !!b.owner }).get(k); o.brands.push(b); o.skus += b.allc?.[c.cat] || 0; }
   const orows = [...owners.values()].filter(o => o.known).sort((x, y) => y.brands.length - x.brands.length || y.skus - x.skus);
   const ladder = pRows(ci).sort((x, y) => y.ix - x.ix), coByName = n => { const k = norm(n); return [...CO.values()].find(x => norm(x.name) === k || norm(x.name).startsWith(k + " ")); };
-  const panel = (h, lbl, body) => `<section class="panel"><header><h2>${h}</h2><span class="sp"></span>${lbl ? `<span class="lbl">${lbl}</span>` : ""}</header>${body}</section>`;
+  const panel0 = (h, lbl, body) => `<section class="panel"><header><h2>${h}</h2><span class="sp"></span>${lbl ? `<span class="lbl">${lbl}</span>` : ""}</header>${body}</section>`;
+  const FOLD = new Set(["What it is used for", "Form factors", "Chemistry, raw materials and cost", "Adjacent categories", "What else to know", "Diligence questions", "Sources"]);
+  const panel = (h, lbl, body) => FOLD.has(h) ? fold(h, lbl, body) : panel0(h, lbl, body);
   const live = `${panel("Owners selling here", ownMix(orows.map(o => o.x)), `<div class="tw"><table><thead><tr><th>Owner</th><th class="r">Brands here</th><th class="r">SKUs here</th><th>Brands</th></tr></thead><tbody>
     ${orows.slice(0, 60).map(o => `<tr><td>${ownerCell(o.x)}</td><td class="r num">${o.brands.length}</td><td class="r num">${o.skus}</td><td>${o.brands.slice(0, 6).map(b => `<a href="#b.${esc(b.id)}">${esc(b.name)}</a>`).join(", ")}${o.brands.length > 6 ? ` <span class="faint">+${o.brands.length - 6}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="4" class="faint">No owners identified.</td></tr>`}
     </tbody></table></div>`)}
@@ -1088,8 +1170,8 @@ function viewCat(i) {
   ${panel("Who competes", `${(st.otypes || []).map(([k, n]) => `${esc(k)} ${n}`).join(" · ")}`, `<div class="body"><div class="lbl" style="margin:0 0 8px">Top brands by distributor reach</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px 18px">${st.tops.map(([b, d, o]) => `<div><b>${brandLink(b)}</b> <span class="num faint" style="font-size:12px">${esc(d.replace(" distributors", " dist."))}</span><br><span class="faint" style="font-size:12px">${esc(o)}</span></div>`).join("")}</div></div>
     <div class="body" style="padding-top:0"><div class="lbl" style="margin:0 0 8px">Private owners here (PE, family, ESOP, private subs), by reach</div><div class="tw"><table><thead><tr><th>Owner</th><th class="r">Revenue</th><th class="r">Brands · max dist.</th><th class="r">Retail</th></tr></thead><tbody>
-      ${st.priv.map(([o, t, sp, rev, nb, md, ret]) => { const co = coByName(o); return `<tr><td>${co ? `<a href="#c.${esc(co.id)}">${esc(o)}</a>` : esc(o)}<br><span class="faint" style="font-size:12px">${esc(t)}${sp ? " · " + esc(sp) : ""}</span></td><td class="r num">${rev ? fmtM(rev) : "—"}</td><td class="r num">${nb ?? "—"} · ${md ?? "—"}</td><td class="r num">${ret !== null && ret !== undefined ? pct(ret) : "—"}</td></tr>`; }).join("")}
-    </tbody></table></div></div>`)}
+      ${capList(st.priv, 8, "cp" + ci).map(([o, t, sp, rev, nb, md, ret]) => { const co = coByName(o); return `<tr><td>${co ? `<a href="#c.${esc(co.id)}">${esc(o)}</a>` : esc(o)}<br><span class="faint" style="font-size:12px">${esc(t)}${sp ? " · " + esc(sp) : ""}</span></td><td class="r num">${rev ? fmtM(rev) : "—"}</td><td class="r num">${nb ?? "—"} · ${md ?? "—"}</td><td class="r num">${ret !== null && ret !== undefined ? pct(ret) : "—"}</td></tr>`; }).join("")}
+    </tbody></table></div>${showAll(st.priv.length, 8, "cp" + ci, "private owners")}</div>`)}
   ${panel("Adjacent categories", "If a customer uses this, they…", `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
     ${adjGroups.map(([k, xs]) => `<div><div class="lbl" style="margin:0 0 6px">${esc(k)}</div>${xs.map(([, n, note]) => `<p style="margin:0 0 6px">${catLink(n)}${note ? `<br><span class="faint" style="font-size:12px">${esc(note)}</span>` : ""}</p>`).join("")}</div>`).join("")}
     ${st.adj_in.length ? `<div><div class="lbl" style="margin:0 0 6px">Listed as an adjacency by</div>${st.adj_in.map(n => `<p style="margin:0 0 6px">${catLink(n)}</p>`).join("")}</div>` : ""}</div>`)}
@@ -1151,43 +1233,45 @@ function viewEm(i) {
   const x = EMS?.list?.[i]; if (!x) return `<a class="back" href="#ems">← End markets</a><div class="empty">No such end market.</div>`;
   loadEm(String(i)); const em = EMSTUDY.get(String(i));
   const panel = (h, lbl, body) => `<section class="panel"><header><h2>${h}</h2><span class="sp"></span>${lbl ? `<span class="lbl">${lbl}</span>` : ""}</header>${body}</section>`;
+  const FOLD = new Set(["How the products are used", "Who orders, and how", "Distributors they buy from", "What else to know", "Growth and cyclicality", "Sources"]);
+  const sec = (h, lbl, body) => FOLD.has(h) ? fold(h, lbl, body) : panel(h, lbl, body);
   const list = xs => xs && xs.length ? `<ul style="margin:0;padding-left:18px">${xs.map(t => `<li style="margin:0 0 5px">${esc(t)}</li>`).join("")}</ul>` : `<p class="faint" style="margin:0">—</p>`;
   const para = (h, t) => t ? `<div><div class="lbl" style="margin:0 0 4px">${h}</div><p style="margin:0">${esc(t)}</p></div>` : "";
   const head = `<a class="back" href="#ems">← End markets</a>
   <div class="page-h"><div class="grow"><div class="lbl">End market${em?.labels && em.labels !== x.name ? ` · distributor labels: ${esc(em.labels)}` : ""}</div><h1>${esc(x.name)}</h1>${em?.who_are ? `<p>${esc(em.who_are)}</p>` : ""}</div></div>
   <div class="gauges"><div class="gauge g"><b>${x.spend ? fmtTam(x.spend) : "—"}</b><span class="lbl">Implied spend, our categories</span></div><div class="gauge"><b>${x.nd ?? "—"} · ${x.nds ?? "—"}</b><span class="lbl">Distributors · with SKUs</span></div>
     <div class="gauge"><b>${(x.skus || 0).toLocaleString()}</b><span class="lbl">Core SKUs scraped</span></div><div class="gauge"><b>${x.nb ?? "—"}</b><span class="lbl">Brands seen</span></div>
-    <div class="gauge"><b>${pct(x.priv)}</b><span class="lbl">SKUs from private owners</span></div><div class="gauge"><b>${esc(x.fmt || "—")}</b><span class="lbl">Top format${x.pack ? " · " + esc(x.pack) : ""}</span></div></div>`;
+    <div class="gauge"><b>${pct(x.priv)}</b><span class="lbl">SKUs from private owners</span></div><div class="gauge"><b style="font-size:22px;overflow-wrap:anywhere">${x.fmt ? L.fmt(x.fmt) : "—"}</b><span class="lbl">Top format${x.pack ? " · " + esc(x.pack) : ""}</span></div></div>`;
   if (!em) return head + `<section class="panel"><div class="body faint">${EMSTUDY.has(String(i)) ? "The profile couldn't be loaded." : "Loading the profile…"}</div></section>`;
   const maxObs = Math.max(0.0001, ...em.obs.map(o => o[2] || 0));
   return head + `
-  ${panel("Who they are", "", `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">${para("Workforce and establishments", em.workforce)}${para("Spend on these products", em.spend_txt)}${para("Cyclicality", em.cyc)}
+  ${sec("Who they are", "", `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">${para("Workforce and establishments", em.workforce)}${para("Spend on these products", em.spend_txt)}${para("Cyclicality", em.cyc)}
     <div><div class="lbl" style="margin:0 0 4px">Demand drivers</div>${list(em.drivers)}</div></div>${em.spend_note ? `<div class="body faint" style="padding-top:0;font-size:12.5px">${esc(em.spend_note)}</div>` : ""}`)}
-  ${panel("How the products are used", "Jobs to be done", `<div class="tw"><table><thead><tr><th>Task</th><th>Products used and why</th></tr></thead><tbody>${em.jobs.map(([t, p]) => `<tr><td><b>${esc(t)}</b></td><td style="font-size:13.5px">${esc(p)}</td></tr>`).join("")}</tbody></table></div>`)}
-  ${panel("Most common products, by category", esc(em.intro3 || ""), `<div class="body grid2" style="margin:0;gap:24px">
+  ${sec("How the products are used", "Jobs to be done", `<div class="tw"><table><thead><tr><th>Task</th><th>Products used and why</th></tr></thead><tbody>${em.jobs.map(([t, p]) => `<tr><td><b>${esc(t)}</b></td><td style="font-size:13.5px">${esc(p)}</td></tr>`).join("")}</tbody></table></div>`)}
+  ${sec("Most common products, by category", esc(em.intro3 || ""), `<div class="body grid2" style="margin:0;gap:24px">
     <div><div class="lbl" style="margin:0 0 8px">What the market buys (research)</div><table><tbody>${em.res.map(([c, role, why]) => `<tr><td>${catByName(c)}<br><span class="faint" style="font-size:12px">${esc(why)}</span></td><td><span class="tag${role === "must-have" ? " tri" : ""}">${esc(role)}</span></td></tr>`).join("")}</tbody></table></div>
     <div><div class="lbl" style="margin:0 0 8px">What its distributors list (scrape)</div>${em.obs.map(([c, n, p, f, pk, nb, lead]) => `<div style="margin:0 0 9px"><div style="display:flex;gap:8px;align-items:baseline"><span style="flex:1">${catByName(c)}</span><b class="num">${pct(p)}</b><span class="faint num" style="font-size:12px">${n} SKUs</span></div>
       <div style="height:7px;background:var(--sunk);margin-top:3px"><div style="height:7px;width:${(p || 0) / maxObs * 100}%;background:var(--ink-3)"></div></div><div class="faint" style="font-size:12px;margin-top:2px">${esc(f)}${pk ? " · " + esc(pk) : ""} · ${nb} brands · ${esc(lead)}</div></div>`).join("")}</div></div>`)}
-  ${panel("Who orders, and how", "", `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">${para("Who picks the product", em.orders)}<div><div class="lbl" style="margin:0 0 4px">Ordering channels</div>${list(em.channels)}</div>${para("Order frequency", em.freq)}${para("Typical basket", em.basket)}</div>`)}
-  ${panel("Distributors they buy from", "", `<div class="body grid2" style="margin:0;gap:24px">
+  ${sec("Who orders, and how", "", `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">${para("Who picks the product", em.orders)}<div><div class="lbl" style="margin:0 0 4px">Ordering channels</div>${list(em.channels)}</div>${para("Order frequency", em.freq)}${para("Typical basket", em.basket)}</div>`)}
+  ${sec("Distributors they buy from", "", `<div class="body grid2" style="margin:0;gap:24px">
     <div><div class="lbl" style="margin:0 0 8px">Key distributors (research)</div><table><tbody>${em.rdists.map(([n, t, note]) => `<tr><td><b>${esc(n)}</b><br><span class="faint" style="font-size:12px">${esc(note)}</span></td><td><span class="tag">${esc(t)}</span></td></tr>`).join("")}</tbody></table></div>
     <div><div class="lbl" style="margin:0 0 8px">In our scrape</div><table><thead><tr><th>Distributor</th><th>Channel</th><th class="r">SKUs · brands</th></tr></thead><tbody>${em.sdists.map(([n, raw, ch, st2, sk, nb]) => `<tr><td>${distLink(n)}${st2 && st2 !== "Scraped" ? `<br><span class="faint" style="font-size:12px">${esc(st2)}</span>` : ""}</td><td>${esc(ch)}</td><td class="r num">${sk ?? 0} · ${nb ?? 0}</td></tr>`).join("")}</tbody></table></div></div>`)}
-  ${panel("What they order", "Formats, pack sizes and brands", `<div class="body grid2" style="margin:0;gap:24px">
+  ${sec("What they order", "Formats, pack sizes and brands", `<div class="body grid2" style="margin:0;gap:24px">
     <div><div class="lbl" style="margin:0 0 8px">Format mix (scraped SKUs)</div>${catHbars(em.formats, "var(--ink-3)")}</div>
     <div><div class="lbl" style="margin:0 0 8px">Most common pack sizes</div>${catHbars(em.packs.map(([k, v]) => [k, v / Math.max(1, em.packs.reduce((a, p) => a + p[1], 0))]), "var(--ink-3)")}</div></div>
     <div class="body" style="padding-top:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px"><div><div class="lbl" style="margin:0 0 4px">Why these formats</div>${list(em.fwhy)}</div>${para("Typical pack sizes (research)", em.packs_txt)}${para("Price sensitivity", em.price_sens)}${para("Brand loyalty", em.loyalty)}</div>
     <div class="body" style="padding-top:0"><div class="lbl" style="margin:0 0 8px">Top brands here</div><div class="tw"><table><thead><tr><th>Brand</th><th class="r">SKUs</th><th class="r">Distributors</th><th>Category</th><th>Owner</th></tr></thead><tbody>
       ${em.brands.map(([b, n, d, c, o, t]) => { const co = [...CO.values()].find(z => norm(z.name) === norm(o)); return `<tr><td>${brandLink(b)}${priceBadgeByName(b, { lead: false }) ? " " + priceBadgeByName(b, { lead: false }) : ""}</td><td class="r num">${n ?? "—"}</td><td class="r num">${d ?? "—"}</td><td style="font-size:12.5px">${catByName(c)}</td><td style="font-size:12.5px">${co ? `<a href="#c.${esc(co.id)}">${esc(o)}</a>` : esc(o)}<br><span class="faint">${esc(t)}</span></td></tr>`; }).join("")}
     </tbody></table></div></div>`)}
-  ${panel("Who supplies it", "Ownership of the SKUs on these shelves", `<div class="body grid2" style="margin:0;gap:24px">
+  ${sec("Who supplies it", "Ownership of the SKUs on these shelves", `<div class="body grid2" style="margin:0;gap:24px">
     <div>${catHbars(em.otypes.map(([k, n, p]) => [`${k} · ${n} SKUs`, p]))}</div>
     <div><div class="lbl" style="margin:0 0 8px">Private owners with the most SKUs here</div><table><tbody>${em.powners.map(([n, lbl]) => { const co = [...CO.values()].find(z => norm(z.name) === norm(n)); return `<tr><td style="font-size:13px">${co ? `<a href="#c.${esc(co.id)}">${esc(lbl)}</a>` : esc(lbl)}</td></tr>`; }).join("")}</tbody></table></div></div>`)}
-  ${panel("What else to know", "", `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">${em.know.map(([k, xs]) => `<div><div class="lbl" style="margin:0 0 6px">${esc(k)}</div>${xs.length > 1 ? list(xs) : `<p style="margin:0">${esc(xs[0] || "")}</p>`}</div>`).join("")}</div>`)}
-  ${em.growth ? panel("Growth and cyclicality", `Growth ${em.growth.g}/5 · defensiveness ${em.growth.d}/5 (5 = least cyclical) · base CAGR ${(em.growth.cagr * 100).toFixed(1)}%`, `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">${para("Recurring maintenance vs new projects", em.recur)}${para("Downturn sensitivity", em.downturn)}</div>
+  ${sec("What else to know", "", `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">${em.know.map(([k, xs]) => `<div><div class="lbl" style="margin:0 0 6px">${esc(k)}</div>${xs.length > 1 ? list(xs) : `<p style="margin:0">${esc(xs[0] || "")}</p>`}</div>`).join("")}</div>`)}
+  ${em.growth ? sec("Growth and cyclicality", `Growth ${em.growth.g}/5 · defensiveness ${em.growth.d}/5 (5 = least cyclical) · base CAGR ${(em.growth.cagr * 100).toFixed(1)}%`, `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">${para("Recurring maintenance vs new projects", em.recur)}${para("Downturn sensitivity", em.downturn)}</div>
     ${em.gsubs?.length ? `<div class="tw"><table style="font-size:13px"><thead><tr><th>Sub-segment</th><th class="r">Share</th><th class="r">CAGR</th><th class="r">Growth</th><th class="r">Defensive</th><th>Drivers</th></tr></thead><tbody>${em.gsubs.map(([n, sh, cg, g, d, drv, src]) => `<tr><td><b>${esc(n)}</b>${src && /^https?:/.test(src) ? ` <a href="${esc(src)}" target="_blank" rel="noopener" class="faint" style="font-size:11.5px">source</a>` : ""}</td><td class="r num">${pct(sh)}</td><td class="r num">${cg !== null && cg !== undefined ? (cg * 100).toFixed(1) + "%" : "—"}</td><td class="r num">${g ?? "—"}</td><td class="r num">${d ?? "—"}</td><td style="font-size:12.5px">${esc(drv)}</td></tr>`).join("")}</tbody></table></div>` : ""}
     <div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px"><div><div class="lbl" style="margin:0 0 4px">Secular tailwinds</div>${list(em.tail)}</div><div><div class="lbl" style="margin:0 0 4px">Secular headwinds</div>${list(em.head)}</div><div><div class="lbl" style="margin:0 0 4px">Leading indicators to watch</div>${list(em.lead)}</div></div>
     ${em.gsrc ? `<div class="body faint" style="padding-top:0;font-size:12px">${esc(em.gsrc)}</div>` : ""}`) : ""}
-  ${panel("Sources", "", `<div class="body">${em.src.map(([t, u, n]) => `<p style="margin:0 0 8px">${u && /^https?:/.test(u) ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>` : esc(t)}${n ? `<br><span class="faint" style="font-size:12.5px">${esc(n)}</span>` : ""}</p>`).join("")}${em.foot ? `<p class="faint" style="font-size:12.5px;margin:10px 0 0">${esc(em.foot)}</p>` : ""}</div>`)}`;
+  ${sec("Sources", "", `<div class="body">${em.src.map(([t, u, n]) => `<p style="margin:0 0 8px">${u && /^https?:/.test(u) ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>` : esc(t)}${n ? `<br><span class="faint" style="font-size:12.5px">${esc(n)}</span>` : ""}</p>`).join("")}${em.foot ? `<p class="faint" style="font-size:12.5px;margin:10px 0 0">${esc(em.foot)}</p>` : ""}</div>`)}`;
 }
 
 
@@ -1395,27 +1479,46 @@ function distStats(d) {
 }
 function viewDists() {
   const q = norm(ui.dq);
-  const rows = DISTS.map((d, i) => ({ d, i, ...distStats(d) })).filter(r => (!ui.dch || r.d.channel === ui.dch) && (!ui.dmk || r.d.market === ui.dmk)
+  const all = DISTS.map((d, i) => ({ d, i, ...distStats(d) }));
+  const rows = all.filter(r => (!ui.dch || r.d.channel === ui.dch) && (!ui.dmk || r.d.market === ui.dmk)
     && (!q || norm([r.d.name, r.d.end_market, r.d.secondary, r.d.web].join(" ")).includes(q)));
   const key = { brands: r => r.n, skus: r => r.d.skus || 0, pf: r => r.pf ?? -1, pe: r => r.pe ?? -1, green: r => r.green, excl: r => r.excl, name: r => r.d.name }[ui.dsort];
   rows.sort((a, b) => ui.dsort === "name" ? a.d.name.localeCompare(b.d.name) : key(b) - key(a) || b.n - a.n);
   const mkts = [...new Set(DISTS.map(d => d.market))].filter(Boolean).sort();
-  const scraped = DISTS.filter(d => /scraped/i.test(d.status)).length;
+  const scraped = DISTS.filter(d => /scraped/i.test(d.status)).length, skus = DISTS.reduce((a, d) => a + (d.skus || 0), 0);
+  const by = (f, w) => { const m = new Map(); for (const r of all) { const k = f(r); if (k) m.set(k, (m.get(k) || 0) + w(r)); } return [...m].sort((a, b) => b[1] - a[1]); };
+  const chanS = by(r => CHAN[r.d.channel], r => r.d.skus || 0), mktS = by(r => r.d.market, r => r.d.skus || 0);
+  const shelf = {}; for (const r of all) for (const [k, v] of Object.entries(r.mix)) shelf[k] = (shelf[k] || 0) + v;
+  const shelfRows = BMIX.map(([k, l]) => [l, shelf[k] || 0]).filter(r => r[1]), listings = shelfRows.reduce((a, r) => a + r[1], 0);
+  const known = listings - (shelf.Unknown || 0), pfAll = known ? ((shelf.PE || 0) + (shelf.Family || 0)) / known : 0;
+  const big = all.filter(r => r.n >= 40);
+  const top = (arr, f, n = 10) => arr.slice().sort((a, b) => f(b) - f(a)).slice(0, n);
+  const dl = r => `<a href="#d.${r.i}">${esc(r.d.name.replace(/\s*\(.*\)$/, ""))}</a>`;
+  const rank = (arr, f, fmt) => `<ol class="rk">${arr.map(r => `<li><span>${dl(r)}<small>${esc(CHAN[r.d.channel] || "")} · ${L.mkt(r.d.market || "Other")}</small></span><b class="num">${fmt(f(r))}</b></li>`).join("")}</ol>`;
+  const filtered = ui.dq || ui.dch || ui.dmk;
   return `<div class="page-h"><div class="grow"><div class="lbl">${DISTS.length} distributors in the market map · ${scraped} scraped</div><h1>Distributors</h1>
-    <p>Who carries what. Each bar shows whose brands fill that distributor's shelf, by owner type. Sort by PE + family share to find the channels where independent pro brands win, or by green owners to see where the best-fit targets already sell. Counts are brands found in the scrape; the ownership filter on the left doesn't apply here.</p></div></div>
+    <p>Where pro brands are sold: what kind of shelf, which end markets, whose brands fill them, and where independent PE and family brands already win. The ownership filter on the left doesn't apply here.</p></div></div>
   <div class="gauges"><div class="gauge"><b>${DISTS.length}</b><span class="lbl">Distributors</span></div><div class="gauge"><b>${scraped}</b><span class="lbl">Scraped</span></div>
-    ${Object.entries(CHAN).map(([k, l]) => `<div class="gauge"><b>${DISTS.filter(d => d.channel === k).length}</b><span class="lbl">${l}</span></div>`).join("")}
-    <div class="gauge"><b>${DISTS.reduce((a, d) => a + (d.skus || 0), 0).toLocaleString()}</b><span class="lbl">SKUs scraped</span></div></div>
-  <div class="bar"><input class="search" id="dq" type="search" placeholder="Search distributors, markets…" value="${esc(ui.dq)}" aria-label="Search distributors">
+    <div class="gauge"><b>${skus.toLocaleString()}</b><span class="lbl">SKUs scraped</span></div><div class="gauge"><b>${listings.toLocaleString()}</b><span class="lbl">Brand listings</span></div>
+    <div class="gauge g"><b>${pct(pfAll)}</b><span class="lbl">Of listings PE + family</span></div><div class="gauge"><b>${all.filter(r => r.excl).length}</b><span class="lbl">With brands found only there</span></div></div>
+  <section class="panel"><div class="body mixes">${mixBlock("Channel", chanS, skus, 3)}${mixBlock("End market", mktS, skus, 10, L.mkt)}${mixBlock("Whose brands fill the shelves", shelfRows, listings, 6)}</div>
+    <div class="body faint" style="padding-top:0;font-size:12.5px">Channel and end market are by SKUs scraped; shelves by brand listings (a brand on 30 distributors counts 30 times).</div></section>
+  <div class="grid3">
+    <section class="panel"><header><h2>Biggest shelves</h2><span class="sp"></span><span class="lbl">Brands found</span></header><div class="body">${rank(top(all, r => r.n), r => r.n, v => v)}</div></section>
+    <section class="panel"><header><h2>Where PE + family win</h2><span class="sp"></span><span class="lbl">Share of brands · 40+ brands</span></header><div class="body">${rank(top(big, r => r.pf ?? 0), r => r.pf ?? 0, pct)}</div></section>
+    <section class="panel"><header><h2>Most best-fit owners</h2><span class="sp"></span><span class="lbl">Green-DNA PE / family owners</span></header><div class="body">${rank(top(all, r => r.green), r => r.green, v => v)}</div></section>
+  </div>
+  <section class="panel"><header><h2>All distributors</h2><span class="sp"></span><span class="lbl">${rows.length}${filtered ? " match" : ""} · click a column's sort below</span></header>
+  <div class="body" style="padding-bottom:0"><div class="bar" style="margin:0"><input class="search" id="dq" type="search" placeholder="Search distributors, markets…" value="${esc(ui.dq)}" aria-label="Search distributors">
     <select id="dch" aria-label="Channel"><option value="">All channels</option>${Object.entries(CHAN).map(([k, l]) => `<option value="${k}" ${k === ui.dch ? "selected" : ""}>${l}</option>`).join("")}</select>
     <select id="dmk" aria-label="End market"><option value="">All end markets</option>${mkts.map(m => `<option ${m === ui.dmk ? "selected" : ""}>${esc(m)}</option>`).join("")}</select>
     <select id="dsort" aria-label="Sort">${[["brands", "Most brands"], ["skus", "Most SKUs"], ["pf", "Highest PE + family share"], ["pe", "Highest PE share"], ["green", "Most green PE/family owners"], ["excl", "Most exclusive brands"], ["name", "Name"]].map(([k, l]) => `<option value="${k}" ${k === ui.dsort ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select></div>
-  <div class="bar">${blegend()}</div>
-  <section class="panel"><div class="tw"><table><thead><tr><th>Distributor</th><th>Channel</th><th class="r">Brands</th><th class="r">SKUs</th><th>Whose brands are on the shelf</th><th class="r">PE + family</th><th class="r">Green PE/family owners</th><th class="r">Only here</th></tr></thead><tbody>
-  ${rows.map(r => `<tr class="cons-row" data-go="d.${r.i}"><td><b><a href="#d.${r.i}">${esc(r.d.name)}</a></b><br><span class="faint" style="font-size:12.5px">${esc(r.d.end_market || r.d.market || "")}${/scraped/i.test(r.d.status) ? "" : ` · ${esc(r.d.status || "Not scraped")}`}</span></td>
+  <div style="margin:10px 0 0">${blegend()}</div></div>
+  <div class="tw"><table><thead><tr><th>Distributor</th><th>Channel</th><th class="r">Brands</th><th class="r">SKUs</th><th>Whose brands are on the shelf</th><th class="r">PE + family</th><th class="r">Green owners</th><th class="r">Only here</th></tr></thead><tbody>
+  ${capList(rows, filtered ? 60 : 25, "dists").map(r => `<tr class="cons-row" data-go="d.${r.i}"><td><b><a href="#d.${r.i}">${esc(r.d.name)}</a></b><br><span class="faint" style="font-size:12.5px">${esc(r.d.end_market || r.d.market || "")}${/scraped/i.test(r.d.status) ? "" : ` · ${esc(r.d.status || "Not scraped")}`}</span></td>
     <td class="muted">${CHAN[r.d.channel] || ""}</td><td class="r num">${r.n}</td><td class="r num">${(r.d.skus || 0).toLocaleString()}</td><td>${r.n ? bbar(r.mix) : `<span class="faint">No brands found</span>`}</td>
     <td class="r num">${r.pf === null ? "—" : pct(r.pf)}</td><td class="r num">${r.green || "—"}</td><td class="r num">${r.excl || "—"}</td></tr>`).join("") || `<tr><td colspan="8" class="empty">No distributors match.</td></tr>`}
-  </tbody></table></div></section>`;
+  </tbody></table></div><div class="body" style="padding-top:6px">${showAll(rows.length, filtered ? 60 : 25, "dists", "distributors")}</div></section>`;
 }
 function viewDist(i) {
   const d = DISTS[+i]; if (!d) return `<a class="back" href="#dists">← Distributors</a><div class="empty">No such distributor.</div>`;
@@ -1423,27 +1526,34 @@ function viewDist(i) {
   const owners = new Map();
   for (const b of bs) { const k = b.owner_id || (b.owner ? "n:" + norm(b.owner) : null); if (!k) continue; const o = owners.get(k) || owners.set(k, { x: b, brands: [] }).get(k); o.brands.push(b); }
   const orows = [...owners.values()].sort((a, b) => b.brands.length - a.brands.length);
-  const cats = new Map(); for (const b of bs) cats.set(b.ncat, (cats.get(b.ncat) || 0) + 1);
+  const cnt = f => { const m = new Map(); for (const b of bs) { const k = f(b); if (k) m.set(k, (m.get(k) || 0) + 1); } return [...m].sort((a, b) => b[1] - a[1]); };
+  const fmts = (() => { const m = new Map(); for (const b of bs) for (const [k, v] of Object.entries(b.fmt || {})) m.set(k, (m.get(k) || 0) + v); return [...m].sort((a, b) => b[1] - a[1]); })();
+  const ftot = fmts.reduce((a, r) => a + r[1], 0);
+  const shelf = BMIX.map(([k, l]) => [l, st.mix[k] || 0]).filter(r => r[1]);
   const ownDna = o => { const c = o.x.owner_id && CO.get(o.x.owner_id); if (!c) return ""; const dd = dnaOf(c); return `<span class="score ${dd.band} num" style="font-size:15px">${dd.score}</span>`; };
+  const peers = DISTS.map((x, j) => ({ x, j, n: (distBrands().get(x.name) || []).length })).filter(p => p.j !== +i && p.x.market === d.market && p.n).sort((a, b) => b.n - a.n);
+  const shared = p => { const mine = new Set(bs.map(b => b.id)); return (distBrands().get(p.x.name) || []).filter(b => mine.has(b.id)).length; };
   return `<a class="back" href="#dists">← Distributors</a>
-  <div class="page-h"><div class="grow"><div class="lbl">${CHAN[d.channel] || ""} · ${esc(d.end_market || d.market || "")}</div><h1>${esc(d.name)}</h1>
+  <div class="page-h"><div class="grow"><div class="lbl">${CHAN[d.channel] || ""} · ${L.mkt(d.market || "Other")}${d.end_market && d.end_market !== d.market ? " (" + esc(d.end_market) + ")" : ""}</div><h1>${esc(d.name)}</h1>
     <p>${d.secondary ? `Also serves ${esc(d.secondary)}. ` : ""}${d.scope ? `Chemicals scraped: ${esc(d.scope)}. ` : ""}${d.web ? `<a href="https://${esc(d.web.replace(/^https?:\/\//, ""))}" target="_blank" rel="noopener">${esc(d.web)}</a>` : ""}</p></div></div>
   <div class="gauges"><div class="gauge"><b>${st.n}</b><span class="lbl">Brands found</span></div><div class="gauge"><b>${(d.skus || 0).toLocaleString()}</b><span class="lbl">SKUs scraped</span></div>
     <div class="gauge"><b>${st.pf === null ? "—" : pct(st.pf)}</b><span class="lbl">PE + family brands</span></div><div class="gauge"><b>${st.pe === null ? "—" : pct(st.pe)}</b><span class="lbl">PE brands</span></div>
     <div class="gauge g"><b>${st.green}</b><span class="lbl">Green PE/family owners</span></div><div class="gauge"><b>${st.excl}</b><span class="lbl">Brands only here</span></div></div>
-  <div class="note">Scrape: ${esc(d.status || "not started")}${d.found ? ` · ${d.found} brands in the market map's pipeline count` : ""}${d.method ? ` · ${esc(d.method)}` : ""}</div>
-  <section class="panel"><header><h2>Whose brands are on the shelf</h2><span class="sp"></span>${blegend()}</header><div class="body">${bbar(st.mix)}</div></section>
+  <section class="panel"><header><h2>The shelf</h2><span class="sp"></span><span class="lbl">${st.n} brands · formats from those brands' scraped SKUs</span></header>
+    <div class="body mixes m4">${mixBlock("Whose brands", shelf, st.n, 6)}${mixBlock("Segment", cnt(b => b.seg), st.n, 7, L.seg)}${mixBlock("Category", cnt(b => b.ncat), st.n, 7, L.cat)}${mixBlock("Package format", fmts, ftot, 7, L.fmt)}</div></section>
   <div class="grid2">
     <section class="panel"><header><h2>Owners on this shelf</h2><span class="sp"></span><span class="lbl">${orows.length} · DNA where profiled</span></header>
     <div class="tw"><table><thead><tr><th>Owner</th><th class="r">DNA</th><th class="r">Brands</th></tr></thead><tbody>
-    ${orows.slice(0, 40).map(o => `<tr><td>${ownerCell(o.x)}<br><span class="faint" style="font-size:12.5px">${o.brands.slice(0, 4).map(b => esc(b.name)).join(", ")}${o.brands.length > 4 ? "…" : ""}</span></td><td class="r">${ownDna(o)}</td><td class="r num">${o.brands.length}</td></tr>`).join("")}
-    </tbody></table></div></section>
-    <section class="panel"><header><h2>Categories</h2><span class="sp"></span><span class="lbl">Brands by primary category</span></header><div class="body">${hbars([...cats].sort((a, b) => b[1] - a[1]).slice(0, 20), st.n)}</div></section>
+    ${capList(orows, 12, "do" + i).map(o => `<tr><td>${ownerCell(o.x)}<br><span class="faint" style="font-size:12.5px">${o.brands.slice(0, 4).map(b => `<a href="#b.${esc(b.id)}">${esc(b.name)}</a>`).join(", ")}${o.brands.length > 4 ? "…" : ""}</span></td><td class="r">${ownDna(o)}</td><td class="r num">${o.brands.length}</td></tr>`).join("")}
+    </tbody></table></div><div class="body" style="padding-top:6px">${showAll(orows.length, 12, "do" + i, "owners")}</div></section>
+    <section class="panel"><header><h2>Same end market</h2><span class="sp"></span><span class="lbl">Other ${esc(d.market || "")} distributors · brands in common</span></header>
+    <div class="body">${peers.length ? `<ol class="rk">${capList(peers, 10, "dp" + i).map(p => `<li><span><a href="#d.${p.j}">${esc(p.x.name.replace(/\s*\(.*\)$/, ""))}</a><small>${esc(CHAN[p.x.channel] || "")} · ${p.n} brands</small></span><b class="num">${shared(p)}</b></li>`).join("")}</ol>${showAll(peers.length, 10, "dp" + i, "distributors")}` : `<p class="faint">No other distributor in this end market.</p>`}</div></section>
   </div>
-  <section class="panel"><header><h2>Brands</h2><span class="sp"></span><span class="lbl">${st.n}</span></header>
+  <section class="panel"><header><h2>Brands</h2><span class="sp"></span><span class="lbl">${st.n} · most SKUs first</span></header>
   <div class="tw"><table><thead><tr><th>Brand</th><th>Owner</th><th>Category</th><th class="r">Brand SKUs</th><th class="r">Other distributors</th></tr></thead><tbody>
-  ${bs.map(b => `<tr><td><b><a href="#b.${esc(b.id)}">${esc(b.name)}</a></b>${(b.dists || []).length === 1 ? `<br><span class="tag tri">Only here</span>` : ""}</td><td>${ownerCell(b)}</td><td>${catLink(b.ncat)}</td><td class="r num">${b.skus || 0}</td><td class="r num">${(b.dists || []).length - 1}</td></tr>`).join("")}
-  </tbody></table></div></section>`;
+  ${capList(bs, 25, "db" + i).map(b => `<tr><td><b><a href="#b.${esc(b.id)}">${esc(b.name)}</a></b>${(b.dists || []).length === 1 ? `<br><span class="tag tri">Only here</span>` : ""}</td><td>${ownerCell(b)}</td><td>${catLink(b.ncat)}</td><td class="r num">${b.skus || 0}</td><td class="r num">${(b.dists || []).length - 1}</td></tr>`).join("")}
+  </tbody></table></div><div class="body" style="padding-top:6px">${showAll(bs.length, 25, "db" + i, "brands")}</div></section>
+  <div class="note">Scrape: ${esc(d.status || "not started")}${d.found ? ` · ${d.found} brands in the market map's pipeline count` : ""}${d.method ? ` · ${esc(d.method)}` : ""}</div>`;
 }
 
 /* ---------- reach: how penetrated each owner is in the distributors that stock its categories ----------
@@ -1499,11 +1609,11 @@ const capLbl = () => isDemo() ? "demonstrated rates" : Math.round(ui.cap * 100) 
 const capSelect = what => `<select id="rcap" aria-label="Capture rate"><option value="demo" ${isDemo() ? "selected" : ""}>Demonstrated cross-sell rates</option>${[0.1, 0.25, 0.5, 1].map(v => `<option value="${v}" ${v === ui.cap ? "selected" : ""}>Flat ${Math.round(v * 100)}% of ${what}</option>`).join("")}</select>`;
 function ratesPanel() {
   const r = demoRates(), cell = k => { const n = r.tot.get(k) || 0, v = r.rate(k); return `<td class="r num">${v === null ? "—" : pct(v)}<br><span class="faint" style="font-size:11.5px">${n.toLocaleString()} doors</span></td>`; };
-  return `<section class="panel"><header><h2>Demonstrated cross-sell rates</h2><span class="sp"></span><span class="lbl">What multi-brand owners actually achieve today · ${pct(r.rate("all"))} overall</span></header>
+  return `<section class="panel"><details><summary class="dsum"><h2>Demonstrated cross-sell rates</h2><span class="sp"></span><span class="lbl">What multi-brand owners actually achieve today · ${pct(r.rate("all"))} overall</span><span class="lbl dmark"></span></summary>
   <div class="body"><p class="muted" style="margin:0 0 10px;font-size:13.5px">Across every owner with 2+ brands: of the sister brands' distributors that stock a brand's category, the share that also carry that brand. "Native" means the distributor's end market is a natural channel for the category; "proven" means the brand's direct rivals already sell there. In Demonstrated mode each missing door is valued at its row's rate.</p>
   <div class="tw"><table><thead><tr><th>Distributor</th><th class="r">Focused (≤6 brands)</th><th class="r">Sprawling (7+)</th><th class="r">All owners</th></tr></thead><tbody>
   ${[["np", "Native channel, rivals there"], ["nu", "Native channel, no rivals"], ["op", "Off-channel, rivals there"], ["ou", "Off-channel, no rivals"]].map(([k, l]) => `<tr><td><b>${l}</b></td>${cell("f" + k)}${cell("s" + k)}${cell(k)}</tr>`).join("")}
-  </tbody></table></div></div></section>`;
+  </tbody></table></div></div></details></section>`;
 }
 /* Right to win: the share of the company's SKUs whose category a door stocks (2+ brands on that shelf). A door's weight
    is right to win x its size (square root of its brand count against the median door, 0.5x-2x). Revenue per full door
@@ -1571,17 +1681,17 @@ function reachPanel(c) {
     ${r.ceiling !== null ? `<div class="gauge"><b>${fmtM(val(r.ceiling, r.demo))}</b><span class="lbl">Headroom at ${capLbl()}</span></div>` : ""}</div>
   <div class="body"><p class="muted" style="margin:0 0 10px;font-size:13.5px">Doors are the scraped distributors in the end markets it already sells to (${esc(r.mkts.join(", ") || "none yet")}) where at least 10% of its SKUs have a right to win. ${r.ceiling !== null ? `At today's ${fmtM(r.rev)} across ${r.doors} doors, filling every missing door would add up to ${fmtM(r.ceiling)} (${fmtX(r.W / r.Wc)} today's revenue); at the rates multi-brand owners actually achieve on doors like these, about ${fmtM(r.demo)}. ${r.split ? `Pro distributors are valued at pro-channel revenue (~${fmtM(r.proRev)}) per pro door, retail stores and DIY sites at the rest. ` : ""}Read it as a ceiling: revenue includes direct sales, and the scrape can miss a listing. ` : r.thin ? "Found on fewer than 3 doors, too few to estimate revenue per door, so headroom is in doors only. " : "No revenue in the market map yet, so headroom is in doors only. "}Proven doors already carry this company's direct competitors, so the category sells there. <a href="#reach">All companies →</a></p>
   ${r.white.length ? `<div class="tw"><table><thead><tr><th>Missing door</th><th>Channel</th><th class="r">Right to win</th><th class="r">Door size</th><th class="r">Win rate</th><th class="r">Value</th><th>Rivals already there</th></tr></thead><tbody>
-  ${r.white.slice(0, 20).map(x => `<tr><td><b>${distLink(x.d.name)}</b><br><span class="faint" style="font-size:12.5px">${esc(x.d.end_market || x.d.market || "")}</span></td><td class="muted">${CHAN[x.d.channel] || ""}</td>
+  ${capList(r.white, 8, "rw" + c.id).map(x => `<tr><td><b>${distLink(x.d.name)}</b><br><span class="faint" style="font-size:12.5px">${esc(x.d.end_market || x.d.market || "")}</span></td><td class="muted">${CHAN[x.d.channel] || ""}</td>
     <td class="r num" data-tip="${esc(`<b>${pct(x.rtw)} of its SKUs fit this door</b>${x.rcats.slice(0, 5).map(([k, s]) => `${esc(k)} ${pct(s)}`).join("<br>")}`)}">${pct(x.rtw)}</td><td class="r num">${x.size.toFixed(1)}×</td><td class="r num">${pct(x.p)}</td>
     <td class="r num">${x.full !== null ? fmtM(val(x.full, x.ev)) : "—"}</td>
     <td>${x.rv.length ? `<span class="tag tri">Proven</span> ${x.rv.slice(0, 3).map(b => `<a href="#b.${esc(b.id)}">${esc(b.name)}</a>`).join(", ")}${x.rv.length > 3 ? ` +${x.rv.length - 3}` : ""}` : `<span class="faint">None of its rivals yet</span>`}</td></tr>`).join("")}
-  </tbody></table></div>${r.white.length > 20 ? `<p class="faint" style="margin:8px 0 0;font-size:13px">+${r.white.length - 20} smaller doors.</p>` : ""}
-  <p class="faint" style="margin:8px 0 0;font-size:12.5px">Right to win = share of its SKUs whose category the door stocks (hover for the categories). Door size = square root of the door's brand count against the median door (0.5×–2×). Win rate = the demonstrated cross-sell rate for that kind of door. Value = revenue per full door × right to win × door size × ${isDemo() ? "win rate" : capLbl()}.</p>` : `<p class="muted">On every door that stocks its categories.</p>`}
+  </tbody></table></div>${showAll(r.white.length, 8, "rw" + c.id, "missing doors")}
+  <details style="margin:8px 0 0"><summary class="lbl" style="cursor:pointer">How the columns work</summary><p class="faint" style="margin:6px 0 0;font-size:12.5px">Right to win = share of its SKUs whose category the door stocks (hover for the categories). Door size = square root of the door's brand count against the median door (0.5×–2×). Win rate = the demonstrated cross-sell rate for that kind of door. Value = revenue per full door × right to win × door size × ${isDemo() ? "win rate" : capLbl()}.</p></details>` : `<p class="muted">On every door that stocks its categories.</p>`}
   ${r.adj.length ? `<h3 style="margin:16px 0 8px;font-size:18px">New end markets</h3><p class="muted" style="margin:0 0 8px;font-size:13.5px">Doors outside the markets it sells to today where 2 or more of its direct rivals already sell. Upside beyond the core headroom above, not counted in it.</p>
   <div class="tw"><table><thead><tr><th>End market</th><th class="r">Doors</th><th>Biggest doors</th><th>Rivals there</th></tr></thead><tbody>
-  ${[...r.adj.reduce((m, x) => m.set(x.d.market, [...(m.get(x.d.market) || []), x]), new Map())].sort((a, b) => b[1].length - a[1].length).slice(0, 10).map(([mk, xs]) => `<tr><td><b>${esc(mk)}</b></td><td class="r num">${xs.length}</td><td>${xs.slice(0, 3).map(x => distLink(x.d.name)).join(", ")}</td><td class="muted">${[...new Set(xs.flatMap(x => x.rv.map(b => b.name)))].slice(0, 4).map(esc).join(", ")}</td></tr>`).join("")}
+  ${[...r.adj.reduce((m, x) => m.set(x.d.market, [...(m.get(x.d.market) || []), x]), new Map())].sort((a, b) => b[1].length - a[1].length).slice(0, 10).map(([mk, xs]) => `<tr><td><b>${L.mkt(mk)}</b></td><td class="r num">${xs.length}</td><td>${xs.slice(0, 3).map(x => distLink(x.d.name)).join(", ")}</td><td class="muted">${[...new Set(xs.flatMap(x => x.rv.map(b => b.name)))].slice(0, 4).map(esc).join(", ")}</td></tr>`).join("")}
   </tbody></table></div>` : ""}
-  <p class="faint" style="margin:10px 0 0;font-size:13px">Carried today: ${r.carriedRows.map(x => distLink(x.d.name)).join(", ") || "none"}.</p></div></section>`;
+  <details style="margin:10px 0 0"><summary class="lbl" style="cursor:pointer">Carried today · ${r.carriedRows.length} distributors</summary><p class="faint" style="margin:6px 0 0;font-size:13px">${r.carriedRows.map(x => distLink(x.d.name)).join(", ") || "none"}.</p></details></div></section>`;
 }
 function reachChart(rows) {
   const W = 820, H = 400, m = { l: 48, r: 16, t: 16, b: 40 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
@@ -1686,7 +1796,8 @@ function viewRollup() {
   const hits = q.length > 1 ? list().filter(c => !ids.includes(c.id) && norm([c.name, ...(c.brands || [])].join(" ")).includes(q)).sort((a, b) => dnaOf(b).score - dnaOf(a).score).slice(0, 8) : [];
   const capSel = capSelect("cross-sell doors");
   const head = `<div class="page-h"><div class="grow"><div class="lbl">Build a platform</div><h1>Roll-up</h1>
-    <p>Pick the companies you'd put together. For each one, the cross-sell doors are distributors another member already sells to that stock its categories but don't carry it yet, valued at its own revenue per door times the rate multi-brand owners actually achieve on doors like that (higher where rivals already sell and in the category's native channels; higher for focused platforms). Category overlap shows whether the members sell the same things (head-to-head) or complement each other (a broader bag for the same distributors). The best next add-ons are ranked by the cross-sell they'd bring and get.</p></div></div>
+    <p>Pick the companies you'd put together to see the cross-sell, the overlaps, the pricing ladder and the procurement savings, and the best next add-ons.</p>
+    <details style="margin:8px 0 0;max-width:68ch"><summary class="lbl" style="cursor:pointer">How it's worked out</summary><p style="margin:6px 0 0;font-size:13.5px;color:var(--ink-2)">For each company, the cross-sell doors are distributors another member already sells to that stock its categories but don't carry it yet, valued at its own revenue per door times the rate multi-brand owners actually achieve on doors like that (higher where rivals already sell and in the category's native channels; higher for focused platforms). Category overlap shows whether the members sell the same things (head-to-head) or complement each other (a broader bag for the same distributors). The best next add-ons are ranked by the cross-sell they'd bring and get.</p></details></div></div>
   <div class="bar"><input class="search" id="rq" type="search" placeholder="Add a company or brand…" value="${esc(ui.rq)}" aria-label="Add a company">${capSel}${ids.length ? `<button class="tog" type="button" data-act="rclear">Clear</button>` : ""}</div>
   ${hits.length ? `<div class="bar">${hits.map(c => `<button class="tog" type="button" data-act="radd" data-id="${esc(c.id)}">+ ${esc(c.name)} <span class="faint">${dnaOf(c).score}</span></button>`).join("")}</div>` : ""}
   ${ids.length ? `<div class="bar">${ids.map(id => `<span class="tag" style="font-size:12px;padding:4px 8px">${esc(CO.get(id).name)} <button type="button" data-act="rdel" data-id="${esc(id)}" aria-label="Remove ${esc(CO.get(id).name)}" style="color:var(--ink-3);margin-left:4px">✕</button></span>`).join("")}</div>` : ""}`;
@@ -2369,11 +2480,11 @@ function viewMix() {
     <button class="tog" type="button" data-act="out" aria-pressed="${ui.showOut}">Include out of scope</button></div>
   <div class="gauges"><div class="gauge"><b>${total.toLocaleString()}</b><span class="lbl">SKUs</span></div><div class="gauge"><b>${cos.length}</b><span class="lbl">Owners</span></div>
     <div class="gauge"><b>${chanSum ? Math.round(chan.broadline / chanSum * 100) : 0}%</b><span class="lbl">Broadline MRO</span></div><div class="gauge"><b>${chanSum ? Math.round(chan.specialty / chanSum * 100) : 0}%</b><span class="lbl">Trade specialty</span></div><div class="gauge"><b>${chanSum ? Math.round(chan.retail / chanSum * 100) : 0}%</b><span class="lbl">Retail-leaning</span></div></div>
-  <section class="panel"><div class="body mixes">${mixBlock("Package format", fmt, total, 10)}${mixBlock("End market", mkt, total, 10)}${mixBlock("Segment", seg, total, 10)}</div></section>
-  <section class="panel"><header><h2>Categories</h2><span class="sp"></span><span class="lbl">SKUs by the market map's normalized category · click through on the Categories page</span></header><div class="body">${hbars(fam.slice(0, 25), total)}</div></section>
+  <section class="panel"><div class="body mixes">${mixBlock("Package format", fmt, total, 10, L.fmt)}${mixBlock("End market", mkt, total, 10, L.mkt)}${mixBlock("Segment", seg, total, 10, L.seg)}</div></section>
+  <section class="panel"><header><h2>Categories</h2><span class="sp"></span><span class="lbl">SKUs by the market map's normalized category</span></header><div class="body">${hbars(capList(fam, 25, "mixcat"), total, v => v, L.cat)}${showAll(fam.length, 25, "mixcat", "categories")}</div></section>
   <div class="grid2">
-    <section class="panel"><header><h2>Distributors</h2><span class="sp"></span><span class="lbl">Top 20 by SKUs</span></header><div class="body">${hbars(dist.map(([k, v]) => [k.replace(/\s*\(.*\)$/, ""), v]), total)}</div></section>
-    <section class="panel"><header><h2>Brands</h2><span class="sp"></span><span class="lbl">Top 25 by SKUs</span></header><div class="body">${hbars(brand, total)}</div></section>
+    <section class="panel"><header><h2>Distributors</h2><span class="sp"></span><span class="lbl">Top 20 by SKUs</span></header><div class="body">${hbars(dist, total, v => v, L.dist)}</div></section>
+    <section class="panel"><header><h2>Brands</h2><span class="sp"></span><span class="lbl">Top 25 by SKUs</span></header><div class="body">${hbars(brand, total, v => v, L.brand)}</div></section>
   </div>
   <div class="note">Scrape coverage: ${DISTS.filter(d => /scraped/i.test(d.status)).length} of ${DISTS.length} distributors so far, so the mix leans toward the channels already scraped.</div>`;
 }
@@ -2386,7 +2497,7 @@ function render() {
   chrome(r);
   if (!loaded) { if (dbState === "off") app.innerHTML = `<div class="empty"><h2>Not connected</h2><p>Probrands keeps the market map in a shared database that loads when this page is opened in Claude while signed in.</p></div>`; return; }
   const y = scrollY;
-  app.innerHTML = r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "ems" ? viewEms() : r.v === "product" ? viewProduct() : r.v === "em" ? viewEm(r.id) : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
+  app.innerHTML = r.v === "fmt" ? viewFmt(r.id) : r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "ems" ? viewEms() : r.v === "product" ? viewProduct() : r.v === "em" ? viewEm(r.id) : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
   if (render.last === location.hash) scrollTo(0, y); else scrollTo(0, 0);
   render.last = location.hash;
   if (r.v === "web") bindWeb();
@@ -2443,6 +2554,8 @@ Reply with ONLY JSON: {"pull":{"v":0,"why":""},"itw":{"v":0,"why":""},"major":{"
 document.addEventListener("click", e => {
   { const jp = e.target.closest?.("[data-jump]"); if (jp) { e.preventDefault(); document.getElementById(jp.dataset.jump)?.scrollIntoView({ behavior: "smooth", block: "start" }); return; } }
   const t = e.target;
+  { const cs = t.closest?.("[data-cseg]"); if (cs) { ui.cseg = cs.dataset.cseg; if (location.hash === "#cats") { e.preventDefault(); render(); } } }
+  { const sa = t.closest?.('[data-act="showall"]'); if (sa) { const k = sa.dataset.k; OPEN.has(k) ? OPEN.delete(k) : OPEN.add(k); render(); return; } }
   const own = t.closest("[data-own]");
   if (own) { const k = own.dataset.own; ui.own.has(k) ? ui.own.delete(k) : ui.own.add(k); store.set("own", [...ui.own]); ui.limit = 80; render(); return; }
   const so = t.closest("[data-sort]");
