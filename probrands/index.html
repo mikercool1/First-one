@@ -1298,8 +1298,8 @@ function viewRollup() {
     <div class="gauge"><b>${X.union.size ? pct(X.shared / X.union.size) : "—"}</b><span class="lbl">Doors shared by 2+</span></div>
     <div class="gauge g"><b>${fmtM(xs)}</b><span class="lbl">Cross-sell at ${capLbl()}</span></div></div>
   ${rollPlanPanel(ids)}
-  <div class="bar" role="tablist" style="margin:4px 0 14px"><button class="tog" type="button" role="tab" data-act="rview" data-v="xs" aria-pressed="${ui.rview !== "ws"}">Cross-sell</button><button class="tog" type="button" role="tab" data-act="rview" data-v="ws" aria-pressed="${ui.rview === "ws"}">Whitespace</button><span class="faint" style="font-size:13px">${ui.rview === "ws" ? "Distributors none of the members sell to yet, where the platform's products fit" : "Distributors one member already sells to that another member could enter"}</span></div>
-  ${ui.rview === "ws" ? rollWsView(ids, X) : `
+  <div class="bar" role="tablist" style="margin:4px 0 14px"><button class="tog" type="button" role="tab" data-act="rview" data-v="xs" aria-pressed="${ui.rview === "xs"}">Cross-sell</button><button class="tog" type="button" role="tab" data-act="rview" data-v="ws" aria-pressed="${ui.rview === "ws"}">Whitespace</button><button class="tog" type="button" role="tab" data-act="rview" data-v="pr" aria-pressed="${ui.rview === "pr"}">Pricing</button><span class="faint" style="font-size:13px">${ui.rview === "pr" ? "The good / better / best ladder the members build together, and each one's price lever" : ui.rview === "ws" ? "Distributors none of the members sell to yet, where the platform's products fit" : "Distributors one member already sells to that another member could enter"}</span></div>
+  ${ui.rview === "pr" ? rollPriceView(ids, X) : ui.rview === "ws" ? rollWsView(ids, X) : `
   <section class="panel"><header><h2>Cross-sell by member</h2><span class="sp"></span><span class="lbl">Doors a member gains from the others' shelves</span></header>
   <div class="tw"><table><thead><tr><th>Company</th><th class="r">DNA</th><th class="r">Revenue</th><th class="r">Doors now</th><th class="r">Doors gained</th><th class="r">Cross-sell</th><th>Biggest doors gained (via)</th></tr></thead><tbody>
   ${M.map(x => `<tr><td><b><a href="#c.${esc(x.c.id)}">${esc(x.c.name)}</a></b><br><small class="faint">${ownerLine(x.c)}</small></td><td class="r"><span class="score ${dnaOf(x.c).band} num" style="font-size:16px">${dnaOf(x.c).score}</span></td>
@@ -1367,6 +1367,7 @@ Who unlocks whom (doors one member opens for another): ${pairs.sort((a, b) => b[
 Category overlap (cosine of SKU mix): ${ov.sort((a, b) => b[2] - a[2]).map(([a, b, v]) => `${a}–${b} ${Math.round(v * 100)}%`).join("; ") || "n/a"}.
 Whitespace (distributors no member sells to that stock members' categories): ${(W => `${W.core.length} in the platform's end markets worth ${fmtM(W.core.reduce((a, o) => a + o.value, 0))} at demonstrated rates; best: ${W.core.slice(0, 8).map(o => `${o.d.name} (fits ${o.fits.slice(0, 2).map(f => f.c.name.replace(/\s*\(.*\)$/, "") + " " + pct(f.rtw)).join(", ")}${o.rv.size ? "; rivals there: " + [...o.rv].slice(0, 2).join(", ") : ""})`).join("; ")}. New end markets: ${W.fresh.length} doors, e.g. ${W.fresh.slice(0, 4).map(o => o.d.name + " (" + o.d.market + ")").join(", ")}`)(rollWhitespace(X))}.
 Head-to-head brands today: ${X.h2h.slice(0, 10).map(([a, b]) => `${a.name} vs ${b.name}`).join("; ") || "none"}.
+${rollPriceFacts(ids)}
 Best next add-ons (PE/family/ESOP/private, DNA 45+, no bigger than the platform): ${cand.map(k => `${k.c.name} (${k.c.otype}, DNA ${k.d.score}, revenue ${k.c.rev ? fmtM(k.c.rev) : "unknown"}, opens ${k.givesN} doors for the platform, gets ${k.getsN}, category overlap ${Math.round(k.ov * 100)}%)`).join("; ") || "none"}.`;
 }
 async function askRollPlan() {
@@ -1378,11 +1379,12 @@ async function askRollPlan() {
 Facts (use ONLY these plus general industry knowledge; don't invent numbers, names or deals):
 ${facts}
 
-Write the roll-up plan in Markdown, about 450 words. Start with one bold sentence: the investment thesis for this exact combination. Then "## " sections, each with 2-5 short bullets naming specific members, brands and distributors from the facts:
+Write the roll-up plan in Markdown, about 520 words. Start with one bold sentence: the investment thesis for this exact combination. Then "## " sections, each with 2-5 short bullets naming specific members, brands and distributors from the facts:
 ## Where the cross-sell is (by member: which doors, why they fit, who opens them)
 ## Whitespace (distributors none of the members sell to yet: which to attack first and with which brands)
 ## First moves (the 5-8 highest-value brand-into-door moves to make first, in order)
 ## Go-to-market (one sales team or channel specialists; apply the ITW and focused-vs-sprawling evidence)
+## Pricing (the good / better / best ladder the members build together, same-tier overlaps, where to take price first)
 ## Rationalize (head-to-head brands and overlapping categories)
 ## Next add-ons (which to buy next and what each adds)
 ## Risks and what to verify (scrape gaps, revenue-per-door assumptions, channel conflict)
@@ -1510,7 +1512,7 @@ function lineExtensions(c) {
 function strategyFacts(c, r, ext, adds) {
   const d = dnaOf(c), dt = DT.get(c.id) || {};
   const mk = [...r.adj.reduce((m, x) => m.set(x.d.market, (m.get(x.d.market) || 0) + 1), new Map())].sort((a, b) => b[1] - a[1]).slice(0, 4);
-  const brands = (reachIndex().byOwner.get(c.id) || []), pr = brands.find(b => b.price?.pos)?.price;
+  const brands = (reachIndex().byOwner.get(c.id) || []);
   return `Company: ${c.name} (${c.otype}${c.sponsor ? ", " + c.sponsor : ""}${c.pe_year ? ", since " + c.pe_year : ""}). ${c.model || ""}. HQ ${c.hq || "n/a"}. Revenue ${c.rev ? fmtM(c.rev) : "unknown"}${c.emp ? ", " + Math.round(c.emp) + " staff" : ""}.
 What it is: ${(dt.what || c.blunt || "").slice(0, 500)}
 Brands: ${brands.slice(0, 12).map(b => `${b.name} (${b.ncat}, ${(b.dists || []).length} distributors)`).join("; ")}
@@ -1519,7 +1521,7 @@ Distribution: on ${r.doors} of ${r.relevant} doors in its end markets (${r.mkts.
 New end markets where 2+ rivals sell: ${mk.map(([m, n]) => `${m} (${n} doors)`).join(", ") || "none"}.
 Adjacent categories its own distributors already stock: ${ext.slice(0, 5).map(e => `${e.k} (at ${e.doors} of its doors; leaders ${e.leaders.slice(0, 2).map(x => x.b.name).join(", ")}${e.buy.length ? "; buyable owners " + e.buy.map(x => x.b.owner).join(", ") : ""})`).join("; ") || "none"}.
 Add-on candidates (cross-sell both ways): ${adds.slice(0, 5).map(k => `${k.c.name} (${k.c.otype}, DNA ${k.d.score}, opens ${k.givesN} doors, gets ${k.getsN})`).join("; ") || "none"}.
-Pricing: ${pr?.pos ? `${pr.pos}, ${pr.idx ? pr.idx.toFixed(2) + "x" : ""} the category $/oz` : "not captured"}.`;
+${pricingFacts([c.id])}`;
 }
 async function askPlan(id) {
   const c = CO.get(id); if (!c || !sample) return;
@@ -1532,7 +1534,7 @@ Write a growth plan for the company below, using ONLY these facts plus general i
 
 ${facts}
 
-Format: Markdown, about 300 words. Start with one bold sentence: the thesis. Then these sections as "## " headings, each 2-4 short bullets that name specific distributors, categories or companies from the facts: Push distribution · Enter new end markets · Extend the line · Buy (add-ons) · Fix first (DNA gaps and pricing) · Watch-outs. Plain language, no hype, no em dashes.`;
+Format: Markdown, about 360 words. Start with one bold sentence: the thesis. Then these sections as "## " headings, each 2-4 short bullets that name specific distributors, categories or companies from the facts: Push distribution · Enter new end markets · Extend the line · Pricing (good / better / best: where to take price, which tier to add) · Buy (add-ons) · Fix first (DNA gaps) · Watch-outs. Plain language, no hype, no em dashes.`;
   try {
     const res = await sample(prompt, { modelTier: "complex", cache: false, onText: ({ text }) => { ui.planDraft = text; const el = $("#plandraft"); if (el) el.innerHTML = mdPlan(text); } });
     const doc = { text: res.text, at: now(), facts };
@@ -1560,13 +1562,16 @@ function viewStrategy(id) {
   loadPlan(id);
   const d = dnaOf(c), r = reachOf(c), ext = lineExtensions(c), adds = addonCands([id], 8);
   const brands = reachIndex().byOwner.get(id) || [];
-  const priced = brands.filter(b => b.price?.pos);
   const mk = [...r.adj.reduce((m, x) => m.set(x.d.market, [...(m.get(x.d.market) || []), x]), new Map())].sort((a, b) => b[1].length - a[1].length);
   const fixes = d.tests.filter(t => t.v < 2);
   const moves = [];
   if (r.white.length) moves.push(["Push distribution", `${r.proven} proven missing door${r.proven === 1 ? "" : "s"}${r.ceiling !== null ? `, worth ${fmtM(val(r.ceiling, r.demo))} at ${capLbl()}` : ""}`, r.white.slice(0, 3).map(x => x.d.name.replace(/\s*\(.*\)$/, "")).join(", ")]);
   if (mk.length) moves.push(["Enter a new end market", `${esc(mk[0][0])}: ${mk[0][1].length} doors where its rivals already sell`, mk[0][1].slice(0, 3).map(x => x.d.name.replace(/\s*\(.*\)$/, "")).join(", ")]);
   if (ext.length) moves.push(["Extend the line", `${esc(ext[0].k)}: stocked at ${ext[0].doors} of its ${r.carried.size} doors`, ext[0].buy.length ? "Buy: " + ext[0].buy.map(x => x.b.owner).join(", ") : "Build, or license"]);
+  { const pm = priceMap([id]), tot = pm.reduce((a, e) => a + e.n, 0), rv = num(c.rev); const best = pm.map(e => ({ e, lv: priceLever(e, tot) })).sort((a, b) => b.lv.share * b.lv.move - a.lv.share * a.lv.move)[0];
+    const addBest = pm.find(e => !e.tiers[2].length && e.st.prem >= 2);
+    if (best && best.lv.move >= 0.01) moves.push(["Take price", `${esc(best.e.name)}: ${best.e.ix.toFixed(2)}× vs an upper quartile of ${best.e.st.p75.toFixed(2)}×${rv ? `, ${fmtM1(rv * best.lv.share * best.lv.move)} at ${pct(best.lv.move)}` : ""}`, "Test on pro listings first; price doesn't cost doors in this data"]);
+    else if (addBest) moves.push(["Add a Best tier", `${esc(addBest.name)}: no premium offer`, `Leaders: ${addBest.st.leaders.map(r => r.b.name + " " + r.ix.toFixed(1) + "×").join(", ")}`]); }
   if (adds.length) moves.push(["Buy", `${esc(adds[0].c.name)}: opens ${adds[0].givesN} doors, gets ${adds[0].getsN}`, adds[0].total$ ? `${fmtM(adds[0].value)} cross-sell at ${capLbl()}` : ""]);
   const plan = STRAT.get(id), busy = ui.busy["plan:" + id];
   return `<a class="back" href="#c.${esc(id)}">← ${esc(c.name)}</a>
@@ -1582,6 +1587,7 @@ function viewStrategy(id) {
     ${busy ? `<p class="muted">${esc(busy)}</p><div id="plandraft">${mdPlan(ui.planDraft)}</div>` : plan ? mdPlan(plan.text) : `<p class="muted" style="margin:0">No plan yet.</p>`}
     ${sample && !busy ? `<p style="margin:12px 0 0"><button class="tog" type="button" data-act="plan" data-id="${esc(id)}">${plan ? "Rewrite the plan" : "Ask Claude for a growth plan"}</button>${writable ? "" : ` <span class="faint">You can view but not save plans.</span>`}</p>` : ""}</div></section>
   ${reachPanel(c)}
+  ${pricingPanel(c)}
   ${ext.length ? `<section class="panel"><header><h2>Extend the line</h2><span class="sp"></span><span class="lbl">Categories its own distributors stock that it doesn't sell</span></header>
   <div class="tw"><table><thead><tr><th>Category</th><th class="r">Its doors stocking it</th><th>Leading brands at its doors</th><th>Buy instead of build</th></tr></thead><tbody>
   ${ext.map(e => `<tr><td><b>${catLink(e.k)}</b>${e.same ? `<br><span class="tag tri">Same segment</span>` : ""}</td><td class="r num">${e.doors} / ${r.carried.size}</td>
@@ -1593,9 +1599,8 @@ function viewStrategy(id) {
   ${adds.map(k => `<tr><td><b><a href="#c.${esc(k.c.id)}">${esc(k.c.name)}</a></b><br><small class="faint">${ownerLine(k.c)}</small></td><td class="r"><span class="score ${k.d.band} num" style="font-size:16px">${k.d.score}</span></td><td class="r num">${k.c.rev ? fmtM(k.c.rev) : "—"}</td>
     <td class="r num">${k.givesN}</td><td class="r num">${k.getsN}</td><td class="r num">${k.total$ ? fmtM(k.value) : "—"}</td><td class="r num">${Math.round(k.ov * 100)}%</td></tr>`).join("")}
   </tbody></table></div><div class="body" style="padding-top:0"><a class="tog" href="#rollup:${esc([id, ...adds.slice(0, 2).map(k => k.c.id)].join(","))}">Model it as a roll-up →</a></div></section>` : ""}
-  ${fixes.length || priced.length ? `<section class="panel"><header><h2>Fix first</h2><span class="sp"></span><span class="lbl">DNA gaps and pricing</span></header><div class="body">
+  ${fixes.length ? `<section class="panel"><header><h2>Fix first</h2><span class="sp"></span><span class="lbl">DNA gaps</span></header><div class="body">
     ${fixes.map(t => `<p style="margin:0 0 10px"><b>${esc(t.t)}: ${["fail", "partly"][t.v]}.</b> ${esc(ADVICE[t.k] || "")} <span class="faint">${esc(t.why || "")}</span></p>`).join("")}
-    ${priced.map(b => { const p = b.price, thin = p.n !== undefined && p.n < 3; return `<p style="margin:0 0 10px"><b>${esc(b.name)} pricing: ${esc((p.pos || "").replace(/\s*\(n<3\)/, ""))}${p.idx ? ` (${p.idx.toFixed(2)}× the category $/oz)` : ""}.</b> ${/premium/i.test(p.pos) ? "It already commands a premium; protect it and grow volume through reach before taking more price." : /value/i.test(p.pos) ? "Priced below the category; a price test is the cheapest lever if pros buy it on performance." : "In line with the category."}${thin ? ` <span class="faint">Thin: under 3 priced items.</span>` : ""}</p>`; }).join("")}
   </div></section>` : ""}`;
 }
 
@@ -1605,6 +1610,22 @@ function viewStrategy(id) {
    median of its prices' indices; 1.0x is the category norm. Pro and retail indices use only prices from those channels. */
 const pTier = ix => ix >= 1.5 ? "Premium" : ix >= 1.15 ? "Above" : ix > 0.87 ? "At market" : ix > 0.67 ? "Below" : "Value";
 const pRows = ci => Object.entries(PRICING[ci]?.b || {}).map(([id, v]) => ({ b: BR.get(id), n: v[0], ix: v[1], ppo: v[2], lo: v[3], hi: v[4], pro: v[5], ret: v[6] })).filter(r => r.b);
+/* brands priced in the Good tier (3+ prices) that are on 5+ pro or mixed distributors, owned by a buyable owner with
+   DNA 45+: the thesis is "pull already proven by distribution, price not yet taken". */
+function priceTargets() {
+  const ct = new Map(DISTS.map(d => [d.name, d.ctype])), out = [];
+  for (const b of BR.values()) {
+    const rows = pricesOfBrand(b.id); if (!rows.length) continue;
+    const n = rows.reduce((a, [, v]) => a + v[0], 0); if (n < 3) continue;
+    const ix = geo(rows.map(([, v]) => ({ n: v[0], ix: v[1] }))); if (ix > 0.87) continue;
+    const c = CO.get(b.owner_id); if (!c || !["pe", "family", "esop", "private"].includes(c.oclass) || !ui.own.has(c.oclass)) continue;
+    const d = dnaOf(c); if (d.out || d.score < 45) continue;
+    const doors = (b.dists || []).filter(x => ["pro", "mixed"].includes(ct.get(x))).length; if (doors < 5) continue;
+    const top = rows.slice().sort((a, b2) => b2[1][0] - a[1][0])[0];
+    out.push({ b, c, d, ix, n, doors, ci: top[0], p75: catPriceStats(top[0]).p75 });
+  }
+  return out.sort((a, b) => b.doors - a.doors || a.ix - b.ix);
+}
 function viewPricing() {
   const cats = Object.keys(PRICING).map(ci => { const rows = pRows(ci).filter(r => r.n >= ui.pmin); const s = rows.slice().sort((a, b) => b.ix - a.ix);
     const ixs = rows.map(r => r.ix).sort((a, b) => a - b), q = f => ixs.length ? ixs[Math.min(ixs.length - 1, Math.floor(f * ixs.length))] : null;
@@ -1616,6 +1637,13 @@ function viewPricing() {
   const all = Object.keys(PRICING).flatMap(ci => pRows(ci).map(r => ({ ...r, ci })));
   return `<div class="page-h"><div class="grow"><div class="lbl">Captured list prices · ${all.reduce((a, r) => a + r.n, 0).toLocaleString()} prices · ${all.length.toLocaleString()} brand-category pairs</div><h1>Pricing</h1>
     <p>Who is premium in each category. Every price is indexed against the category's median $/oz for the same pack size, so aerosols are compared with aerosols and gallons with gallons. A brand's index is the median of its prices: 1.0× is the norm, 2× is double. Spread shows how much room the category gives a premium brand.</p></div></div>
+  ${(L => L.length ? `<section class="panel"><header><h2>What pricing teaches</h2><span class="sp"></span><span class="lbl">From ${PLEARN?.n || 0} brand-category pairs with 3+ prices</span></header><div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px">
+    ${L.map(([h, t]) => `<div style="border-left:4px solid var(--accent);padding:4px 0 4px 12px"><p style="margin:0 0 4px"><b>${esc(h)}</b></p><p class="muted" style="margin:0;font-size:13.5px">${esc(t)}</p></div>`).join("")}</div></section>` : "")(priceLessons())}
+  ${(T => T.length ? `<section class="panel"><header><h2>Price-lever targets</h2><span class="sp"></span><span class="lbl">Good-tier brands (3+ prices) on 5+ pro distributors · ${esc(ownSummary())} · DNA 45+</span></header>
+  <div class="tw"><table><thead><tr><th>Brand</th><th>Owner</th><th class="r">DNA</th><th class="r">Price index</th><th>Main priced category</th><th class="r">Pro doors</th><th class="r">Owner revenue</th></tr></thead><tbody>
+  ${T.slice(0, 25).map(t => `<tr><td><b><a href="#b.${esc(t.b.id)}">${esc(t.b.name)}</a></b></td><td><a href="#s.${esc(t.c.id)}">${esc(t.c.name)}</a><br><small class="faint">${ownerLine(t.c)}</small></td><td class="r"><span class="score ${t.d.band} num" style="font-size:16px">${t.d.score}</span></td>
+    <td class="r num">${t.ix.toFixed(2)}×</td><td style="font-size:13px"><a href="#price.${t.ci}">${esc(CATNAMES[t.ci] || "")}</a>${t.p75 ? `<br><span class="faint">upper quartile ${t.p75.toFixed(2)}×</span>` : ""}</td><td class="r num">${t.doors}</td><td class="r num">${t.c.rev ? fmtM(t.c.rev) : "—"}</td></tr>`).join("")}
+  </tbody></table></div><div class="body" style="padding-top:8px"><p class="faint" style="font-size:12.5px;margin:0">Distribution already proves pull; the price hasn't followed. The owner's Strategy page shows the good / better / best ladder and the price lever.${T.length > 25 ? ` Showing 25 of ${T.length}.` : ""}</p></div></section>` : "")(priceTargets())}
   <div class="bar"><select id="pmin" aria-label="Minimum prices">${[[1, "Any number of prices"], [2, "Brands with 2+ prices"], [3, "Brands with 3+ prices"], [5, "Brands with 5+ prices"]].map(([k, l]) => `<option value="${k}" ${k === ui.pmin ? "selected" : ""}>${l}</option>`).join("")}</select>
     <select id="psort" aria-label="Sort">${[["n", "Most priced brands"], ["spread", "Widest price spread"], ["pf", "Most PE/family premium brands"], ["med", "Highest $/oz"]].map(([k, l]) => `<option value="${k}" ${k === ui.psort ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select></div>
   <section class="panel"><div class="tw"><table><thead><tr><th>Category</th><th class="r">Brands priced</th><th class="r">Median $/oz</th><th class="r">Spread (90th / 10th)</th><th>Premium leaders</th><th>Value end</th><th class="r">Premium brands PE or family</th></tr></thead><tbody>
@@ -1664,6 +1692,161 @@ function viewPrice(ci) {
   ${rows.map(r => `<tr><td><b><a href="#b.${esc(r.b.id)}">${esc(r.b.name)}</a></b></td><td>${ownerCell(r.b)}</td><td class="r num">${r.ix.toFixed(2)}×</td><td>${pTier(r.ix)}</td><td class="r num">$${r.ppo.toFixed(2)}</td><td class="r num">${r.pro !== null ? r.pro.toFixed(2) + "×" : "—"}</td><td class="r num">${r.ret !== null ? r.ret.toFixed(2) + "×" : "—"}</td><td class="r num">${r.n}</td></tr>`).join("")}
   </tbody></table></div></section>
   <div class="note">List prices from distributor sites, not net prices. A brand's index is the median of its prices against the same-size median, so one odd listing moves it little once it has 3+ prices.</div>`;
+}
+
+
+/* ---------- pricing strategy: good / better / best ----------
+   Tiers on the same-size index: Good 0.87x and under, Better between, Best 1.15x and up. A brand's tier is its median
+   index; its price points also count per tier (entry 7 of the pricing row), so one brand can ladder on its own. The
+   "upper quartile" is the 75th percentile index of the category's brands with 2+ prices (needs 4 such brands). The
+   price lever closes half the gap to that quartile, capped at 5%, on the share of the company's priced items in the
+   category: a list-price estimate before any volume loss, not a forecast. */
+const GBB = [["Good", "0.87× and under"], ["Better", "0.87× to 1.15×"], ["Best", "1.15× and up"]];
+const fmtM1 = v => { v = num(v); return v !== null && v < 10 ? "$" + v.toFixed(1).replace(/\.0$/, "") + "M" : fmtM(v); };
+const gbbOf = ix => ix <= 0.87 ? 0 : ix >= 1.15 ? 2 : 1;
+let PLEARN = null;
+const priceCache = { src: null, st: new Map(), byBrand: null };
+function priceFresh() { if (priceCache.src !== PRICING) { priceCache.src = PRICING; priceCache.st = new Map(); priceCache.byBrand = null; } }
+function catPriceStats(ci) {
+  priceFresh(); if (priceCache.st.has(ci)) return priceCache.st.get(ci);
+  const rows = pRows(ci), solid = rows.filter(r => r.n >= 2).sort((a, b) => a.ix - b.ix);
+  const p75 = solid.length >= 4 ? solid[Math.min(solid.length - 1, Math.floor(0.75 * solid.length))].ix : null;
+  const st = { p75, leaders: solid.slice().reverse().slice(0, 2), prem: solid.filter(r => r.ix >= 1.15).length, val: solid.filter(r => r.ix <= 0.87).length, n: rows.length };
+  priceCache.st.set(ci, st); return st;
+}
+function pricesOfBrand(id) {
+  priceFresh();
+  if (!priceCache.byBrand) { priceCache.byBrand = new Map(); for (const [ci, P] of Object.entries(PRICING)) for (const [bid, v] of Object.entries(P.b || {})) (priceCache.byBrand.get(bid) || priceCache.byBrand.set(bid, []).get(bid)).push([ci, v]); }
+  return priceCache.byBrand.get(id) || [];
+}
+const geo = xs => { const w = xs.reduce((a, x) => a + x.n, 0); return w ? Math.exp(xs.reduce((a, x) => a + x.n * Math.log(x.ix), 0) / w) : null; };
+// every priced category for a set of companies: each brand's row, the tiers covered, and the category's bar
+function priceMap(ids) {
+  const cats = new Map();
+  for (const id of ids) for (const b of (reachIndex().byOwner.get(id) || [])) for (const [ci, v] of pricesOfBrand(b.id)) {
+    const e = cats.get(ci) || cats.set(ci, { ci, name: CATNAMES[ci], items: [] }).get(ci);
+    e.items.push({ b, co: id, n: v[0], ix: v[1], pro: v[5], ret: v[6], t: v[7] || [0, 0, 0] });
+  }
+  for (const e of cats.values()) {
+    e.st = catPriceStats(e.ci); e.n = e.items.reduce((a, x) => a + x.n, 0); e.ix = geo(e.items);
+    e.tiers = [0, 1, 2].map(k => e.items.filter(x => gbbOf(x.ix) === k));
+    e.pts = [0, 1, 2].map(k => e.items.reduce((a, x) => a + (x.t[k] || 0), 0));
+    const pr = e.items.filter(x => x.pro !== null && x.ret !== null);
+    e.chan = pr.length ? geo(pr.map(x => ({ n: x.n, ix: x.pro / x.ret }))) : null;
+  }
+  return [...cats.values()].sort((a, b) => b.n - a.n);
+}
+function priceLever(e, total) {
+  if (!e.st.p75 || e.n < 2 || !e.ix || e.ix >= e.st.p75) return { gap: 0, move: 0, share: e.n / total };
+  const gap = e.st.p75 / e.ix - 1;
+  return { gap, move: Math.min(0.05, gap / 2), share: e.n / total };
+}
+function priceMove(e, lv) {
+  const has = e.tiers.map(t => t.length > 0), lead = e.st.leaders.map(r => `${r.b.name} ${r.ix.toFixed(1)}×`).join(", ");
+  const out = [];
+  if (lv.move >= 0.01 && e.ix <= 1.0) out.push(["Take price", `At ${e.ix.toFixed(2)}× where the category's upper quartile is ${e.st.p75.toFixed(2)}×. Test ${pct(lv.move)} on pro listings first.`]);
+  else if (lv.move >= 0.01) out.push(["Edge up", `${e.ix.toFixed(2)}× against an upper quartile of ${e.st.p75.toFixed(2)}×; room for ${pct(lv.move)} with the next list change.`]);
+  if (!has[2] && e.st.prem >= 2) out.push(["Add a Best", `No premium offer here; ${lead || "the leaders"} show the category pays for one (pro-grade formula, specialty pack).`]);
+  if (has[2] && !has[0] && !has[1] && e.st.val >= 2) out.push(["Hold the premium", "Only premium SKUs here. Grow through reach rather than chasing the value end."]);
+  if (e.chan !== null && e.chan < 0.95) out.push(["Fix channel prices", `Pro listings sit at ${e.chan.toFixed(2)}× its retail prices. Lift pro before list increases, or the pro channel subsidises retail.`]);
+  if (!out.length) out.push(["Hold", !e.st.p75 ? "Too few priced rivals to read." : e.ix < e.st.p75 ? `At ${e.ix.toFixed(2)}× against an upper quartile of ${e.st.p75.toFixed(2)}×, but on ${e.n} price${e.n === 1 ? "" : "s"}: capture more before moving.` : `At ${e.ix.toFixed(2)}×, at or above the upper quartile (${e.st.p75.toFixed(2)}×). Price follows cost.`]);
+  return out;
+}
+const gbbCell = (items, k, pts, chip) => `<td style="font-size:12.5px;min-width:120px">${items.map(x => `${chip ? chip(x) : ""}<a href="#b.${esc(x.b.id)}">${esc(x.b.name)}</a> <span class="num faint">${x.ix.toFixed(2)}×${x.n < 3 ? "·thin" : ""}</span>`).join("<br>") || `<span class="faint">—</span>`}${pts !== undefined && pts[k] ? `<br><span class="faint" style="font-size:11.5px">${pts[k]} price point${pts[k] === 1 ? "" : "s"}</span>` : ""}</td>`;
+function priceLessons(short) {
+  const L = PLEARN; if (!L) return [];
+  const o = L.own || {}, f = o.family, pub = o.public, pe = o.pe, top = (L.reach || []).find(r => r[0] === "10+"), low = (L.reach || []).find(r => r[0] === "0-1");
+  const out = [];
+  if (f && pub) out.push([`Family brands price low`, `Family-owned brands sit at a median ${f[1].toFixed(2)}× with ${pct(f[2])} in Good, against ${pub[1].toFixed(2)}× and ${pct(pub[2])} for corporate brands; only ${pct(f[3])} are Best (corporate ${pct(pub[3])}). Buying a family brand often buys untaken price.`]);
+  if (pe) out.push([`PE prices at the norm, rarely above it`, `PE-owned brands sit at ${pe[1].toFixed(2)}× and only ${pct(pe[3])} are Best${pub ? `, against ${pct(pub[3])} for corporate brands` : ""}${pe[0] < 40 ? ` (${pe[0]} brands, so read it as a lean)` : ""}. Sponsors have mostly not used price yet.`]);
+  if (top && low) out.push([`Price doesn't cost doors`, `Brands on 10+ pro distributors price at ${top[2].toFixed(2)}×, the same as brands on 0-1 (${low[2].toFixed(2)}×). Distributors list on need and pull, so a price move shouldn't cost listings.`]);
+  if (L.chan) out.push([`Pro pays more than retail`, `The same brand prices ${pct(L.chan[1] - 1)} higher in pro channels at the median (${L.chan[0]} brands; higher in ${pct(L.chan[2])}, lower in ${pct(L.chan[3])}). Brands priced lower in pro than in retail are leaving money behind.`]);
+  if (L.ladders) out.push([`Multi-brand owners ladder by brand`, `Where one owner has 2+ priced brands in a category, ${L.ladders[1]} of ${L.ladders[0]} span 2+ tiers. ITW runs Chemtronics, LPS and Techspray as Best and Spray Nine and Black Magic as Good in cleaners: good / better / best is built by brand, which is what a roll-up buys.`]);
+  return short ? out.map(([h, t]) => `${h}: ${t}`) : out;
+}
+function pricingPanel(c) {
+  const ids = [c.id], m = priceMap(ids); if (!m.length) return "";
+  const total = m.reduce((a, e) => a + e.n, 0), all = m.flatMap(e => e.items), oix = geo(all);
+  const rows = m.map(e => ({ e, lv: priceLever(e, total) }));
+  const rev = num(c.rev), lever = rev ? rows.reduce((a, r) => a + rev * r.lv.share * r.lv.move, 0) : null;
+  const cover = [0, 1, 2].map(k => m.filter(e => e.tiers[k].length).length);
+  return `<section class="panel"><header><h2>Pricing strategy</h2><span class="sp"></span><span class="lbl">Good / better / best by category · <a href="#pricing">all categories</a></span></header>
+  <div class="gauges" style="margin:0;border:0;border-bottom:1px solid var(--line)"><div class="gauge"><b>${oix ? oix.toFixed(2) + "×" : "—"}</b><span class="lbl">Price index, all priced items</span></div>
+    <div class="gauge"><b>${cover[0]} · ${cover[1]} · ${cover[2]}</b><span class="lbl">Categories with a Good · Better · Best brand</span></div>
+    <div class="gauge g"><b>${lever !== null ? fmtM1(lever) : "—"}</b><span class="lbl">Price lever (half the gap, max 5%)</span></div>
+    <div class="gauge"><b>${rev ? fmtM1(rev * 0.01) : "—"}</b><span class="lbl">Each 1% of price${c.ebitda ? ` · +${pct(rev * 0.01 / num(c.ebitda))} EBITDA` : ""}</span></div></div>
+  <div class="tw"><table><thead><tr><th>Category</th><th>Good</th><th>Better</th><th>Best</th><th>Category bar</th><th>Move</th></tr></thead><tbody>
+  ${rows.map(({ e, lv }) => `<tr><td><b><a href="#price.${e.ci}">${esc(e.name)}</a></b><br><span class="faint num" style="font-size:12px">${e.ix.toFixed(2)}× · ${e.n} price${e.n === 1 ? "" : "s"}${e.chan !== null ? ` · pro/retail ${e.chan.toFixed(2)}` : ""}</span></td>
+    ${[0, 1, 2].map(k => gbbCell(e.tiers[k], k, e.pts)).join("")}
+    <td style="font-size:12.5px">${e.st.p75 ? `Upper quartile <b class="num">${e.st.p75.toFixed(2)}×</b>` : `<span class="faint">Too few rivals</span>`}${e.st.leaders.length ? `<br><span class="faint">${e.st.leaders.map(r => esc(r.b.name) + " " + r.ix.toFixed(1) + "×").join(", ")}</span>` : ""}</td>
+    <td style="font-size:13px">${priceMove(e, lv).map(([h, t]) => `<b>${h}.</b> ${esc(t)}`).join("<br>")}${lv.move && rev ? ` <span class="num faint">≈ ${fmtM1(rev * lv.share * lv.move)}</span>` : ""}</td></tr>`).join("")}
+  </tbody></table></div>
+  <div class="body" style="padding-top:8px"><details><summary class="lbl" style="cursor:pointer">What the market map teaches about pricing</summary>${priceLessons().map(([h, t]) => `<p style="margin:8px 0 0"><b>${esc(h)}.</b> ${esc(t)}</p>`).join("")}</details>
+  <p class="faint" style="font-size:12.5px;margin:10px 0 0">Tier cells show the brand's median index; "price points" counts its individual listings in that tier, so one brand can ladder on its own. Revenue share by category is approximated by its share of priced items. List prices, not net.</p></div></section>`;
+}
+function pricingFacts(ids, name) {
+  const m = priceMap(ids); if (!m.length) return "Pricing: not captured.";
+  const total = m.reduce((a, e) => a + e.n, 0), short = id => CO.get(id)?.name.replace(/\s*\(.*\)$/, "") || id;
+  return `Pricing (list prices indexed to the same-size category median; Good <=0.87x, Better, Best >=1.15x; overall ${geo(m.flatMap(e => e.items)).toFixed(2)}x${ids.length === 1 && num(CO.get(ids[0])?.rev) ? `; price lever closing half the gap to each category's upper quartile, max 5%: ${fmtM1(m.reduce((a, e) => { const lv = priceLever(e, total); return a + num(CO.get(ids[0]).rev) * lv.share * lv.move; }, 0))}; each 1% of price = ${fmtM1(num(CO.get(ids[0]).rev) * 0.01)} revenue` : ""}):
+${m.slice(0, 10).map(e => { const lv = priceLever(e, total); return `- ${e.name} (${e.n} price${e.n === 1 ? "" : "s"}${e.n < 3 ? ", thin" : ""}): ${[0, 1, 2].map(k => `${GBB[k][0]} ${e.tiers[k].map(x => `${x.b.name}${ids.length > 1 ? " [" + short(x.co) + "]" : ""} ${x.ix.toFixed(2)}x`).join(", ") || "none"}`).join("; ")}. Category upper quartile ${e.st.p75 ? e.st.p75.toFixed(2) + "x" : "n/a"}, leaders ${e.st.leaders.map(r => r.b.name + " " + r.ix.toFixed(1) + "x").join(", ") || "n/a"}.${e.chan !== null ? ` Pro vs retail ${e.chan.toFixed(2)}.` : ""} Suggested: ${priceMove(e, lv).map(([h]) => h).join(", ")}.`; }).join("\n")}
+What the market map shows about pricing: ${priceLessons(true).join(" ")}`;
+}
+
+/* roll-up pricing: the good / better / best ladder the members build together, same-tier overlaps, and each member's
+   own price lever (as on its Strategy page). */
+function rollPriceCalc(ids) {
+  const m = priceMap(ids), L = "ABCDEFGHIJKLMNOP";
+  const letter = new Map(ids.map((id, i) => [id, L[i] || "?"]));
+  for (const e of m) {
+    e.members = [...new Set(e.items.map(x => x.co))];
+    e.full = e.tiers.filter(t => t.length).length;
+    e.alone = Math.max(...e.members.map(id => [0, 1, 2].filter(k => e.tiers[k].some(x => x.co === id)).length));
+    e.same = [0, 1, 2].filter(k => new Set(e.tiers[k].map(x => x.co)).size >= 2);
+  }
+  const mem = ids.map(id => { const c = CO.get(id), pm = priceMap([id]), tot = pm.reduce((a, e) => a + e.n, 0), rev = num(c.rev);
+    return { c, ix: geo(pm.flatMap(e => e.items)), cats: pm.length, cover: [0, 1, 2].map(k => pm.filter(e => e.tiers[k].length).length),
+      lever: rev && tot ? pm.reduce((a, e) => { const lv = priceLever(e, tot); return a + rev * lv.share * lv.move; }, 0) : null }; });
+  return { m, letter, mem };
+}
+function rollRead(e, letter) {
+  const nm = x => `${x.b.name} (${letter.get(x.co)})`;
+  if (e.members.length < 2) return priceMove(e, priceLever(e, e.n)).map(([h, t]) => `<b>${h}.</b> ${esc(t)}`).join("<br>");
+  const out = [];
+  if (e.full === 3) out.push(`<b>Full ladder.</b> ${esc(nm(e.tiers[2][0]))} as Best, ${esc(nm(e.tiers[1][0]))} as Better, ${esc(nm(e.tiers[0][0]))} as the entry price. Sell it to distributors as one good / better / best line.`);
+  else if (e.full > e.alone) { const ks = [0, 1, 2].filter(k => e.tiers[k].length), hi = e.tiers[ks[ks.length - 1]][0], lo = e.tiers[ks[0]][0];
+    out.push(`<b>Adds a tier.</b> Together they cover ${ks.map(k => GBB[k][0]).join(" and ")}; no member does alone. ${esc(nm(hi))} leads at ${GBB[ks[ks.length - 1]][0]}, ${esc(nm(lo))} holds ${GBB[ks[0]][0]}.${!e.tiers[2].length && e.st.prem >= 2 ? " Still no Best: a premium SKU or add-on would complete it." : ""}`); }
+  for (const k of e.same) { const who = [...new Set(e.tiers[k].map(x => x.co))]; out.push(`<b>Same tier.</b> ${who.map(id => esc(e.tiers[k].find(x => x.co === id).b.name)).join(" and ")} both sit at ${GBB[k][0]}. Rationalize, move one up a tier, or split them by channel.`); }
+  if (!out.length) out.push(`<b>Shared category.</b> ${e.members.length} members price here; no ladder or overlap to act on.`);
+  return out.join("<br>");
+}
+function rollPriceView(ids, X) {
+  const { m, letter, mem } = rollPriceCalc(ids);
+  if (!m.length) return `<section class="panel"><div class="body"><p class="muted" style="margin:0">No captured prices for these members yet.</p></div></section>`;
+  const shared = m.filter(e => e.members.length >= 2), solo = m.filter(e => e.members.length < 2);
+  const fullC = m.filter(e => e.full === 3).length, fullA = m.filter(e => e.alone === 3).length, adds = shared.filter(e => e.full > e.alone).length, same = shared.filter(e => e.same.length).length;
+  const lever = mem.reduce((a, x) => a + (x.lever || 0), 0);
+  const chip = x => `<span class="tag" style="font-size:10.5px;padding:0 4px;margin-right:4px">${letter.get(x.co)}</span>`;
+  const table = (rows, read) => `<div class="tw"><table><thead><tr><th>Category</th>${GBB.map(([h, r]) => `<th>${h}<br><span class="faint" style="font-weight:400;text-transform:none">${r}</span></th>`).join("")}<th>Category bar</th><th>Read</th></tr></thead><tbody>
+    ${rows.map(e => `<tr><td><b><a href="#price.${e.ci}">${esc(e.name)}</a></b><br><span class="faint num" style="font-size:12px">${e.n} price${e.n === 1 ? "" : "s"}</span></td>${[0, 1, 2].map(k => gbbCell(e.tiers[k], k, undefined, chip)).join("")}
+      <td style="font-size:12.5px">${e.st.p75 ? `Upper quartile <b class="num">${e.st.p75.toFixed(2)}×</b>` : `<span class="faint">Too few rivals</span>`}${e.st.leaders.length ? `<br><span class="faint">${e.st.leaders.map(r => esc(r.b.name) + " " + r.ix.toFixed(1) + "×").join(", ")}</span>` : ""}</td><td style="font-size:13px">${read(e)}</td></tr>`).join("")}</tbody></table></div>`;
+  return `<div class="gauges"><div class="gauge"><b>${shared.length}</b><span class="lbl">Categories 2+ members price in</span></div><div class="gauge g"><b>${fullC}</b><span class="lbl">Full good / better / best ladders (alone: ${fullA})</span></div>
+    <div class="gauge"><b>${adds}</b><span class="lbl">Categories where combining adds a tier</span></div><div class="gauge"><b>${same}</b><span class="lbl">Same-tier overlaps to resolve</span></div>
+    <div class="gauge g"><b>${lever ? fmtM1(lever) : "—"}</b><span class="lbl">Price lever across members</span></div></div>
+  <section class="panel"><header><h2>Members' price position</h2><span class="sp"></span><span class="lbl">Letters key the ladder below · lever = half the gap to each category's upper quartile, max 5%</span></header>
+  <div class="tw"><table><thead><tr><th>Member</th><th class="r">Price index</th><th class="r">Categories priced</th><th class="r">With Good · Better · Best</th><th class="r">Price lever</th></tr></thead><tbody>
+  ${mem.map(x => `<tr><td><span class="tag" style="font-size:10.5px;padding:0 4px;margin-right:6px">${letter.get(x.c.id)}</span><b><a href="#s.${esc(x.c.id)}">${esc(x.c.name)}</a></b></td><td class="r num">${x.ix ? x.ix.toFixed(2) + "×" : "—"}</td><td class="r num">${x.cats}</td><td class="r num">${x.cats ? x.cover.join(" · ") : "—"}</td><td class="r num">${x.lever ? fmtM1(x.lever) : "—"}</td></tr>`).join("")}
+  </tbody></table></div></section>
+  ${shared.length ? `<section class="panel"><header><h2>The ladder together</h2><span class="sp"></span><span class="lbl">Categories 2+ members price in · Good ≤0.87× · Better · Best ≥1.15× the same-size median</span></header>${table(shared.sort((a, b) => (b.full - b.alone) - (a.full - a.alone) || b.same.length - a.same.length || b.n - a.n), e => rollRead(e, letter))}</section>` : ""}
+  ${solo.length ? `<section class="panel"><header><h2>One member only</h2><span class="sp"></span><span class="lbl">Where a member prices alone: gaps an add-on could fill</span></header>${table(solo.slice(0, 25), e => rollRead(e, letter))}</section>` : ""}
+  <div class="note">${priceLessons(true).slice(0, 2).map(esc).join(" ")} List prices, not net; brands with under 3 prices are marked thin.</div>`;
+}
+function rollPriceFacts(ids) {
+  const { m, letter, mem } = rollPriceCalc(ids);
+  if (!m.length) return "Pricing: not captured.";
+  const sh = m.filter(e => e.members.length >= 2);
+  return `${pricingFacts(ids)}
+Members' price position: ${mem.map(x => `${x.c.name.replace(/\s*\(.*\)$/, "")} ${x.ix ? x.ix.toFixed(2) + "x" : "n/a"} over ${x.cats} categories${x.lever ? `, price lever ${fmtM1(x.lever)}` : ""}`).join("; ")}.
+Ladders together: ${sh.filter(e => e.full > e.alone || e.full === 3).map(e => `${e.name} (${e.full} tiers combined vs ${e.alone} alone)`).join("; ") || "none"}. Same-tier overlaps: ${sh.filter(e => e.same.length).map(e => `${e.name} at ${e.same.map(k => GBB[k][0]).join("/")}`).join("; ") || "none"}.`;
 }
 
 /* ---------- view: SKU mix ---------- */
@@ -1861,7 +2044,7 @@ render();
       else if (x.id === "deals") DEALS = v.deals || [];
       else if (x.id === "dists") DISTS = v.list || [];
       else if (x.id === "index") SRC = v.source || "";
-      else if (x.id === "pricing") PRICING = v.cats || {};
+      else if (x.id === "pricing") { PRICING = v.cats || {}; PLEARN = v.learn || null; }
       else if (x.id === "cats") { CATS = v.cats || []; CATNAMES = v.names || []; SEGOF = v.segs || {}; }
     });
     const dmk = new Map(DISTS.map(d => [d.name, d.market]));

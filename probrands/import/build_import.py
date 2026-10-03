@@ -654,9 +654,37 @@ for bid, cat, ppo, dist, band in priced:
 pricing_out = collections.defaultdict(dict)
 for (cat, bid), x in pb.items():
     pricing_out[cat][bid] = [len(x["i"]), r1(med(x["i"]), 3), r1(med(x["p"]), 3), r1(min(x["i"]), 3), r1(max(x["i"]), 3),
-                             r1(med(x["pro"]), 3) if x["pro"] else None, r1(med(x["ret"]), 3) if x["ret"] else None]
+                             r1(med(x["pro"]), 3) if x["pro"] else None, r1(med(x["ret"]), 3) if x["ret"] else None,
+                             [sum(i <= 0.87 for i in x["i"]), sum(0.87 < i < 1.15 for i in x["i"]), sum(i >= 1.15 for i in x["i"])]]
 pricing_meta = {cat: {"rows": len(cat_all[cat]), "med": r1(cat_med[cat], 3),
                       "bands": {b: r1(v, 3) for (c, b), v in cell_med.items() if c == cat}} for cat in pricing_out}
+# what the ladder teaches, for the Pricing page and the plans: who prices low by owner type, whether price costs
+# distribution, pro vs retail on the same brand, and how multi-brand owners ladder good / better / best.
+GBB = lambda i: "g" if i <= 0.87 else "best" if i >= 1.15 else "b"
+solid = [(cat, bid, med(x["i"])) for (cat, bid), x in pb.items() if len(x["i"]) >= 3]
+learn = {"own": {}, "reach": [], "chan": None, "ladders": None}
+by_own = collections.defaultdict(list)
+for cat, bid, ix in solid:
+    by_own[out_br[bid].get("oclass") or "unknown"].append(ix)
+for k, v in by_own.items():
+    if len(v) >= 5:
+        learn["own"][k] = [len(v), r1(med(v), 3), r1(sum(i <= 0.87 for i in v) / len(v), 3), r1(sum(i >= 1.15 for i in v) / len(v), 3)]
+pro_doors = lambda bid: sum(1 for d in out_br[bid].get("dists", []) if ctype(d) in ("pro", "mixed"))
+for lo, hi, lbl in [(0, 2, "0-1"), (2, 5, "2-4"), (5, 10, "5-9"), (10, 10 ** 6, "10+")]:
+    v = [ix for cat, bid, ix in solid if lo <= pro_doors(bid) < hi]
+    if v:
+        learn["reach"].append([lbl, len(v), r1(med(v), 3)])
+gap = [med(x["pro"]) / med(x["ret"]) for x in pb.values() if x["pro"] and x["ret"]]
+if gap:
+    learn["chan"] = [len(gap), r1(med(gap), 3), r1(sum(g > 1.05 for g in gap) / len(gap), 3), r1(sum(g < 0.95 for g in gap) / len(gap), 3)]
+lad = collections.defaultdict(lambda: collections.defaultdict(set))
+for (cat, bid), x in pb.items():
+    if out_br[bid].get("owner_id"):
+        lad[out_br[bid]["owner_id"]][cat].add((bid, GBB(med(x["i"]))))
+multi = [v for cs in lad.values() for v in cs.values() if len(v) >= 2]
+learn["ladders"] = [len(multi), sum(len({t for _, t in v}) >= 2 for v in multi), sum(len({t for _, t in v}) == 3 for v in multi)]
+learn["n"] = len(solid)
+
 print("price ladder:", len(priced), "prices,", sum(len(v) for v in pricing_out.values()), "brand-category pairs,",
       sum(1 for v in pricing_out.values() if len(v) >= 4), "categories with 4+ brands")
 
@@ -798,7 +826,7 @@ qwhere = shard(dict(out_q), "q", "prices", folder="sku")  # prices load with the
 for bid, i in qwhere.items():
     out_br[bid]["q"] = i
 nbr = len(set(shard(out_br, "br", "brands").values()))
-json.dump({"cats": {CAT_IX[c]: {"b": v, **pricing_meta[c]} for c, v in pricing_out.items() if c in CAT_IX}, "updated_at": NOW},
+json.dump({"cats": {CAT_IX[c]: {"b": v, **pricing_meta[c]} for c, v in pricing_out.items() if c in CAT_IX}, "learn": learn, "updated_at": NOW},
           open(f"{OUT}/data/pricing.json", "w"), separators=(",", ":"))
 json.dump({"cats": cats_out, "names": CATS, "segs": {c: SEG_OF.get(c, "Unclassified") for c in CATS}, "updated_at": NOW}, open(f"{OUT}/data/cats.json", "w"), separators=(",", ":"))
 json.dump({"deals": deals_out, "updated_at": NOW}, open(f"{OUT}/data/deals.json", "w"), separators=(",", ":"))
