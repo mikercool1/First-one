@@ -122,7 +122,7 @@ Seven checks, each Pass (full points), Partly (half) or Fail:
 
 Claude's judgments for all owners are in `import/judgments.json`. They come from Claude's knowledge plus the workbook facts, without new web research. On a company page you can click any check to change it, which saves as "Your call", or ask Claude to re-check the three judgment calls. Overrides live in the `dna` collection (one document per company), so re-importing the workbook never erases them. Precedence: your call, then a re-check from the page, then the imported judgment, then the data rule.
 
-**DNA workbook.** `Probrands_DNA_v24.xlsx` holds the DNA test in Excel, ready to paste into the market map. It has three sheets:
+**DNA workbook.** `Probrands_DNA_v27.xlsx` holds the DNA test in Excel, ready to paste into the market map. It has three sheets:
 - DNA by owner: every check's result, points, source and reason, keyed by the Master tab's Owner ID.
 - DNA by brand: each brand's owner score plus the three data checks scored for the brand alone, keyed by the Brands tab's Brand ID.
 - How it's scored.
@@ -131,7 +131,7 @@ To rebuild it after an import:
 
 ```
 NODE_PATH=$(npm root -g) node probrands/import/dump_dna.js dna.json
-python3 probrands/import/export_dna.py Professional_Brands_Market_Map_v24.xlsx dna.json probrands/Probrands_DNA_v24.xlsx
+python3 probrands/import/export_dna.py Professional_Brands_Market_Map_v27.xlsx dna.json probrands/Probrands_DNA_v27.xlsx
 ```
 
 The dump scores with the app's own code, so the numbers match the screen. Overrides saved in the app are not included.
@@ -141,7 +141,7 @@ Distributor channels (broadline MRO, trade specialty, retail-leaning) and the en
 ## Data
 
 ```
-python3 probrands/import/build_import.py Professional_Brands_Market_Map_v24.xlsx
+python3 probrands/import/build_import.py Professional_Brands_Market_Map_v27.xlsx
 ```
 
 This writes `import/out/data/*.json`, one file per document in the app's `data` collection: `co-N` (company summaries), `dt-N` (details), `br-N` (every brand), `deals`, `dists` and `index`. Every SKU goes in `import/out/sku/p-N.json`, the `sku` collection, which loads one document at a time when a brand page opens. Lists are split across documents because the database stores at most 256 KB per document; nothing is dropped. Load them with the ArtifactData tool (a `set` of each file). It also writes `import/out/judge/batch-N.json`, the facts behind the judgment calls, for scoring new owners.
@@ -155,4 +155,4 @@ The database still holds the earlier version's `companies`, `details` and `meta`
 
 Columns read when the workbook fills them (empty in v9): Est. brand rev, Pro brand rev, EBITDA reported, Platform EBITDA, EBITDA margin, the Master % by trade and % by package format splits, and List price. The app shows each one as soon as it has a value. Mfr part # is shown in the product table.
 
-Loaded now: v24 (1 Oct 2026), with 955 owners, all 4,288 brands, 15,728 SKUs, 519 deals and 201 distributors. New in v24: researched channel splits for 777 owners (448 with a pro-channel revenue estimate), retail share for every brand, and pro-weighted category ownership. DNA scores unchanged from v20.
+Loaded now: v27 (3 Oct 2026), with 1,101 owners (147 new, all judged), all 4,288 brands, 15,728 SKUs, 529 deals and 201 distributors. Brands: 1,609 verified owner, 79 workbook prior, 418 not identified, the rest Claude or workbook-triage guesses. Of the 183 brands newly verified in v27 that carried a Claude guess, the guess matched for 85% of High-confidence, 77% of Medium and 51% of Low.
