@@ -272,6 +272,7 @@ td.rv{font-size:13px;line-height:1.5;white-space:nowrap}
       <a href="#brands" data-v="brands">Brands<small id="nBrands"></small></a>
       <a href="#cats" data-v="cats">Categories<small id="nCats"></small></a>
       <a href="#ems" data-v="ems">End markets</a>
+      <a href="#product" data-v="product">Product</a>
       <a href="#pricing" data-v="pricing">Pricing</a>
       <a href="#dists" data-v="dists">Distributors<small id="nDists"></small></a>
       <a href="#consolidators" data-v="consolidators">Consolidators</a>
@@ -313,7 +314,7 @@ const PRICES = new Map(), priceLoading = new Set();
 let DEALS = [], DISTS = [], SRC = "", loaded = false, ver = 0;
 const OWN = [["pe", "PE"], ["family", "Family"], ["esop", "ESOP"], ["private", "Private"], ["corp", "Corporate"]];
 const ownKey = c => c.oclass === "public" || c.oclass === "sub_private" ? "corp" : c.oclass;
-const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", pp: { q: "", min: "M", sort: "lead", seg: "", cat: "", own: "", pos: "", limit: 100 }, roll: store.get("roll", []), rview: "xs", wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "attr", emcol: null, sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
+const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", pp: { q: "", min: "M", sort: "lead", seg: "", cat: "", own: "", pos: "", limit: 100 }, roll: store.get("roll", []), rview: "xs", wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "attr", emcol: null, syn: { src: "default", rm: 0.02, fr8: 0.03, rev: {}, fr: {} }, sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
   b: { q: "", status: "", tri: "", own: "", fam: "", seg: "", ch: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
 
 /* ---------- DNA ---------- */
@@ -440,7 +441,7 @@ function route() {
   if (h.startsWith("d.")) return { v: "dist", id: h.slice(2) };
   if (h.startsWith("s.")) return { v: "strategy", id: h.slice(2) };
   if (h.startsWith("rollup")) { const ids = h.split(":")[1]; if (ids !== undefined) { ui.roll = ids.split(",").filter(x => CO.has(x) || !loaded); store.set("roll", ui.roll); } return { v: "rollup" }; }
-  if (["screen", "consolidators", "mix", "brands", "cats", "dists", "reach", "pricing", "premium", "ems"].includes(h)) return { v: h };
+  if (["screen", "consolidators", "mix", "brands", "cats", "dists", "reach", "pricing", "premium", "ems", "product"].includes(h)) return { v: h };
   if (h.startsWith("em.")) return { v: "em", id: h.slice(3) };
   return { v: "screen" };
 }
@@ -966,7 +967,7 @@ function viewCats() {
   const pm = catPlayers(), w = critWeights();
   const base = CATS.filter(c => !ui.cseg || c.seg === ui.cseg).map(c => ({ ...c, ci: c.i, name: c.cat, s: CSTUDY[c.i] || {}, a: attrOf(c.i), play: (pm.get(c.cat) || []).length, spread: catSpread(c.i) }));
   const studied = base.filter(c => c.a !== null);
-  const key = { attr: c => c.a ?? -1, pro: c => c.s.pro || 0, tam: c => c.s.tam || 0, cagr: c => c.s.cagr || 0, priv: c => c.s.priv ?? c.pct_priv ?? 0, frag: c => c.s.sc?.[3] || 0, price: c => c.s.sc?.[2] || 0, spread: c => c.spread || 0, name: c => c.cat }[ui.csort] || (c => c.a ?? -1);
+  const key = { attr: c => c.a ?? -1, pro: c => c.s.pro || 0, tam: c => c.s.tam || 0, cagr: c => c.s.cagr || 0, sec: c => c.s.sec?.score || 0, emc: c => c.s.sec?.emc || 0, priv: c => c.s.priv ?? c.pct_priv ?? 0, frag: c => c.s.sc?.[3] || 0, price: c => c.s.sc?.[2] || 0, spread: c => c.spread || 0, name: c => c.cat }[ui.csort] || (c => c.a ?? -1);
   const rows = base.slice().sort((a, b) => ui.csort === "name" ? a.cat.localeCompare(b.cat) : key(b) - key(a));
   const segs = segments(), tam = studied.reduce((a, c) => a + (c.s.tam || 0), 0), pro = studied.reduce((a, c) => a + (c.s.pro || 0), 0);
   const changed = CRIT.some((c, j) => (c[1] ?? 1) !== w[j]);
@@ -979,17 +980,18 @@ function viewCats() {
     <div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">${CRIT.map((c, j) => `<label style="display:grid;gap:4px"><span class="lbl">${esc(CRIT_SHORT[j] || c[0])}</span><select data-cw="${j}" aria-label="Weight for ${esc(c[0])}">${[0, 0.5, 1, 1.5, 2, 3].map(v => `<option value="${v}" ${v === w[j] ? "selected" : ""}>${v === 0 ? "Ignore" : "× " + v}</option>`).join("")}</select></label>`).join("")}</div></section>
   <section class="panel"><header><h2>Attractiveness against size</h2><span class="sp"></span><span class="lbl">One dot per category · hover for detail, click to open</span></header><div class="body">${attrChart(studied)}</div></section>
   <div class="bar"><select id="cseg" aria-label="Segment"><option value="">All segments</option>${segs.map(s => `<option ${s === ui.cseg ? "selected" : ""}>${esc(s)}</option>`).join("")}</select>
-    <select id="csort" aria-label="Sort">${[["attr", "Most attractive"], ["pro", "Largest pro market"], ["tam", "Largest US market"], ["cagr", "Fastest growth"], ["frag", "Most fragmented"], ["price", "Most pricing power"], ["spread", "Widest price spread"], ["priv", "Most privately owned"], ["name", "Name"]].map(([k, l]) => `<option value="${k}" ${k === ui.csort ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select></div>
-  <section class="panel"><div class="tw"><table><thead><tr><th>Category</th><th class="r">Score</th>${CRIT_SHORT.map(h => `<th class="r" style="font-size:10.5px;max-width:70px;white-space:normal">${h}</th>`).join("")}<th class="r">Pro market</th><th class="r">US market</th><th class="r">CAGR</th><th>Top end markets</th><th class="r">Owners · private</th><th class="r">Price spread</th></tr></thead><tbody>
+    <select id="csort" aria-label="Sort">${[["attr", "Most attractive"], ["pro", "Largest pro market"], ["tam", "Largest US market"], ["cagr", "Fastest growth"], ["sec", "Best secular position"], ["emc", "Fastest-growing end markets"], ["frag", "Most fragmented"], ["price", "Most pricing power"], ["spread", "Widest price spread"], ["priv", "Most privately owned"], ["name", "Name"]].map(([k, l]) => `<option value="${k}" ${k === ui.csort ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select></div>
+  <section class="panel"><div class="tw"><table><thead><tr><th>Category</th><th class="r">Score</th>${CRIT_SHORT.map(h => `<th class="r" style="font-size:10.5px;max-width:70px;white-space:normal">${h}</th>`).join("")}<th class="r">Pro market</th><th class="r">US market</th><th class="r">CAGR</th><th class="r">Secular · end-mkt CAGR</th><th>Top end markets</th><th class="r">Owners · private</th><th class="r">Price spread</th></tr></thead><tbody>
   ${rows.map(c => `<tr class="cons-row" data-go="cat.${c.i}"><td><b><a href="#cat.${c.i}">${esc(c.cat)}</a></b><br><span class="faint" style="font-size:12.5px">${esc(c.seg)}</span></td>
     <td class="r num"><b style="font-size:16px">${c.a !== null ? c.a.toFixed(2) : "—"}</b></td>${(c.s.sc || Array(7).fill(null)).map(scoreCell).join("")}
     <td class="r num">${fmtTam(c.s.pro)}</td><td class="r num">${fmtTam(c.s.tam)}${c.s.lo && c.s.hi ? `<br><span class="faint" style="font-size:11.5px">${fmtTam(c.s.lo)}–${fmtTam(c.s.hi)}</span>` : ""}</td>
     <td class="r num">${c.s.cagr !== undefined ? c.s.cagr + "%" : "—"}${c.s.conf ? `<br><span class="faint" style="font-size:11.5px">${esc(c.s.conf)} conf.</span>` : ""}</td>
+    <td class="r num">${c.s.sec ? `${c.s.sec.score.toFixed(2)}<br><span class="faint" style="font-size:11.5px">#${c.s.sec.rank} · ${(c.s.sec.emc * 100).toFixed(1)}%</span>` : "—"}</td>
     <td style="font-size:12.5px">${(c.s.em || []).map(([m, p]) => `${esc(m)} <span class="num faint">${pct(p)}</span>`).join("<br>") || "—"}</td>
     <td class="r num">${c.s.no ?? c.play}<br><span class="faint" style="font-size:11.5px">${pct(c.s.priv ?? c.pct_priv)} private${c.s.pe ? " · " + pct(c.s.pe) + " PE" : ""}</span></td>
     <td class="r num">${c.spread ? c.spread.toFixed(1) + "×" : "—"}</td></tr>`).join("")}
   </tbody></table></div></section>
-  <div class="note">Scores are the market map's research judgments (1 = weak, 5 = strong); "Pro channel" scores low retail exposure. Market sizes are estimates with the confidence shown, and categories overlap, so sums overstate the total. Price spread is the 90th over the 10th percentile like-for-like index among brands with 2+ prices.</div>`;
+  <div class="note">Scores are the market map's research judgments (1 = weak, 5 = strong); "Pro channel" scores low retail exposure. Market sizes are estimates with the confidence shown, and categories overlap, so sums overstate the total. Price spread is the 90th over the 10th percentile like-for-like index among brands with 2+ prices. Secular is the Secular Screen's score: the category's end markets' growth and defensiveness (weighted by its end-market mix) and the category's own growth, ranked of 59; end-market CAGR is that mix-weighted base growth.</div>`;
 }
 function catHbars(rows, cls = "var(--accent)") {
   const max = Math.max(0.0001, ...rows.map(r => r[1] || 0));
@@ -1060,6 +1062,14 @@ function viewCat(i) {
       ${st.built ? `<p class="muted" style="font-size:13px;margin:10px 0 0"><b>How it was built.</b> ${esc(st.built)}</p>` : ""}</div>`)}
     ${panel("Form factors", st.pp?.["# priced items"] ? `${st.pp["# priced items"]} priced items` : "", `<div class="body">${catHbars(st.forms, "var(--ink-3)")}</div>`)}
   </div>
+  ${st.chem?.length || st.rms?.length ? panel("Chemistry, raw materials and cost", `${st.secular ? `End markets growing ${(st.secular.wcagr * 100).toFixed(1)}% a year (mix-weighted) · ` : ""}<a href="#product">product overview</a>`, `<div class="body grid2" style="margin:0;gap:24px">
+    <div><div class="lbl" style="margin:0 0 8px">Key chemistries</div><table><tbody>${st.chem.map(([n, sh, note]) => `<tr><td>${esc(n)}${note ? `<br><span class="faint" style="font-size:12px">${esc(note)}</span>` : ""}</td><td class="r num" style="white-space:nowrap">${esc(sh)}</td></tr>`).join("")}</tbody></table></div>
+    <div><div class="lbl" style="margin:0 0 8px">Cost structure (% of sales, est.)</div>${st.cost && st.cost.rm !== undefined ? `<div style="display:flex;height:22px;margin:0 0 6px">${[["rm", "Raw materials", "var(--ink-2)"], ["pack", "Packaging", "var(--ink-3)"], ["labor", "Labor & overhead", "var(--line-2)"], ["freight", "Freight", "var(--sunk)"], ["gm", "Gross margin", "var(--accent)"]].map(([k, l, col]) => st.cost[k] ? `<div data-tip="${esc(`<b>${l}</b>${Math.round(st.cost[k] * 100)}% of sales`)}" style="width:${st.cost[k] * 100}%;background:${col};border-right:2px solid var(--panel)"></div>` : "").join("")}</div>
+      <p class="num" style="margin:0 0 8px;font-size:12.5px">${[["rm", "RM"], ["pack", "Pack"], ["labor", "Labor"], ["freight", "Freight"], ["gm", "GM"]].map(([k, l]) => `${l} ${Math.round((st.cost[k] || 0) * 100)}%`).join(" · ")}</p>` : ""}
+      ${st.cost_basis ? `<p class="faint" style="margin:0 0 10px;font-size:12px">${esc(st.cost_basis)}</p>` : ""}
+      ${st.shared ? `<p style="margin:0 0 8px;font-size:13.5px"><b>Shared inputs.</b> ${esc(st.shared)}</p>` : ""}${st.regs ? `<p style="margin:0;font-size:13.5px"><b>Regulation.</b> ${esc(st.regs)}</p>` : ""}</div></div>
+    ${st.rms?.length ? `<div class="body" style="padding-top:0"><div class="lbl" style="margin:0 0 8px">Raw materials</div><div class="tw"><table style="font-size:12.5px"><thead><tr><th>Raw material</th><th>Role</th><th class="r">% of RM cost</th><th>Main suppliers</th><th>Price driver</th><th>Type</th></tr></thead><tbody>${st.rms.map(([n, role, p, sup, drv, ty]) => `<tr><td><b>${esc(n)}</b></td><td>${esc(role)}</td><td class="r num">${p ?? "—"}</td><td>${esc(sup)}</td><td>${esc(drv)}</td><td>${esc(ty)}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+    ${st.fbom?.length ? `<div class="body" style="padding-top:0"><div class="lbl" style="margin:0 0 8px">What each package is made of${st.fmt_note ? ` · ${esc(st.fmt_note)}` : ""}</div>${st.fbom.map(([f, p, bom]) => `<details style="margin:0 0 6px"><summary style="cursor:pointer"><b>${esc(f)}</b> <span class="num faint">${pct(p)} of SKUs</span></summary><ul style="margin:6px 0 0;padding-left:18px;font-size:12.5px">${bom.split(" | ").map(x => `<li>${esc(x)}</li>`).join("")}</ul></details>`).join("")}</div>` : ""}`) : ""}
   ${panel("Who competes", `${(st.otypes || []).map(([k, n]) => `${esc(k)} ${n}`).join(" · ")}`, `<div class="body"><div class="lbl" style="margin:0 0 8px">Top brands by distributor reach</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px 18px">${st.tops.map(([b, d, o]) => `<div><b>${brandLink(b)}</b> <span class="num faint" style="font-size:12px">${esc(d.replace(" distributors", " dist."))}</span><br><span class="faint" style="font-size:12px">${esc(o)}</span></div>`).join("")}</div></div>
     <div class="body" style="padding-top:0"><div class="lbl" style="margin:0 0 8px">Private owners here (PE, family, ESOP, private subs), by reach</div><div class="tw"><table><thead><tr><th>Owner</th><th class="r">Revenue</th><th class="r">Brands · max dist.</th><th class="r">Retail</th><th class="r">EBITDA margin</th></tr></thead><tbody>
@@ -1115,8 +1125,8 @@ function viewEms() {
   <section class="panel"><header><h2>Implied spend in our categories</h2><span class="sp"></span><span class="lbl">Aviation, Electronics & Lab and Woodworking sit in "Other" in the category research, so have no figure</span></header>
     <div class="body" style="display:grid;gap:8px">${bySpend.map(x => `<div style="display:grid;grid-template-columns:minmax(120px,210px) 1fr 70px;gap:10px;align-items:center" data-tip="${esc(`<b>${esc(x.name)}</b>${x.spend ? fmtTam(x.spend) + " implied spend" : "No figure"} · ${x.nd || 0} distributors · ${(x.skus || 0).toLocaleString()} SKUs`)}">
       <a href="#em.${x.i}">${esc(x.name)}</a><div style="height:12px;background:var(--sunk)"><div style="height:12px;width:${(x.spend || 0) / maxSp * 100}%;background:var(--accent)"></div></div><b class="num r">${x.spend ? fmtTam(x.spend) : "—"}</b></div>`).join("")}</div></section>
-  <section class="panel"><div class="tw"><table><thead><tr><th>End market</th><th class="r">Implied spend</th><th class="r">Distributors · scraped</th><th class="r">Core SKUs</th><th class="r">Brands</th><th class="r">Private-owned SKUs</th><th>Top format · pack</th><th>Top categories</th><th>Top distributors</th></tr></thead><tbody>
-  ${L.map((x, i) => `<tr class="cons-row" data-go="em.${i}"><td><b><a href="#em.${i}">${esc(x.name)}</a></b></td><td class="r num">${x.spend ? fmtTam(x.spend) : "—"}</td><td class="r num">${x.nd ?? "—"} · ${x.nds ?? "—"}</td><td class="r num">${(x.skus || 0).toLocaleString()}</td><td class="r num">${x.nb ?? "—"}</td><td class="r num">${pct(x.priv)}</td>
+  <section class="panel"><div class="tw"><table><thead><tr><th>End market</th><th class="r">Implied spend</th><th class="r">Distributors · scraped</th><th class="r">Core SKUs</th><th class="r">Brands</th><th class="r">Private-owned SKUs</th><th class="r">Growth · defensive · CAGR</th><th>Fastest sub-segment</th><th>Top format · pack</th><th>Top categories</th><th>Top distributors</th></tr></thead><tbody>
+  ${L.map((x, i) => `<tr class="cons-row" data-go="em.${i}"><td><b><a href="#em.${i}">${esc(x.name)}</a></b></td><td class="r num">${x.spend ? fmtTam(x.spend) : "—"}</td><td class="r num">${x.nd ?? "—"} · ${x.nds ?? "—"}</td><td class="r num">${(x.skus || 0).toLocaleString()}</td><td class="r num">${x.nb ?? "—"}</td><td class="r num">${pct(x.priv)}</td><td class="r num">${x.g ?? "—"} · ${x.d ?? "—"} · ${x.cagr !== undefined ? (x.cagr * 100).toFixed(1) + "%" : "—"}</td><td style="font-size:12.5px">${esc(x.fast || "—")}</td>
     <td style="font-size:12.5px">${esc(x.fmt || "")}${x.pack ? ` · ${esc(x.pack)}` : ""}</td><td style="font-size:12.5px">${esc(x.cats || "").split("; ").slice(0, 3).join("<br>")}</td><td style="font-size:12.5px">${esc(x.dists || "").split("; ").slice(0, 3).join("<br>")}</td></tr>`).join("")}
   </tbody></table></div></section>
   ${emMatrix()}
@@ -1158,7 +1168,91 @@ function viewEm(i) {
     <div>${catHbars(em.otypes.map(([k, n, p]) => [`${k} · ${n} SKUs`, p]))}</div>
     <div><div class="lbl" style="margin:0 0 8px">Private owners with the most SKUs here</div><table><thead><tr><th>Owner</th><th class="r">EBITDA margin</th></tr></thead><tbody>${em.powners.map(([n, lbl, m]) => { const co = [...CO.values()].find(z => norm(z.name) === norm(n)); return `<tr><td style="font-size:13px">${co ? `<a href="#c.${esc(co.id)}">${esc(lbl)}</a>` : esc(lbl)}</td><td class="r num">${m ? (m * 100).toFixed(1) + "%" : "—"}</td></tr>`; }).join("")}</tbody></table></div></div>`)}
   ${panel("What else to know", "", `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">${em.know.map(([k, xs]) => `<div><div class="lbl" style="margin:0 0 6px">${esc(k)}</div>${xs.length > 1 ? list(xs) : `<p style="margin:0">${esc(xs[0] || "")}</p>`}</div>`).join("")}</div>`)}
+  ${em.growth ? panel("Growth and cyclicality", `Growth ${em.growth.g}/5 · defensiveness ${em.growth.d}/5 (5 = least cyclical) · base CAGR ${(em.growth.cagr * 100).toFixed(1)}%`, `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">${para("Recurring maintenance vs new projects", em.recur)}${para("Downturn sensitivity", em.downturn)}</div>
+    ${em.gsubs?.length ? `<div class="tw"><table style="font-size:13px"><thead><tr><th>Sub-segment</th><th class="r">Share</th><th class="r">CAGR</th><th class="r">Growth</th><th class="r">Defensive</th><th>Drivers</th></tr></thead><tbody>${em.gsubs.map(([n, sh, cg, g, d, drv, src]) => `<tr><td><b>${esc(n)}</b>${src && /^https?:/.test(src) ? ` <a href="${esc(src)}" target="_blank" rel="noopener" class="faint" style="font-size:11.5px">source</a>` : ""}</td><td class="r num">${pct(sh)}</td><td class="r num">${cg !== null && cg !== undefined ? (cg * 100).toFixed(1) + "%" : "—"}</td><td class="r num">${g ?? "—"}</td><td class="r num">${d ?? "—"}</td><td style="font-size:12.5px">${esc(drv)}</td></tr>`).join("")}</tbody></table></div>` : ""}
+    <div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px"><div><div class="lbl" style="margin:0 0 4px">Secular tailwinds</div>${list(em.tail)}</div><div><div class="lbl" style="margin:0 0 4px">Secular headwinds</div>${list(em.head)}</div><div><div class="lbl" style="margin:0 0 4px">Leading indicators to watch</div>${list(em.lead)}</div></div>
+    ${em.gsrc ? `<div class="body faint" style="padding-top:0;font-size:12px">${esc(em.gsrc)}</div>` : ""}`) : ""}
   ${panel("Sources", "", `<div class="body">${em.src.map(([t, u, n]) => `<p style="margin:0 0 8px">${u && /^https?:/.test(u) ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>` : esc(t)}${n ? `<br><span class="faint" style="font-size:12.5px">${esc(n)}</span>` : ""}</p>`).join("")}${em.foot ? `<p class="faint" style="font-size:12.5px;margin:10px 0 0">${esc(em.foot)}</p>` : ""}</div>`)}`;
+}
+
+
+/* ---------- product: packaging, chemistry, raw materials, procurement synergies (v31+) ----------
+   From the Product Category tab, loaded on demand from product/main. The synergy calculator follows the workbook:
+   per category, packaging spend x (format mix . per-format savings rate) + raw-material spend x pooled-buying rate +
+   freight spend x freight rate. Revenue by category comes from the workbook's mid-market default, or from the current
+   roll-up (each member's revenue split across its brands' primary categories by brand count). */
+let PRODUCT = null, productLoading = false;
+function loadProduct() {
+  if (PRODUCT || productLoading || !db) return;
+  productLoading = true;
+  db.doc("product/main").get().then(d => { PRODUCT = d.exists ? d.data() : { missing: true }; }).catch(() => { PRODUCT = { missing: true }; }).finally(() => { productLoading = false; render(); });
+}
+function synRows() {
+  const P = PRODUCT, S = ui.syn, fr = P.formats.map(f => S.fr[f.name] ?? f.kv["Savings rate used in calculator"] ?? 0);
+  let rev = {};
+  if (S.src === "roll") {
+    for (const id of ui.roll.filter(x => CO.has(x))) {
+      const c = CO.get(id), r = num(c.rev); if (!r) continue;
+      const bs = (reachIndex().byOwner.get(id) || []).filter(b => b.ncat && CATNAMES.indexOf(b.ncat) >= 0); if (!bs.length) continue;
+      for (const b of bs) { const ci = CATNAMES.indexOf(b.ncat); rev[ci] = (rev[ci] || 0) + r / bs.length; }
+    }
+  } else for (const [ci, v] of Object.entries(P.syn)) rev[ci] = S.rev[ci] ?? v[0];
+  const rows = Object.entries(P.syn).map(([ci, v]) => {
+    const R = rev[ci] || 0, mix = P.fmix[ci], prate = mix ? P.fcols.reduce((a, f, j) => a + (mix[2 + j] || 0) * (fr[P.formats.findIndex(x => x.name === f)] || 0), 0) : v[5];
+    const rm = R * v[2], pk = R * v[3], fx = R * v[4];
+    return { ci, name: CATNAMES[ci], R, n: v[1], rmp: v[2], pkp: v[3], fxp: v[4], prate, rm, pk, fx, sp: pk * prate, sr: rm * S.rm, sf: fx * S.fr8 };
+  }).map(r => ({ ...r, tot: r.sp + r.sr + r.sf })).filter(r => r.name);
+  return rows.sort((a, b) => b.tot - a.tot);
+}
+function viewProduct() {
+  loadProduct(); const P = PRODUCT;
+  const head = `<div class="page-h"><div class="grow"><div class="lbl">What the products are made of</div><h1>Product</h1>
+    <p>What the products are made of: the bill of materials for each package format, the format mix by category, chemistry and cost structure, the raw materials bought most across categories, and a procurement synergy calculator for a roll-up. Costs, shares and savings rates are research estimates unless a source is cited.</p></div></div>`;
+  if (!P) return head + `<section class="panel"><div class="body faint">Loading…</div></section>`;
+  if (P.missing) return head + `<section class="panel"><div class="body faint">No product data loaded.</div></section>`;
+  const S = ui.syn, rows = synRows(), live = rows.filter(r => r.R > 0), T = k => live.reduce((a, r) => a + r[k], 0), TR = T("R");
+  const pane = (h, lbl, body, id) => `<section class="panel"${id ? ` id="${id}"` : ""}><header><h2>${h}</h2><span class="sp"></span>${lbl ? `<span class="lbl">${lbl}</span>` : ""}</header>${body}</section>`;
+  const nfmt = v => v === null || v === undefined || v === "" ? "—" : esc(String(v));
+  const rollN = ui.roll.filter(x => CO.has(x)).length;
+  const calc = pane("Procurement synergy calculator", "Edit the rates and revenue; nothing is saved", `<div class="body">
+    <p class="muted" style="margin:0 0 10px;font-size:13.5px">${esc(P.syn_note)}</p>
+    <div class="bar" style="margin:0 0 10px"><select data-syn="src" aria-label="Revenue source"><option value="default" ${S.src !== "roll" ? "selected" : ""}>Revenue: workbook's mid-market default</option><option value="roll" ${S.src === "roll" ? "selected" : ""} ${rollN ? "" : "disabled"}>Revenue: current roll-up${rollN ? ` (${rollN} companies)` : " (none selected)"}</option></select>
+      <label class="lbl" style="display:flex;gap:6px;align-items:center">Raw-material rate <input data-syn="rm" type="number" step="0.005" min="0" max="0.2" value="${S.rm}" style="width:80px"></label>
+      <label class="lbl" style="display:flex;gap:6px;align-items:center">Freight rate <input data-syn="fr8" type="number" step="0.005" min="0" max="0.2" value="${S.fr8}" style="width:80px"></label>
+      ${Object.keys(S.rev).length || Object.keys(S.fr).length ? `<button class="tog" type="button" data-act="synreset">Reset edits</button>` : ""}</div>
+    <div class="gauges" style="margin:0 0 12px"><div class="gauge"><b>${fmtM(TR)}</b><span class="lbl">Revenue in the calculation</span></div><div class="gauge g"><b>${fmtM1(T("tot"))}</b><span class="lbl">Total synergy · ${TR ? (T("tot") / TR * 100).toFixed(2) + "% of revenue" : "—"}</span></div>
+      <div class="gauge"><b>${fmtM1(T("sp"))}</b><span class="lbl">Packaging</span></div><div class="gauge"><b>${fmtM1(T("sr"))}</b><span class="lbl">Raw materials</span></div><div class="gauge"><b>${fmtM1(T("sf"))}</b><span class="lbl">Freight & warehousing</span></div></div>
+    ${S.src === "roll" ? `<p class="faint" style="margin:0 0 8px;font-size:12.5px">Each roll-up member's revenue is split evenly across its brands' primary categories. Companies without revenue are left out.</p>` : ""}
+    <details style="margin:0 0 10px"><summary class="lbl" style="cursor:pointer">Packaging savings rate per format</summary><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px">${P.formats.map(f => `<label class="lbl" style="display:grid;gap:3px">${esc(f.name)}<input data-synf="${esc(f.name)}" type="number" step="0.005" min="0" max="0.3" value="${S.fr[f.name] ?? f.kv["Savings rate used in calculator"] ?? 0}"></label>`).join("")}</div></details>
+    <div class="tw" style="max-height:560px"><table><thead><tr><th>Category</th><th class="r">Revenue ($M)</th><th class="r">RM · pack · freight % sales</th><th class="r">Packaging rate</th><th class="r">Packaging</th><th class="r">Raw materials</th><th class="r">Freight</th><th class="r">Total</th></tr></thead><tbody>
+    ${(S.src === "roll" ? live : rows).map(r => `<tr><td><a href="#cat.${r.ci}">${esc(r.name)}</a>${S.src !== "roll" ? `<br><span class="faint" style="font-size:12px">${r.n} private owners in the default</span>` : ""}</td>
+      <td class="r">${S.src === "roll" ? `<span class="num">${r.R.toFixed(1)}</span>` : `<input data-synr="${r.ci}" type="number" step="1" min="0" value="${+r.R.toFixed(1)}" style="width:90px;text-align:right">`}</td>
+      <td class="r num" style="font-size:12.5px">${Math.round(r.rmp * 100)} · ${Math.round(r.pkp * 100)} · ${Math.round(r.fxp * 100)}</td><td class="r num">${(r.prate * 100).toFixed(1)}%</td>
+      <td class="r num">${fmtM1(r.sp)}</td><td class="r num">${fmtM1(r.sr)}</td><td class="r num">${fmtM1(r.sf)}</td><td class="r num"><b>${fmtM1(r.tot)}</b></td></tr>`).join("") || `<tr><td colspan="8" class="faint">No revenue to work with.</td></tr>`}
+    </tbody></table></div></div>`, "syn");
+  const maxMix = 0.7;
+  const fmix = pane("Package-format mix by category", "Share of each category's scraped SKUs · research dominant format", `<div class="tw" style="max-height:560px"><table style="font-size:12.5px"><thead><tr><th style="position:sticky;left:0;background:var(--panel)">Category</th><th>Dominant (research)</th><th class="r">SKUs</th>${P.fcols.map(f => `<th class="r" style="font-size:10px;white-space:normal;min-width:48px">${esc(f)}</th>`).join("")}</tr></thead><tbody>
+    ${Object.entries(P.fmix).sort((a, b) => (b[1][1] || 0) - (a[1][1] || 0)).map(([ci, v]) => `<tr><td style="position:sticky;left:0;background:var(--panel)"><a href="#cat.${ci}">${esc(CATNAMES[ci] || "")}</a></td><td style="font-size:12px">${esc(v[0])}</td><td class="r num faint">${v[1] ?? ""}</td>
+      ${v.slice(2).map((x, j) => `<td class="r num" data-tip="${esc(`<b>${esc(CATNAMES[ci] || "")}</b>${Math.round((x || 0) * 100)}% ${esc(P.fcols[j])}`)}" style="background:color-mix(in srgb, var(--accent) ${Math.round(Math.min(1, (x || 0) / maxMix) * 70)}%, transparent)">${x >= 0.05 ? Math.round(x * 100) : ""}</td>`).join("")}</tr>`).join("")}
+    </tbody></table></div>${P.fnote ? `<div class="body faint" style="font-size:12.5px;padding-top:8px">${esc(P.fnote)}</div>` : ""}`, "fmix");
+  const comps = pane("Packaging component library", "Bill of materials by format · open a format", `<div class="body" style="display:grid;gap:8px">${P.formats.filter(f => f.comps.length).map(f => `<details><summary style="cursor:pointer;padding:6px 0"><b>${esc(f.name)}</b> <span class="faint">· ${esc(f.full)}${f.kv["Packaging % of COGS"] ? " · packaging " + esc(String(f.kv["Packaging % of COGS"]).split(" - ")[0]) + " of COGS" : ""}${f.kv["Savings rate used in calculator"] !== undefined ? ` · savings rate ${(f.kv["Savings rate used in calculator"] * 100).toFixed(1)}%` : ""}</span></summary>
+    ${f.desc ? `<p class="muted" style="margin:6px 0 10px">${esc(f.desc)}</p>` : ""}
+    <div class="tw"><table style="font-size:12.5px"><thead><tr><th>Component</th><th>Material</th><th>Spec notes</th><th>Main suppliers</th><th>Upstream</th><th>Unit cost</th><th class="r">% of pack</th><th>Concentration</th><th>Lead time & risks</th></tr></thead><tbody>
+      ${f.comps.map(c => `<tr>${c.map((x, j) => `<td${j === 6 ? ' class="r num"' : ""}>${j === 0 ? `<b>${esc(x)}</b>` : nfmt(x)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:10px 0 6px">${["Filling / co-packing", "Packaging % of COGS", "Synergy levers", "Typical savings (research)"].filter(k => f.kv[k]).map(k => `<div><div class="lbl" style="margin:0 0 3px">${esc(k)}</div><p style="margin:0;font-size:13.5px">${esc(String(f.kv[k]))}</p></div>`).join("")}</div>
+    ${f.src ? `<p class="faint" style="font-size:12px;margin:4px 0 8px">${esc(f.src)}</p>` : ""}</details>`).join("")}</div>`, "comps");
+  const cc = P.chem_cols;
+  const chem = pane("Chemistry, raw materials and cost structure", "By category · open a row for price drivers, shared inputs and regulation", `<div class="tw" style="max-height:640px"><table style="font-size:12.5px"><thead><tr><th>Category</th><th>Key chemistries</th><th>Top raw materials (share of RM cost) – suppliers</th><th class="r">RM %</th><th class="r">Pack %</th><th class="r">Labor / freight %</th><th class="r">GM %</th></tr></thead><tbody>
+    ${Object.entries(P.chem).map(([ci, v]) => `<tr><td><a href="#cat.${ci}"><b>${esc(CATNAMES[ci] || "")}</b></a><details style="margin-top:4px"><summary class="faint" style="cursor:pointer;font-size:11.5px">More</summary><p style="margin:6px 0 0"><b>Price drivers.</b> ${esc(v[2] || "")}</p><p style="margin:6px 0 0"><b>Shared inputs.</b> ${esc(v[3] || "")}</p><p style="margin:6px 0 0"><b>Regulation.</b> ${esc(v[7] || "")}</p></details></td>
+      <td style="min-width:220px">${esc(v[0] || "")}</td><td style="min-width:260px">${esc(v[1] || "")}</td><td class="r num">${nfmt(v[4])}</td><td class="r num">${nfmt(v[5])}</td><td class="r num">${nfmt(v[6])}</td><td class="r num">${nfmt(v[8])}</td></tr>`).join("")}
+    </tbody></table></div>`, "chem");
+  const rmf = pane("Most common raw materials", "Families across categories · est. US pro spend pool", `<div class="body" style="padding-bottom:0"><p class="muted" style="margin:0;font-size:13px">${esc(P.rmf_note || "")}</p></div><div class="tw"><table style="font-size:13px"><thead><tr><th>Raw-material family</th><th class="r">Categories</th><th class="r">Spend pool</th><th>Most-cited suppliers</th><th>Commodity / specialty</th></tr></thead><tbody>
+    ${P.rmf.map(([n, k, sp, sup, cats, cs]) => `<tr><td><b>${esc(n)}</b><details><summary class="faint" style="cursor:pointer;font-size:11.5px">${k} categories</summary><p style="margin:4px 0 0;font-size:12.5px">${cats.map(c => catByName(c)).join(", ")}</p></details></td><td class="r num">${k ?? "—"}</td><td class="r num">${sp ? fmtM(sp) : "—"}</td><td style="font-size:12.5px">${esc(sup)}</td><td style="font-size:12.5px">${esc(cs)}</td></tr>`).join("")}
+    </tbody></table></div>`, "rmf");
+  return head + `<div class="bar" style="margin:0 0 12px">${[["syn", "Synergy calculator"], ["comps", "Packaging components"], ["fmix", "Format mix"], ["chem", "Chemistry & cost"], ["rmf", "Raw materials"]].map(([k, l]) => `<a class="tog" href="#product" data-jump="${k}" style="text-decoration:none">${l}</a>`).join("")}</div>
+  <div class="gauges"><div class="gauge"><b>${P.formats.filter(f => f.comps.length).length}</b><span class="lbl">Package formats mapped</span></div><div class="gauge"><b>${P.rmf.length}</b><span class="lbl">Raw-material families</span></div>
+    <div class="gauge"><b>${fmtM(P.rmf.reduce((a, r) => a + (r[2] || 0), 0))}</b><span class="lbl">Raw-material spend pools, summed</span></div><div class="gauge g"><b>${fmtM1(T("tot"))}</b><span class="lbl">Procurement synergy (${S.src === "roll" ? "roll-up" : "default"})</span></div></div>
+  ${calc}${comps}${fmix}${chem}${rmf}`;
 }
 
 /* ---------- view: distributors (who carries what, and whose brands fill each shelf) ---------- */
@@ -1494,7 +1588,8 @@ function viewRollup() {
   return head + `<div class="gauges"><div class="gauge"><b>${M.length}</b><span class="lbl">Companies</span></div><div class="gauge"><b>${rev ? fmtM(rev) : "—"}</b><span class="lbl">Combined revenue</span></div>${(E => `<div class="gauge"><b>${E.v ? fmtM(E.v) : "—"}</b><span class="lbl">Combined EBITDA${E.miss ? ` · ${E.miss} without an estimate` : ""}${rev && E.v ? ` · ${(E.v / rev * 100).toFixed(1)}%` : ""}</span></div>`)(M.reduce((a, x) => { const e = ebitdaOf(x.c).best?.e; return e ? { ...a, v: a.v + e } : { ...a, miss: a.miss + 1 }; }, { v: 0, miss: 0 }))}
     <div class="gauge"><b>${nb}</b><span class="lbl">Brands</span></div><div class="gauge"><b>${X.union.size}</b><span class="lbl">Doors combined</span></div>
     <div class="gauge"><b>${X.union.size ? pct(X.shared / X.union.size) : "—"}</b><span class="lbl">Doors shared by 2+</span></div>
-    <div class="gauge g"><b>${fmtM(xs)}</b><span class="lbl">Cross-sell at ${capLbl()}</span></div></div>
+    <div class="gauge g"><b>${fmtM(xs)}</b><span class="lbl">Cross-sell at ${capLbl()}</span></div>
+    ${(() => { loadProduct(); if (!PRODUCT || PRODUCT.missing) return ""; const src = ui.syn.src; ui.syn.src = "roll"; const t = synRows().reduce((a, r) => a + r.tot, 0); ui.syn.src = src; return `<a class="gauge g" href="#product" data-act="synroll" style="text-decoration:none"><b>${fmtM1(t)}</b><span class="lbl">Procurement synergy · open calculator</span></a>`; })()}</div>
   ${rollPlanPanel(ids)}
   <div class="bar" role="tablist" style="margin:4px 0 14px"><button class="tog" type="button" role="tab" data-act="rview" data-v="xs" aria-pressed="${ui.rview === "xs"}">Cross-sell</button><button class="tog" type="button" role="tab" data-act="rview" data-v="ws" aria-pressed="${ui.rview === "ws"}">Whitespace</button><button class="tog" type="button" role="tab" data-act="rview" data-v="pr" aria-pressed="${ui.rview === "pr"}">Pricing</button><span class="faint" style="font-size:13px">${ui.rview === "pr" ? "The good / better / best ladder the members build together, and each one's price lever" : ui.rview === "ws" ? "Distributors none of the members sell to yet, where the platform's products fit" : "Distributors one member already sells to that another member could enter"}</span></div>
   ${ui.rview === "pr" ? rollPriceView(ids, X) : ui.rview === "ws" ? rollWsView(ids, X) : `
@@ -2238,7 +2333,7 @@ function render() {
   chrome(r);
   if (!loaded) { if (dbState === "off") app.innerHTML = `<div class="empty"><h2>Not connected</h2><p>Probrands keeps the market map in a shared database that loads when this page is opened in Claude while signed in.</p></div>`; return; }
   const y = scrollY;
-  app.innerHTML = r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "ems" ? viewEms() : r.v === "em" ? viewEm(r.id) : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
+  app.innerHTML = r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "ems" ? viewEms() : r.v === "product" ? viewProduct() : r.v === "em" ? viewEm(r.id) : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
   if (render.last === location.hash) scrollTo(0, y); else scrollTo(0, 0);
   render.last = location.hash;
   if (r.v === "web") bindWeb();
@@ -2293,6 +2388,7 @@ Reply with ONLY JSON: {"pull":{"v":0,"why":""},"itw":{"v":0,"why":""},"major":{"
 
 /* ---------- events ---------- */
 document.addEventListener("click", e => {
+  { const jp = e.target.closest?.("[data-jump]"); if (jp) { e.preventDefault(); document.getElementById(jp.dataset.jump)?.scrollIntoView({ behavior: "smooth", block: "start" }); return; } }
   const t = e.target;
   const own = t.closest("[data-own]");
   if (own) { const k = own.dataset.own; ui.own.has(k) ? ui.own.delete(k) : ui.own.add(k); store.set("own", [...ui.own]); ui.limit = 80; render(); return; }
@@ -2311,6 +2407,8 @@ document.addEventListener("click", e => {
     else if (act === "rview") { ui.rview = a.dataset.v; render(); }
     else if (act === "ppos") { ui.pp.pos = ui.pp.pos === a.dataset.v ? "" : a.dataset.v; ui.pp.limit = 100; render(); }
     else if (act === "emcol") { ui.emcol = a.dataset.v === "" ? null : +a.dataset.v; render(); }
+    else if (act === "synroll") { ui.syn.src = "roll"; location.hash = "product"; }
+    else if (act === "synreset") { ui.syn.rev = {}; ui.syn.fr = {}; render(); }
     else if (act === "cwreset") { store.set("cw", null); render(); }
     else if (act === "ppmore") { ui.pp.limit += 100; render(); }
     else if (act === "wsmk") { ui.wsmk = a.dataset.v; ui.wslimit = 40; render(); }
@@ -2360,6 +2458,9 @@ document.addEventListener("change", e => {
   if (e.target.id === "dch") { ui.dch = e.target.value; render(); }
   if (e.target.id === "dmk") { ui.dmk = e.target.value; render(); }
   if (e.target.id === "dsort") { ui.dsort = e.target.value; render(); }
+  if (e.target.dataset?.syn) { const k = e.target.dataset.syn; ui.syn[k] = k === "src" ? e.target.value : Math.max(0, +e.target.value || 0); render(); }
+  if (e.target.dataset?.synr !== undefined) { ui.syn.rev[e.target.dataset.synr] = Math.max(0, +e.target.value || 0); render(); }
+  if (e.target.dataset?.synf !== undefined) { ui.syn.fr[e.target.dataset.synf] = Math.max(0, +e.target.value || 0); render(); }
   if (e.target.dataset?.cw !== undefined) { const w = critWeights(); w[+e.target.dataset.cw] = +e.target.value; store.set("cw", w); render(); }
   if (e.target.id === "cseg") { ui.cseg = e.target.value; render(); }
   if (e.target.id === "csort") { ui.csort = e.target.value; render(); }

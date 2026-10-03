@@ -1009,6 +1009,30 @@ for ws in wb.worksheets:
     st["dq"] = bullets(secs.get(9, []))
     st["src"] = [[t(r[0], 160), t(r[3], 300) if len(r) > 3 else "", t(r[6], 300) if len(r) > 6 else ""] for r in secs.get(10, []) if r[0] and not str(r[0]).startswith("Profile researched")]
     st["foot"] = next((t(r[0], 600) for r in secs.get(10, []) if r[0] and str(r[0]).startswith("Profile researched")), "")
+    # v31+: section 11 - chemistry, raw materials, cost structure, packaging bill of materials and secular score
+    if secs.get(11):
+        r11, mode, chem, rms, fbom, cost = secs[11], None, [], [], [], {}
+        for j, r in enumerate(r11):
+            c0 = s(r[0])
+            if c0.startswith("Secular score"):
+                st["secular"] = {"score": r1(n0(r[1]), 2), "rank": r1(n0(r[3]), 0), "wcagr": r1(n0(r[5]), 4)}; continue
+            if c0 == "Key chemistry": mode = "chem"; continue
+            if c0 == "Raw material": mode = "rm"; continue
+            if c0.startswith("Cost structure"): mode = "cost"; continue
+            if c0.startswith("Package-format mix"): mode = "fmt"; continue
+            if c0 == "Format" and mode == "fmt": continue
+            if mode == "chem" and c0: chem.append([c0[:200], s(r[1], 30), s(r[2], 300)])
+            elif mode == "rm" and c0: rms.append([c0[:200], s(r[1], 40), r1(n0(r[2]), 0), s(r[3], 200), s(r[5] if len(r) > 5 else "", 200), s(r[7] if len(r) > 7 else "", 30)])
+            elif mode == "cost":
+                if c0 == "Raw materials" and r1 is not None:
+                    vals = r11[j + 1]; cost = {k: r1(n0(v), 3) for k, v in zip(["rm", "pack", "labor", "freight", "gm"], vals[:5])}
+                elif c0.startswith("Basis:"): st["cost_basis"] = c0[:700]
+                elif c0.startswith("Shared inputs"): st["shared"] = re.sub(r"^Shared inputs / synergy:\s*", "", c0)[:1500]
+                elif c0.startswith("Regulatory constraints"): st["regs"] = re.sub(r"^Regulatory constraints on inputs:\s*", "", c0)[:1500]
+            elif mode == "fmt" and c0:
+                if isinstance(r[1], (int, float)): fbom.append([c0[:40], r1(r[1], 3), s(r[2], 1500)])
+                else: st["fmt_note"] = c0[:300]
+        st.update({"chem": chem, "rms": rms, "cost": cost, "fbom": fbom})
     study_out[CAT_IX[c]] = st
     if c in cat_sum and em:
         cat_sum[c]["em"] = [[m, p] for m, p, _ in sorted(em, key=lambda x: -(x[1] or 0))[:3]]
@@ -1034,7 +1058,9 @@ if "End Markets" in wb.sheetnames:
         summ.append({k: v for k, v in {"name": s(r[0]), "nd": r1(n0(g.get("# distributors (map)")), 0), "nds": r1(n0(g.get("# with SKUs")), 0),
             "skus": r1(n0(g.get("Core SKUs")), 0), "nb": r1(n0(g.get("# brands")), 0), "priv": r1(n0(g.get("% SKUs private-owned")), 3),
             "fmt": s(g.get("Top format")), "pack": s(g.get("Top pack size")), "spend": r1(n0(g.get("Implied spend ($M)")), 0),
-            "cats": s(g.get("Top categories (observed)"), 400), "dists": s(g.get("Top distributors (research)"), 400), "who": s(g.get("Who orders"), 900)}.items() if v not in (None, "")})
+            "cats": s(g.get("Top categories (observed)"), 400), "dists": s(g.get("Top distributors (research)"), 400), "who": s(g.get("Who orders"), 900),
+            "g": r1(n0(g.get("Growth score (1-5)")), 1), "d": r1(n0(g.get("Defensiveness (1-5)")), 1), "cagr": r1(n0(g.get("Base CAGR")), 4),
+            "fast": s(g.get("Fastest-growing sub-segment"), 200)}.items() if v not in (None, "")})
     mi = next(i for i, r in enumerate(rows) if r and r[0] == "Category" and i > hi)
     MH = [s(x) for x in rows[mi]]
     matrix = {}
@@ -1124,7 +1150,91 @@ for ws in wb.worksheets:
     em["know"] = [[k, bullets(eight[k]) or [txt(eight[k])]] for k in LB8 if eight.get(k)]
     em["src"] = [[s(r[0], 200), s(r[3], 300) if len(r) > 3 else "", s(r[6], 300) if len(r) > 6 else ""] for r in secs.get(9, []) if r[0] and not str(r[0]).startswith("Observed figures")]
     em["foot"] = next((s(r[0], 600) for r in secs.get(9, []) if r[0] and str(r[0]).startswith("Observed figures")), "")
+    if secs.get(10):  # v31+: growth & cyclicality
+        r10, gsubs, k10, lists = secs[10], [], None, {}
+        for j, r in enumerate(r10):
+            c0 = s(r[0])
+            if c0.startswith("Growth score"):
+                v = r10[j + 1]; em["growth"] = {"g": r1(n0(v[0]), 1), "d": r1(n0(v[2]), 1), "cagr": r1(n0(v[4]), 4)}; continue
+            if c0 in ("Recurring maintenance vs new-project demand", "Downturn sensitivity"):
+                em["recur" if c0.startswith("Recurring") else "downturn"] = s(r10[j + 1][0], 1500); continue
+            if c0 == "Sub-segment": k10 = "subs"; continue
+            if c0 in ("Secular tailwinds", "Secular headwinds", "Leading indicators to watch"): k10 = c0; lists[c0] = []; continue
+            if c0.startswith("Growth sources"): em["gsrc"] = c0[:1500]; continue
+            if k10 == "subs" and c0 and isinstance(r[1], (int, float)):
+                gsubs.append([c0[:160], r1(r[1], 3), r1(n0(r[2]), 4), r1(n0(r[3]), 0), r1(n0(r[4]), 0), s(r[5], 400), s(r[7] if len(r) > 7 else "", 300)])
+            elif k10 in lists and c0.startswith("•"):
+                lists[k10].append(c0.lstrip("• ").strip())
+        em["gsubs"], em["tail"], em["head"], em["lead"] = gsubs, lists.get("Secular tailwinds", []), lists.get("Secular headwinds", []), lists.get("Leading indicators to watch", [])
     em_out[ix] = em
+if "Secular Screen" in wb.sheetnames:  # v31+: secular score per category (end-market growth, defensiveness, category growth)
+    rows = list(wb["Secular Screen"].iter_rows(values_only=True))
+    hi = next(i for i, r in enumerate(rows) if r and r[0] == "Category")
+    H = [s(x) for x in rows[hi]]
+    wi = next((i for i, r in enumerate(rows) if r and s(r[0]).startswith("Secular score weights")), None)
+    for r in rows[hi + 1:]:
+        if not r or not r[0]: break
+        c = CAT_BY_NORM.get(norm_cat(r[0]))
+        if c and c in cat_sum:
+            g = dict(zip(H, r))
+            cat_sum[c]["sec"] = {k: v for k, v in {"score": r1(n0(g.get("Secular score")), 2), "rank": r1(n0(g.get("Rank")), 0), "emg": r1(n0(g.get("EM growth (wtd)")), 2),
+                "emd": r1(n0(g.get("EM defensiveness (wtd)")), 2), "emc": r1(n0(g.get("EM CAGR (wtd)")), 4), "cg": r1(n0(g.get("Category growth score")), 0)}.items() if v is not None}
+    pi = next((i for i, r in enumerate(rows) if r and s(r[0]).startswith("HIGH-GROWTH POCKETS")), None)
+    if ems_doc and pi is not None:
+        pk = []
+        for r in rows[pi + 2:]:
+            if not r or not r[0]: continue
+            pk.append([s(r[0], 60), s(r[1], 200), r1(n0(r[2]), 3), r1(n0(r[3]), 4), r1(n0(r[4]), 0), r1(n0(r[5]), 0), s(r[6], 400)])
+        ems_doc["pockets"] = pk
+    if ems_doc:
+        ems_doc["sec_note"] = s(rows[1][0], 900)
+        if wi is not None: ems_doc["sec_w"] = [n0(rows[wi][2]), n0(rows[wi][4]), n0(rows[wi][6])]
+product_doc = None
+if "Product Category" in wb.sheetnames:  # v31+: packaging, chemistry, raw materials and procurement synergies
+    rows = list(wb["Product Category"].iter_rows(values_only=True))
+    sec_at = {s(r[0])[:2]: i for i, r in enumerate(rows) if r and isinstance(r[0], str) and re.match(r"^[A-E]\. [A-Z]{3}", r[0])}
+    def block(k, nxt):
+        return rows[sec_at[k]:sec_at[nxt] if nxt in sec_at else len(rows)]
+    fmts, cur = [], None
+    for r in block("A.", "B.")[1:]:
+        c0 = s(r[0])
+        if not c0: continue
+        if "  —  " in c0 and all(x is None for x in r[1:]):
+            cur = {"name": c0.split("  —  ")[0].strip(), "full": c0.split("  —  ")[1].strip(), "desc": "", "comps": [], "kv": {}}; fmts.append(cur); continue
+        if c0.startswith("Other formats") and isinstance(r[1], (int, float)):
+            fmts.append({"name": "Other", "full": c0, "desc": "", "comps": [], "kv": {"Savings rate used in calculator": r[1]}}); cur = None; continue
+        if cur is None: continue
+        if c0 == "Component": continue
+        if c0.startswith("Sources:"): cur["src"] = c0[:1500]; continue
+        if c0 in ("Filling / co-packing", "Packaging % of COGS", "Synergy levers", "Typical savings (research)", "Savings rate used in calculator"):
+            cur["kv"][c0] = r[1] if isinstance(r[1], (int, float)) else s(r[1], 1500); continue
+        if not cur["comps"] and not cur["desc"] and all(x is None for x in r[1:]):
+            cur["desc"] = c0[:1200]; continue
+        cur["comps"].append([c0[:120]] + [s(x, 400) for x in r[1:9]])
+    B = block("B.", "C."); bh = next(i for i, r in enumerate(B) if r and r[0] == "Category")
+    BH = [s(x) for x in B[bh]]; fmix, fnote = {}, ""
+    for r in B[bh + 1:]:
+        c = CAT_BY_NORM.get(norm_cat(r[0])) if r and r[0] else None
+        if c: fmix[CAT_IX[c]] = [s(r[1], 200), r1(n0(r[2]), 0)] + [r1(n0(x), 3) for x in r[3:len(BH)]]
+        elif r and r[0]: fnote = s(r[0], 500)
+    C = block("C.", "D."); ch = next(i for i, r in enumerate(C) if r and r[0] == "Category"); chem = {}
+    for r in C[ch + 1:]:
+        c = CAT_BY_NORM.get(norm_cat(r[0])) if r and r[0] else None
+        if c: chem[CAT_IX[c]] = [s(x, 3000) if not isinstance(x, (int, float)) else x for x in r[1:10]]
+    D = block("D.", "E."); dh = next(i for i, r in enumerate(D) if r and r[0] == "Raw-material family")
+    rmf = [[s(r[0], 200), r1(n0(r[1]), 0), r1(n0(r[2]), 0), s(r[3], 600), [CAT_BY_NORM.get(norm_cat(x.strip()), x.strip()) for x in s(r[4], 4000).split(";") if x.strip()], s(r[5], 120)] for r in D[dh + 1:] if r and r[0]]
+    E = block("E.", "Z."); eh = next(i for i, r in enumerate(E) if r and r[0] == "Category")
+    rates = {s(r[0]): n0(r[1]) for r in E[1:eh] if r and r[0] and isinstance(r[1], (int, float))}
+    syn = {}
+    for r in E[eh + 1:]:
+        c = CAT_BY_NORM.get(norm_cat(r[0])) if r and r[0] else None
+        if c: syn[CAT_IX[c]] = [r1(n0(x), 4) for x in r[1:7]]
+    product_doc = {"title": s(rows[0][0], 300), "intro": s(rows[1][0], 1200), "formats": fmts, "fcols": BH[3:], "fmix": fmix, "fnote": fnote,
+                   "chem_cols": [s(x) for x in C[ch][1:10]], "chem": chem, "rmf": rmf, "rmf_note": s(D[1][0], 900) if len(D) > 1 else "",
+                   "syn_note": s(E[1][0], 1200), "rates": rates, "syn": syn}
+    os.makedirs(f"{OUT}/product", exist_ok=True)
+    json.dump({**product_doc, "updated_at": NOW}, open(f"{OUT}/product/main.json", "w"), separators=(",", ":"), default=str)
+    print("product category:", len(fmts), "formats,", len(fmix), "format mixes,", len(chem), "chemistry rows,", len(rmf), "raw-material families,", len(syn), "synergy rows | KB", len(json.dumps(product_doc, default=str)) // 1024)
 if ems_doc:
     os.makedirs(f"{OUT}/emstudy", exist_ok=True)
     for ix, em in em_out.items():
