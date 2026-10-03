@@ -53,6 +53,8 @@ Live app: https://claude.ai/artifact/UkLSFqKaS38kQqd4JmvNhk (private to the owne
 
 The ownership filter in the left rail (PE, Family, ESOP, Private, Corporate) applies to every page. PE + Family is the default.
 
+**Revenue you set.** Click a company's revenue (on its page, or in the Roll-up Platform table) to change it; Enter saves, Escape cancels, Reset goes back to the workbook's figure. It is one number shared with the CRM: it is stored in the CRM's record (`hb_companies/<id>`, `total_revenue_usd_m`, marked Verified and locked), so the CRM shows it, and a revenue changed in the CRM flows back into every Probrands page (the screen, company pages, Whitespace, Roll-up, procurement). Pro revenue scales with it. Edited figures carry an "edited" tag with the workbook's number on hover.
+
 **Long lists and research detail.** Long lists show their top rows with a "Show all" button (distributors, owners on a shelf, missing doors, rivals, consolidators, sponsors, the deal log, private owners in a category). Research-heavy sections open on click: on category pages the uses, form factors, chemistry, adjacent categories, other notes, diligence questions and sources; on end-market pages how products are used, who orders, distributors, other notes, growth and sources; on company pages the sources and the method notes; on Roll-up the method and the demonstrated cross-sell rates.
 
 ## CRM

@@ -66,6 +66,8 @@ tr.tot td{border-top:2px solid var(--line-2);background:var(--panel-2)}
 .arch{border-bottom:1px solid var(--line)}.arch h3{margin:0 0 8px}.arch table td{padding:6px 8px}
 .role{display:inline-block;font:600 10.5px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border:1px solid var(--line-2);color:var(--ink-2)}
 .role.g{border-color:var(--good);color:var(--good)}.role.r{border-color:var(--bad);color:var(--bad)}.role.a{border-color:var(--mid);color:var(--mid)}
+.revbtn{font:inherit;color:inherit;border-bottom:1px dashed var(--ink-3);cursor:pointer}.revbtn:hover{color:var(--accent-text);border-bottom-color:var(--accent)}
+.revform{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}.revform input{width:110px;text-align:right}.revform .u{color:var(--ink-3)}
 ol.rk{list-style:none;margin:0;padding:0;counter-reset:r}
 ol.rk li{counter-increment:r;display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--line)}
 ol.rk li::before{content:counter(r);font:600 11px var(--f-mono);color:var(--ink-3)}
@@ -427,6 +429,48 @@ function hbars(rows, total, fmt = v => v, link = null) {
   return `<ul class="hbars">${rows.map(r => `<li><span title="${esc(r[0])}">${link ? link(r[0]) : esc(r[0])}</span><span class="track"><span class="fill" style="width:${(r[1] / max * 100).toFixed(1)}%"></span></span><span class="num">${fmt(r[1])}</span><span class="num">${total ? Math.round(r[1] / total * 100) + "%" : ""}</span></li>`).join("")}</ul>`;
 }
 
+/* ---------- revenue you set ----------
+   One number per company, shared with the CRM: it lives in the CRM's own record (hb_companies/<id>,
+   total_revenue_usd_m). Change it here and the CRM shows it; change it in the CRM and every Probrands page (the
+   screen, company pages, roll-ups, whitespace, procurement) uses it. The workbook's figure is kept as rev0 and comes
+   back with "Reset". Pro revenue scales with it. */
+const REVOV = new Map();
+function applyRev() {
+  for (const c of CO.values()) {
+    if (c.rev0 === undefined) { c.rev0 = num(c.rev); c.prorev0 = num(c.prorev); }
+    const o = REVOV.get(c.id), v = o !== undefined ? o : c.rev0;
+    c.rev = v; c.prorev = c.prorev0 !== null && c.rev0 ? c.prorev0 * v / c.rev0 : c.prorev0;
+    c.revEdited = o !== undefined && Math.abs(o - (c.rev0 ?? -1)) > 1e-6;
+  }
+  ver++;
+}
+function revCell(c) {
+  if (ui.revEdit === c.id) return `<span class="revform"><span class="u">$</span><input class="revin" data-id="${esc(c.id)}" type="number" min="0" step="0.1" value="${c.rev ?? ""}" aria-label="Revenue in $M"><span class="u">M</span>
+    <button class="tog" type="button" data-act="revsave" data-id="${esc(c.id)}">Save</button><button class="tog" type="button" data-act="revcancel">Cancel</button>${c.revEdited ? `<button class="tog" type="button" data-act="revreset" data-id="${esc(c.id)}" title="Back to the workbook's ${fmtM(c.rev0)}">Reset</button>` : ""}</span>`;
+  const can = writable && db;
+  const shown = c.rev !== null && c.rev !== undefined ? fmtM(c.rev) : "Add revenue";
+  return `${can ? `<button class="revbtn" type="button" data-act="revedit" data-id="${esc(c.id)}" title="Click to change. Shared with the CRM.">${shown}</button>` : shown}${c.revEdited ? ` <span class="tag" title="The workbook says ${c.rev0 !== null ? fmtM(c.rev0) : "nothing"}; this one was set in Probrands or the CRM">edited</span>` : ""}`;
+}
+async function saveRev(id, raw) {
+  ui.revEdit = null;
+  const c = CO.get(id), v = raw === null ? null : num(String(raw).replace(/[$,\s]/g, ""));
+  if (!c || !db || !writable || (raw !== null && (v === null || v < 0))) { render(); return; }
+  const target = v === null ? c.rev0 : v;
+  if (target === null || target === undefined) { render(); return; }
+  if (v === null) REVOV.delete(id); else REVOV.set(id, v);
+  applyRev(); render(); hbNotify();
+  const ref = db.doc("hb_companies/" + id);
+  try {
+    const d = await ref.get(), cur = d.exists ? d.data() || {} : null;
+    const locked = (cur?.locked || []).filter(f => f !== "total_revenue_usd_m");
+    if (v !== null) locked.push("total_revenue_usd_m");
+    const conf = { ...(cur?.conf || {}), total_revenue_usd_m: v === null ? { level: "Medium", basis: "Probrands market map (reset)", at: now() } : { level: "Verified", basis: "Set in Probrands", at: now(), by: "user" } };
+    const patch = { total_revenue_usd_m: target, locked, conf, updated_at: now() };
+    if (cur) await ref.update(patch); else await ref.set(patch);
+    toast(v === null ? "Revenue back to the workbook's figure" : `Revenue set to ${fmtM(v)} · the CRM shows it too`);
+  } catch (e) { toast(e?.code === "permission_denied" || e?.code === "not_granted" ? "You can view but not edit" : "Couldn't save the revenue"); }
+}
+
 /* ---------- show-all toggles and cross-links ----------
    Long lists show their top rows with a "Show all" button. Every name that has a page links to it: package formats
    (#fmt.N), the scrape's end markets (to the matching end-market profile), segments (Categories, filtered), categories,
@@ -615,7 +659,7 @@ function viewCompany(id) {
   const specs = [
     ["Owner", c.otype + (c.oclass === "pe" && c.sponsor ? " · " + c.sponsor : "")], c.pe_year ? ["Entry", `${c.pe_year}${hy !== null ? ` (${hy} yr hold)` : ""}${c.pe_ev ? " · EV " + fmtM(c.pe_ev) : ""}`] : null,
     c.parent && c.oclass !== "pe" ? ["Parent", c.parent] : null, ["Model", c.model || "Not mapped"], ["Trade", c.trade], c.hq ? ["HQ", c.hq] : null,
-    c.rev ? ["Revenue", `${fmtM(c.rev)}${c.rev_year ? " (" + c.rev_year + ")" : ""}${c.size_conf ? " · " + c.size_conf + " confidence" : ""}`] : null,
+    ["Revenue", { html: `${revCell(c)}${c.rev_year && !c.revEdited ? " (" + esc(c.rev_year) + ")" : ""}${c.size_conf && !c.revEdited ? " · " + esc(c.size_conf) + " confidence" : ""}` }],
     c.emp || c.emp_band ? ["Employees", `${c.emp ? Math.round(c.emp).toLocaleString() : ""}${c.emp_band && c.emp ? " · " : ""}${c.emp_band && (!c.emp || !String(c.emp_band).includes(String(Math.round(c.emp)))) ? c.emp_band + " band" : ""}${c.li_emp ? ` · ${c.li_emp} on LinkedIn` : ""}`] : null,
     c.pro_rev ? ["Pro brand revenue", fmtM(c.pro_rev)] : null,
   ].filter(Boolean);
@@ -630,7 +674,7 @@ function viewCompany(id) {
     <div><div>${ownerLine(c)}${c.verified ? "" : ` <span class="unv">· owner unverified</span>`}</div>
       <h1>${esc(c.name)}</h1>
       ${dt.what || c.blunt ? `<p class="what">${esc(dt.what || c.blunt)}</p>` : ""}
-      <div class="specs">${specs.map(([k, v]) => `<span>${esc(k)} <b>${esc(v)}</b></span>`).join("")}${c.web ? `<span><a href="${esc(c.web)}" target="_blank" rel="noopener">${esc(c.web.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))}</a></span>` : ""}</div></div>
+      <div class="specs">${specs.map(([k, v]) => `<span>${esc(k)} <b>${v && v.html ? v.html : esc(v)}</b></span>`).join("")}${c.web ? `<span><a href="${esc(c.web)}" target="_blank" rel="noopener">${esc(c.web.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))}</a></span>` : ""}</div></div>
     <div class="dial"><b class="${d.band}">${d.score}</b><span class="lbl">DNA score${d.out ? " · out of scope" : ""}</span></div>
   </section>
   <div class="grid2">
@@ -2310,7 +2354,7 @@ function rollPlatformView(ids, X) {
   const ebSteps = [["Cross-sell GP", vol, "add"], ["Price", price, "add"], ["Cost savings", proc || 0, "add"], [ebName, eb, "total"]];
   const at = g => xs * g + price + (proc || 0);
   const memRow = x => { const c = x.c, p = D.per.find(r => r.x === x), d = dnaOf(c), pr = num(c.prorev); return `<tr><td><b><a href="#c.${esc(c.id)}">${short(c)}</a></b><br><small class="faint">${ownerLine(c)}</small></td><td class="r"><span class="score ${d.band} num" style="font-size:15px">${d.score}</span></td>
-    <td class="r num">${fmtM(c.rev)}</td><td class="r num">${pr ? fmtM(pr) : "—"}</td><td class="r num">${num(c.ret_pct) !== null ? Math.round(c.ret_pct) + "%" : "—"}</td><td class="r num">${num(c.emp) ? (+c.emp).toLocaleString() : "—"}</td>
+    <td class="r num">${revCell(c)}</td><td class="r num">${pr ? fmtM(pr) : "—"}</td><td class="r num">${num(c.ret_pct) !== null ? Math.round(c.ret_pct) + "%" : "—"}</td><td class="r num">${num(c.emp) ? (+c.emp).toLocaleString() : "—"}</td>
     <td class="r num">${(reachIndex().byOwner.get(c.id) || []).length}</td><td class="r num">${c.skus || 0}</td><td class="r num">${x.r.carried.size}</td>
     <td>${p?.top ? `${L.dist(p.top[0])} <span class="faint num">${pct(p.top[1] / c.rev)}</span>` : "—"}</td><td class="r num">${p?.top3 ? pct(p.top3) : "—"}</td></tr>`; };
   return `<section class="panel"><header><h2>The combined platform</h2><span class="sp"></span><span class="lbl">${withRev} of ${M.length} members with revenue</span></header>
@@ -2685,6 +2729,10 @@ document.addEventListener("click", e => {
     else if (act === "rplan") askRollPlan();
     else if (act === "pall") { ui.pall = !ui.pall; render(); }
     else if (act === "rview") { ui.rview = a.dataset.v; render(); if (a.dataset.scroll) setTimeout(() => document.getElementById(a.dataset.scroll)?.scrollIntoView({ behavior: "smooth", block: "start" }), 30); }
+    else if (act === "revedit") { ui.revEdit = a.dataset.id; render(); setTimeout(() => { const el = document.querySelector(".revin"); el?.focus(); el?.select(); }, 20); }
+    else if (act === "revsave") saveRev(a.dataset.id, document.querySelector(".revin")?.value ?? "");
+    else if (act === "revcancel") { ui.revEdit = null; render(); }
+    else if (act === "revreset") saveRev(a.dataset.id, null);
     else if (act === "pscen") { ui.pscen = a.dataset.v; render(); }
     else if (act === "psmall") { ui.psmall = ui.psmall === false; render(); }
     else if (act === "ppos") { ui.pp.pos = ui.pp.pos === a.dataset.v ? "" : a.dataset.v; ui.pp.limit = 100; render(); }
@@ -2720,6 +2768,11 @@ document.addEventListener("input", e => {
   if (e.target.id === "rq") { ui.rq = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#rq"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
   if (e.target.id === "dq") { ui.dq = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#dq"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
   if (e.target.id === "q") { ui.q = e.target.value; ui.limit = 80; const pos = e.target.selectionStart; render(); const q = $("#q"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } }
+});
+document.addEventListener("keydown", e => {
+  if (!e.target.classList?.contains("revin")) return;
+  if (e.key === "Enter") { e.preventDefault(); saveRev(e.target.dataset.id, e.target.value); }
+  if (e.key === "Escape") { ui.revEdit = null; render(); }
 });
 document.addEventListener("toggle", e => { const k = e.target?.dataset?.k; if (k && e.target.tagName === "DETAILS") e.target.open ? OPEN.add(k) : OPEN.delete(k); }, true);
 document.addEventListener("change", e => {
@@ -2855,6 +2908,11 @@ render();
   if (!db) { dbState = "off"; render(); return; }
   try { const w = u?.can ? await u.can("data.write") : null; writable = w !== false; } catch { writable = true; }
   dbState = writable ? "live" : "readonly";
+  db.collection("hb_companies").limit(3000).onSnapshot(snap => {  // revenue set in the CRM (or here)
+    REVOV.clear();
+    snap.docs.forEach(x => { const v = x.data() || {}; if (!v.deleted && typeof v.total_revenue_usd_m === "number") REVOV.set(x.id, v.total_revenue_usd_m); });
+    if (CO.size) { applyRev(); if (loaded) { render(); hbNotify(); } }
+  }, () => {});
   db.collection("rollups").limit(500).onSnapshot(snap => { ROLLS = snap.docs.map(x => ({ id: x.id, ...(x.data() || {}) })); if (loaded) render(); }, () => {});
   db.collection("dna").limit(1000).onSnapshot(snap => { DNA.clear(); snap.docs.forEach(x => DNA.set(x.id, x.data())); ver++; if (loaded) render(); }, () => {});
   db.collection("data").limit(100).onSnapshot(snap => {
@@ -2878,6 +2936,7 @@ render();
       b.allc = b.cats ? Object.fromEntries(Object.entries(b.cats).map(([i, n]) => [CATNAMES[i] || "Unclassified", n])) : { [b.ncat]: b.skus || 0 };
     }
     brandByName = new Map([...BR.values()].map(b => [norm(b.name), b.id]));
+    applyRev();
     loaded = true; ver++; render(); hbNotify();
   }, err => { dbState = "off"; render(); });
 })();
