@@ -226,6 +226,7 @@ td.rv{font-size:13px;line-height:1.5;white-space:nowrap}
 .hbars{list-style:none;margin:0;padding:0}
 .hbars li{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr) 54px 42px;gap:10px;align-items:center;padding:4px 0;font-size:13.5px}
 .hbars li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbars li span>a,.legend span>a{display:block;overflow:hidden;text-overflow:ellipsis}
 .hbars .track{height:14px;background:var(--sunk);position:relative}
 .hbars .fill{position:absolute;inset:0 auto 0 0;background:var(--accent)}
 .hbars .num{text-align:right;font-size:12.5px;color:var(--ink-2)}
@@ -673,10 +674,11 @@ function route() {
   if (["engine", "screen", "consolidators", "mix", "brands", "cats", "dists", "reach", "pricing", "premium", "ems", "product"].includes(h)) return { v: h };
   if (h.startsWith("em.")) return { v: "em", id: h.slice(3) };
   if (h.startsWith("fmt.")) return { v: "fmt", id: h.slice(4) };
+  if (h.startsWith("rm.")) return { v: "rm", id: h.slice(3) };
   return { v: "screen" };
 }
 function chrome(r) {
-  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v === "cat" ? "cats" : r.v === "price" || r.v === "premium" ? "pricing" : r.v === "em" ? "ems" : r.v === "fmt" ? "mix" : r.v === "dist" ? "dists" : r.v === "strategy" ? "screen" : r.v) ? "page" : "false"));
+  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v === "cat" ? "cats" : r.v === "price" || r.v === "premium" ? "pricing" : r.v === "em" ? "ems" : r.v === "fmt" ? "mix" : r.v === "rm" ? "product" : r.v === "dist" ? "dists" : r.v === "strategy" ? "screen" : r.v) ? "page" : "false"));
   const counts = {}; for (const c of list()) counts[ownKey(c)] = (counts[ownKey(c)] || 0) + 1;
   $("#ownChips").innerHTML = OWN.map(([k, l]) => `<button class="chip" type="button" data-own="${k}" aria-pressed="${ui.own.has(k)}">${l}<small>${counts[k] || 0}</small></button>`).join("");
   $("#nBrands").textContent = BR.size || "";
@@ -1360,14 +1362,14 @@ function synRows() {
 function viewProduct() {
   loadProduct(); const P = PRODUCT; ui.syn.src = "default";
   const head = `<div class="page-h"><div class="grow"><div class="lbl">What the products are made of</div><h1>Product</h1>
-    <p>What the products are made of: the bill of materials for each package format, the format mix by category, chemistry and cost structure, the raw materials bought most across categories, and a procurement synergy calculator for a roll-up. Costs, shares and savings rates are research estimates unless a source is cited.</p></div></div>`;
+    <p>The package formats and raw materials behind the market. Open a format or a raw material for who sells or buys it, where it goes and what it costs. Costs, shares and savings rates are research estimates.</p></div></div>`;
   if (!P) return head + `<section class="panel"><div class="body faint">Loading…</div></section>`;
   if (P.missing) return head + `<section class="panel"><div class="body faint">No product data loaded.</div></section>`;
   const S = ui.syn, rows = synRows(), live = rows.filter(r => r.R > 0), T = k => live.reduce((a, r) => a + r[k], 0), TR = T("R");
   const pane = (h, lbl, body, id) => `<section class="panel"${id ? ` id="${id}"` : ""}><header><h2>${h}</h2><span class="sp"></span>${lbl ? `<span class="lbl">${lbl}</span>` : ""}</header>${body}</section>`;
   const nfmt = v => v === null || v === undefined || v === "" ? "—" : esc(String(v));
   const rollN = ui.roll.filter(x => CO.has(x)).length;
-  const calc = pane("Market-level synergy (illustrative)", "The workbook's top-down sizing · edit rates and revenue; nothing is saved", `<div class="body">
+  const calc = fold("Market-level synergy calculator", "Illustrative, top-down · for real companies use Roll-up → Procurement", `<div class="body">
     <div class="note" style="margin:0 0 12px">For a specific set of companies, use <a href="#rollup" data-act="rview" data-v="pc"><b>Roll-up → Procurement</b></a>${rollN ? ` (${rollN} selected)` : ""}: it finds the pack formats, raw-material families and distributors the members actually share and only counts savings there.</div>
     <p class="muted" style="margin:0 0 6px;font-size:13.5px"><b>How this table works.</b> It asks what pooled buying could save across the whole mid-market universe, category by category. For each category: revenue × packaging % of sales × the category's packaging savings rate, plus revenue × raw materials % × the pooled-buying rate, plus revenue × freight % × the freight rate. A category's packaging rate is its pack-format mix (format mix table) weighted by each format's savings rate (component library). It assumes everything in a category is pooled, so it is a ceiling, not a deal number.</p>
     <p class="faint" style="margin:0 0 10px;font-size:12.5px">${esc(P.syn_note)}</p>
@@ -1384,32 +1386,81 @@ function viewProduct() {
       <td class="r">${S.src === "roll" ? `<span class="num">${r.R.toFixed(1)}</span>` : `<input data-synr="${r.ci}" type="number" step="1" min="0" value="${+r.R.toFixed(1)}" style="width:90px;text-align:right">`}</td>
       <td class="r num" style="font-size:12.5px">${Math.round(r.rmp * 100)} · ${Math.round(r.pkp * 100)} · ${Math.round(r.fxp * 100)}</td><td class="r num">${(r.prate * 100).toFixed(1)}%</td>
       <td class="r num">${fmtM1(r.sp)}</td><td class="r num">${fmtM1(r.sr)}</td><td class="r num">${fmtM1(r.sf)}</td><td class="r num"><b>${fmtM1(r.tot)}</b></td></tr>`).join("") || `<tr><td colspan="8" class="faint">No revenue to work with.</td></tr>`}
-    </tbody></table></div></div>`, "syn");
+    </tbody></table></div></div>`, false, "psyn");
   const maxMix = 0.7;
-  const fmix = pane("Package-format mix by category", "Share of each category's scraped SKUs · research dominant format", `<div class="tw" style="max-height:560px"><table style="font-size:12.5px"><thead><tr><th style="position:sticky;left:0;background:var(--panel)">Category</th><th>Dominant (research)</th><th class="r">SKUs</th>${P.fcols.map(f => `<th class="r" style="font-size:10px;white-space:normal;min-width:48px">${esc(f)}</th>`).join("")}</tr></thead><tbody>
+  const fmix = fold("Format mix by category", "Share of each category's SKUs in each format", `<div class="tw" style="max-height:560px"><table style="font-size:12.5px"><thead><tr><th style="position:sticky;left:0;background:var(--panel)">Category</th><th>Dominant (research)</th><th class="r">SKUs</th>${P.fcols.map(f => `<th class="r" style="font-size:10px;white-space:normal;min-width:48px">${esc(f)}</th>`).join("")}</tr></thead><tbody>
     ${Object.entries(P.fmix).sort((a, b) => (b[1][1] || 0) - (a[1][1] || 0)).map(([ci, v]) => `<tr><td style="position:sticky;left:0;background:var(--panel)"><a href="#cat.${ci}">${esc(CATNAMES[ci] || "")}</a></td><td style="font-size:12px">${esc(v[0])}</td><td class="r num faint">${v[1] ?? ""}</td>
       ${v.slice(2).map((x, j) => `<td class="r num" data-tip="${esc(`<b>${esc(CATNAMES[ci] || "")}</b>${Math.round((x || 0) * 100)}% ${esc(P.fcols[j])}`)}" style="background:color-mix(in srgb, var(--accent) ${Math.round(Math.min(1, (x || 0) / maxMix) * 70)}%, transparent)">${x >= 0.05 ? Math.round(x * 100) : ""}</td>`).join("")}</tr>`).join("")}
-    </tbody></table></div>${P.fnote ? `<div class="body faint" style="font-size:12.5px;padding-top:8px">${esc(P.fnote)}</div>` : ""}`, "fmix");
-  const comps = pane("Packaging component library", "Bill of materials by format · open a format", `<div class="body" style="display:grid;gap:8px">${P.formats.filter(f => f.comps.length).map(f => `<details><summary style="cursor:pointer;padding:6px 0"><b>${esc(f.name)}</b> <span class="faint">· ${esc(f.full)}${f.kv["Packaging % of COGS"] ? " · packaging " + esc(String(f.kv["Packaging % of COGS"]).split(" - ")[0]) + " of COGS" : ""}${f.kv["Savings rate used in calculator"] !== undefined ? ` · savings rate ${(f.kv["Savings rate used in calculator"] * 100).toFixed(1)}%` : ""}</span></summary>
-    ${f.desc ? `<p class="muted" style="margin:6px 0 10px">${esc(f.desc)}</p>` : ""}
-    <div class="tw"><table style="font-size:12.5px"><thead><tr><th>Component</th><th>Material</th><th>Spec notes</th><th>Main suppliers</th><th>Upstream</th><th>Unit cost</th><th class="r">% of pack</th><th>Concentration</th><th>Lead time & risks</th></tr></thead><tbody>
-      ${f.comps.map(c => `<tr>${c.map((x, j) => `<td${j === 6 ? ' class="r num"' : ""}>${j === 0 ? `<b>${esc(x)}</b>` : nfmt(x)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:10px 0 6px">${["Filling / co-packing", "Packaging % of COGS", "Synergy levers", "Typical savings (research)"].filter(k => f.kv[k]).map(k => `<div><div class="lbl" style="margin:0 0 3px">${esc(k)}</div><p style="margin:0;font-size:13.5px">${esc(String(f.kv[k]))}</p></div>`).join("")}</div>
-    ${f.src ? `<p class="faint" style="font-size:12px;margin:4px 0 8px">${esc(f.src)}</p>` : ""}</details>`).join("")}</div>`, "comps");
+    </tbody></table></div>${P.fnote ? `<div class="body faint" style="font-size:12.5px;padding-top:8px">${esc(P.fnote)}</div>` : ""}`, false, "pfmix");
   const cc = P.chem_cols;
-  const chem = pane("Chemistry, raw materials and cost structure", "By category · open a row for price drivers, shared inputs and regulation", `<div class="tw" style="max-height:640px"><table style="font-size:12.5px"><thead><tr><th>Category</th><th>Key chemistries</th><th>Top raw materials (share of RM cost) – suppliers</th><th class="r">RM %</th><th class="r">Pack %</th><th class="r">Labor / freight %</th><th class="r">GM %</th></tr></thead><tbody>
+  const chem = fold("Chemistry and cost by category", "Open a row for price drivers, shared inputs and regulation", `<div class="tw" style="max-height:640px"><table style="font-size:12.5px"><thead><tr><th>Category</th><th>Key chemistries</th><th>Top raw materials (share of RM cost) – suppliers</th><th class="r">RM %</th><th class="r">Pack %</th><th class="r">Labor / freight %</th><th class="r">GM %</th></tr></thead><tbody>
     ${Object.entries(P.chem).map(([ci, v]) => `<tr><td><a href="#cat.${ci}"><b>${esc(CATNAMES[ci] || "")}</b></a><details style="margin-top:4px"><summary class="faint" style="cursor:pointer;font-size:11.5px">More</summary><p style="margin:6px 0 0"><b>Price drivers.</b> ${esc(v[2] || "")}</p><p style="margin:6px 0 0"><b>Shared inputs.</b> ${esc(v[3] || "")}</p><p style="margin:6px 0 0"><b>Regulation.</b> ${esc(v[7] || "")}</p></details></td>
       <td style="min-width:220px">${esc(v[0] || "")}</td><td style="min-width:260px">${esc(v[1] || "")}</td><td class="r num">${nfmt(v[4])}</td><td class="r num">${nfmt(v[5])}</td><td class="r num">${nfmt(v[6])}</td><td class="r num">${nfmt(v[8])}</td></tr>`).join("")}
-    </tbody></table></div>`, "chem");
-  const rmf = pane("Most common raw materials", "Families across categories · est. US pro spend pool", `<div class="body" style="padding-bottom:0"><p class="muted" style="margin:0;font-size:13px">${esc(P.rmf_note || "")}</p></div><div class="tw"><table style="font-size:13px"><thead><tr><th>Raw-material family</th><th class="r">Categories</th><th class="r">Spend pool</th><th>Most-cited suppliers</th><th>Commodity / specialty</th></tr></thead><tbody>
-    ${P.rmf.map(([n, k, sp, sup, cats, cs]) => `<tr><td><b>${esc(n)}</b><details><summary class="faint" style="cursor:pointer;font-size:11.5px">${k} categories</summary><p style="margin:4px 0 0;font-size:12.5px">${cats.map(c => catByName(c)).join(", ")}</p></details></td><td class="r num">${k ?? "—"}</td><td class="r num">${sp ? fmtM(sp) : "—"}</td><td style="font-size:12.5px">${esc(sup)}</td><td style="font-size:12.5px">${esc(cs)}</td></tr>`).join("")}
-    </tbody></table></div>`, "rmf");
-  return head + `<div class="bar" style="margin:0 0 12px">${[["syn", "Market-level synergy"], ["comps", "Packaging components"], ["fmix", "Format mix"], ["chem", "Chemistry & cost"], ["rmf", "Raw materials"]].map(([k, l]) => `<a class="tog" href="#product" data-jump="${k}" style="text-decoration:none">${l}</a>`).join("")}</div>
-  <div class="gauges"><div class="gauge"><b>${P.formats.filter(f => f.comps.length).length}</b><span class="lbl">Package formats mapped</span></div><div class="gauge"><b>${P.rmf.length}</b><span class="lbl">Raw-material families</span></div>
-    <div class="gauge"><b>${fmtM(P.rmf.reduce((a, r) => a + (r[2] || 0), 0))}</b><span class="lbl">Raw-material spend pools, summed</span></div><div class="gauge g"><b>${fmtM1(T("tot"))}</b><span class="lbl">Market-level synergy, illustrative</span></div></div>
-  ${calc}${comps}${fmix}${chem}${rmf}`;
+    </tbody></table></div>`, false, "pchem");
+  const sk = new Map(); for (const b of BR.values()) for (const [f, n] of Object.entries(b.fmt || {})) sk.set(f, (sk.get(f) || 0) + n);
+  const skT = [...sk.values()].reduce((a, n) => a + n, 0), back = Object.fromEntries(Object.entries(FMT_MAP).map(([k, v]) => [v, k]));
+  const libs = P.formats.filter(f => f.comps.length).map(f => ({ f, scr: back[f.name], n: sk.get(back[f.name]) || 0 })).sort((a, b) => b.n - a.n);
+  const short = x => x ? esc(String(x).split(/[;(]/)[0].trim().slice(0, 22)) : "—";
+  const fmts = pane("Package formats", "Open one for who sells it, where, and what the package is made of", `<div class="tw"><table><thead><tr><th>Format</th><th class="r">SKUs</th><th class="r">Share</th><th class="r">Components</th><th>Packaging % of COGS</th><th class="r">Savings rate</th></tr></thead><tbody>
+    ${libs.map(({ f, scr, n }) => `<tr><td>${scr ? `<a href="#fmt.${FMTS.indexOf(scr)}"><b>${esc(f.name)}</b></a>` : `<b>${esc(f.name)}</b>`}${scr ? "" : `<details><summary class="faint" style="cursor:pointer;font-size:11.5px">Not separated in the scrape · bill of materials</summary><div class="tw" style="margin-top:6px"><table style="font-size:12px"><tbody>${f.comps.map(c => `<tr><td><b>${esc(c[0])}</b></td><td>${nfmt(c[1])}</td><td>${nfmt(c[3])}</td></tr>`).join("")}</tbody></table></div></details>`}</td>
+      <td class="r num">${n ? n.toLocaleString() : "—"}</td><td class="r num">${n && skT ? Math.round(n / skT * 100) + "%" : "—"}</td><td class="r num">${f.comps.length}</td><td style="font-size:13px">${short(f.kv["Packaging % of COGS"])}</td><td class="r num">${f.kv["Savings rate used in calculator"] ? (f.kv["Savings rate used in calculator"] * 100).toFixed(1) + "%" : "—"}</td></tr>`).join("")}
+    </tbody></table></div>`);
+  const rmT = P.rmf.reduce((a, r) => a + (r[2] || 0), 0), rmL = P.rmf.map((r, k) => [r[0], r[2] || 0, k]).sort((a, b) => b[1] - a[1]);
+  const rmIx = new Map(rmL.map(r => [r[0], r[2]]));
+  const rms = pane("Raw materials", "Estimated US pro spend through these products · open one for categories, buyers and suppliers", `<div class="body">${hbars(capList(rmL, 12, "prm"), rmT, fmtM, n => `<a href="#rm.${rmIx.get(n)}">${esc(n)}</a>`)}${showAll(rmL.length, 12, "prm", "raw materials")}</div>`);
+  const wt = Object.entries(P.chem).map(([ci, v]) => [P.syn[ci]?.[0] || 0, v]).filter(([w]) => w), W = wt.reduce((a, [w]) => a + w, 0) || 1;
+  const avg = j => wt.reduce((a, [w, v]) => a + w * (num(v[j]) || 0), 0) / W;
+  return head + `<div class="gauges"><div class="gauge"><b>${libs.length}</b><span class="lbl">Package formats</span></div><div class="gauge"><b>${P.rmf.length}</b><span class="lbl">Raw-material families</span></div>
+    <div class="gauge"><b>${fmtM(rmT)}</b><span class="lbl">Raw-material spend, all families</span></div><div class="gauge"><b>${Math.round(avg(4))}%</b><span class="lbl">Raw materials, % of sales</span></div>
+    <div class="gauge"><b>${Math.round(avg(5))}%</b><span class="lbl">Packaging, % of sales</span></div><div class="gauge"><b>${Math.round(avg(8))}%</b><span class="lbl">Gross margin</span></div></div>
+  <section class="panel"><div class="body mixes">${mixBlock("Package format, share of SKUs", [...sk].sort((a, b) => b[1] - a[1]), skT, 10, L.fmt)}${mixBlock("Raw materials, share of spend", rmL.map(r => [r[0], Math.round(r[1])]), rmT, 7, n => `<a href="#rm.${rmIx.get(n)}">${esc(n)}</a>`)}</div></section>
+  ${fmts}${rms}
+  <div class="lbl" style="margin:18px 0 8px">More detail</div>
+  ${chem}${fmix}${calc}
+  <div class="note">Averages are weighted by each category's revenue. For the savings a specific roll-up can get, use <a href="#rollup" data-act="rview" data-v="pc">Roll-up → Procurement</a>.</div>`;
 }
 
+
+/* ---------- view: a raw-material family ----------
+   Spend pool from the Product study; split across categories by each category's revenue × raw-material % of sales ×
+   the family's share of its raw-material cost, scaled to the family's pool. Buyers = owners of brands in those
+   categories, by SKUs. */
+function viewRm(k) {
+  loadProduct(); const P = PRODUCT, back = `<a class="back" href="#product">← Product</a>`;
+  if (!P) return back + `<div class="empty">Loading…</div>`;
+  const r = P.missing ? null : P.rmf[+k]; if (!r) return back + `<div class="empty">No such raw material.</div>`;
+  const [name, , spend, sup, cats, cs] = r, by = new Map();
+  for (const [ci, xs] of Object.entries(P.rmc || {})) {
+    const t = xs.reduce((a, x) => a + (x[1] || 0), 0); if (!t) continue;
+    for (const x of xs) if (x[0] === +k) {
+      const o = by.get(ci) || { ci, name: CATNAMES[ci], w: 0, sh: 0, rows: [] };
+      o.w += (P.syn[ci]?.[0] || 0) * (P.syn[ci]?.[2] || 0) * x[1] / t; o.sh += x[1] / t; o.rows.push(x); by.set(ci, o);
+    }
+  }
+  const rows = [...by.values()].filter(o => o.name).sort((a, b) => b.w - a.w), W = rows.reduce((a, o) => a + o.w, 0) || 1;
+  const catSp = rows.map(o => [o.name, spend * o.w / W]);
+  const cset = new Set([...cats, ...rows.map(o => o.name)]), own = new Map(); let nb = 0;
+  for (const b of BR.values()) if (cset.has(b.ncat)) { nb++; if (b.owner_id && CO.has(b.owner_id)) { const n = CO.get(b.owner_id).name; own.set(n, (own.get(n) || 0) + (b.skus || 0)); } }
+  const owners = [...own].sort((a, b) => b[1] - a[1]), oT = owners.reduce((a, r) => a + r[1], 0);
+  const types = String(cs || "").split(/,\s*/).map(x => x.match(/^(.*?)\s+(\d+)$/)).filter(Boolean).map(m => [m[1], +m[2]]);
+  const sups = String(sup || "").split(/,\s*(?![^()]*\))/).map(x => x.replace(/\s*\([^)]*$/, "").trim()).filter((x, i, a) => x && a.indexOf(x) === i);
+  const all = P.rmf.reduce((a, x) => a + (x[2] || 0), 0);
+  const pane = (h, lbl, body) => `<section class="panel"><header><h2>${h}</h2><span class="sp"></span>${lbl ? `<span class="lbl">${lbl}</span>` : ""}</header>${body}</section>`;
+  return back + `<div class="page-h"><div class="grow"><div class="lbl">Raw material</div><h1>${esc(name.split(/[:(]/)[0].trim())}</h1>
+    <p>${name.split(/[:(]/)[0].trim() !== name ? `<b>${esc(name.replace(/^[^:(]*[:(]\s*/, "").replace(/\)$/, ""))}.</b> ` : ""}Which categories use it, how much the US pro market spends on it through them, which owners buy the most, and who supplies it.</p></div></div>
+  <div class="gauges"><div class="gauge"><b>${fmtM(spend)}</b><span class="lbl">Est. US pro spend</span></div><div class="gauge"><b>${all ? Math.round(spend / all * 100) : 0}%</b><span class="lbl">Of all raw-material spend</span></div>
+    <div class="gauge"><b>${cset.size}</b><span class="lbl">Categories use it</span></div><div class="gauge"><b>${nb.toLocaleString()}</b><span class="lbl">Brands in them</span></div><div class="gauge"><b>${sups.length}</b><span class="lbl">Main suppliers</span></div></div>
+  ${types.length ? `<section class="panel"><div class="body mixes">${mixBlock("How specialized it is, by category", types, types.reduce((a, t) => a + t[1], 0), 4)}${mixBlock("Where the spend sits", catSp.map(([n, v]) => [n, Math.round(v)]), Math.round(spend) || 1, 7, L.cat)}</div></section>` : ""}
+  <div class="grid2">
+    ${pane("Categories that use it", "Est. spend in each", `<div class="body">${hbars(capList(catSp, 15, "rc" + k), spend, fmtM, L.cat)}${showAll(catSp.length, 15, "rc" + k, "categories")}</div>`)}
+    ${pane("Biggest buyers", "Owners by SKUs in those categories", `<div class="body">${owners.length ? hbars(capList(owners, 15, "ro" + k), oT, v => v.toLocaleString(), L.co) + showAll(owners.length, 15, "ro" + k, "owners") : `<p class="faint" style="margin:0">No owners identified.</p>`}</div>`)}
+  </div>
+  ${pane("Main suppliers", "", `<div class="body">${sups.map(x => `<span class="tag">${esc(x)}</span>`).join("") || `<span class="faint">Not listed.</span>`}</div>`)}
+  ${rows.length ? fold("What it is in each category", "Material, type, share of the category's raw-material cost, suppliers", `<div class="tw"><table style="font-size:12.5px"><thead><tr><th>Category</th><th>Material</th><th>Type</th><th class="r">Share</th><th>Suppliers</th></tr></thead><tbody>
+    ${rows.map(o => o.rows.map((x, j) => `<tr><td>${j ? "" : L.cat(o.name)}</td><td>${esc(x[3] || "")}</td><td>${esc(x[2] || "")}</td><td class="r num">${Math.round(x[1] / o.rows.reduce((a, y) => a + y[1], 0) * o.sh * 100)}%</td><td class="faint">${esc(x[4] || "")}</td></tr>`).join("")).join("")}
+    </tbody></table></div>`, false, "rmw" + k) : ""}
+  <div class="note">Estimates from the Product study. Other raw materials: ${P.rmf.map((x, j) => j === +k ? "" : `<a href="#rm.${j}">${esc(x[0].split(/[:(]/)[0].trim())}</a>`).filter(Boolean).join(" · ")}.</div>`;
+}
 
 /* ---------- roll-up procurement synergy: from the members' actual overlaps ----------
    1. Each member's revenue is split across categories by its scraped SKU mix; the Product tab's cost structure gives
@@ -1527,7 +1578,7 @@ function rollProcView(ids, X) {
     ${packRows.map(r => `<tr${r.n < 2 ? ' class="faint"' : ""}><td><b>${esc(r.f)}</b>${r.n < 2 ? `<br><span style="font-size:12px">one buyer, nothing to pool</span>` : ""}</td>${r.xs.map(v => cell(v, r)).join("")}<td class="r num">${fmtM1(r.t)}</td><td class="r num">${lead(r)}</td><td class="r num">${(r.rate * 100).toFixed(1)}%</td><td class="r num"><b>${r.save ? fmtM1(r.save) : "—"}</b></td></tr>`).join("")}
   </tbody></table></div></section>
   <section class="panel"><header><h2>Shared raw materials</h2><span class="sp"></span><span class="lbl">Spend by raw-material family · rate blends commodity, semi-specialty and specialty</span></header><div class="tw" style="max-height:620px"><table><thead><tr><th>Raw-material family</th>${memCols}<th class="r">Total</th><th class="r">Largest buyer's share</th><th>Mix</th><th class="r">Rate</th><th class="r">Saving</th></tr></thead><tbody>
-    ${rmRows.map(r => { const tt = Object.values(r.ty).reduce((a, v) => a + v, 0) || 1; return `<tr${r.n < 2 ? ' class="faint"' : ""}><td><b>${esc(r.name)}</b>${r.sup ? `<br><span class="faint" style="font-size:12px">${esc(r.sup)}</span>` : ""}</td>${r.xs.map(v => cell(v, r)).join("")}<td class="r num">${fmtM1(r.t)}</td><td class="r num">${lead(r)}</td>
+    ${rmRows.map(r => { const tt = Object.values(r.ty).reduce((a, v) => a + v, 0) || 1; return `<tr${r.n < 2 ? ' class="faint"' : ""}><td><b>${String(r.k).startsWith("u:") ? esc(r.name) : `<a href="#rm.${r.k}">${esc(r.name)}</a>`}</b>${r.sup ? `<br><span class="faint" style="font-size:12px">${esc(r.sup)}</span>` : ""}</td>${r.xs.map(v => cell(v, r)).join("")}<td class="r num">${fmtM1(r.t)}</td><td class="r num">${lead(r)}</td>
       <td style="font-size:12px;white-space:nowrap">${Object.entries(r.ty).sort((a, b) => b[1] - a[1]).map(([t, v]) => `${esc(t)} ${Math.round(v / tt * 100)}%`).join("<br>")}</td><td class="r num">${(r.rate * 100).toFixed(1)}%</td><td class="r num"><b>${r.save + r.small ? fmtM1(r.save + r.small) : "—"}</b>${r.small ? `<br><span class="faint" style="font-size:11.5px">incl. ${fmtM1(r.small)} direct</span>` : ""}</td></tr>`; }).join("")}
   </tbody></table></div></section>
   <section class="panel"><header><h2>Freight on shared lanes</h2><span class="sp"></span><span class="lbl">Only shipments to distributors another member also sells to · saving split by shared-lane spend</span></header><div class="tw"><table><thead><tr><th>Member</th><th class="r">Freight spend</th><th class="r">Doors shared</th><th class="r">Freight on shared lanes</th><th class="r">Saving</th></tr></thead><tbody>
@@ -2753,7 +2804,7 @@ function render() {
   chrome(r);
   if (!loaded) { if (dbState === "off") app.innerHTML = `<div class="empty"><h2>Not connected</h2><p>Probrands keeps the market map in a shared database that loads when this page is opened in Claude while signed in.</p></div>`; return; }
   const y = scrollY;
-  app.innerHTML = r.v === "engine" ? viewEngine() : r.v === "fmt" ? viewFmt(r.id) : r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "ems" ? viewEms() : r.v === "product" ? viewProduct() : r.v === "em" ? viewEm(r.id) : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "mix" ? viewMix() : viewScreen();
+  app.innerHTML = r.v === "engine" ? viewEngine() : r.v === "rm" ? viewRm(r.id) : r.v === "fmt" ? viewFmt(r.id) : r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "ems" ? viewEms() : r.v === "product" ? viewProduct() : r.v === "em" ? viewEm(r.id) : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "mix" ? viewMix() : viewScreen();
   if (render.last === location.hash) scrollTo(0, y); else scrollTo(0, 0);
   render.last = location.hash;
 }
