@@ -1008,7 +1008,7 @@ function viewCat(i) {
   const c = CATS.find(x => String(x.i) === String(i)) || (CATNAMES[i] ? { cat: CATNAMES[i], seg: SEGOF[CATNAMES[i]], i: +i } : null);
   if (!c) return `<a class="back" href="#cats">← Categories</a><div class="empty">No such category.</div>`;
   const ci = String(c.i ?? i), s = CSTUDY[ci] || {}; if (CSTUDY[ci]) loadStudy(ci);
-  const st = STUDY.get(ci), a = attrOf(ci);
+  const st = STUDY.get(ci);
   const bs = (catPlayers().get(c.cat) || []).slice().sort((x, y) => (y.ncat === c.cat) - (x.ncat === c.cat) || (y.dists || []).length - (x.dists || []).length);
   const owners = new Map();
   for (const b of bs) { const k = b.owner_id || (b.owner ? "n:" + norm(b.owner) : "u:" + b.id); const o = owners.get(k) || owners.set(k, { x: b, brands: [], skus: 0, known: !!b.owner }).get(k); o.brands.push(b); o.skus += b.allc?.[c.cat] || 0; }
@@ -1030,7 +1030,7 @@ function viewCat(i) {
   if (!CSTUDY[ci]) return `<a class="back" href="#cats">← Categories</a><div class="page-h"><div class="grow"><div class="lbl">${esc(c.seg || "")}</div><h1>${esc(c.cat)}</h1><p>No market study for this category yet.</p></div></div>${priceSec}${live}`;
   const head = `<a class="back" href="#cats">← Categories</a>
   <div class="page-h"><div class="grow"><div class="lbl">Market study · ${esc(c.seg || "")}</div><h1>${esc(c.cat)}</h1>${st?.what ? `<p>${esc(st.what)}</p>` : ""}</div>
-    <div class="dial"><b class="${a >= 3.5 ? "g" : a >= 2.75 ? "a" : "r"}">${a !== null ? a.toFixed(1) : "—"}</b><span class="lbl">Attractiveness · of 5</span></div></div>
+</div>
   <div class="gauges"><div class="gauge"><b>${fmtTam(s.tam)}</b><span class="lbl">US market${s.lo ? ` · ${fmtTam(s.lo)}–${fmtTam(s.hi)}` : ""}</span></div><div class="gauge g"><b>${fmtTam(s.pro)}</b><span class="lbl">Pro market</span></div>
     <div class="gauge"><b>${s.cagr !== undefined ? s.cagr + "%" : "—"}</b><span class="lbl">Growth (CAGR)</span></div><div class="gauge"><b>${esc(s.conf || "—")}</b><span class="lbl">Sizing confidence</span></div>
     <div class="gauge"><b>${s.no ?? orows.length}</b><span class="lbl">Owners · ${pct(s.priv)} private · ${pct(s.pe)} PE</span></div><div class="gauge"><b>${bs.length}</b><span class="lbl">Brands selling here</span></div></div>`;
@@ -1040,7 +1040,7 @@ function viewCat(i) {
   const deals = st.know.find(k => k[0].startsWith("Deals")), know = st.know.filter(k => !k[0].startsWith("Deals"));
   return head + `
   <div class="grid2">
-    ${panel("Why it is (or isn't) attractive", `Weighted score ${a !== null ? a.toFixed(2) : "—"} · <a href="#cats">change weights</a>`, `<div class="body"><table><tbody>${st.scores.map(([k, v], j) => `<tr><td>${esc(k)}</td><td>${blocks(v)}</td><td class="r num"><b>${v}</b></td><td class="r faint num" style="font-size:12px">× ${critWeights()[j] ?? 1}</td></tr>`).join("")}</tbody></table></div>`)}
+    ${panel("Why it is (or isn't) attractive", "The market map's research ratings, 1-5", `<div class="body"><table><tbody>${st.scores.map(([k, v], j) => `<tr><td>${esc(k)}</td><td>${blocks(v)}</td><td class="r num"><b>${v}</b></td></tr>`).join("")}</tbody></table></div>`)}
     ${panel("What it is used for", "", `<div class="body">${list(st.uses)}</div>`)}
   </div>
   <div class="grid2">
