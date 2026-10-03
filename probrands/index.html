@@ -271,6 +271,7 @@ td.rv{font-size:13px;line-height:1.5;white-space:nowrap}
       <a href="#rollup" data-v="rollup">Roll-up<small id="nRoll"></small></a>
       <a href="#brands" data-v="brands">Brands<small id="nBrands"></small></a>
       <a href="#cats" data-v="cats">Categories<small id="nCats"></small></a>
+      <a href="#pricing" data-v="pricing">Pricing</a>
       <a href="#dists" data-v="dists">Distributors<small id="nDists"></small></a>
       <a href="#consolidators" data-v="consolidators">Consolidators</a>
       <a href="#web" data-v="web">The web</a>
@@ -306,12 +307,12 @@ const store = { get(k, d) { try { const v = localStorage.getItem("probrands2." +
 let db = null, sample = null, writable = false, dbState = "connecting";
 const CO = new Map(), DT = new Map(), DNA = new Map(), BR = new Map(), SKU = new Map(), skuLoading = new Set();
 let brandByName = new Map();
-let CATS = [], CATNAMES = [], SEGOF = {};
+let CATS = [], CATNAMES = [], SEGOF = {}, PRICING = {};
 const PRICES = new Map(), priceLoading = new Set();
 let DEALS = [], DISTS = [], SRC = "", loaded = false, ver = 0;
 const OWN = [["pe", "PE"], ["family", "Family"], ["esop", "ESOP"], ["private", "Private"], ["corp", "Corporate"]];
 const ownKey = c => c.oclass === "public" || c.oclass === "sub_private" ? "corp" : c.oclass;
-const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", roll: store.get("roll", []), rview: "xs", wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "n", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
+const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", roll: store.get("roll", []), rview: "xs", wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "n", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
   b: { q: "", status: "", tri: "", own: "", fam: "", seg: "", ch: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
 
 /* ---------- DNA ---------- */
@@ -434,14 +435,15 @@ function route() {
   if (h.startsWith("b.")) return { v: "brand", id: h.slice(2) };
   if (h.startsWith("web")) return { v: "web", id: h.split(".")[1] || null };
   if (h.startsWith("cat.")) return { v: "cat", id: h.slice(4) };
+  if (h.startsWith("price.")) return { v: "price", id: h.slice(6) };
   if (h.startsWith("d.")) return { v: "dist", id: h.slice(2) };
   if (h.startsWith("s.")) return { v: "strategy", id: h.slice(2) };
   if (h.startsWith("rollup")) { const ids = h.split(":")[1]; if (ids !== undefined) { ui.roll = ids.split(",").filter(x => CO.has(x) || !loaded); store.set("roll", ui.roll); } return { v: "rollup" }; }
-  if (["screen", "consolidators", "mix", "brands", "cats", "dists", "reach"].includes(h)) return { v: h };
+  if (["screen", "consolidators", "mix", "brands", "cats", "dists", "reach", "pricing"].includes(h)) return { v: h };
   return { v: "screen" };
 }
 function chrome(r) {
-  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v === "cat" ? "cats" : r.v === "dist" ? "dists" : r.v === "strategy" ? "screen" : r.v) ? "page" : "false"));
+  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v === "cat" ? "cats" : r.v === "price" ? "pricing" : r.v === "dist" ? "dists" : r.v === "strategy" ? "screen" : r.v) ? "page" : "false"));
   const counts = {}; for (const c of list()) counts[ownKey(c)] = (counts[ownKey(c)] || 0) + 1;
   $("#ownChips").innerHTML = OWN.map(([k, l]) => `<button class="chip" type="button" data-own="${k}" aria-pressed="${ui.own.has(k)}">${l}<small>${counts[k] || 0}</small></button>`).join("");
   $("#nBrands").textContent = BR.size || "";
@@ -818,6 +820,8 @@ function brandMarket(b) {
   const p = b.price || {}, r = b.review || {};
   const thin = p.n !== undefined && p.n < 3;
   const bits = [];
+  const pl = PRICING[CATNAMES.indexOf(b.ncat)]?.b?.[b.id];
+  if (pl) bits.push(`<div><span class="lbl">Price ladder (same-size)</span><p style="margin:4px 0 0"><b>${pl[1].toFixed(2)}×</b> the ${esc(b.ncat)} median for the same pack size, from ${pl[0]} price${pl[0] === 1 ? "" : "s"}${pl[5] !== null ? ` · pro ${pl[5].toFixed(2)}×` : ""}${pl[6] !== null ? ` · retail ${pl[6].toFixed(2)}×` : ""} · <a href="#price.${CATNAMES.indexOf(b.ncat)}">see the ladder</a></p></div>`);
   if (p.pos || p.ppo) bits.push(`<div><span class="lbl">Price vs category</span><p style="margin:4px 0 0"><b>${esc((p.pos || "").replace(/\s*\(n<3\)/, "")) || "Priced"}</b>${p.ppo ? ` · $${p.ppo.toFixed(2)}/oz` : ""}${p.cpo ? ` vs $${p.cpo.toFixed(2)}/oz for ${esc(b.ncat)}` : ""}${p.idx ? ` (${p.idx.toFixed(2)}×)` : ""}${p.n ? ` · ${p.n} priced item${p.n === 1 ? "" : "s"}` : ""}${thin ? ` <span class="st st-guess">Thin: under 3 items</span>` : ""}</p></div>`);
   else if (p.cpo) bits.push(`<div><span class="lbl">Price vs category</span><p class="faint" style="margin:4px 0 0">Not priced yet. ${esc(b.ncat)} averages $${p.cpo.toFixed(2)}/oz.</p></div>`);
   if (r.prod || r.n) bits.push(`<div><span class="lbl">Reviews</span><p style="margin:4px 0 0">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.prod || "Top product")}</a>` : esc(r.prod || "")}${r.rating ? ` · <b>${r.rating}★</b>` : ""}${r.n ? ` from ${r.n.toLocaleString()} review${r.n === 1 ? "" : "s"}` : ""}${r.site ? ` on ${esc(r.site)}` : ""}${r.note ? `<br><span class="faint">${esc(r.note)}</span>` : ""}</p></div>`);
@@ -1595,6 +1599,73 @@ function viewStrategy(id) {
   </div></section>` : ""}`;
 }
 
+/* ---------- pricing: who is premium, by category ----------
+   Each captured price ($/oz) is indexed against its category's median for the same pack-size band (<8 oz, 8-32,
+   32-128, >128), so a 12 oz aerosol is compared with 12 oz aerosols, not with gallons. A brand's premium index is the
+   median of its prices' indices; 1.0x is the category norm. Pro and retail indices use only prices from those channels. */
+const pTier = ix => ix >= 1.5 ? "Premium" : ix >= 1.15 ? "Above" : ix > 0.87 ? "At market" : ix > 0.67 ? "Below" : "Value";
+const pRows = ci => Object.entries(PRICING[ci]?.b || {}).map(([id, v]) => ({ b: BR.get(id), n: v[0], ix: v[1], ppo: v[2], lo: v[3], hi: v[4], pro: v[5], ret: v[6] })).filter(r => r.b);
+function viewPricing() {
+  const cats = Object.keys(PRICING).map(ci => { const rows = pRows(ci).filter(r => r.n >= ui.pmin); const s = rows.slice().sort((a, b) => b.ix - a.ix);
+    const ixs = rows.map(r => r.ix).sort((a, b) => a - b), q = f => ixs.length ? ixs[Math.min(ixs.length - 1, Math.floor(f * ixs.length))] : null;
+    const prem = s.filter(r => r.ix >= 1.15), pf = prem.filter(r => r.b.oclass === "pe" || r.b.oclass === "family").length;
+    return { ci, name: CATNAMES[ci], seg: SEGOF[CATNAMES[ci]], n: rows.length, rows: PRICING[ci].rows, med: PRICING[ci].med, top: s.slice(0, 3), bot: s.slice(-2).reverse(), spread: ixs.length >= 4 ? q(0.9) / q(0.1) : null, prem: prem.length, pf }; })
+    .filter(c => c.n >= 3);
+  const key = { n: c => c.n, spread: c => c.spread || 0, pf: c => c.prem ? c.pf / c.prem : 0, med: c => c.med || 0 }[ui.psort] || (c => c.n);
+  cats.sort((a, b) => key(b) - key(a));
+  const all = Object.keys(PRICING).flatMap(ci => pRows(ci).map(r => ({ ...r, ci })));
+  return `<div class="page-h"><div class="grow"><div class="lbl">Captured list prices · ${all.reduce((a, r) => a + r.n, 0).toLocaleString()} prices · ${all.length.toLocaleString()} brand-category pairs</div><h1>Pricing</h1>
+    <p>Who is premium in each category. Every price is indexed against the category's median $/oz for the same pack size, so aerosols are compared with aerosols and gallons with gallons. A brand's index is the median of its prices: 1.0× is the norm, 2× is double. Spread shows how much room the category gives a premium brand.</p></div></div>
+  <div class="bar"><select id="pmin" aria-label="Minimum prices">${[[1, "Any number of prices"], [2, "Brands with 2+ prices"], [3, "Brands with 3+ prices"], [5, "Brands with 5+ prices"]].map(([k, l]) => `<option value="${k}" ${k === ui.pmin ? "selected" : ""}>${l}</option>`).join("")}</select>
+    <select id="psort" aria-label="Sort">${[["n", "Most priced brands"], ["spread", "Widest price spread"], ["pf", "Most PE/family premium brands"], ["med", "Highest $/oz"]].map(([k, l]) => `<option value="${k}" ${k === ui.psort ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select></div>
+  <section class="panel"><div class="tw"><table><thead><tr><th>Category</th><th class="r">Brands priced</th><th class="r">Median $/oz</th><th class="r">Spread (90th / 10th)</th><th>Premium leaders</th><th>Value end</th><th class="r">Premium brands PE or family</th></tr></thead><tbody>
+  ${cats.map(c => `<tr class="cons-row" data-go="price.${c.ci}"><td><b><a href="#price.${c.ci}">${esc(c.name)}</a></b><br><span class="faint" style="font-size:12.5px">${esc(c.seg || "")}</span></td><td class="r num">${c.n}</td><td class="r num">$${c.med.toFixed(2)}</td><td class="r num">${c.spread ? c.spread.toFixed(1) + "×" : "—"}</td>
+    <td style="font-size:13px">${c.top.map(r => `${esc(r.b.name)} <span class="num faint">${r.ix.toFixed(1)}×</span>`).join("<br>")}</td><td style="font-size:13px">${c.bot.map(r => `${esc(r.b.name)} <span class="num faint">${r.ix.toFixed(2)}×</span>`).join("<br>")}</td>
+    <td class="r num">${c.prem ? `${c.pf} of ${c.prem}` : "—"}</td></tr>`).join("") || `<tr><td colspan="7" class="empty">No categories with 3+ priced brands.</td></tr>`}
+  </tbody></table></div></section>
+  <div class="note">Prices are public list prices captured from distributor sites (Prices tab), not net or contract prices; the importer keeps only those with a size. Pack-size bands: under 8 oz, 8-32 oz, 32-128 oz, over 128 oz; a band with fewer than 3 prices falls back to the whole category's median.</div>`;
+}
+function ladderChart(rows) {
+  const W = 820, left = 200, right = 120, rowH = 22, top = 40, H = top + rows.length * rowH + 36;
+  const lx = v => Math.log(Math.min(4, Math.max(0.25, v))) / Math.log(2), X = v => left + (lx(v) + 2) / 4 * (W - left - right);
+  const ticks = [0.25, 0.5, 1, 2, 4];
+  const mark = (r, y) => {
+    const x = X(r.ix), thin = r.n < 3, tip = esc(`<b>${esc(r.b.name)}</b>${r.ix.toFixed(2)}× the same-size median · ${r.n} price${r.n === 1 ? "" : "s"} · median $${r.ppo.toFixed(2)}/oz${r.pro !== null ? ` · pro ${r.pro.toFixed(2)}×` : ""}${r.ret !== null ? ` · retail ${r.ret.toFixed(2)}×` : ""}`);
+    const a = `data-tip="${tip}" data-go="b.${esc(r.b.id)}"${thin ? ' opacity=".4"' : ""}`;
+    const dot = r.b.oclass === "pe" ? `<path class="dot" d="M${x} ${y - 6}L${x + 6} ${y}L${x} ${y + 6}L${x - 6} ${y}Z" fill="var(--k-pe)" ${a}/>`
+      : r.b.oclass === "family" ? `<circle class="dot" cx="${x}" cy="${y}" r="5" fill="var(--k-fam)" ${a}/>` : `<circle class="dot" cx="${x}" cy="${y}" r="4.5" fill="var(--panel)" style="stroke:var(--ink-3);stroke-width:1.5" ${a}/>`;
+    return `<g${thin ? ' opacity=".55"' : ""}><line x1="${X(r.lo)}" x2="${X(r.hi)}" y1="${y}" y2="${y}" stroke="var(--line-2)" stroke-width="2"/>${dot}
+      <text class="ax" x="${left - 10}" y="${y + 4}" text-anchor="end" style="fill:var(--ink-2);font:500 12px var(--f-body)">${esc(r.b.name.length > 28 ? r.b.name.slice(0, 27) + "…" : r.b.name)}</text>
+      <text class="ax" x="${W - right + 10}" y="${y + 4}">${r.ix.toFixed(2)}× · ${r.n}</text></g>`;
+  };
+  return `<svg class="qchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Price index against the same-size category median, one row per brand">
+    <rect x="${X(1.15)}" y="${top - 8}" width="${X(4) - X(1.15)}" height="${rows.length * rowH + 8}" fill="var(--good-soft)" opacity=".5"/>
+    ${ticks.map(v => `<line class="gl" x1="${X(v)}" x2="${X(v)}" y1="${top - 8}" y2="${top + rows.length * rowH}"/><text class="ax" x="${X(v)}" y="${top - 14}" text-anchor="middle">${v}×</text>`).join("")}
+    <line x1="${X(1)}" x2="${X(1)}" y1="${top - 8}" y2="${top + rows.length * rowH}" stroke="var(--ink-3)" stroke-dasharray="4 4"/>
+    <text class="ql" x="${X(1.15) + 6}" y="${top + rows.length * rowH + 22}">Premium side</text>
+    <text class="ax" x="${X(1)}" y="${top + rows.length * rowH + 22}" text-anchor="middle">category norm</text>
+    ${rows.map((r, i) => mark(r, top + i * rowH + rowH / 2)).join("")}
+  </svg>`;
+}
+function viewPrice(ci) {
+  const name = CATNAMES[ci]; if (!name || !PRICING[ci]) return `<a class="back" href="#pricing">← Pricing</a><div class="empty">No prices for this category.</div>`;
+  const P = PRICING[ci], rows = pRows(ci).filter(r => r.n >= ui.pmin).sort((a, b) => b.ix - a.ix), shown = ui.pall ? rows : rows.slice(0, 50);
+  const prem = rows.filter(r => r.ix >= 1.15), val = rows.filter(r => r.ix <= 0.87);
+  const legend = `<div class="olegend"><span><svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:5px"><path d="M6 0L12 6L6 12L0 6Z" fill="var(--k-pe)"/></svg>PE-backed</span><span><i style="background:var(--k-fam);border-radius:50%"></i>Family</span><span><i style="border:1.5px solid var(--ink-3);border-radius:50%;background:none"></i>Other owners</span><span>Line: lowest to highest price · faint: under 3 prices</span></div>`;
+  return `<a class="back" href="#pricing">← Pricing</a>
+  <div class="page-h"><div class="grow"><div class="lbl">${esc(SEGOF[name] || "")} · <a href="#cat.${ci}">category page</a></div><h1>${esc(name)}</h1>
+    <p>${rows.length} brands priced from ${P.rows} prices. Median $${P.med.toFixed(2)}/oz overall; by pack size ${Object.entries(P.bands || {}).sort((a, b) => ["<8", "8-32", "32-128", ">128"].indexOf(a[0]) - ["<8", "8-32", "32-128", ">128"].indexOf(b[0])).map(([k, v]) => `${k} oz $${v.toFixed(2)}`).join(" · ")}.</p></div></div>
+  <div class="gauges"><div class="gauge"><b>${rows.length}</b><span class="lbl">Brands priced</span></div><div class="gauge g"><b>${prem.length}</b><span class="lbl">Above 1.15×</span></div><div class="gauge"><b>${val.length}</b><span class="lbl">Below 0.87×</span></div>
+    <div class="gauge"><b>${prem.filter(r => r.b.oclass === "pe" || r.b.oclass === "family").length}</b><span class="lbl">Premium and PE or family owned</span></div></div>
+  <div class="bar"><select id="pmin" aria-label="Minimum prices">${[[1, "Any number of prices"], [2, "Brands with 2+ prices"], [3, "Brands with 3+ prices"], [5, "Brands with 5+ prices"]].map(([k, l]) => `<option value="${k}" ${k === ui.pmin ? "selected" : ""}>${l}</option>`).join("")}</select><span style="flex:1"></span>${legend}</div>
+  <section class="panel"><header><h2>Price ladder</h2><span class="sp"></span><span class="lbl">Index vs the same-size median · log scale · hover for detail, click to open</span></header><div class="body">${ladderChart(shown)}
+    ${rows.length > 50 ? `<button class="more" type="button" data-act="pall">${ui.pall ? "Show the top 50" : `Show all ${rows.length}`}</button>` : ""}</div></section>
+  <section class="panel"><div class="tw"><table><thead><tr><th>Brand</th><th>Owner</th><th class="r">Index</th><th>Tier</th><th class="r">Median $/oz</th><th class="r">Pro index</th><th class="r">Retail index</th><th class="r">Prices</th></tr></thead><tbody>
+  ${rows.map(r => `<tr><td><b><a href="#b.${esc(r.b.id)}">${esc(r.b.name)}</a></b></td><td>${ownerCell(r.b)}</td><td class="r num">${r.ix.toFixed(2)}×</td><td>${pTier(r.ix)}</td><td class="r num">$${r.ppo.toFixed(2)}</td><td class="r num">${r.pro !== null ? r.pro.toFixed(2) + "×" : "—"}</td><td class="r num">${r.ret !== null ? r.ret.toFixed(2) + "×" : "—"}</td><td class="r num">${r.n}</td></tr>`).join("")}
+  </tbody></table></div></section>
+  <div class="note">List prices from distributor sites, not net prices. A brand's index is the median of its prices against the same-size median, so one odd listing moves it little once it has 3+ prices.</div>`;
+}
+
 /* ---------- view: SKU mix ---------- */
 function viewMix() {
   const cos = visible().filter(c => ui.showOut || !dnaOf(c).out);
@@ -1624,7 +1695,7 @@ function render() {
   chrome(r);
   if (!loaded) { if (dbState === "off") app.innerHTML = `<div class="empty"><h2>Not connected</h2><p>Probrands keeps the market map in a shared database that loads when this page is opened in Claude while signed in.</p></div>`; return; }
   const y = scrollY;
-  app.innerHTML = r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
+  app.innerHTML = r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
   if (render.last === location.hash) scrollTo(0, y); else scrollTo(0, 0);
   render.last = location.hash;
   if (r.v === "web") bindWeb();
@@ -1693,6 +1764,7 @@ document.addEventListener("click", e => {
     else if (act === "rclear") { location.hash = "rollup:"; }
     else if (act === "plan") askPlan(a.dataset.id);
     else if (act === "rplan") askRollPlan();
+    else if (act === "pall") { ui.pall = !ui.pall; render(); }
     else if (act === "rview") { ui.rview = a.dataset.v; render(); }
     else if (act === "wsmk") { ui.wsmk = a.dataset.v; ui.wslimit = 40; render(); }
     else if (act === "wsmore") { ui.wslimit += 40; render(); }
@@ -1729,6 +1801,8 @@ document.addEventListener("change", e => {
   if (e.target.id === "seg") { ui.seg = e.target.value; if (ui.fam && SEGOF[ui.fam] !== ui.seg) ui.fam = ""; render(); }
   if (e.target.id === "rev") { ui.rev = e.target.value; render(); }
   if (e.target.id === "chf") { ui.chf = e.target.value; render(); }
+  if (e.target.id === "pmin") { ui.pmin = +e.target.value; render(); }
+  if (e.target.id === "psort") { ui.psort = e.target.value; render(); }
   if (e.target.id === "rcap") { ui.cap = e.target.value === "demo" ? "demo" : +e.target.value; render(); }
   if (e.target.id === "rmin") { ui.rmin = e.target.value; render(); }
   if (e.target.id === "rsort") { ui.rsort = e.target.value; render(); }
@@ -1787,6 +1861,7 @@ render();
       else if (x.id === "deals") DEALS = v.deals || [];
       else if (x.id === "dists") DISTS = v.list || [];
       else if (x.id === "index") SRC = v.source || "";
+      else if (x.id === "pricing") PRICING = v.cats || {};
       else if (x.id === "cats") { CATS = v.cats || []; CATNAMES = v.names || []; SEGOF = v.segs || {}; }
     });
     const dmk = new Map(DISTS.map(d => [d.name, d.market]));

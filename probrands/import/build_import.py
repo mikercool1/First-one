@@ -609,6 +609,57 @@ if "Prices" in wb.sheetnames:
                                s(q.get("Excluded because"), 40), s(q.get("Distributor")), s(q.get("Product URL"), 300) or s(q.get("Source page"), 300),
                                s(q.get("Category (normalized)"))])
 
+# ---- price ladder: each usable price indexed against its category's median $/oz for the same pack-size band (a gallon
+# is far cheaper per oz than a 12 oz can, so raw $/oz would mostly measure pack mix). A brand's premium index in a
+# category = the median of its prices' indices; pro and retail indices use only prices from those channel types.
+def size_band(oz):
+    return "<8" if oz < 8 else "8-32" if oz <= 32 else "32-128" if oz <= 128 else ">128"
+
+
+def med(xs):
+    xs = sorted(xs)
+    return xs[len(xs) // 2] if xs else None
+
+
+price_rows = []
+for bid, rows in out_q.items():
+    for q in rows:
+        if q[6] and q[5] and q[10]:
+            price_rows.append((bid, q[10], q[5], q[8]))
+oz_by = {}
+if "Prices" in wb.sheetnames:  # the oz-equivalent size, for the band
+    for q in table("Prices"):
+        b2 = bid_by_name.get(key(s(q.get("Brand (mapped)"))) or s(q.get("Brand (mapped)")).lower())
+        if b2 and s(q.get("Use (Y/N)")) == "Y" and n(q.get("$ per oz")) and n(q.get("Size (oz-equiv)")):
+            oz_by.setdefault((b2, s(q.get("Category (normalized)")), round(n(q["$ per oz"]), 3), s(q.get("Distributor"))), []).append(n(q["Size (oz-equiv)"]))
+cells, cat_all = collections.defaultdict(list), collections.defaultdict(list)
+priced = []
+for bid, cat, ppo, dist in price_rows:
+    ozs = oz_by.get((bid, cat, ppo, dist))
+    if not ozs:
+        continue
+    band = size_band(ozs[0])
+    cells[(cat, band)].append(ppo); cat_all[cat].append(ppo)
+    priced.append((bid, cat, ppo, dist, band))
+cell_med = {k: med(v) for k, v in cells.items() if len(v) >= 3}
+cat_med = {k: med(v) for k, v in cat_all.items()}
+pb = collections.defaultdict(lambda: {"i": [], "p": [], "pro": [], "ret": []})
+for bid, cat, ppo, dist, band in priced:
+    base = cell_med.get((cat, band)) or cat_med.get(cat)
+    if not base:
+        continue
+    x = pb[(cat, bid)]; ix = ppo / base
+    x["i"].append(ix); x["p"].append(ppo)
+    (x["ret"] if ctype(dist) in ("retail", "diy") else x["pro"]).append(ix)
+pricing_out = collections.defaultdict(dict)
+for (cat, bid), x in pb.items():
+    pricing_out[cat][bid] = [len(x["i"]), r1(med(x["i"]), 3), r1(med(x["p"]), 3), r1(min(x["i"]), 3), r1(max(x["i"]), 3),
+                             r1(med(x["pro"]), 3) if x["pro"] else None, r1(med(x["ret"]), 3) if x["ret"] else None]
+pricing_meta = {cat: {"rows": len(cat_all[cat]), "med": r1(cat_med[cat], 3),
+                      "bands": {b: r1(v, 3) for (c, b), v in cell_med.items() if c == cat}} for cat in pricing_out}
+print("price ladder:", len(priced), "prices,", sum(len(v) for v in pricing_out.values()), "brand-category pairs,",
+      sum(1 for v in pricing_out.values() if len(v) >= 4), "categories with 4+ brands")
+
 # ---- the Competition tab: one row per normalized category
 cats_out = [{k: v for k, v in {
     "seg": s(r.get("Segment")), "cat": s(r["Category (normalized)"]), "n": r1(n(r.get("# core brands")), 0),
@@ -747,6 +798,8 @@ qwhere = shard(dict(out_q), "q", "prices", folder="sku")  # prices load with the
 for bid, i in qwhere.items():
     out_br[bid]["q"] = i
 nbr = len(set(shard(out_br, "br", "brands").values()))
+json.dump({"cats": {CAT_IX[c]: {"b": v, **pricing_meta[c]} for c, v in pricing_out.items() if c in CAT_IX}, "updated_at": NOW},
+          open(f"{OUT}/data/pricing.json", "w"), separators=(",", ":"))
 json.dump({"cats": cats_out, "names": CATS, "segs": {c: SEG_OF.get(c, "Unclassified") for c in CATS}, "updated_at": NOW}, open(f"{OUT}/data/cats.json", "w"), separators=(",", ":"))
 json.dump({"deals": deals_out, "updated_at": NOW}, open(f"{OUT}/data/deals.json", "w"), separators=(",", ":"))
 json.dump({"list": dist_out, "updated_at": NOW}, open(f"{OUT}/data/dists.json", "w"), separators=(",", ":"))
