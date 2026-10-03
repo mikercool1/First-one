@@ -49,7 +49,7 @@ The ownership filter in the left rail (PE, Family, ESOP, Private, Corporate) app
 
 ## Home Base
 
-**Home Base** (the link under the page list, `#hb`) is a company repository built into Probrands. It uses the Home Base profiler's interface and look, but it is a separate module running only on this app's market map. It carries no Home Base data and has no link to any other app.
+**Home Base** (the link under the page list, `#hb`) is a company repository built into Probrands. It uses the Home Base profiler's features in the Probrands look (left rail, hazard stripe, stencil type, safety yellow), but it is a separate module running only on this app's market map. It carries no Home Base data and has no link to any other app.
 
 **Where it lives and how it's built**
 - It runs in its own full-screen frame with its own header. "← Probrands" returns to the screen. Its pages sit under `#hb/<route>` (for example `#hb/c.zep-inc`), so links and the Back button work.
