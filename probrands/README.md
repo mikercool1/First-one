@@ -47,13 +47,14 @@ Live app: https://claude.ai/artifact/UkLSFqKaS38kQqd4JmvNhk (private to the owne
 
 The ownership filter in the left rail (PE, Family, ESOP, Private, Corporate) applies to every page. PE + Family is the default.
 
-## Home Base
+## CRM
 
-**Home Base** (the link under the page list, `#hb`) is a company repository built into Probrands. It uses the Home Base profiler's features in the Probrands look (left rail, hazard stripe, stencil type, safety yellow), but it is a separate module running only on this app's market map. It carries no Home Base data and has no link to any other app.
+**CRM** (the link under the page list, `#crm`) is a company repository built into Probrands. It was first called Home Base and was renamed so it isn't confused with the separate Home Base app. It uses the Home Base profiler's features in the Probrands look (left rail, hazard stripe, stencil type, safety yellow), but it is a separate module running only on this app's market map. It carries no Home Base data and has no link to any other app.
 
 **Where it lives and how it's built**
-- It runs in its own full-screen frame with its own header. "← Probrands" returns to the screen. Its pages sit under `#hb/<route>` (for example `#hb/c.zep-inc`), so links and the Back button work.
-- The source is `homebase/hb.html`. `python3 probrands/homebase/embed.py` copies it into `index.html` (between the `<!--HB-->` markers). Run it after every change to `hb.html`.
+- It runs in its own full-screen frame. "← Back to Probrands" returns to the screen. Its pages sit under `#crm/<route>` (for example `#crm/c.zep-inc`; old `#hb/` links still open), so links and the Back button work.
+- The source is `crm/crm.html`. `python3 probrands/crm/embed.py` copies it into `index.html` (between the `<!--HB-->` markers). Run it after every change to `crm.html`.
+- Its calls to Claude, the database and web search go through a bridge in the Probrands page, which rebuilds each call's arguments in the page's own objects (the claude.ai runtime can refuse objects made in the frame).
 
 **What it shows.** It reads the market map from Probrands when the data loads:
 - One profile per owner (1,101). Each has revenue, employees, owner type, sponsor and entry year, parent, HQ, website, business model, the write-up and sourced evidence.
@@ -63,9 +64,9 @@ The ownership filter in the left rail (PE, Family, ESOP, Private, Corporate) app
 - The **deal book** holds the market map's 529 deals.
 - Brand names resolve to their owners in search and buyer matching.
 
-**What it keeps.** Everything changed in Home Base is saved over that base in its own collections, `hb_*` (`hb_companies`, `hb_details`, `hb_dealbook`, `hb_sponsors`, `hb_tam`, `hb_chats` and so on). The market map itself is never touched. Deleting a market-map company there hides it in Home Base only.
+**What it keeps.** Everything changed in the CRM is saved over that base in its own collections, `hb_*` (`hb_companies`, `hb_details`, `hb_dealbook`, `hb_sponsors`, `hb_tam`, `hb_chats` and so on; the prefix stays from the old name so nothing saved moves). The market map itself is never touched. Deleting a market-map company there hides it in the CRM only.
 
-**Pages.** Home, Sectors, Companies, Buyer finder, Precedents, End markets, Market size, PE owned, In market and Campaign. There is also the Private equity side: firms, funds, portfolio, exits, fundraising, people and coverage. Company pages have the profile builder, inline editing with confidence and source of truth, and the company chat.
+**Pages.** Home, Sectors, Companies, Buyer finder, Precedents, End markets, Market size, PE owned, In market and Campaign. There is also the Private equity side: firms, funds, portfolio, exits, fundraising, people and coverage. Company pages have the profile builder (Build), inline editing with confidence and source of truth, and the company chat (Chat, on company pages).
 
 **Left out of this version**
 - Other industries and verticals: it is pro brands only.
