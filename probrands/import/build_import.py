@@ -617,8 +617,8 @@ def size_band(oz):
 
 
 def med(xs):
-    xs = sorted(xs)
-    return xs[len(xs) // 2] if xs else None
+    xs, h = sorted(xs), len(xs) // 2
+    return None if not xs else xs[h] if len(xs) % 2 else (xs[h - 1] + xs[h]) / 2
 
 
 price_rows = []

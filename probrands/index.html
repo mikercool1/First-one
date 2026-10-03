@@ -312,7 +312,7 @@ const PRICES = new Map(), priceLoading = new Set();
 let DEALS = [], DISTS = [], SRC = "", loaded = false, ver = 0;
 const OWN = [["pe", "PE"], ["family", "Family"], ["esop", "ESOP"], ["private", "Private"], ["corp", "Corporate"]];
 const ownKey = c => c.oclass === "public" || c.oclass === "sub_private" ? "corp" : c.oclass;
-const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", roll: store.get("roll", []), rview: "xs", wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "n", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
+const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", pp: { q: "", min: 3, sort: "lead", seg: "", cat: "", own: "", pos: "", limit: 100 }, roll: store.get("roll", []), rview: "xs", wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "n", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
   b: { q: "", status: "", tri: "", own: "", fam: "", seg: "", ch: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
 
 /* ---------- DNA ---------- */
@@ -439,11 +439,11 @@ function route() {
   if (h.startsWith("d.")) return { v: "dist", id: h.slice(2) };
   if (h.startsWith("s.")) return { v: "strategy", id: h.slice(2) };
   if (h.startsWith("rollup")) { const ids = h.split(":")[1]; if (ids !== undefined) { ui.roll = ids.split(",").filter(x => CO.has(x) || !loaded); store.set("roll", ui.roll); } return { v: "rollup" }; }
-  if (["screen", "consolidators", "mix", "brands", "cats", "dists", "reach", "pricing"].includes(h)) return { v: h };
+  if (["screen", "consolidators", "mix", "brands", "cats", "dists", "reach", "pricing", "premium"].includes(h)) return { v: h };
   return { v: "screen" };
 }
 function chrome(r) {
-  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v === "cat" ? "cats" : r.v === "price" ? "pricing" : r.v === "dist" ? "dists" : r.v === "strategy" ? "screen" : r.v) ? "page" : "false"));
+  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v === "cat" ? "cats" : r.v === "price" || r.v === "premium" ? "pricing" : r.v === "dist" ? "dists" : r.v === "strategy" ? "screen" : r.v) ? "page" : "false"));
   const counts = {}; for (const c of list()) counts[ownKey(c)] = (counts[ownKey(c)] || 0) + 1;
   $("#ownChips").innerHTML = OWN.map(([k, l]) => `<button class="chip" type="button" data-own="${k}" aria-pressed="${ui.own.has(k)}">${l}<small>${counts[k] || 0}</small></button>`).join("");
   $("#nBrands").textContent = BR.size || "";
@@ -558,7 +558,7 @@ function viewCompany(id) {
   </div>
   <section class="panel"><header><h2>Brands</h2><span class="sp"></span><span class="lbl">${brands.length} in the map</span></header>
     <div class="tw"><table><thead><tr><th>Brand</th><th>What it is</th><th>Hero product</th><th>Format</th><th class="r">SKUs</th><th>Who carries it</th></tr></thead><tbody>
-    ${brands.map(b => `<tr><td><b>${brandLink(b.name)}</b>${b.verified ? "" : `<br><span class="unv">owner unverified</span>`}</td><td>${b.ncat ? catLink(b.ncat) : esc(b.cat || b.family || "")}</td><td class="muted">${esc(b.hero)}</td><td>${esc(b.form)}</td><td class="r num">${b.skus}</td>
+    ${brands.map(b => `<tr><td><b>${brandLink(b.name)}</b>${priceBadgeByName(b.name, { x: true }) ? `<br>${priceBadgeByName(b.name, { x: true })}` : ""}${b.verified ? "" : `<br><span class="unv">owner unverified</span>`}</td><td>${b.ncat ? catLink(b.ncat) : esc(b.cat || b.family || "")}</td><td class="muted">${esc(b.hero)}</td><td>${esc(b.form)}</td><td class="r num">${b.skus}</td>
       <td>${(b.dists || []).slice(0, 6).map(x => `<span class="tag">${esc(x.replace(/\s*\(.*\)$/, ""))}</span>`).join("")}${(b.dists || []).length > 6 ? `<span class="faint">+${b.dists.length - 6}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="6" class="faint">No brands linked in the map.</td></tr>`}
     </tbody></table></div></section>
   ${dt.size_note || c.size_basis ? `<div class="note">Size: ${esc(c.size_basis || "")}${c.size_basis && dt.size_note ? ". " : ""}${md1(dt.size_note || "")}${c.linkedin ? ` · <a href="${esc(c.linkedin)}" target="_blank" rel="noopener">LinkedIn</a>` : ""}. EBITDA is revenue times the market map's assumed margin for the business model, not a reported figure.</div>` : ""}
@@ -801,7 +801,7 @@ function viewBrands() {
     ${sel("bseg", "All segments", segments(), f.seg)}${sel("bch", "Any channel mix", ["Pro-only", "Pro-led", "Mixed", "Retail-led"], f.ch)}${sel("bfam", "All categories", fams, f.fam)}${sel("bfmt", "All formats", fmts, f.fmt)}${sel("bmkt", "All end markets", mkts, f.mkt)}${sel("bdist", "All distributors", dists, f.dist)}
   </div>
   <section class="panel"><div class="tw"><table class="btable"><thead><tr><th>${sortBtn("name", "Brand")}</th><th>${sortBtn("owner", "Owner")}</th><th>What it is</th><th>Competes with</th><th>Format</th><th class="r">${sortBtn("skus", "SKUs", "r")}</th><th>${sortBtn("dists", "Who carries it")}</th><th>Channels</th></tr></thead><tbody>
-    ${rows.slice(0, f.limit).map(b => `<tr class="cons-row" data-go="b.${esc(b.id)}"><td><b><a href="#b.${esc(b.id)}">${esc(b.name)}</a></b>${b.tri === "actionable" ? `<br><span class="tag tri">Actionable</span>` : ""}${b.scope && b.scope !== "Core" ? `<br><span class="tag">${esc(b.scope)}</span>` : ""}</td>
+    ${rows.slice(0, f.limit).map(b => `<tr class="cons-row" data-go="b.${esc(b.id)}"><td><b><a href="#b.${esc(b.id)}">${esc(b.name)}</a></b>${pricePos(b.id) ? `<br>${priceBadge(b.id, { x: true, lead: false })}` : ""}${b.tri === "actionable" ? `<br><span class="tag tri">Actionable</span>` : ""}${b.scope && b.scope !== "Core" ? `<br><span class="tag">${esc(b.scope)}</span>` : ""}</td>
       <td>${ownerCell(b)}</td><td>${esc(b.ncat)}${b.hero ? `<br><span class="faint">${esc(b.hero)}</span>` : ""}</td>
       <td class="rv">${rivalsOf(b).slice(0, 3).map(x => `<a href="#b.${esc(x.id)}">${esc(x.name)}</a> <span class="faint">${OCLS[x.oclass] || "Unknown"}</span>`).join("<br>") || `<span class="faint">None matched</span>`}</td>
       <td>${esc(b.form || "")}</td><td class="r num">${b.skus || 0}</td>
@@ -821,6 +821,8 @@ function brandMarket(b) {
   const thin = p.n !== undefined && p.n < 3;
   const bits = [];
   const pl = PRICING[CATNAMES.indexOf(b.ncat)]?.b?.[b.id];
+  const pp = pricePos(b.id);
+  if (pp) bits.push(`<div><span class="lbl">Price position</span><p style="margin:4px 0 0">${priceBadge(b.id, { x: true })} <b>${pp.ix.toFixed(2)}×</b> the same-size median across ${pp.cats.length} categor${pp.cats.length === 1 ? "y" : "ies"} from ${pp.n} price${pp.n === 1 ? "" : "s"}; ${pct(pp.t[2] / pp.n)} of them in Best, ${pct(pp.t[0] / pp.n)} in Good. ${pp.cats.map(c => `<a href="#price.${c.ci}">${esc(CATNAMES[c.ci])}</a> <span class="num">${c.ix.toFixed(2)}×</span>${pp.catLead.includes(c.ci) ? " ★" : ""}`).join(" · ")} · <a href="#premium">leaders &amp; laggards</a></p></div>`);
   if (pl) bits.push(`<div><span class="lbl">Price ladder (same-size)</span><p style="margin:4px 0 0"><b>${pl[1].toFixed(2)}×</b> the ${esc(b.ncat)} median for the same pack size, from ${pl[0]} price${pl[0] === 1 ? "" : "s"}${pl[5] !== null ? ` · pro ${pl[5].toFixed(2)}×` : ""}${pl[6] !== null ? ` · retail ${pl[6].toFixed(2)}×` : ""} · <a href="#price.${CATNAMES.indexOf(b.ncat)}">see the ladder</a></p></div>`);
   if (p.pos || p.ppo) bits.push(`<div><span class="lbl">Price vs category</span><p style="margin:4px 0 0"><b>${esc((p.pos || "").replace(/\s*\(n<3\)/, "")) || "Priced"}</b>${p.ppo ? ` · $${p.ppo.toFixed(2)}/oz` : ""}${p.cpo ? ` vs $${p.cpo.toFixed(2)}/oz for ${esc(b.ncat)}` : ""}${p.idx ? ` (${p.idx.toFixed(2)}×)` : ""}${p.n ? ` · ${p.n} priced item${p.n === 1 ? "" : "s"}` : ""}${thin ? ` <span class="st st-guess">Thin: under 3 items</span>` : ""}</p></div>`);
   else if (p.cpo) bits.push(`<div><span class="lbl">Price vs category</span><p class="faint" style="margin:4px 0 0">Not priced yet. ${esc(b.ncat)} averages $${p.cpo.toFixed(2)}/oz.</p></div>`);
@@ -859,7 +861,8 @@ function viewBrand(id) {
     <div><span class="lbl">${esc(b.seg)} · ${catLink(b.ncat)}${b.scope ? " · " + esc(b.scope) : ""}</span></div>
     <h1>${esc(b.name)}</h1>
     <p class="what">${esc(b.cat || "")}${b.hero ? ` · known for <b style="color:var(--ink)">${esc(b.hero)}</b>` : ""}</p>
-    <div class="specs"><span>Owner <b>${b.owner ? esc(b.owner) : "Not identified"}</b></span>${b.parent ? `<span>Parent <b>${esc(b.parent)}</b></span>` : ""}${b.sponsor ? `<span>Sponsor <b>${esc(b.sponsor)}</b></span>` : ""}${b.rev ? `<span>Est. revenue <b>${fmtM(b.rev)}</b></span>` : ""}
+    ${priceBadge(b.id) ? `<div style="margin:2px 0 8px">${priceBadge(b.id)}</div>` : ""}
+    <div class="specs"><span>Owner <b>${b.owner ? esc(b.owner) : "Not identified"}</b></span>${b.parent ? `<span>Parent <b>${esc(b.parent)}</b></span>` : ""}${b.sponsor ? `<span>Sponsor <b>${esc(b.sponsor)}</b></span>` : ""}${b.rev ? `<span>Est. revenue <b>${fmtM(b.rev)}</b></span>` : ""}${(p => p ? `<span>Price <b>${PPOS[p.k][0]} · ${p.ix.toFixed(2)}×${p.thin ? " (thin)" : ""}</b></span>` : "")(pricePos(b.id))}
       <span>Status <b>${esc(stLabel(b))}${b.conf ? " · " + esc(b.conf) + " confidence" : ""}</b></span>${b.tri ? `<span>Workbook triage <b>${esc(TRI[b.tri] || b.tri)}${b.tri_owner && norm(b.tri_owner) !== norm(b.owner) ? " · guesses " + esc(b.tri_owner) : ""}${b.tri_conf ? " · " + esc(b.tri_conf) : ""}</b></span>` : ""}${(b.maker || []).length ? `<span>Maker on listings <b>${esc(b.maker.join(", "))}</b></span>` : ""}</div>
     <p class="faint" style="margin:10px 0 0;font-size:13px">${b.src === "triage" ? "The market map's triage pass named this owner; not verified" : esc(STATUS[b.status][1])}${b.note && b.src !== "triage" ? ". Claude's note: " + esc(b.note) : ""}.</p></div>
     <div class="dial">${co ? `<b class="${dnaOf(co).band}">${dnaOf(co).score}</b><span class="lbl">Owner DNA</span>` : `<b style="color:var(--ink-3)">${b.skus || 0}</b><span class="lbl">SKUs scraped</span>`}</div>
@@ -959,7 +962,7 @@ function viewCat(i) {
   <section class="panel"><header><h2>Brands</h2><span class="sp"></span><span class="lbl">${bs.length}</span></header>
   <div class="tw"><table><thead><tr><th>Brand</th><th>Owner</th><th>Here as</th><th class="r">SKUs here</th><th class="r">Distributors</th><th>Price</th></tr></thead><tbody>
   ${bs.map(b => `<tr><td><b><a href="#b.${esc(b.id)}">${esc(b.name)}</a></b>${b.hero ? `<br><span class="faint">${esc(b.hero)}</span>` : ""}</td><td>${ownerCell(b)}</td><td>${b.ncat === c.cat ? "Primary" : `<span class="muted">Also sells · main: ${catLink(b.ncat)}</span>`}</td>
-    <td class="r num">${b.allc?.[c.cat] || 0}</td><td class="r num">${(b.dists || []).length}</td><td>${b.price?.pos ? esc(b.price.pos) : ""}</td></tr>`).join("")}
+    <td class="r num">${b.allc?.[c.cat] || 0}</td><td class="r num">${(b.dists || []).length}</td><td>${priceBadge(b.id, { x: true, lead: false }) || (b.price?.pos ? esc(b.price.pos) : "")}</td></tr>`).join("")}
   </tbody></table></div></section>`;
 }
 
@@ -1637,6 +1640,7 @@ function viewPricing() {
   const all = Object.keys(PRICING).flatMap(ci => pRows(ci).map(r => ({ ...r, ci })));
   return `<div class="page-h"><div class="grow"><div class="lbl">Captured list prices · ${all.reduce((a, r) => a + r.n, 0).toLocaleString()} prices · ${all.length.toLocaleString()} brand-category pairs</div><h1>Pricing</h1>
     <p>Who is premium in each category. Every price is indexed against the category's median $/oz for the same pack size, so aerosols are compared with aerosols and gallons with gallons. A brand's index is the median of its prices: 1.0× is the norm, 2× is double. Spread shows how much room the category gives a premium brand.</p></div></div>
+  ${pricingTabs("cat")}
   ${(L => L.length ? `<section class="panel"><header><h2>What pricing teaches</h2><span class="sp"></span><span class="lbl">From ${PLEARN?.n || 0} brand-category pairs with 3+ prices</span></header><div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px">
     ${L.map(([h, t]) => `<div style="border-left:4px solid var(--accent);padding:4px 0 4px 12px"><p style="margin:0 0 4px"><b>${esc(h)}</b></p><p class="muted" style="margin:0;font-size:13.5px">${esc(t)}</p></div>`).join("")}</div></section>` : "")(priceLessons())}
   ${(T => T.length ? `<section class="panel"><header><h2>Price-lever targets</h2><span class="sp"></span><span class="lbl">Good-tier brands (3+ prices) on 5+ pro distributors · ${esc(ownSummary())} · DNA 45+</span></header>
@@ -1689,7 +1693,7 @@ function viewPrice(ci) {
   <section class="panel"><header><h2>Price ladder</h2><span class="sp"></span><span class="lbl">Index vs the same-size median · log scale · hover for detail, click to open</span></header><div class="body">${ladderChart(shown)}
     ${rows.length > 50 ? `<button class="more" type="button" data-act="pall">${ui.pall ? "Show the top 50" : `Show all ${rows.length}`}</button>` : ""}</div></section>
   <section class="panel"><div class="tw"><table><thead><tr><th>Brand</th><th>Owner</th><th class="r">Index</th><th>Tier</th><th class="r">Median $/oz</th><th class="r">Pro index</th><th class="r">Retail index</th><th class="r">Prices</th></tr></thead><tbody>
-  ${rows.map(r => `<tr><td><b><a href="#b.${esc(r.b.id)}">${esc(r.b.name)}</a></b></td><td>${ownerCell(r.b)}</td><td class="r num">${r.ix.toFixed(2)}×</td><td>${pTier(r.ix)}</td><td class="r num">$${r.ppo.toFixed(2)}</td><td class="r num">${r.pro !== null ? r.pro.toFixed(2) + "×" : "—"}</td><td class="r num">${r.ret !== null ? r.ret.toFixed(2) + "×" : "—"}</td><td class="r num">${r.n}</td></tr>`).join("")}
+  ${rows.map(r => `<tr><td><b><a href="#b.${esc(r.b.id)}">${esc(r.b.name)}</a></b>${(catLeaders().get(r.b.id) || []).includes(ci) ? ` <span class="tag" style="${PSTYLE.lead}">★ Price leader</span>` : ""}<br>${priceBadge(r.b.id, { lead: false })}</td><td>${ownerCell(r.b)}</td><td class="r num">${r.ix.toFixed(2)}×</td><td>${pTier(r.ix)}</td><td class="r num">$${r.ppo.toFixed(2)}</td><td class="r num">${r.pro !== null ? r.pro.toFixed(2) + "×" : "—"}</td><td class="r num">${r.ret !== null ? r.ret.toFixed(2) + "×" : "—"}</td><td class="r num">${r.n}</td></tr>`).join("")}
   </tbody></table></div></section>
   <div class="note">List prices from distributor sites, not net prices. A brand's index is the median of its prices against the same-size median, so one odd listing moves it little once it has 3+ prices.</div>`;
 }
@@ -1849,6 +1853,95 @@ Members' price position: ${mem.map(x => `${x.c.name.replace(/\s*\(.*\)$/, "")} $
 Ladders together: ${sh.filter(e => e.full > e.alone || e.full === 3).map(e => `${e.name} (${e.full} tiers combined vs ${e.alone} alone)`).join("; ") || "none"}. Same-tier overlaps: ${sh.filter(e => e.same.length).map(e => `${e.name} at ${e.same.map(k => GBB[k][0]).join("/")}`).join("; ") || "none"}.`;
 }
 
+
+/* ---------- brand price position: premium leaders to deep discount ----------
+   A brand's multiple = the geometric mean of its category indices, weighted by prices (so it's relative to the
+   same-size median in each category it sells in). Premium leader: 1.5x+ on 3+ prices with 2/3+ of its prices in Best.
+   Premium: 1.15x+. At market: between. Discount: 0.87x and under. Deep discount: 0.67x and under with 2/3+ of its
+   prices in Good. Under 3 prices it gets the plain label, marked thin, and never "leader" or "deep". A category price
+   leader is the highest-index brand among those with 3+ prices in that category, when it sits at 1.5x or more. */
+const PPOS = { lead: ["Premium leader", "1.5×+ and consistently Best"], prem: ["Premium", "1.15× and up"], mkt: ["At market", "0.87× to 1.15×"], disc: ["Discount", "0.87× and under"], deep: ["Deep discount", "0.67× and under and consistently Good"] };
+const PPOS_ORDER = ["lead", "prem", "mkt", "disc", "deep"];
+function posOf(n, ix, t) {
+  const thin = n < 3, best = (t[2] || 0) / n, good = (t[0] || 0) / n;
+  const k = !thin && ix >= 1.5 && best >= 2 / 3 ? "lead" : ix >= 1.15 ? "prem" : !thin && ix <= 0.67 && good >= 2 / 3 ? "deep" : ix <= 0.87 ? "disc" : "mkt";
+  return { k, thin };
+}
+function catLeaders() {
+  priceFresh(); if (priceCache.lead) return priceCache.lead;
+  const m = new Map();
+  for (const ci of Object.keys(PRICING)) { const top = pRows(ci).filter(r => r.n >= 3).sort((a, b) => b.ix - a.ix)[0]; if (top && top.ix >= 1.5) (m.get(top.b.id) || m.set(top.b.id, []).get(top.b.id)).push(ci); }
+  return (priceCache.lead = m);
+}
+function pricePos(id) {
+  priceFresh(); priceCache.pos = priceCache.pos || new Map();
+  if (priceCache.pos.has(id)) return priceCache.pos.get(id);
+  const rows = pricesOfBrand(id); let out = null;
+  if (rows.length) {
+    const cats = rows.map(([ci, v]) => ({ ci, n: v[0], ix: v[1], lo: v[3], hi: v[4], pro: v[5], ret: v[6], t: v[7] || [0, 0, 0] })).sort((a, b) => b.n - a.n || b.ix - a.ix);
+    const n = cats.reduce((a, c) => a + c.n, 0), ix = geo(cats), t = [0, 1, 2].map(k => cats.reduce((a, c) => a + (c.t[k] || 0), 0));
+    const pr = cats.filter(c => c.pro !== null), rt = cats.filter(c => c.ret !== null);
+    out = { n, ix, t, cats, lo: Math.min(...cats.map(c => c.lo)), hi: Math.max(...cats.map(c => c.hi)), pro: pr.length ? geo(pr.map(c => ({ n: c.n, ix: c.pro }))) : null, ret: rt.length ? geo(rt.map(c => ({ n: c.n, ix: c.ret }))) : null,
+      ...posOf(n, ix, t), catLead: catLeaders().get(id) || [] };
+  }
+  priceCache.pos.set(id, out); return out;
+}
+const PSTYLE = { lead: "background:var(--accent);border-color:var(--accent);color:var(--accent-ink)", prem: "border-color:var(--accent);color:var(--accent-text)", mkt: "", disc: "border-color:var(--ink-3);color:var(--ink-3)", deep: "background:var(--ink-3);border-color:var(--ink-3);color:var(--panel)" };
+function priceBadge(id, opts = {}) {
+  const p = pricePos(id); if (!p || (opts.only && !opts.only.includes(p.k))) return "";
+  return `<a class="tag" href="#premium" title="${esc(`${PPOS[p.k][0]}: ${p.ix.toFixed(2)}× the same-size median from ${p.n} price${p.n === 1 ? "" : "s"}${p.thin ? " (thin)" : ""}`)}" style="text-decoration:none;${PSTYLE[p.k]}${p.thin ? ";opacity:.6" : ""}">${PPOS[p.k][0]}${opts.x ? ` ${p.ix.toFixed(2)}×` : ""}${p.thin ? " · thin" : ""}</a>${p.catLead.length && opts.lead !== false ? `<span class="tag" style="${PSTYLE.lead}" title="${esc("Highest price index in " + p.catLead.map(ci => CATNAMES[ci]).join(", ") + " among brands with 3+ prices")}">★ Category price leader</span>` : ""}`;
+}
+const priceBadgeByName = (name, o) => { const id = brandByName.get(norm(name)); return id ? priceBadge(id, o) : ""; };
+// a diverging bar on a log scale, 0.25x to 4x, from the 1.0x norm
+function multBar(ix, w = 140) {
+  const X = v => (Math.log2(Math.min(4, Math.max(0.25, v))) + 2) / 4 * w, x0 = X(1), x1 = X(ix);
+  return `<svg width="${w}" height="12" viewBox="0 0 ${w} 12" aria-hidden="true" style="vertical-align:middle"><rect x="0" y="5" width="${w}" height="2" fill="var(--line)"/><rect x="${Math.min(x0, x1)}" y="2" width="${Math.max(1.5, Math.abs(x1 - x0))}" height="8" fill="${ix >= 1.15 ? "var(--accent)" : ix <= 0.87 ? "var(--ink-3)" : "var(--line-2)"}"/><line x1="${x0}" x2="${x0}" y1="0" y2="12" stroke="var(--ink-2)" stroke-width="1.5"/></svg>`;
+}
+function pricingTabs(v) {
+  return `<div class="bar" role="tablist" style="margin:0 0 14px"><a class="tog" role="tab" href="#pricing" aria-pressed="${v === "cat"}" style="text-decoration:none">By category</a><a class="tog" role="tab" href="#premium" aria-pressed="${v === "prem"}" style="text-decoration:none">Leaders &amp; laggards</a></div>`;
+}
+function viewPremium() {
+  const f = ui.pp, q = norm(f.q);
+  const cats = f.cat !== "" ? [+f.cat] : null;
+  let rows = [];
+  for (const b of BR.values()) {
+    const p = pricePos(b.id); if (!p) continue;
+    let r;
+    if (cats) { const c = p.cats.find(c => +c.ci === cats[0]); if (!c) continue; r = { n: c.n, ix: c.ix, lo: c.lo, hi: c.hi, pro: c.pro, ret: c.ret, t: c.t, ...posOf(c.n, c.ix, c.t) }; }
+    else r = p;
+    if (r.n < f.min) continue;
+    if (f.own && OCLS[b.oclass] !== f.own) continue;
+    if (f.seg && !p.cats.some(c => SEGOF[CATNAMES[c.ci]] === f.seg)) continue;
+    if (q && !norm([b.name, b.owner, b.parent].join(" ")).includes(q)) continue;
+    rows.push({ b, p, r });
+  }
+  const counts = Object.fromEntries(PPOS_ORDER.map(k => [k, rows.filter(x => x.r.k === k).length]));
+  if (f.pos) rows = rows.filter(x => x.r.k === f.pos);
+  const key = { lead: x => -x.r.ix, lag: x => x.r.ix, n: x => -x.r.n, name: x => x.b.name.toLowerCase() }[f.sort] || (x => -x.r.ix);
+  rows.sort((a, b) => { const x = key(a), y = key(b); return x < y ? -1 : x > y ? 1 : b.r.n - a.r.n; });
+  const segs = [...new Set(Object.keys(PRICING).map(ci => SEGOF[CATNAMES[ci]]).filter(Boolean))].sort();
+  const catOpts = Object.keys(PRICING).filter(ci => !f.seg || SEGOF[CATNAMES[ci]] === f.seg).map(ci => [ci, CATNAMES[ci]]).filter(([, n]) => n).sort((a, b) => a[1].localeCompare(b[1]));
+  const sel = (id, label, opts, val) => `<select id="${id}" aria-label="${label}"><option value="">${label}</option>${opts.map(([k, l]) => `<option value="${esc(k)}" ${String(k) === String(val) ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
+  const shown = rows.slice(0, f.limit);
+  return `<div class="page-h"><div class="grow"><div class="lbl">Pricing · every priced brand · all owners unless filtered below</div><h1>Leaders &amp; laggards</h1>
+    <p>Every priced brand ranked by its price multiple: its prices against the median for the same category and pack size, so 2.0× means it sells at double the going rate and 0.5× at half. Pick a category to rank brands on that category alone.</p></div></div>
+  ${pricingTabs("prem")}
+  <div class="gauges">${PPOS_ORDER.map(k => `<button type="button" class="gauge${k === "lead" || k === "prem" ? " g" : ""}" data-act="ppos" data-v="${k}" aria-pressed="${f.pos === k}" style="text-align:left;cursor:pointer;${f.pos === k ? "outline:2px solid var(--accent);outline-offset:-2px" : ""}"><b>${counts[k]}</b><span class="lbl">${PPOS[k][0]} · ${PPOS[k][1]}</span></button>`).join("")}</div>
+  <div class="bar"><input class="search" id="ppq" type="search" placeholder="Search brands or owners…" value="${esc(f.q)}" aria-label="Search brands">
+    ${sel("ppsort", "Sort: Leaders first", [["lag", "Sort: Laggards first"], ["n", "Sort: Most prices"], ["name", "Sort: Name"]], f.sort === "lead" ? "" : f.sort)}
+    ${sel("ppseg", "All segments", segs.map(s => [s, s]), f.seg)}${sel("ppcat", "All categories (overall multiple)", catOpts, f.cat)}${sel("ppown", "Any owner type", ["PE", "Family", "ESOP", "Private", "Corporate", "Unknown"].map(x => [x, x]), f.own)}
+    <select id="ppmin" aria-label="Minimum prices">${[[1, "Any number of prices"], [2, "2+ prices"], [3, "3+ prices (clear calls)"], [5, "5+ prices"]].map(([k, l]) => `<option value="${k}" ${k === f.min ? "selected" : ""}>${l}</option>`).join("")}</select>
+    ${f.pos ? `<button class="tog" type="button" data-act="ppos" data-v="${f.pos}">Clear: ${PPOS[f.pos][0]}</button>` : ""}</div>
+  <section class="panel"><div class="tw"><table><thead><tr><th class="r">#</th><th>Brand</th><th>Owner</th><th class="r">Multiple</th><th style="min-width:150px">0.25× · 1× · 4×</th><th class="r">Range</th><th>${cats ? "Category" : "Categories priced"}</th><th class="r">Prices</th><th class="r">Best · Good</th><th class="r">Pro · Retail</th></tr></thead><tbody>
+  ${shown.map((x, i) => `<tr class="cons-row" data-go="b.${esc(x.b.id)}"><td class="r num faint">${i + 1}</td><td><b><a href="#b.${esc(x.b.id)}">${esc(x.b.name)}</a></b><br><span class="tag" style="${PSTYLE[x.r.k]}${x.r.thin ? ";opacity:.6" : ""}">${PPOS[x.r.k][0]}${x.r.thin ? " · thin" : ""}</span>${x.p.catLead.length ? `<span class="tag" style="${PSTYLE.lead}" title="${esc(x.p.catLead.map(ci => CATNAMES[ci]).join(", "))}">★ Leader${x.p.catLead.length > 1 ? " ×" + x.p.catLead.length : ""}</span>` : ""}</td>
+    <td>${ownerCell(x.b)}</td><td class="r num"><b style="font-size:16px">${x.r.ix.toFixed(2)}×</b></td><td>${multBar(x.r.ix)}</td><td class="r num faint" style="font-size:12.5px">${x.r.lo.toFixed(2)}–${x.r.hi.toFixed(2)}×</td>
+    <td style="font-size:12.5px">${cats ? `<a href="#price.${cats[0]}">${esc(CATNAMES[cats[0]])}</a>` : x.p.cats.slice(0, 3).map(c => `<a href="#price.${c.ci}">${esc(CATNAMES[c.ci])}</a> <span class="num faint">${c.ix.toFixed(2)}×${c.n > 1 ? " · " + c.n : ""}</span>`).join("<br>") + (x.p.cats.length > 3 ? `<br><span class="faint">+${x.p.cats.length - 3} more</span>` : "")}</td>
+    <td class="r num">${x.r.n}</td><td class="r num" style="font-size:12.5px">${pct(x.r.t[2] / x.r.n)} · ${pct(x.r.t[0] / x.r.n)}</td><td class="r num" style="font-size:12.5px">${x.r.pro !== null ? x.r.pro.toFixed(2) + "×" : "—"} · ${x.r.ret !== null ? x.r.ret.toFixed(2) + "×" : "—"}</td></tr>`).join("") || `<tr><td colspan="10" class="empty">No priced brands match.</td></tr>`}
+  </tbody></table></div>
+  ${rows.length > f.limit ? `<button class="more" type="button" data-act="ppmore">Show ${Math.min(100, rows.length - f.limit)} more of ${rows.length - f.limit}</button>` : ""}</section>
+  <div class="note"><b>Labels.</b> ${PPOS_ORDER.map(k => `${PPOS[k][0]}: ${PPOS[k][1]}`).join(" · ")}. "Consistently" means two thirds or more of its prices sit in that tier, and leader and deep-discount labels need 3+ prices; with fewer the label is marked thin. ★ Category price leader: the highest multiple among brands with 3+ prices in a category, at 1.5× or more. Multiple across categories is the price-weighted geometric mean of its category indices. List prices, not net.</div>`;
+}
+
 /* ---------- view: SKU mix ---------- */
 function viewMix() {
   const cos = visible().filter(c => ui.showOut || !dnaOf(c).out);
@@ -1878,7 +1971,7 @@ function render() {
   chrome(r);
   if (!loaded) { if (dbState === "off") app.innerHTML = `<div class="empty"><h2>Not connected</h2><p>Probrands keeps the market map in a shared database that loads when this page is opened in Claude while signed in.</p></div>`; return; }
   const y = scrollY;
-  app.innerHTML = r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
+  app.innerHTML = r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
   if (render.last === location.hash) scrollTo(0, y); else scrollTo(0, 0);
   render.last = location.hash;
   if (r.v === "web") bindWeb();
@@ -1949,6 +2042,8 @@ document.addEventListener("click", e => {
     else if (act === "rplan") askRollPlan();
     else if (act === "pall") { ui.pall = !ui.pall; render(); }
     else if (act === "rview") { ui.rview = a.dataset.v; render(); }
+    else if (act === "ppos") { ui.pp.pos = ui.pp.pos === a.dataset.v ? "" : a.dataset.v; ui.pp.limit = 100; render(); }
+    else if (act === "ppmore") { ui.pp.limit += 100; render(); }
     else if (act === "wsmk") { ui.wsmk = a.dataset.v; ui.wslimit = 40; render(); }
     else if (act === "wsmore") { ui.wslimit += 40; render(); }
     else if (act === "rsave") saveRoll(false);
@@ -1971,6 +2066,7 @@ document.addEventListener("click", e => {
   if (z) { zoomWeb(+z.dataset.zoom || 0); return; }
 });
 document.addEventListener("input", e => {
+  if (e.target.id === "ppq") { ui.pp.q = e.target.value; ui.pp.limit = 100; const pos = e.target.selectionStart; render(); const q = $("#ppq"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
   if (e.target.id === "bq") { ui.b.q = e.target.value; ui.b.limit = 100; const pos = e.target.selectionStart; render(); const q = $("#bq"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
   if (e.target.id === "rname") { ui.rname = e.target.value; return; }
   if (e.target.matches?.("select[data-wsdoor]")) { setDoorStatus(e.target.dataset.roll, e.target.dataset.wsdoor, e.target.value); return; }
@@ -1986,6 +2082,9 @@ document.addEventListener("change", e => {
   if (e.target.id === "chf") { ui.chf = e.target.value; render(); }
   if (e.target.id === "pmin") { ui.pmin = +e.target.value; render(); }
   if (e.target.id === "psort") { ui.psort = e.target.value; render(); }
+  const ppmap = { ppsort: "sort", ppseg: "seg", ppcat: "cat", ppown: "own" };
+  if (e.target.id === "ppmin") { ui.pp.min = +e.target.value; ui.pp.limit = 100; render(); }
+  if (ppmap[e.target.id]) { ui.pp[ppmap[e.target.id]] = e.target.value || (e.target.id === "ppsort" ? "lead" : ""); if (e.target.id === "ppseg" && ui.pp.cat && SEGOF[CATNAMES[ui.pp.cat]] !== ui.pp.seg) ui.pp.cat = ""; ui.pp.limit = 100; render(); }
   if (e.target.id === "rcap") { ui.cap = e.target.value === "demo" ? "demo" : +e.target.value; render(); }
   if (e.target.id === "rmin") { ui.rmin = e.target.value; render(); }
   if (e.target.id === "rsort") { ui.rsort = e.target.value; render(); }
