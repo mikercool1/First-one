@@ -1018,6 +1018,120 @@ for ci, st in study_out.items():
 if study_out:
     print("category studies:", len(study_out), "| largest KB", max(len(json.dumps(v, default=str)) for v in study_out.values()) // 1024, "| scored", len(cat_sum))
 
+# ---- v30+: end markets. The End Markets tab summarises the 14 end markets (each distributor belongs to one) and holds a
+# category x end market matrix of scraped SKU shares; each "EM-" tab is a nine-section profile. Summary and matrix go
+# to data/ems; profiles to the "emstudy" collection (doc id = end market index).
+ems_doc, em_out = None, {}
+if "End Markets" in wb.sheetnames:
+    rows = list(wb["End Markets"].iter_rows(values_only=True))
+    hi = next(i for i, r in enumerate(rows) if r and r[0] == "End market")
+    H = [str(x).strip() if x is not None else "" for x in rows[hi]]
+    summ = []
+    for r in rows[hi + 1:]:
+        if not r or not r[0]:
+            break
+        g = dict(zip(H, r))
+        summ.append({k: v for k, v in {"name": s(r[0]), "nd": r1(n0(g.get("# distributors (map)")), 0), "nds": r1(n0(g.get("# with SKUs")), 0),
+            "skus": r1(n0(g.get("Core SKUs")), 0), "nb": r1(n0(g.get("# brands")), 0), "priv": r1(n0(g.get("% SKUs private-owned")), 3),
+            "fmt": s(g.get("Top format")), "pack": s(g.get("Top pack size")), "spend": r1(n0(g.get("Implied spend ($M)")), 0),
+            "cats": s(g.get("Top categories (observed)"), 400), "dists": s(g.get("Top distributors (research)"), 400), "who": s(g.get("Who orders"), 900)}.items() if v not in (None, "")})
+    mi = next(i for i, r in enumerate(rows) if r and r[0] == "Category" and i > hi)
+    MH = [s(x) for x in rows[mi]]
+    matrix = {}
+    for r in rows[mi + 1:]:
+        c = CAT_BY_NORM.get(norm_cat(r[0])) if r and r[0] else None
+        if c:
+            matrix[CAT_IX[c]] = [r1(n0(r[1]), 0)] + [r1(n0(x), 3) for x in r[2:2 + len(summ)]]
+    ems_doc = {"list": summ, "cols": MH[2:2 + len(summ)], "matrix": matrix, "note": s(rows[1][0], 900) if rows[1][0] else ""}
+for ws in wb.worksheets:
+    if not ws.title.startswith("EM-"):
+        continue
+    rows = [r for r in ws.iter_rows(values_only=True)]
+    name = re.sub(r"^End market:\s*", "", s(rows[0][0]))
+    ix = next((i for i, x in enumerate(ems_doc["list"]) if norm_cat(x["name"]) == norm_cat(name)), None) if ems_doc else None
+    if ix is None:
+        print("end market: no summary row for", ws.title); continue
+    em = {"name": name, "labels": re.sub(r"^Raw distributor labels grouped here:\s*", "", s(rows[1][0], 400))}
+    em.update({s(k): v for k, v in zip(rows[3], rows[4]) if k and v not in (None, "")})
+    secs, cur = {}, None
+    for r in rows[5:]:
+        c0 = r[0] if r else None
+        if isinstance(c0, str) and re.match(r"^\d+\. ", c0):
+            cur = int(c0.split(".")[0]); secs[cur] = []; continue
+        if cur and r and any(x is not None for x in r):
+            secs[cur].append(r)
+    def subs(rs, labels):
+        out, k = {"": []}, ""
+        for r in rs:
+            if isinstance(r[0], str) and r[0].strip() in labels and all(x is None for x in r[1:]):
+                k = r[0].strip(); out[k] = []; continue
+            out[k].append(r)
+        return out
+    txt = lambda rs: " ".join(s(r[0], 3000) for r in rs if isinstance(r[0], str) and not r[0].strip().startswith("•"))
+    one = subs(secs.get(1, []), {"Workforce / establishments", "Spend on these products", "Cyclicality", "Demand drivers"})
+    em["who_are"] = txt(one[""]); em["workforce"] = txt(one.get("Workforce / establishments", [])); em["spend_txt"] = txt(one.get("Spend on these products", []))
+    em["cyc"] = txt(one.get("Cyclicality", [])); em["drivers"] = bullets(one.get("Demand drivers", []))
+    em["spend_note"] = " ".join(s(r[0], 1500) for r in one.get("Demand drivers", []) if isinstance(r[0], str) and r[0].startswith("Implied spend"))
+    em["jobs"] = [[s(r[0], 160), s(r[1], 600)] for r in secs.get(2, [])[1:] if r[0] and r[1]]
+    res, obs, mode = [], [], None
+    for r in secs.get(3, []):
+        c0 = s(r[0])
+        if c0.startswith("Research ranking"): mode = "r"; continue
+        if c0.startswith("Observed: category"): mode = "o"; continue
+        if mode == "r" and c0:
+            res.append([CAT_BY_NORM.get(norm_cat(c0), c0), s(r[1], 30), s(r[2], 300)])
+        elif mode == "o" and c0:
+            obs.append([CAT_BY_NORM.get(norm_cat(c0), c0), r1(n0(r[1]), 0), r1(n0(r[2]), 3), s(r[3], 30), s(r[4], 30), r1(n0(r[5]), 0), s(r[7] if len(r) > 7 else "", 300)])
+    em["intro3"] = next((s(r[0], 600) for r in secs.get(3, []) if s(r[0]).startswith("Left:")), "")
+    em["res"], em["obs"] = res, obs
+    four = subs(secs.get(4, []), {"Ordering channels", "Order frequency", "Typical basket"})
+    em["orders"] = txt(four[""]); em["channels"] = bullets(four.get("Ordering channels", [])); em["freq"] = txt(four.get("Order frequency", [])); em["basket"] = txt(four.get("Typical basket", []))
+    rd, sd, mode = [], [], None
+    for r in secs.get(5, []):
+        c0 = s(r[0])
+        if c0.startswith("Key distributors"): mode = "r"; continue
+        if c0.startswith("Distributors in our scrape"): mode = "s"; continue
+        if mode == "r" and c0:
+            rd.append([c0[:160], s(r[1], 40), s(r[2], 400)])
+        elif mode == "s" and c0:
+            sd.append([c0[:160], s(r[1], 60), s(r[2], 30), s(r[3], 30), r1(n0(r[4]), 0), r1(n0(r[5]), 0), s(r[7] if len(r) > 7 else "", 120)])
+    em["rdists"], em["sdists"] = rd, sd
+    LB6 = {"Typical pack sizes (research)", "Price sensitivity", "Brand loyalty"}
+    six, fm, pk, why, tb, mode, k6 = secs.get(6, []), [], [], [], [], "f", ""
+    extra = {}
+    for r in six:
+        c0 = s(r[0])
+        if c0.startswith("Observed format mix"): mode = "f"; continue
+        if c0 in LB6 and all(x is None for x in r[1:]): mode, k6 = "x", c0; extra[k6] = []; continue
+        if c0.startswith("Top brands here"): mode = "b"; continue
+        if mode == "f":
+            if c0 and isinstance(r[1], (int, float)): fm.append([c0[:40], r1(r[1], 3)])
+            if len(r) > 4 and r[3] and isinstance(r[4], (int, float)): pk.append([s(r[3], 30), int(r[4])])
+            if len(r) > 7 and r[7]: why.append(s(r[7], 300))
+        elif mode == "x" and c0:
+            extra[k6].append(c0)
+        elif mode == "b" and c0:
+            tb.append([c0[:80], r1(n0(r[1]), 0), r1(n0(r[2]), 0), CAT_BY_NORM.get(norm_cat(r[3]), s(r[3], 80)), s(r[4], 120), s(r[6] if len(r) > 6 else "", 40)])
+    em["formats"], em["packs"], em["fwhy"], em["brands"] = fm, pk, why, tb
+    em["packs_txt"] = " ".join(extra.get("Typical pack sizes (research)", [])); em["price_sens"] = " ".join(extra.get("Price sensitivity", [])); em["loyalty"] = " ".join(extra.get("Brand loyalty", []))
+    ot, po = [], []
+    for r in secs.get(7, [])[1:]:
+        if r[0] and isinstance(r[1], (int, float)): ot.append([s(r[0], 40), int(r[1]), r1(n0(r[2]), 3)])
+        if len(r) > 4 and r[4]: po.append([s(r[8] if len(r) > 8 and r[8] else r[4], 120), s(r[4], 200), r1(n0(r[7]), 3) if len(r) > 7 else None])
+    em["otypes"], em["powners"] = ot, po
+    LB8 = ["Regulation & standards", "Trends", "What wins here (implications for brand owners)", "Associations, shows, publications"]
+    eight = subs(secs.get(8, []), set(LB8))
+    em["know"] = [[k, bullets(eight[k]) or [txt(eight[k])]] for k in LB8 if eight.get(k)]
+    em["src"] = [[s(r[0], 200), s(r[3], 300) if len(r) > 3 else "", s(r[6], 300) if len(r) > 6 else ""] for r in secs.get(9, []) if r[0] and not str(r[0]).startswith("Observed figures")]
+    em["foot"] = next((s(r[0], 600) for r in secs.get(9, []) if r[0] and str(r[0]).startswith("Observed figures")), "")
+    em_out[ix] = em
+if ems_doc:
+    os.makedirs(f"{OUT}/emstudy", exist_ok=True)
+    for ix, em in em_out.items():
+        json.dump({**em, "updated_at": NOW}, open(f"{OUT}/emstudy/{ix}.json", "w"), separators=(",", ":"), default=str)
+    json.dump({**ems_doc, "updated_at": NOW}, open(f"{OUT}/data/ems.json", "w"), separators=(",", ":"), default=str)
+    print("end markets:", len(ems_doc["list"]), "| profiles", len(em_out), "| matrix rows", len(ems_doc["matrix"]), "| largest KB", max(len(json.dumps(v, default=str)) for v in em_out.values()) // 1024)
+
 json.dump({"cats": cats_out, "names": CATS, "study": {CAT_IX[c]: v for c, v in cat_sum.items()}, "crit": crit, "segs": {c: SEG_OF.get(c, "Unclassified") for c in CATS}, "updated_at": NOW}, open(f"{OUT}/data/cats.json", "w"), separators=(",", ":"))
 json.dump({"deals": deals_out, "updated_at": NOW}, open(f"{OUT}/data/deals.json", "w"), separators=(",", ":"))
 json.dump({"list": dist_out, "updated_at": NOW}, open(f"{OUT}/data/dists.json", "w"), separators=(",", ":"))
