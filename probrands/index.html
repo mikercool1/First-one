@@ -59,6 +59,11 @@ body.hbmode{overflow:hidden}
 body.hbmode .shell,body.hbmode #toast,body.hbmode #tip{display:none}
 .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
 @media (max-width:1100px){.grid3{grid-template-columns:minmax(0,1fr)}}
+.bridge{width:100%;height:auto;display:block}.bridge .bv{font:600 13px var(--f-mono);fill:var(--ink)}.bridge .bl{font:600 10.5px var(--f-mono);fill:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+tr.tot td{border-top:2px solid var(--line-2);background:var(--panel-2)}
+.arch{border-bottom:1px solid var(--line)}.arch h3{margin:0 0 8px}.arch table td{padding:6px 8px}
+.role{display:inline-block;font:600 10.5px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border:1px solid var(--line-2);color:var(--ink-2)}
+.role.g{border-color:var(--good);color:var(--good)}.role.r{border-color:var(--bad);color:var(--bad)}.role.a{border-color:var(--mid);color:var(--mid)}
 ol.rk{list-style:none;margin:0;padding:0;counter-reset:r}
 ol.rk li{counter-increment:r;display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--line)}
 ol.rk li::before{content:counter(r);font:600 11px var(--f-mono);color:var(--ink-3)}
@@ -330,7 +335,7 @@ const PRICES = new Map(), priceLoading = new Set();
 let DEALS = [], DISTS = [], SRC = "", loaded = false, ver = 0;
 const OWN = [["pe", "PE"], ["family", "Family"], ["esop", "ESOP"], ["private", "Private"], ["corp", "Corporate"]];
 const ownKey = c => c.oclass === "public" || c.oclass === "sub_private" ? "corp" : c.oclass;
-const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", pp: { q: "", min: "M", sort: "lead", seg: "", cat: "", own: "", pos: "", limit: 100 }, roll: store.get("roll", []), rview: "xs", wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "attr", emcol: null, syn: { src: "default", rm: 0.02, fr8: 0.03, rmc: 0.03, rms: 0.015, rmx: 0.005, rev: {}, fr: {} }, sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
+const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", pp: { q: "", min: "M", sort: "lead", seg: "", cat: "", own: "", pos: "", limit: 100 }, roll: store.get("roll", []), rview: "pf", wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "attr", emcol: null, syn: { src: "default", rm: 0.02, fr8: 0.03, rmc: 0.03, rms: 0.015, rmx: 0.005, rev: {}, fr: {} }, sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
   b: { q: "", status: "", tri: "", own: "", fam: "", seg: "", ch: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
 
 /* ---------- DNA ---------- */
@@ -1723,8 +1728,8 @@ function viewRollup() {
     <div class="gauge g"><b>${fmtM(xs)}</b><span class="lbl">Cross-sell at ${capLbl()}</span></div>
     ${(() => { loadProduct(); const R = procCalc(ids); if (!R || R.M.length < 2) return ""; return `<button type="button" class="gauge g" data-act="rview" data-v="pc" style="text-align:left;cursor:pointer"><b>${fmtM1(R.T.tot)}</b><span class="lbl">Procurement synergy · see the overlaps</span></button>`; })()}</div>
   ${rollPlanPanel(ids)}
-  <div class="bar" role="tablist" style="margin:4px 0 14px"><button class="tog" type="button" role="tab" data-act="rview" data-v="xs" aria-pressed="${ui.rview === "xs"}">Cross-sell</button><button class="tog" type="button" role="tab" data-act="rview" data-v="ws" aria-pressed="${ui.rview === "ws"}">Whitespace</button><button class="tog" type="button" role="tab" data-act="rview" data-v="pr" aria-pressed="${ui.rview === "pr"}">Pricing</button><button class="tog" type="button" role="tab" data-act="rview" data-v="pc" aria-pressed="${ui.rview === "pc"}">Procurement</button><span class="faint" style="font-size:13px">${ui.rview === "pc" ? "Packaging, raw materials and freight the members could buy together" : ui.rview === "pr" ? "The good / better / best ladder the members build together, and each one's price lever" : ui.rview === "ws" ? "Distributors none of the members sell to yet, where the platform's products fit" : "Distributors one member already sells to that another member could enter"}</span></div>
-  ${ui.rview === "pc" ? rollProcView(ids, X) : ui.rview === "pr" ? rollPriceView(ids, X) : ui.rview === "ws" ? rollWsView(ids, X) : `
+  <div class="bar" role="tablist" style="margin:4px 0 14px"><button class="tog" type="button" role="tab" data-act="rview" data-v="pf" aria-pressed="${ui.rview === "pf"}">Platform</button><button class="tog" type="button" role="tab" data-act="rview" data-v="xs" aria-pressed="${ui.rview === "xs"}">Cross-sell</button><button class="tog" type="button" role="tab" data-act="rview" data-v="ws" aria-pressed="${ui.rview === "ws"}">Whitespace</button><button class="tog" type="button" role="tab" data-act="rview" data-v="pr" aria-pressed="${ui.rview === "pr"}">Pricing</button><button class="tog" type="button" role="tab" data-act="rview" data-v="ba" aria-pressed="${ui.rview === "ba"}">Brand architecture</button><button class="tog" type="button" role="tab" data-act="rview" data-v="sk" aria-pressed="${ui.rview === "sk"}">SKU overlap</button><button class="tog" type="button" role="tab" data-act="rview" data-v="pc" aria-pressed="${ui.rview === "pc"}">Procurement</button><span class="faint" style="font-size:13px">${ui.rview === "pf" ? "The members side by side, where the revenue sits, and the value bridge" : ui.rview === "ba" ? "Which brand leads each shared category, and what the others become" : ui.rview === "sk" ? "The same product from two members: category, format and pack size" : ui.rview === "pc" ? "Packaging, raw materials and freight the members could buy together" : ui.rview === "pr" ? "The good / better / best ladder the members build together, and each one's price lever" : ui.rview === "ws" ? "Distributors none of the members sell to yet, where the platform's products fit" : "Distributors one member already sells to that another member could enter"}</span></div>
+  ${ui.rview === "pf" ? rollPlatformView(ids, X) : ui.rview === "ba" ? rollArchView(ids, X) : ui.rview === "sk" ? rollSkuView(ids, X) : ui.rview === "pc" ? rollProcView(ids, X) : ui.rview === "pr" ? rollPriceView(ids, X) : ui.rview === "ws" ? rollWsView(ids, X) : `
   <section class="panel"><header><h2>Cross-sell by member</h2><span class="sp"></span><span class="lbl">Doors a member gains from the others' shelves</span></header>
   <div class="tw"><table><thead><tr><th>Company</th><th class="r">DNA</th><th class="r">Revenue</th><th class="r">Doors now</th><th class="r">Doors gained</th><th class="r">Cross-sell</th><th>Biggest doors gained (via)</th></tr></thead><tbody>
   ${M.map(x => `<tr><td><b><a href="#c.${esc(x.c.id)}">${esc(x.c.name)}</a></b><br><small class="faint">${ownerLine(x.c)}</small></td><td class="r"><span class="score ${dnaOf(x.c).band} num" style="font-size:16px">${dnaOf(x.c).score}</span></td>
@@ -2224,6 +2229,159 @@ What the market map shows about pricing: ${priceLessons(true).join(" ")}`;
 
 /* roll-up pricing: the good / better / best ladder the members build together, same-tier overlaps, and each member's
    own price lever (as on its Strategy page). */
+/* ---------- roll-up: platform view, value bridge, brand architecture, SKU overlap ----------
+   Platform: the members side by side (revenue, pro share, people, brands, SKUs, doors) and how much of the combined
+   revenue sits with a few distributors. A member's revenue is spread over the distributors that carry it by door
+   weight (right to win x door size), so it is an estimate of exposure, not reported sales. The value bridge stacks
+   the levers the other tabs size: cross-sell (at the capture setting), price (each member's lever, capped at 5% a
+   category) and procurement savings, each with how far to trust it. */
+function rollDoorRev(M) {
+  const by = new Map(), per = [];
+  for (const x of M) {
+    const rev = num(x.c.rev), ds = [...x.r.carried]; if (!rev || !ds.length) { per.push({ x, top: null }); continue; }
+    const w = ds.map(d => [d, x.r.fit.get(d)?.w || 0.5]), tw = w.reduce((a, [, v]) => a + v, 0);
+    const rows = w.map(([d, v]) => [d, rev * v / tw]).sort((a, b) => b[1] - a[1]);
+    per.push({ x, top: rows[0], top3: rows.slice(0, 3).reduce((a, r) => a + r[1], 0) / rev });
+    for (const [d, v] of rows) { const e = by.get(d) || by.set(d, { d, v: 0, who: [] }).get(d); e.v += v; e.who.push(x.c); }
+  }
+  return { rows: [...by.values()].sort((a, b) => b.v - a.v), per };
+}
+function rollPlatformView(ids, X) {
+  const M = X.M, short = c => esc(c.name.replace(/\s*\(.*\)$/, "").replace(/,? (Inc|LLC|Corp|Corporation|Co|Company)\.?$/i, ""));
+  const rev = M.reduce((a, x) => a + (num(x.c.rev) || 0), 0), withRev = M.filter(x => num(x.c.rev)).length;
+  const pro = M.reduce((a, x) => a + (num(x.c.prorev) ?? (num(x.c.rev) && num(x.c.ret_pct) !== null ? x.c.rev * (1 - x.c.ret_pct / 100) : num(x.c.rev) || 0)), 0);
+  const emp = M.reduce((a, x) => a + (num(x.c.emp) || 0), 0), nb = M.reduce((a, x) => a + (reachIndex().byOwner.get(x.c.id) || []).length, 0), sk = M.reduce((a, x) => a + (x.c.skus || 0), 0);
+  const D = rollDoorRev(M), top3 = D.rows.slice(0, 3).reduce((a, r) => a + r.v, 0), top10 = D.rows.slice(0, 10).reduce((a, r) => a + r.v, 0);
+  // value bridge
+  const xs = M.reduce((a, x) => a + (val(x.gainUsd, x.gainDemo) || 0), 0);
+  const PR = rollPriceCalc(ids), price = PR.mem.reduce((a, m) => a + (m.lever || 0), 0);
+  loadProduct(); const PC = procCalc(ids), proc = PC && PC.M.length >= 2 ? PC.T.tot : null;
+  const steps = [["Combined revenue today", rev, "base", "Reported or estimated revenue in the market map"], ["Cross-sell", xs, "add", `At ${capLbl()} · Medium: doors are real, the win rate is what multi-brand owners achieve`],
+    ["Price", price, "add", "Each member's lever: up to half the gap to its category's upper quartile, 5% at most · Low to medium: list prices, not net"],
+    ["Pro forma revenue", rev + xs + price, "total", ""]];
+  const W = 640, H = 230, pad = 34, bw = 110, gap = (W - pad * 2 - bw * steps.length) / (steps.length - 1), mx = Math.max(1, rev + xs + price) * 1.08, Y = v => H - 30 - v / mx * (H - 60);
+  let acc = 0; const bars = steps.map(([l, v, k], i) => { const x = pad + i * (bw + gap); let y0, y1; if (k === "base" || k === "total") { y0 = 0; y1 = v; acc = v; } else { y0 = acc; y1 = acc + v; acc = y1; }
+    const col = k === "add" ? "var(--good)" : k === "total" ? "var(--accent)" : "var(--ink-3)";
+    return `<rect x="${x}" y="${Y(y1).toFixed(1)}" width="${bw}" height="${Math.max(1, Y(y0) - Y(y1)).toFixed(1)}" fill="${col}"/><text x="${x + bw / 2}" y="${(Y(y1) - 6).toFixed(1)}" text-anchor="middle" class="bv">${k === "add" ? "+" : ""}${fmtM(v)}</text><text x="${x + bw / 2}" y="${H - 10}" text-anchor="middle" class="bl">${esc(l)}</text>`; }).join("");
+  const bridge = `<svg viewBox="0 0 ${W} ${H}" class="bridge" role="img" aria-label="Revenue bridge">${bars}</svg>`;
+  const memRow = x => { const c = x.c, p = D.per.find(r => r.x === x), d = dnaOf(c), pr = num(c.prorev); return `<tr><td><b><a href="#c.${esc(c.id)}">${short(c)}</a></b><br><small class="faint">${ownerLine(c)}</small></td><td class="r"><span class="score ${d.band} num" style="font-size:15px">${d.score}</span></td>
+    <td class="r num">${fmtM(c.rev)}</td><td class="r num">${pr ? fmtM(pr) : "—"}</td><td class="r num">${num(c.ret_pct) !== null ? Math.round(c.ret_pct) + "%" : "—"}</td><td class="r num">${num(c.emp) ? (+c.emp).toLocaleString() : "—"}</td>
+    <td class="r num">${(reachIndex().byOwner.get(c.id) || []).length}</td><td class="r num">${c.skus || 0}</td><td class="r num">${x.r.carried.size}</td>
+    <td>${p?.top ? `${L.dist(p.top[0])} <span class="faint num">${pct(p.top[1] / c.rev)}</span>` : "—"}</td><td class="r num">${p?.top3 ? pct(p.top3) : "—"}</td></tr>`; };
+  return `<section class="panel"><header><h2>The combined platform</h2><span class="sp"></span><span class="lbl">${withRev} of ${M.length} members with revenue</span></header>
+  <div class="tw"><table><thead><tr><th>Member</th><th class="r">DNA</th><th class="r">Revenue</th><th class="r">Pro revenue</th><th class="r">Retail</th><th class="r">Employees</th><th class="r">Brands</th><th class="r">SKUs</th><th class="r">Doors</th><th>Biggest door (est. share)</th><th class="r">Top 3 doors</th></tr></thead><tbody>
+  ${M.map(memRow).join("")}
+  <tr class="tot"><td><b>Platform</b></td><td></td><td class="r num"><b>${fmtM(rev)}</b></td><td class="r num"><b>${fmtM(pro)}</b></td><td class="r num">${rev ? Math.round((1 - pro / rev) * 100) + "%" : "—"}</td><td class="r num">${emp ? emp.toLocaleString() : "—"}</td><td class="r num">${nb}</td><td class="r num">${sk}</td><td class="r num">${X.union.size}</td>
+    <td>${D.rows[0] ? `${L.dist(D.rows[0].d)} <span class="faint num">${pct(D.rows[0].v / rev)}</span>` : "—"}</td><td class="r num"><b>${rev ? pct(top3 / rev) : "—"}</b></td></tr>
+  </tbody></table></div></section>
+  <div class="grid2">
+    <section class="panel"><header><h2>Value bridge</h2><span class="sp"></span><span class="lbl">Revenue · ${capLbl()}</span></header><div class="body">${bridge}
+      <table style="font-size:13px;margin-top:6px"><tbody>${steps.filter(s => s[2] === "add").map(([l, v, , n]) => `<tr><td><b>${l}</b></td><td class="r num">+${fmtM(v)}</td><td class="faint">${n}</td></tr>`).join("")}
+      <tr><td><b>Procurement</b></td><td class="r num">${proc !== null ? fmtM1(proc) : "—"}</td><td class="faint">Cost saving a year, from shared pack formats, raw materials and freight lanes · Low: research rates, spend estimated from revenue. <a href="#rollup" data-act="rview" data-v="pc">See it</a></td></tr>
+      <tr><td><b>SKU overlap</b></td><td class="r num">—</td><td class="faint">Not sized: the overlapping products are listed on the <a href="#rollup" data-act="rview" data-v="sk">SKU overlap</a> tab for a judgment call.</td></tr></tbody></table></div></section>
+    <section class="panel"><header><h2>Where the revenue sits</h2><span class="sp"></span><span class="lbl">Estimated · top 3 doors ${rev ? pct(top3 / rev) : "—"} · top 10 ${rev ? pct(top10 / rev) : "—"}</span></header><div class="body">
+      ${hbars(capList(D.rows, 10, "rdr").map(r => [r.d, Math.round(r.v)]), rev, v => fmtM(v), n => `${L.dist(n)}${(() => { const e = D.rows.find(r => r.d === n); return e && e.who.length > 1 ? ` <small class="faint">· ${e.who.length} members</small>` : ""; })()}`)}${showAll(D.rows.length, 10, "rdr", "doors")}
+      <p class="faint" style="margin:10px 0 0;font-size:12.5px">Each member's revenue spread over the distributors that carry it by door weight (how much of its range the door stocks × the door's size). A door several members share is exposure that grows with the roll-up: one buyer's line review now touches all of them.</p></div></section>
+  </div>`;
+}
+
+/* Brand architecture: in every category two or more members sell in, which brand leads and what the others become.
+   Lead = the biggest range in that category (SKUs there), then reach. Another brand in a different price tier is a flanker (value or premium); in the
+   same tier with under half the lead's reach it folds into the lead; with comparable reach the two split by channel
+   or stay, a judgment call. Price tiers use the like-for-like index where a brand has prices in the category. */
+function rollArchCalc(ids) {
+  const pm = new Map(priceMap(ids).map(e => [String(e.ci), e]));
+  const cats = new Map();
+  for (const id of ids) for (const b of reachIndex().byOwner.get(id) || []) for (const [ci, n] of Object.entries(b.cats || { [b.nc]: b.skus || 0 })) {
+    const cname = CATNAMES[ci]; if (!cname || !plays(b, cname)) continue;
+    const e = cats.get(cname) || cats.set(cname, { name: cname, ci: +ci, items: [] }).get(cname);
+    const pi = pm.get(String(ci))?.items.find(x => x.b.id === b.id);
+    e.items.push({ b, co: id, n, reach: (b.dists || []).length, ix: pi ? pi.ix : null, tier: pi ? gbbOf(pi.ix) : null, ret: brandRet(b) });
+  }
+  const out = [];
+  for (const e of cats.values()) {
+    const members = new Set(e.items.map(x => x.co)); if (members.size < 2) continue;
+    e.items.sort((a, b) => b.n - a.n || b.reach - a.reach || (b.ix || 0) - (a.ix || 0));
+    const lead = e.items[0];
+    for (const x of e.items) {
+      if (x === lead) { x.role = "Lead"; x.why = `Biggest range here: ${x.n} SKU${x.n === 1 ? "" : "s"} on ${x.reach} distributor${x.reach === 1 ? "" : "s"}${x.ix ? `, ${x.ix.toFixed(2)}× price` : ""}`; continue; }
+      if (x.tier !== null && lead.tier !== null && x.tier !== lead.tier) { x.role = x.tier < lead.tier ? "Value flanker" : "Premium flanker"; x.why = `${GBB[x.tier][0]} against the lead's ${GBB[lead.tier][0]}`; }
+      else if (x.n < lead.n * 0.35) { x.role = "Fold into lead"; x.why = `${x.tier !== null && lead.tier !== null ? "Same price tier, " : ""}${x.n} SKU${x.n === 1 ? "" : "s"} here vs the lead's ${lead.n}`; }
+      else if (x.ret !== null && lead.ret !== null && Math.abs(x.ret - lead.ret) >= 25) { x.role = "Split by channel"; x.why = `${Math.round(x.ret)}% retail vs the lead's ${Math.round(lead.ret)}%`; }
+      else { x.role = "Review"; x.why = `Comparable range (${x.n} vs ${lead.n} SKUs)${x.tier === null ? ", no price data to separate them" : ", same price tier"}`; }
+    }
+    out.push({ ...e, members: members.size, skus: e.items.reduce((a, x) => a + x.n, 0) });
+  }
+  return out.sort((a, b) => b.skus - a.skus);
+}
+const ROLE_CLS = { "Lead": "g", "Value flanker": "", "Premium flanker": "", "Fold into lead": "r", "Split by channel": "a", "Review": "a" };
+function rollArchView(ids, X) {
+  const A = rollArchCalc(ids), letter = rollPriceCalc(ids).letter;
+  if (!A.length) return `<section class="panel"><div class="body faint">No category has brands from two or more members.</div></section>`;
+  const cnt = r => A.reduce((a, e) => a + e.items.filter(x => x.role === r).length, 0);
+  return `<div class="gauges"><div class="gauge"><b>${A.length}</b><span class="lbl">Shared categories</span></div><div class="gauge g"><b>${cnt("Lead")}</b><span class="lbl">Lead brands</span></div>
+    <div class="gauge"><b>${cnt("Value flanker") + cnt("Premium flanker")}</b><span class="lbl">Flankers</span></div><div class="gauge"><b>${cnt("Fold into lead")}</b><span class="lbl">Fold into the lead</span></div>
+    <div class="gauge"><b>${cnt("Split by channel") + cnt("Review")}</b><span class="lbl">Judgment calls</span></div></div>
+  <section class="panel"><header><h2>Brand architecture</h2><span class="sp"></span><span class="lbl">Categories two or more members sell in · lead = biggest range there</span></header>
+  ${capList(A, 10, "arch").map(e => `<div class="body arch"><h3>${L.cat(e.name)} <span class="faint" style="font-size:13px;text-transform:none;letter-spacing:0;font-weight:400">· ${e.members} members · ${e.skus} SKUs</span></h3>
+    <div class="tw"><table style="font-size:13.5px;min-width:620px"><tbody>${e.items.map(x => `<tr><td style="width:30%"><b>${L.brand(x.b.name)}</b> <span class="faint">(${letter.get(x.co)})</span></td><td style="width:18%"><span class="role ${ROLE_CLS[x.role]}">${x.role}</span></td><td class="r num" style="width:10%">${x.n} SKU${x.n === 1 ? "" : "s"}</td><td class="r num" style="width:10%">${x.reach} dist.</td><td class="r num" style="width:10%">${x.ix ? x.ix.toFixed(2) + "×" : "—"}</td><td class="faint">${esc(x.why)}</td></tr>`).join("")}</tbody></table></div></div>`).join("")}
+  <div class="body" style="padding-top:0">${showAll(A.length, 10, "arch", "categories")}</div></section>
+  <div class="note">Members: ${X.M.map(x => `${letter.get(x.c.id)} ${esc(x.c.name)}`).join(" · ")}. SKUs are the brand's scraped SKUs in that category; distributors count its whole reach; price is the like-for-like index in that category (blank where the brand has no captured prices). Roles are a starting point for the brand plan, not a verdict.</div>`;
+}
+
+/* SKU overlap: the members' products in the same category, format and pack size, and how many of them sit on the same
+   distributor's shelf. Listings are de-duplicated to products by name. Sizes are converted to ounces and bucketed
+   (within about 10%); products without a readable size are left out of the matching. */
+const SZ = [[/(\d+(?:\.\d+)?)\s*(fl\.?\s*oz|ounce|oz)\b/i, 1], [/(\d+(?:\.\d+)?)\s*(gal|gallon)s?\b/i, 128], [/(\d+(?:\.\d+)?)\s*(qt|quart)s?\b/i, 32], [/(\d+(?:\.\d+)?)\s*(pt|pint)s?\b/i, 16],
+  [/(\d+(?:\.\d+)?)\s*(ml|milliliter)s?\b/i, 0.0338], [/(\d+(?:\.\d+)?)\s*(l|liter|litre)s?\b/i, 33.8], [/(\d+(?:\.\d+)?)\s*(lb|pound)s?\b/i, 16], [/(\d+(?:\.\d+)?)\s*(kg)\b/i, 35.3], [/(\d+(?:\.\d+)?)\s*(g|gram)s?\b/i, 0.0353]];
+function ozOf(s) { s = String(s || ""); for (const [re, k] of SZ) { const m = s.match(re); if (m) return +m[1] * k; } return null; }
+const szKey = oz => oz === null ? null : Math.round(Math.log(oz) / Math.log(1.2));
+const szLbl = oz => oz >= 128 ? (oz / 128).toFixed(oz % 128 ? 1 : 0) + " gal" : oz >= 1 ? Math.round(oz * 10) / 10 + " oz" : Math.round(oz / 0.0338) + " mL";
+function rollSkuCalc(ids) {
+  const bs = ids.flatMap(id => (reachIndex().byOwner.get(id) || []).map(b => [id, b]));
+  for (const [, b] of bs) loadSkus(b);
+  const pending = bs.filter(([, b]) => b.p !== undefined && !SKU.has(b.p)).length;
+  if (pending) return { pending, total: bs.length };
+  const prods = [];
+  for (const [id, b] of bs) {
+    const rows = (b.p !== undefined && SKU.get(b.p)?.[b.id]) || [], seen = new Map();
+    for (const r of rows) { const k = norm(r[0]).slice(0, 60); const p = seen.get(k) || seen.set(k, { co: id, b, name: r[0], fmt: r[1] || "Other", oz: ozOf(r[2] || r[0]), ci: r[8] ?? b.nc, dists: new Set() }).get(k); if (r[3]) p.dists.add(r[3]); }
+    prods.push(...seen.values());
+  }
+  const slots = new Map();
+  for (const p of prods) { const k = p.oz === null || p.ci < 0 ? null : `${p.ci}|${p.fmt}|${szKey(p.oz)}`; if (!k) continue; (slots.get(k) || slots.set(k, []).get(k)).push(p); }
+  const over = [];
+  for (const [k, ps] of slots) {
+    const mem = new Set(ps.map(p => p.co)); if (mem.size < 2) continue;
+    const dcount = new Map(); for (const p of ps) for (const d of p.dists) { const s = dcount.get(d) || dcount.set(d, new Set()).get(d); s.add(p.co); }
+    const shared = [...dcount].filter(([, s]) => s.size >= 2).map(([d]) => d);
+    over.push({ ci: ps[0].ci, fmt: ps[0].fmt, oz: ps[0].oz, ps, mem: mem.size, shared });
+  }
+  over.sort((a, b) => b.shared.length - a.shared.length || b.ps.length - a.ps.length);
+  const inOver = new Set(over.flatMap(o => o.ps));
+  const perMem = ids.map(id => { const mine = prods.filter(p => p.co === id), ov = mine.filter(p => inOver.has(p)); const lst = x => x.reduce((a, p) => a + p.dists.size, 0); return { id, n: mine.length, ov: ov.length, share: lst(mine) ? lst(ov) / lst(mine) : 0 }; });
+  return { prods, sized: prods.filter(p => p.oz !== null).length, over, inOver: inOver.size, onShelf: over.filter(o => o.shared.length).length, perMem };
+}
+function rollSkuView(ids, X) {
+  const S = rollSkuCalc(ids), letter = rollPriceCalc(ids).letter;
+  if (S.pending) return `<section class="panel"><div class="body faint">Loading the members' SKUs… ${S.total - S.pending} of ${S.total} brands.</div></section>`;
+  const rev = id => num(CO.get(id).rev);
+  const atStake = S.perMem.reduce((a, m) => a + (rev(m.id) ? rev(m.id) * m.share : 0), 0);
+  return `<div class="gauges"><div class="gauge"><b>${S.prods.length.toLocaleString()}</b><span class="lbl">Products (listings de-duplicated)</span></div><div class="gauge"><b>${S.over.length}</b><span class="lbl">Overlapping slots</span></div>
+    <div class="gauge"><b>${S.inOver}</b><span class="lbl">Products in them</span></div><div class="gauge g"><b>${S.onShelf}</b><span class="lbl">On the same shelf</span></div>
+    <div class="gauge"><b>${atStake ? fmtM(atStake) : "—"}</b><span class="lbl">Revenue in overlapping slots (est.)</span></div></div>
+  <section class="panel"><header><h2>Overlap by member</h2><span class="sp"></span><span class="lbl">Share of each member's listings in a slot another member also fills</span></header>
+  <div class="tw"><table><thead><tr><th>Member</th><th class="r">Products</th><th class="r">In overlapping slots</th><th class="r">Share of listings</th><th class="r">Revenue (est.)</th></tr></thead><tbody>
+  ${S.perMem.map(m => `<tr><td>${letter.get(m.id)} <a href="#c.${esc(m.id)}">${esc(CO.get(m.id).name)}</a></td><td class="r num">${m.n}</td><td class="r num">${m.ov}</td><td class="r num">${pct(m.share)}</td><td class="r num">${rev(m.id) ? fmtM(rev(m.id) * m.share) : "—"}</td></tr>`).join("")}
+  </tbody></table></div></section>
+  <section class="panel"><header><h2>Overlapping slots</h2><span class="sp"></span><span class="lbl">Same category, format and pack size · most shared shelves first</span></header>
+  <div class="tw"><table style="font-size:13px"><thead><tr><th>Category · format · size</th><th>Products</th><th class="r">Same shelf</th><th>Where</th></tr></thead><tbody>
+  ${capList(S.over, 15, "skov").map(o => `<tr><td>${L.cat(CATNAMES[o.ci] || "")}<br><span class="faint">${L.fmt(o.fmt)} · ${szLbl(o.oz)}</span></td>
+    <td>${[...new Set(o.ps.map(p => p.co))].map(co => { const mine = o.ps.filter(p => p.co === co); return `<b>${letter.get(co)}</b> <span class="faint">${mine.length} product${mine.length > 1 ? "s" : ""}:</span> ${mine.slice(0, 2).map(p => esc(p.name.slice(0, 60))).join("; ")}${mine.length > 2 ? "…" : ""}`; }).join("<br>")}</td>
+    <td class="r num">${o.shared.length || "—"}</td><td style="font-size:12.5px">${o.shared.slice(0, 4).map(d => L.dist(d)).join(", ")}${o.shared.length > 4 ? ` +${o.shared.length - 4}` : ""}</td></tr>`).join("") || `<tr><td colspan="4" class="faint">No two members sell the same category, format and size.</td></tr>`}
+  </tbody></table></div><div class="body" style="padding-top:6px">${showAll(S.over.length, 15, "skov", "slots")}</div></section>
+  <div class="note">A slot on the same shelf is where a distributor carries both members' version of the same product: the first place to cut a SKU or move one brand up a tier. ${S.prods.length - S.sized} products had no readable size and are left out of the matching. Revenue in overlapping slots spreads each member's revenue by its share of listings, a rough guide only.</div>`;
+}
 function rollPriceCalc(ids) {
   const m = priceMap(ids), L = "ABCDEFGHIJKLMNOP";
   const letter = new Map(ids.map((id, i) => [id, L[i] || "?"]));

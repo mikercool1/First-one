@@ -575,7 +575,8 @@ for b in brands:
     out_br[bid] = {k: v for k, v in rec.items() if v not in ("", None, [], {})}
     wb_brand_id[bid] = s(b["Brand ID"])
     out_sku[bid] = [[s(p.get("Product name"), 140), s(p.get("Form factor")), s(p.get("Size / pack"), 40), s(p.get("Distributor")),
-                     s(p.get("Product URL"), 300), s(p.get("Product category"), 60), s(p.get("List price ($)")), s(p.get("Mfr part #"), 40)] for p in ps]
+                     s(p.get("Product URL"), 300), s(p.get("Product category"), 60), s(p.get("List price ($)")), s(p.get("Mfr part #"), 40),
+                     sku_ncat(p, ncat)] for p in ps]  # last: the SKU's normalized category (an index after CATS is built)
 
 # ---- workbook competitor lists: link names to brand pages
 bid_by_name = {}
@@ -834,14 +835,17 @@ def shard(items, prefix, field, limit=180_000, folder="data"):
 
 nco = len(set(shard(out_co, "co", "companies").values()))
 ndt = len(set(shard(out_dt, "dt", "details").values()))
-where = shard({k: v for k, v in out_sku.items() if v}, "p", "skus", folder="sku")  # SKUs load on demand, per brand
-for bid, rec in out_br.items():
-    if bid in where:
-        rec["p"] = where[bid]
 # ---- compact the brand records: every brand loads at start-up, so repeated strings become indexes
 CATS = [c["cat"] for c in cats_out] + [c for c in sorted({r.get("ncat") for r in out_br.values()} | {k for r in out_br.values() for k in r.get("cats", {})})
                                        if c and c not in {x["cat"] for x in cats_out}]
 CAT_IX = {c: i for i, c in enumerate(CATS)}
+for rows in out_sku.values():
+    for r in rows:
+        r[8] = CAT_IX.get(r[8], -1)
+where = shard({k: v for k, v in out_sku.items() if v}, "p", "skus", folder="sku")  # SKUs load on demand, per brand
+for bid, rec in out_br.items():
+    if bid in where:
+        rec["p"] = where[bid]
 BASIS = {"Verified": "v", "Triage guess (unverified)": "t", "Prior knowledge (unverified)": "p"}
 for r in out_br.values():
     r["nc"] = CAT_IX[r.pop("ncat")]
