@@ -337,7 +337,7 @@ const PRICES = new Map(), priceLoading = new Set();
 let DEALS = [], DISTS = [], SRC = "", loaded = false, ver = 0;
 const OWN = [["pe", "PE"], ["family", "Family"], ["esop", "ESOP"], ["private", "Private"], ["corp", "Corporate"]];
 const ownKey = c => c.oclass === "public" || c.oclass === "sub_private" ? "corp" : c.oclass;
-const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", pp: { q: "", min: "M", sort: "lead", seg: "", cat: "", own: "", pos: "", limit: 100 }, roll: store.get("roll", []), rview: "pf", gm: 0.65, wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "attr", emcol: null, syn: { src: "default", rm: 0.02, fr8: 0.03, rmc: 0.03, rms: 0.015, rmx: 0.005, rev: {}, fr: {} }, sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
+const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", pp: { q: "", min: "M", sort: "lead", seg: "", cat: "", own: "", pos: "", limit: 100 }, roll: store.get("roll", []), rview: "pf", gm: 0.65, pscen: "d1", psmall: true, wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "attr", emcol: null, syn: { src: "default", rm: 0.02, fr8: 0.03, rmc: 0.03, rms: 0.015, rmx: 0.005, rev: {}, fr: {} }, sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
   b: { q: "", status: "", tri: "", own: "", fam: "", seg: "", ch: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
 
 /* ---------- DNA ---------- */
@@ -1281,10 +1281,22 @@ function viewProduct() {
    4. Freight saves only on lanes to distributors that 2+ members already sell to, pooled by the same rule. */
 const FMT_MAP = { "Aerosol": "Aerosol", "Bottle/Liquid": "Bottle / jug", "Cartridge": "Cartridge", "Squeeze tube": "Squeeze tube", "Paste/Can": "Paste can / tub", "Kit": "Kit", "Powder": "Powder / bag", "Wipe": "Wipes", "Marker/Paint stick": "Marker", "Other": "Other" };
 const pool = xs => { const t = xs.reduce((a, x) => a + x, 0), m = Math.max(0, ...xs), n = xs.filter(x => x > 0).length; return { t, m, n, base: n >= 2 ? Math.min(t, 2 * (t - m)) : 0 }; };
-function procCalc(ids) {
+/* Procurement scenarios. Day one pools volume on today's specs and suppliers (the editable rates). Years 1-2 adds
+   buying direct, common specs, fewer suppliers and index-linked contracts. Structural adds the filling footprint,
+   co-packers and the freight network. Small buyers to direct: a member buying under a quarter of the largest buyer's
+   volume of an input usually pays distributor prices for it; moving it onto direct bulk terms is worth extra on its
+   own spend, on top of pooling. */
+const PSCEN = { d1: { l: "Day one", note: "Pool volume on today's specs and suppliers" },
+  y2: { l: "Years 1–2", note: "Buy direct, common specs, fewer suppliers, index-linked contracts", c: 0.07, s: 0.04, x: 0.015, pk: 1.6, fr: 0.06 },
+  st: { l: "Structural", note: "Plus filling footprint, co-packers and the freight network", c: 0.09, s: 0.055, x: 0.025, pk: 2, fr: 0.10 } };
+const SMALL = { share: 0.25, c: 0.04, s: 0.025, x: 0.01, pk: 0.03 };
+function procCalc(ids, scen = ui.pscen || "d1", small = ui.psmall !== false) {
   const P = PRODUCT; if (!P || P.missing) return null;
-  const S = ui.syn, frate = f => S.fr[f] ?? P.formats.find(x => x.name === f)?.kv["Savings rate used in calculator"] ?? 0;
-  const trate = t => /^comm/i.test(t) ? S.rmc : /^semi/i.test(t) ? S.rms : /^spec/i.test(t) ? S.rmx : S.rms;
+  const S = ui.syn, Z = PSCEN[scen] || PSCEN.d1, base = f => S.fr[f] ?? P.formats.find(x => x.name === f)?.kv["Savings rate used in calculator"] ?? 0;
+  const frate = f => Z.pk ? Math.min(0.18, base(f) * Z.pk) : base(f);
+  const trate = t => /^comm/i.test(t) ? (Z.c ?? S.rmc) : /^spec/i.test(t) ? (Z.x ?? S.rmx) : (Z.s ?? S.rms);
+  const brate = t => /^comm/i.test(t) ? SMALL.c : /^spec/i.test(t) ? SMALL.x : SMALL.s;
+  const bonus = (xs, r) => small ? xs.reduce((a, v) => a + (v > 0 && r.n >= 2 && v < r.m * SMALL.share ? v : 0), 0) : 0;
   const ex = [], M = [];
   const all = new Set(); const doorsOf = new Map(ids.map(id => [id, reachOf(CO.get(id)).carried || new Set()]));
   for (const id of ids) {
@@ -1310,18 +1322,21 @@ function procCalc(ids) {
     const mine = doorsOf.get(m.c.id), others = new Set(M.filter(o => o !== m).flatMap(o => [...doorsOf.get(o.c.id)]));
     m.doors = mine.size; m.sharedDoors = [...mine].filter(d => others.has(d)).length; m.shareD = mine.size ? m.sharedDoors / mine.size : 0;
   }
-  const packRows = [...new Set(M.flatMap(m => Object.keys(m.fmts)))].map(f => { const xs = M.map(m => m.fmts[f] || 0), p = pool(xs), r = frate(f); return { f, xs, ...p, rate: r, save: p.base * r }; }).sort((a, b) => b.save - a.save || b.t - a.t);
+  const packRows = [...new Set(M.flatMap(m => Object.keys(m.fmts)))].map(f => { const xs = M.map(m => m.fmts[f] || 0), p = pool(xs), r = frate(f), sb = bonus(xs, p) * SMALL.pk; return { f, xs, ...p, rate: r, save: p.base * r, small: sb }; }).sort((a, b) => b.save - a.save || b.t - a.t);
   const rmRows = [...new Set(M.flatMap(m => Object.keys(m.fam)))].map(k => {
     const xs = M.map(m => m.fam[k]?.spend || 0), p = pool(xs), ty = {};
     for (const m of M) for (const [t, v] of Object.entries(m.fam[k]?.t || {})) ty[t] = (ty[t] || 0) + v;
     const tt = Object.values(ty).reduce((a, v) => a + v, 0) || 1, rate = Object.entries(ty).reduce((a, [t, v]) => a + trate(t) * v / tt, 0);
     const name = String(k).startsWith("u:") ? `Other inputs specific to ${CATNAMES[k.slice(2)]}` : P.fams[k];
-    return { k, name, xs, ...p, ty, rate, save: p.base * rate, sup: String(k).startsWith("u:") ? "" : P.rmf[k]?.[3] || "" };
+    const sb = bonus(xs, p) * Object.entries(ty).reduce((a, [t, v]) => a + brate(t) * v / tt, 0);
+    return { k, name, xs, ...p, ty, rate, save: p.base * rate, small: sb, sup: String(k).startsWith("u:") ? "" : P.rmf[k]?.[3] || "" };
   }).sort((a, b) => b.save - a.save || b.t - a.t);
   const frX = M.map(m => m.fr * m.shareD), frP = pool(frX);  // shared-lane freight pools like any other input
-  const frRows = M.map((m, i) => ({ m, spend: m.fr, shared: frX[i], save: frP.t ? frP.base * S.fr8 * frX[i] / frP.t : 0 }));
-  const T = { rev: M.reduce((a, m) => a + m.rev, 0), pack: packRows.reduce((a, r) => a + r.save, 0), rm: rmRows.reduce((a, r) => a + r.save, 0), fr: frRows.reduce((a, r) => a + r.save, 0) };
-  T.tot = T.pack + T.rm + T.fr;
+  const frRows = M.map((m, i) => ({ m, spend: m.fr, shared: frX[i], save: frP.t ? frP.base * (Z.fr ?? S.fr8) * frX[i] / frP.t : 0 }));
+  const T = { rev: M.reduce((a, m) => a + m.rev, 0), pack: packRows.reduce((a, r) => a + r.save, 0), rm: rmRows.reduce((a, r) => a + r.save, 0), fr: frRows.reduce((a, r) => a + r.save, 0),
+    smallPack: packRows.reduce((a, r) => a + r.small, 0), smallRm: rmRows.reduce((a, r) => a + r.small, 0), scen, small };
+  T.small = T.smallPack + T.smallRm;
+  T.tot = T.pack + T.rm + T.fr + T.small;
   T.packShared = packRows.filter(r => r.n >= 2).reduce((a, r) => a + r.t, 0); T.packAll = packRows.reduce((a, r) => a + r.t, 0);
   T.rmShared = rmRows.filter(r => r.n >= 2).reduce((a, r) => a + r.t, 0); T.rmAll = rmRows.reduce((a, r) => a + r.t, 0);
   return { M, ex, packRows, rmRows, frRows, T };
@@ -1335,18 +1350,32 @@ function rollProcView(ids, X) {
   const memCols = M.map((m, i) => `<th class="r" title="${esc(m.c.name)}">${tag(i)}</th>`).join("");
   const cell = (v, r) => `<td class="r num${v > 0 ? "" : " faint"}" style="${v > 0 && v === r.m && r.n >= 2 ? "font-weight:700" : ""}">${v > 0 ? fmtM1(v) : "—"}</td>`;
   const lead = r => r.n >= 2 ? `${Math.round(r.m / r.t * 100)}%` : "—";
-  const how = `<section class="panel"><header><h2>How the procurement synergy is worked out</h2></header><div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;font-size:13.5px">
+  const Z = PSCEN[T.scen];
+  const how = fold("How the procurement savings are worked out", "Spend, overlaps, pooling, rates", `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;font-size:13.5px">
     <div><div class="lbl" style="margin:0 0 4px">1 · What each member buys</div>Revenue is split across categories by the member's scraped SKU mix. Each category's cost structure (Product tab) gives its packaging, raw-material and freight spend.</div>
     <div><div class="lbl" style="margin:0 0 4px">2 · Which inputs overlap</div>Packaging is split by the member's own pack formats. Raw materials follow its categories' raw-material lists, grouped into ${PRODUCT.fams.length} families (surfactants, propellants, base oils…). Freight follows the distributors it ships to.</div>
     <div><div class="lbl" style="margin:0 0 4px">3 · Where pooling pays</div>Only inputs that 2+ members buy save money. The smaller buyers move onto the largest buyer's contract and get the full rate; the largest buyer gets the rate on as much of its own spend as the others add: <span class="num">rate × min(total, 2 × (total − largest))</span>.</div>
-    <div><div class="lbl" style="margin:0 0 4px">4 · Rates</div>Packaging: the Product tab's savings rate per format. Raw materials: ${pct(S.rmc)} commodity, ${(S.rms * 100).toFixed(1)}% semi-specialty, ${(S.rmx * 100).toFixed(1)}% specialty. Freight: ${pct(S.fr8)} on lanes to distributors 2+ members ship to, pooled by the same rule. Edit them below.</div></div></section>`;
+    <div><div class="lbl" style="margin:0 0 4px">4 · Rates</div>${Z.l}: ${esc(Z.note)}. Packaging: the Product tab's savings rate per format${Z.pk ? ` × ${Z.pk} (up to 18%)` : ""}. Raw materials: ${((Z.c ?? S.rmc) * 100).toFixed(1)}% commodity, ${((Z.s ?? S.rms) * 100).toFixed(1)}% semi-specialty, ${((Z.x ?? S.rmx) * 100).toFixed(1)}% specialty. Freight: ${(((Z.fr ?? S.fr8)) * 100).toFixed(1)}% on lanes to distributors 2+ members ship to, pooled by the same rule. Edit them below.</div></div>`, false, "prochow");
   const rates = `<details class="panel" style="padding:0"><summary style="padding:14px 18px;cursor:pointer"><b>Edit the rates</b> <span class="faint">· nothing is saved</span></summary><div class="body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">
     ${[["rmc", "Raw mat., commodity"], ["rms", "Raw mat., semi-specialty"], ["rmx", "Raw mat., specialty"], ["fr8", "Freight, shared lanes"]].map(([k, l]) => `<label class="lbl" style="display:grid;gap:3px">${l}<input data-syn="${k}" type="number" step="0.005" min="0" max="0.3" value="${S[k]}"></label>`).join("")}
     ${PRODUCT.formats.map(f => `<label class="lbl" style="display:grid;gap:3px">Pack: ${esc(f.name)}<input data-synf="${esc(f.name)}" type="number" step="0.005" min="0" max="0.3" value="${S.fr[f.name] ?? f.kv["Savings rate used in calculator"] ?? 0}"></label>`).join("")}
     <button class="tog" type="button" data-act="synreset" style="align-self:end">Reset rates</button></div></details>`;
-  return how + `<div class="gauges"><div class="gauge g"><b>${fmtM1(T.tot)}</b><span class="lbl">Procurement synergy · ${(T.tot / T.rev * 100).toFixed(2)}% of ${fmtM(T.rev)}</span></div>
-    <div class="gauge"><b>${fmtM1(T.pack)}</b><span class="lbl">Packaging · ${pct(T.packAll ? T.packShared / T.packAll : 0)} of spend is in formats 2+ members buy</span></div><div class="gauge"><b>${fmtM1(T.rm)}</b><span class="lbl">Raw materials · ${pct(T.rmAll ? T.rmShared / T.rmAll : 0)} of spend is in families 2+ members buy</span></div>
-    <div class="gauge"><b>${fmtM1(T.fr)}</b><span class="lbl">Freight on shared lanes</span></div></div>
+  const alt = Object.keys(PSCEN).map(k => [k, procCalc(ids, k, T.small > 0 || ui.psmall !== false)?.T.tot || 0]);
+  const topRm = rmRows.filter(r => r.save + r.small > 0).sort((a, b) => (b.save + b.small) - (a.save + a.small)).slice(0, 5), topPk = packRows.filter(r => r.save + r.small > 0).sort((a, b) => (b.save + b.small) - (a.save + a.small)).slice(0, 4);
+  const bsteps = [["Packaging", T.pack, "add"], ["Raw materials", T.rm, "add"], ["Freight", T.fr, "add"], ...(T.small ? [["Small buyers direct", T.small, "add"]] : []), ["Total savings", T.tot, "total"]];
+  const ctl = `<div class="bar" style="margin:0 0 12px"><span class="lbl">Scenario</span>${Object.entries(PSCEN).map(([k, z]) => `<button class="tog" type="button" data-act="pscen" data-v="${k}" aria-pressed="${T.scen === k}" title="${esc(z.note)}">${z.l} <span class="faint num">${fmtM1(alt.find(x => x[0] === k)[1])}</span></button>`).join("")}
+    <button class="tog" type="button" data-act="psmall" aria-pressed="${ui.psmall !== false}" title="Members buying under a quarter of the largest buyer's volume of an input move from distributor to direct pricing">Small buyers to direct pricing</button></div>`;
+  return `<section class="panel" id="procbridge"><header><h2>Procurement savings bridge</h2><span class="sp"></span><span class="lbl">${esc(Z.l)} · ${fmtM1(T.tot)} a year · ${(T.tot / T.rev * 100).toFixed(2)}% of ${fmtM(T.rev)} revenue</span></header><div class="body">${ctl}
+    <div class="bridgewrap">${waterfall(bsteps, fmtM1, "Procurement savings bridge")}
+    <table style="font-size:13px"><tbody>
+      <tr><td><b>Packaging</b></td><td class="r num">${fmtM1(T.pack)}</td><td class="faint">${topPk.map(r => `${esc(r.f)} ${fmtM1(r.save)}`).join(" · ")}</td></tr>
+      <tr><td><b>Raw materials</b></td><td class="r num">${fmtM1(T.rm)}</td><td class="faint">${topRm.map(r => `${esc(r.name.split(" (")[0])} ${fmtM1(r.save)}`).join(" · ")}</td></tr>
+      <tr><td><b>Freight</b></td><td class="r num">${fmtM1(T.fr)}</td><td class="faint">Lanes to distributors 2+ members ship to</td></tr>
+      ${T.small ? `<tr><td><b>Small buyers to direct pricing</b></td><td class="r num">${fmtM1(T.small)}</td><td class="faint">Packaging ${fmtM1(T.smallPack)} · raw materials ${fmtM1(T.smallRm)}: members under a quarter of the largest buyer's volume move off distributor prices</td></tr>` : ""}
+      <tr class="tot"><td><b>Total</b></td><td class="r num"><b>${fmtM1(T.tot)}</b></td><td class="faint">${pct(T.packAll ? T.packShared / T.packAll : 0)} of packaging and ${pct(T.rmAll ? T.rmShared / T.rmAll : 0)} of raw-material spend is in inputs 2+ members buy</td></tr>
+    </tbody></table></div>
+    <p class="faint" style="margin:10px 0 0;font-size:12.5px">All three scenarios: ${alt.map(([k, v]) => `${PSCEN[k].l} ${fmtM1(v)}`).join(" · ")}. Commodity savings count the margin over the index (distributor markup, contract terms), not a move in crude or resin prices.</p></div></section>
+  ${how}
   ${ex.length ? `<div class="note">Left out for lack of revenue: ${ex.map(c => esc(c.name)).join(", ")}.</div>` : ""}
   <section class="panel"><header><h2>What each member buys</h2><span class="sp"></span><span class="lbl">Estimated annual spend from revenue × category cost structure</span></header><div class="tw"><table><thead><tr><th>Member</th><th class="r">Revenue</th><th>Main categories</th><th class="r">Packaging</th><th>Main formats</th><th class="r">Raw materials</th><th class="r">Freight</th><th class="r">Doors shared</th></tr></thead><tbody>
     ${M.map((m, i) => `<tr><td>${tag(i)} <b><a href="#c.${esc(m.c.id)}">${esc(m.c.name)}</a></b></td><td class="r num">${fmtM(m.rev)}</td><td style="font-size:12.5px">${Object.entries(m.cats).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([ci, r]) => `${esc(CATNAMES[ci])} <span class="faint num">${pct(r / m.rev)}</span>`).join("<br>")}</td>
@@ -1358,7 +1387,7 @@ function rollProcView(ids, X) {
   </tbody></table></div></section>
   <section class="panel"><header><h2>Shared raw materials</h2><span class="sp"></span><span class="lbl">Spend by raw-material family · rate blends commodity, semi-specialty and specialty</span></header><div class="tw" style="max-height:620px"><table><thead><tr><th>Raw-material family</th>${memCols}<th class="r">Total</th><th class="r">Largest buyer's share</th><th>Mix</th><th class="r">Rate</th><th class="r">Saving</th></tr></thead><tbody>
     ${rmRows.map(r => { const tt = Object.values(r.ty).reduce((a, v) => a + v, 0) || 1; return `<tr${r.n < 2 ? ' class="faint"' : ""}><td><b>${esc(r.name)}</b>${r.sup ? `<br><span class="faint" style="font-size:12px">${esc(r.sup)}</span>` : ""}</td>${r.xs.map(v => cell(v, r)).join("")}<td class="r num">${fmtM1(r.t)}</td><td class="r num">${lead(r)}</td>
-      <td style="font-size:12px;white-space:nowrap">${Object.entries(r.ty).sort((a, b) => b[1] - a[1]).map(([t, v]) => `${esc(t)} ${Math.round(v / tt * 100)}%`).join("<br>")}</td><td class="r num">${(r.rate * 100).toFixed(1)}%</td><td class="r num"><b>${r.save ? fmtM1(r.save) : "—"}</b></td></tr>`; }).join("")}
+      <td style="font-size:12px;white-space:nowrap">${Object.entries(r.ty).sort((a, b) => b[1] - a[1]).map(([t, v]) => `${esc(t)} ${Math.round(v / tt * 100)}%`).join("<br>")}</td><td class="r num">${(r.rate * 100).toFixed(1)}%</td><td class="r num"><b>${r.save + r.small ? fmtM1(r.save + r.small) : "—"}</b>${r.small ? `<br><span class="faint" style="font-size:11.5px">incl. ${fmtM1(r.small)} direct</span>` : ""}</td></tr>`; }).join("")}
   </tbody></table></div></section>
   <section class="panel"><header><h2>Freight on shared lanes</h2><span class="sp"></span><span class="lbl">Only shipments to distributors another member also sells to · saving split by shared-lane spend</span></header><div class="tw"><table><thead><tr><th>Member</th><th class="r">Freight spend</th><th class="r">Doors shared</th><th class="r">Freight on shared lanes</th><th class="r">Saving</th></tr></thead><tbody>
     ${frRows.map((r, i) => `<tr><td>${tag(i)} ${esc(r.m.c.name)}</td><td class="r num">${fmtM1(r.spend)}</td><td class="r num">${r.m.sharedDoors} of ${r.m.doors}</td><td class="r num">${fmtM1(r.shared)}</td><td class="r num"><b>${r.save ? fmtM1(r.save) : "—"}</b></td></tr>`).join("")}
@@ -1728,7 +1757,7 @@ function viewRollup() {
     <div class="gauge"><b>${nb}</b><span class="lbl">Brands</span></div><div class="gauge"><b>${X.union.size}</b><span class="lbl">Doors combined</span></div>
     <div class="gauge"><b>${X.union.size ? pct(X.shared / X.union.size) : "—"}</b><span class="lbl">Doors shared by 2+</span></div>
     <div class="gauge g"><b>${fmtM(xs)}</b><span class="lbl">Cross-sell at ${capLbl()}</span></div>
-    ${(() => { loadProduct(); const R = procCalc(ids); if (!R || R.M.length < 2) return ""; return `<button type="button" class="gauge g" data-act="rview" data-v="pc" style="text-align:left;cursor:pointer"><b>${fmtM1(R.T.tot)}</b><span class="lbl">Procurement synergy · see the overlaps</span></button>`; })()}</div>
+    ${(() => { loadProduct(); const R = procCalc(ids); if (!R || R.M.length < 2) return ""; return `<button type="button" class="gauge g" data-act="rview" data-v="pc" data-scroll="procbridge" style="text-align:left;cursor:pointer" title="Open the savings bridge"><b>${fmtM1(R.T.tot)}</b><span class="lbl">Procurement savings · ${esc(PSCEN[R.T.scen].l)} · see the bridge →</span></button>`; })()}</div>
   ${rollSaveBar(ids)}
   <div class="bar" role="tablist" style="margin:4px 0 14px"><button class="tog" type="button" role="tab" data-act="rview" data-v="pf" aria-pressed="${ui.rview === "pf"}">Platform</button><button class="tog" type="button" role="tab" data-act="rview" data-v="xs" aria-pressed="${ui.rview === "xs"}">Cross-sell</button><button class="tog" type="button" role="tab" data-act="rview" data-v="ws" aria-pressed="${ui.rview === "ws"}">Whitespace</button><button class="tog" type="button" role="tab" data-act="rview" data-v="pr" aria-pressed="${ui.rview === "pr"}">Pricing</button><button class="tog" type="button" role="tab" data-act="rview" data-v="ba" aria-pressed="${ui.rview === "ba"}">Brand architecture</button><button class="tog" type="button" role="tab" data-act="rview" data-v="sk" aria-pressed="${ui.rview === "sk"}">SKU overlap</button><button class="tog" type="button" role="tab" data-act="rview" data-v="pc" aria-pressed="${ui.rview === "pc"}">Procurement</button><span class="faint" style="font-size:13px">${ui.rview === "pf" ? "The members side by side, where the revenue sits, and the value bridge" : ui.rview === "ba" ? "Which brand leads each shared category, and what the others become" : ui.rview === "sk" ? "The same product from two members: category, format and pack size" : ui.rview === "pc" ? "Packaging, raw materials and freight the members could buy together" : ui.rview === "pr" ? "The good / better / best ladder the members build together, and each one's price lever" : ui.rview === "ws" ? "Distributors none of the members sell to yet, where the platform's products fit" : "Distributors one member already sells to that another member could enter"}</span></div>
   ${ui.rview === "pf" ? rollPlatformView(ids, X) : ui.rview === "ba" ? rollArchView(ids, X) : ui.rview === "sk" ? rollSkuView(ids, X) : ui.rview === "pc" ? rollProcView(ids, X) : ui.rview === "pr" ? rollPriceView(ids, X) : ui.rview === "ws" ? rollWsView(ids, X) : `
@@ -2270,13 +2299,15 @@ function rollPlatformView(ids, X) {
   const xs = M.reduce((a, x) => a + (val(x.gainUsd, x.gainDemo) || 0), 0);
   const PR = rollPriceCalc(ids), price = PR.mem.reduce((a, m) => a + (m.lever || 0), 0);
   loadProduct(); const PC = procCalc(ids), proc = PC && PC.M.length >= 2 ? PC.T.tot : null;
+  const procAlt = proc !== null ? Object.keys(PSCEN).map(k => `${PSCEN[k].l} ${fmtM1(procCalc(ids, k).T.tot)}`).join(" · ") : "";
   const steps = [["Combined revenue today", rev, "base", "Reported or estimated revenue in the market map"], ["Cross-sell", xs, "add", `At ${capLbl()} · Medium: doors are real, the win rate is what multi-brand owners achieve`],
     ["Price", price, "add", "Each member's lever: up to half the gap to its category's upper quartile, 5% at most · Low to medium: list prices, not net"],
     ["Pro forma revenue", rev + xs + price, "total", ""]];
   const bridge = waterfall(steps, fmtM, "Revenue bridge");
   // day-one EBITDA: cross-sell volume at a gross margin (50-80%, midpoint by default), price and cost savings in full
+  const ebName = !PC || PC.T.scen === "d1" ? "Day-one EBITDA upside" : `EBITDA upside, ${PSCEN[PC.T.scen].l}`;
   const gm = ui.gm ?? 0.65, vol = xs * gm, eb = vol + price + (proc || 0);
-  const ebSteps = [["Cross-sell GP", vol, "add"], ["Price", price, "add"], ["Cost savings", proc || 0, "add"], ["Day-one EBITDA upside", eb, "total"]];
+  const ebSteps = [["Cross-sell GP", vol, "add"], ["Price", price, "add"], ["Cost savings", proc || 0, "add"], [ebName, eb, "total"]];
   const at = g => xs * g + price + (proc || 0);
   const memRow = x => { const c = x.c, p = D.per.find(r => r.x === x), d = dnaOf(c), pr = num(c.prorev); return `<tr><td><b><a href="#c.${esc(c.id)}">${short(c)}</a></b><br><small class="faint">${ownerLine(c)}</small></td><td class="r"><span class="score ${d.band} num" style="font-size:15px">${d.score}</span></td>
     <td class="r num">${fmtM(c.rev)}</td><td class="r num">${pr ? fmtM(pr) : "—"}</td><td class="r num">${num(c.ret_pct) !== null ? Math.round(c.ret_pct) + "%" : "—"}</td><td class="r num">${num(c.emp) ? (+c.emp).toLocaleString() : "—"}</td>
@@ -2293,16 +2324,16 @@ function rollPlatformView(ids, X) {
       <p class="faint" style="margin:10px 0 0;font-size:12.5px">Each member's revenue spread over the distributors that carry it by door weight (how much of its range the door stocks × the door's size). A door several members share is exposure that grows with the roll-up: one buyer's line review now touches all of them.</p></div></section>
   <section class="panel"><header><h2>Value bridge</h2><span class="sp"></span><span class="lbl">Revenue · ${capLbl()}</span></header><div class="body bridgewrap">${bridge}
       <table style="font-size:13px"><tbody>${steps.filter(s => s[2] === "add").map(([l, v, , n]) => `<tr><td><b>${l}</b></td><td class="r num">+${fmtM(v)}</td><td class="faint">${n}</td></tr>`).join("")}
-      <tr><td><b>Procurement</b></td><td class="r num">${proc !== null ? fmtM1(proc) : "—"}</td><td class="faint">Cost saving a year, from shared pack formats, raw materials and freight lanes · Low: research rates, spend estimated from revenue. <a href="#rollup" data-act="rview" data-v="pc">See it</a></td></tr>
+      <tr><td><b>Procurement</b></td><td class="r num">${proc !== null ? fmtM1(proc) : "—"}</td><td class="faint">Cost saving a year, ${proc !== null ? esc(PSCEN[PC.T.scen].l) + " scenario" : ""}, from shared pack formats, raw materials and freight lanes · Low: research rates, spend estimated from revenue. <a href="#rollup" data-act="rview" data-v="pc" data-scroll="procbridge">See the bridge</a></td></tr>
       <tr><td><b>SKU overlap</b></td><td class="r num">—</td><td class="faint">Not sized: the overlapping products are listed on the <a href="#rollup" data-act="rview" data-v="sk">SKU overlap</a> tab for a judgment call.</td></tr></tbody></table></div></section>
-  <section class="panel"><header><h2>Day-one EBITDA upside</h2><span class="sp"></span>
+  <section class="panel"><header><h2>${esc(ebName)}</h2><span class="sp"></span>
       <label class="lbl" style="display:flex;gap:8px;align-items:center">Gross margin on cross-sell volume <select id="rgm" aria-label="Gross margin on cross-sell volume">${[0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8].map(g => `<option value="${g}" ${Math.abs(g - gm) < 0.001 ? "selected" : ""}>${Math.round(g * 100)}%${g === 0.65 ? " (midpoint)" : ""}</option>`).join("")}</select></label></header>
     <div class="body bridgewrap">${waterfall(ebSteps, fmtM1, "EBITDA upside")}
       <table style="font-size:13px"><tbody>
       <tr><td><b>Cross-sell volume</b></td><td class="r num">+${fmtM1(vol)}</td><td class="faint">${fmtM(xs)} of new revenue × ${Math.round(gm * 100)}% gross margin. Pro brands run 50–80%; ${Math.round(gm * 100)}% ${gm === 0.65 ? "is the midpoint" : "is your setting"}.</td></tr>
       <tr><td><b>Price</b></td><td class="r num">+${fmtM1(price)}</td><td class="faint">100% to the bottom line: same units, higher price.</td></tr>
-      <tr><td><b>Cost savings</b></td><td class="r num">+${fmtM1(proc || 0)}</td><td class="faint">100% to the bottom line: procurement on shared packaging, raw materials and freight.</td></tr>
-      <tr class="tot"><td><b>Day-one EBITDA upside</b></td><td class="r num"><b>${fmtM1(eb)}</b></td><td class="faint">At 50% gross margin ${fmtM1(at(0.5))} · at 80% ${fmtM1(at(0.8))}${rev ? ` · ${(eb / rev * 100).toFixed(1)}% of combined revenue` : ""}.</td></tr>
+      <tr><td><b>Cost savings</b></td><td class="r num">+${fmtM1(proc || 0)}</td><td class="faint">100% to the bottom line: procurement, ${proc !== null ? esc(PSCEN[PC.T.scen].l) : ""} scenario${ui.psmall !== false ? ", small buyers to direct pricing" : ""}. ${procAlt}. <a href="#rollup" data-act="rview" data-v="pc" data-scroll="procbridge">Change it</a></td></tr>
+      <tr class="tot"><td><b>${esc(ebName)}</b></td><td class="r num"><b>${fmtM1(eb)}</b></td><td class="faint">At 50% gross margin ${fmtM1(at(0.5))} · at 80% ${fmtM1(at(0.8))}${rev ? ` · ${(eb / rev * 100).toFixed(1)}% of combined revenue` : ""}.</td></tr>
       </tbody></table>
       <p class="faint" style="margin:10px 0 0;font-size:12.5px">Run-rate once the levers are in place, before one-off costs to get there (listing fees, slotting, integration). Cross-sell follows the capture setting at the top of the page.</p></div></section>`;
 }
@@ -2653,7 +2684,9 @@ document.addEventListener("click", e => {
     else if (act === "plan") askPlan(a.dataset.id);
     else if (act === "rplan") askRollPlan();
     else if (act === "pall") { ui.pall = !ui.pall; render(); }
-    else if (act === "rview") { ui.rview = a.dataset.v; render(); }
+    else if (act === "rview") { ui.rview = a.dataset.v; render(); if (a.dataset.scroll) setTimeout(() => document.getElementById(a.dataset.scroll)?.scrollIntoView({ behavior: "smooth", block: "start" }), 30); }
+    else if (act === "pscen") { ui.pscen = a.dataset.v; render(); }
+    else if (act === "psmall") { ui.psmall = ui.psmall === false; render(); }
     else if (act === "ppos") { ui.pp.pos = ui.pp.pos === a.dataset.v ? "" : a.dataset.v; ui.pp.limit = 100; render(); }
     else if (act === "emcol") { ui.emcol = a.dataset.v === "" ? null : +a.dataset.v; render(); }
     else if (act === "synroll") { ui.syn.src = "roll"; location.hash = "product"; }
