@@ -696,7 +696,7 @@ body.mod-pe #navpe{display:flex}
 // Opened inside Probrands at #hb/<route>: start on that route, and keep Probrands' address in step.
 try { const h = window.parent.location.hash.replace(/^#hb\/?/, ""); if (h && location.hash.slice(1) !== h) location.hash = h; } catch {}
 // Database, Claude and connectors all come through the Probrands page this frame sits in.
-const CLAUDE = (() => { try { if (window.parent !== window && window.parent.claude?.use) return window.parent.claude; } catch {} return window.claude; })();
+const CLAUDE = (() => { try { const b = window.parent !== window && window.parent.PBHB; if (b?.use) return { use: n => b.use(n) }; } catch {} return window.claude; })();
 // This page has no address of its own, so "#route" links would resolve against Probrands' address and load it in
 // here. Links that nothing else handled change the route in place instead.
 addEventListener("click", e => {
@@ -3754,7 +3754,9 @@ ${stepSpec(c, key).replace("Reply with ONLY one JSON object in this shape:", "ST
 Save with record: add_row / update_row for list items (existing rows you don't mention are kept), and set_step with step "${key}" for the rest of this step. Lists in set_step also merge into what's there. Then summarise in a few lines what's new, with links.`;
 }
 async function chatSteps(id, keys) {
-  const c0 = getC(id); if (!c0 || !sample || cst(id).busy) return;
+  const c0 = getC(id); if (!c0) return;
+  if (!sample) { toast("Claude isn't available here" + (sampleIssue ? " (" + sampleIssue + ")" : "") + ". Open Probrands in claude.ai, signed in, and allow Claude when asked."); return; }
+  if (cst(id).busy) { toast("Already building this profile. Open Chat to watch it."); return; }
   // Runs in the background; "View live" in the builder (or the Chat button) opens the conversation.
   for (const k of SECTION_ORDER.filter(x => keys.includes(x))) {
     const c = getC(id); if (!c) break;
