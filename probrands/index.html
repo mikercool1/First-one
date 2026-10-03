@@ -312,7 +312,7 @@ const PRICES = new Map(), priceLoading = new Set();
 let DEALS = [], DISTS = [], SRC = "", loaded = false, ver = 0;
 const OWN = [["pe", "PE"], ["family", "Family"], ["esop", "ESOP"], ["private", "Private"], ["corp", "Corporate"]];
 const ownKey = c => c.oclass === "public" || c.oclass === "sub_private" ? "corp" : c.oclass;
-const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", pp: { q: "", min: "M", sort: "lead", seg: "", cat: "", own: "", pos: "", limit: 100 }, roll: store.get("roll", []), rview: "xs", wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "n", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
+const ui = { own: new Set(store.get("own", ["pe", "family"])), chf: "", pmin: 2, pall: false, psort: "n", pp: { q: "", min: "M", sort: "lead", seg: "", cat: "", own: "", pos: "", limit: 100 }, roll: store.get("roll", []), rview: "xs", wsmk: "core", wslimit: 40, wsst: "", rq: "", cap: "demo", rmin: "", rsort: "head", rlimit: 60, q: "", dch: "", dmk: "", dsort: "brands", dq: "", fam: "", seg: "", rev: "", mkt: "", cseg: "", csort: "attr", sort: "dna", dir: -1, showOut: false, limit: 80, focus: null, busy: {},
   b: { q: "", status: "", tri: "", own: "", fam: "", seg: "", ch: "", dist: "", mkt: "", fmt: "", sort: "skus", dir: -1, limit: 100 } };
 
 /* ---------- DNA ---------- */
@@ -910,61 +910,168 @@ function catPlayers() {  // brands with product in each category, primary or not
   for (const b of BR.values()) for (const c of Object.keys(b.allc || {})) if (plays(b, c)) (m.get(c) || m.set(c, []).get(c)).push(b);
   return (catPlay = { v: ver, m }).m;
 }
+/* ---------- categories: market studies (v29+) ----------
+   The list is an attractiveness screen: the Categories tab's seven 1-5 criteria, weighted (weights start from the
+   workbook's and can be changed per viewer), against market size, growth and ownership. A category page is the
+   market study from that category's own tab (loaded on demand from the "study" collection), plus the live price
+   ladder, owners and brands from the map. */
+let CSTUDY = {}, CRIT = [];
+const STUDY = new Map(), studyLoading = new Set();
+function loadStudy(ci) {
+  if (STUDY.has(ci) || studyLoading.has(ci) || !db) return;
+  studyLoading.add(ci);
+  db.doc("study/" + ci).get().then(d => STUDY.set(ci, d.exists ? d.data() : null)).catch(() => STUDY.set(ci, null)).finally(() => { studyLoading.delete(ci); render(); });
+}
+const CRIT_SHORT = ["Repeat purchase", "Brand loyalty", "Pricing power", "Fragmentation", "Growth", "Regulatory moat", "Pro channel"];
+function critWeights() { const w = store.get("cw", null); return CRIT.map((c, j) => (w && w[j] !== undefined ? w[j] : c[1] ?? 1)); }
+function attrOf(ci) {
+  const s = CSTUDY[ci]; if (!s?.sc) return null;
+  const w = critWeights(); let a = 0, t = 0;
+  s.sc.forEach((v, j) => { if (v !== null && v !== undefined) { a += v * (w[j] || 0); t += w[j] || 0; } });
+  return t ? a / t : null;
+}
+const blocks = (v, max = 5) => `<span class="num" aria-label="${v} of ${max}" style="letter-spacing:1px;color:var(--accent-text)">${"■".repeat(Math.round(v || 0))}<span style="color:var(--line-2)">${"■".repeat(max - Math.round(v || 0))}</span></span>`;
+const scoreCell = v => `<td class="r num" style="background:color-mix(in srgb, var(--accent) ${Math.round(((v || 0) - 1) / 4 * 55)}%, transparent)">${v ?? "—"}</td>`;
+const fmtTam = v => v === null || v === undefined ? "—" : v >= 1000 ? "$" + (v / 1000).toFixed(1).replace(/\.0$/, "") + "B" : "$" + Math.round(v) + "M";
+function catSpread(ci) { const r = pRows(ci).filter(x => x.n >= 2).map(x => x.ix).sort((a, b) => a - b); if (r.length < 4) return null; const q = f => r[Math.min(r.length - 1, Math.floor(f * r.length))]; return q(0.9) / q(0.1); }
+function attrChart(rows) {
+  const W = 820, H = 380, L = 56, R = 24, T = 18, B = 46, xs = rows.filter(r => r.s.pro > 0 && r.a !== null);
+  if (!xs.length) return "";
+  const lo = Math.log10(Math.max(10, Math.min(...xs.map(r => r.s.pro)) * 0.8)), hi = Math.log10(Math.max(...xs.map(r => r.s.pro)) * 1.25);
+  const y0 = Math.max(1, Math.floor(Math.min(...xs.map(r => r.a)) * 2) / 2 - 0.25), y1 = Math.min(5, Math.ceil(Math.max(...xs.map(r => r.a)) * 2) / 2 + 0.25);
+  const X = v => L + (Math.log10(v) - lo) / (hi - lo) * (W - L - R), Y = v => T + (y1 - v) / (y1 - y0) * (H - T - B);
+  const tx = [10, 30, 100, 300, 1000, 3000, 10000, 30000].filter(v => Math.log10(v) >= lo && Math.log10(v) <= hi);
+  // label the most attractive and the largest, skipping any label that would collide with one already placed
+  const boxes = [], lab = new Set(), side = new Map(), short = r => r.name.length > 26 ? r.name.slice(0, 25) + "…" : r.name;
+  for (const r of [...xs.slice().sort((a, b) => b.a - a.a).slice(0, 12), ...xs.slice().sort((a, b) => b.s.pro - a.s.pro).slice(0, 6)]) {
+    if (lab.has(r.ci)) continue;
+    const w = short(r).length * 6.3, y = Y(r.a), cx = X(r.s.pro);
+    const free = x0 => x0 > L && x0 + w < W - 4 && !boxes.some(b => x0 < b[2] && x0 + w > b[0] && Math.abs(y - b[1]) < 14) && !xs.some(o => o !== r && Math.abs(Y(o.a) - y) < 6 && X(o.s.pro) > x0 - 3 && X(o.s.pro) < x0 + w + 3);
+    const x0 = [cx + 9, cx - 9 - w].find(free); if (x0 === undefined) continue;
+    boxes.push([x0, y, x0 + w]); lab.add(r.ci); side.set(r.ci, x0 < cx);
+  }
+  return `<svg class="qchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Attractiveness score against pro market size, one dot per category">
+    ${[1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].filter(v => v >= y0 && v <= y1).map(v => `<line class="gl" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${L - 8}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`).join("")}
+    ${tx.map(v => `<line class="gl" x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${H - B}"/><text class="ax" x="${X(v)}" y="${H - B + 16}" text-anchor="middle">${fmtTam(v)}</text>`).join("")}
+    <text class="ql" x="${(L + W - R) / 2}" y="${H - 8}" text-anchor="middle">Pro market size (US, log scale)</text>
+    <text class="ql" x="14" y="${(T + H - B) / 2}" transform="rotate(-90 14 ${(T + H - B) / 2})" text-anchor="middle">Attractiveness (1-5)</text>
+    ${xs.map(r => `<g data-go="cat.${r.ci}" data-tip="${esc(`<b>${esc(r.name)}</b>Attractiveness ${r.a.toFixed(2)} · pro TAM ${fmtTam(r.s.pro)} · CAGR ${r.s.cagr ?? "—"}% · ${esc(r.s.conf || "")} confidence`)}" style="cursor:pointer">
+      <circle class="dot" cx="${X(r.s.pro)}" cy="${Y(r.a)}" r="6" fill="var(--accent)" style="stroke:var(--panel);stroke-width:2"/>
+      ${lab.has(r.ci) ? `<text class="ax" x="${side.get(r.ci) ? X(r.s.pro) - 9 : X(r.s.pro) + 9}" text-anchor="${side.get(r.ci) ? "end" : "start"}" y="${Y(r.a) + 4}" style="fill:var(--ink-2);font:500 11.5px var(--f-body)">${esc(short(r))}</text>` : ""}</g>`).join("")}
+  </svg>`;
+}
 function viewCats() {
-  const pm = catPlayers();
-  const rows = CATS.filter(c => !ui.cseg || c.seg === ui.cseg).map(c => ({ ...c, play: (pm.get(c.cat) || []).length, fams: splitPlayers(c.fam_players).length, pes: splitPlayers(c.pe_players).length }));
-  const key = { n: c => c.n || 0, play: c => c.play, pe: c => c.pct_pe || 0, pepw: c => c.pct_pe_pw || 0, ret: c => -(c.avg_ret ?? 1), priv: c => c.pct_priv || 0, fams: c => c.fams, cpo: c => c.cpo || 0, name: c => c.cat }[ui.csort] || (c => c.n || 0);
-  rows.sort((a, b) => ui.csort === "name" ? a.cat.localeCompare(b.cat) : key(b) - key(a));
-  const segs = segments();
-  return `<div class="page-h"><div class="grow"><div class="lbl">The market map's Competition tab · ${CATS.length} categories in ${segs.length} segments</div><h1>Categories</h1>
-    <p>Who owns each product category. "Core brands" is the market map's count, by each brand's primary category. "Brands selling" is wider: every brand with 2 or more SKUs in the category, so a brand like CRC counts in lubricants and penetrants as well as cleaners. The family and ESOP owners in each category are the roll-up candidates.</p></div></div>
-  <div class="gauges"><div class="gauge"><b>${CATS.length}</b><span class="lbl">Categories</span></div><div class="gauge"><b>${segs.length}</b><span class="lbl">Segments</span></div>
-    <div class="gauge"><b>${CATS.reduce((a, c) => a + (c.n || 0), 0).toLocaleString()}</b><span class="lbl">Core brands</span></div>
-    <div class="gauge"><b>${CATS.reduce((a, c) => a + splitPlayers(c.pe_players).length, 0)}</b><span class="lbl">PE players</span></div>
-    <div class="gauge g"><b>${CATS.reduce((a, c) => a + splitPlayers(c.fam_players).length, 0)}</b><span class="lbl">Roll-up candidates</span></div></div>
+  const pm = catPlayers(), w = critWeights();
+  const base = CATS.filter(c => !ui.cseg || c.seg === ui.cseg).map(c => ({ ...c, ci: c.i, name: c.cat, s: CSTUDY[c.i] || {}, a: attrOf(c.i), play: (pm.get(c.cat) || []).length, spread: catSpread(c.i) }));
+  const studied = base.filter(c => c.a !== null);
+  const key = { attr: c => c.a ?? -1, pro: c => c.s.pro || 0, tam: c => c.s.tam || 0, cagr: c => c.s.cagr || 0, priv: c => c.s.priv ?? c.pct_priv ?? 0, frag: c => c.s.sc?.[3] || 0, price: c => c.s.sc?.[2] || 0, spread: c => c.spread || 0, name: c => c.cat }[ui.csort] || (c => c.a ?? -1);
+  const rows = base.slice().sort((a, b) => ui.csort === "name" ? a.cat.localeCompare(b.cat) : key(b) - key(a));
+  const segs = segments(), tam = studied.reduce((a, c) => a + (c.s.tam || 0), 0), pro = studied.reduce((a, c) => a + (c.s.pro || 0), 0);
+  const changed = CRIT.some((c, j) => (c[1] ?? 1) !== w[j]);
+  return `<div class="page-h"><div class="grow"><div class="lbl">Market studies · ${studied.length} categories in ${segs.length} segments</div><h1>Categories</h1>
+    <p>How attractive each product category is to own. Every category is scored 1-5 on seven criteria from the market map's research, sized (US and pro market, growth), and set against who owns it and how it prices. Open one for the full market study: what it is, the bull and bear case, end-market mix, the price ladder, who competes, adjacencies and diligence questions.</p></div></div>
+  <div class="gauges"><div class="gauge"><b>${studied.length}</b><span class="lbl">Categories studied</span></div><div class="gauge"><b>${fmtTam(tam)}</b><span class="lbl">US market, summed (categories overlap)</span></div>
+    <div class="gauge"><b>${fmtTam(pro)}</b><span class="lbl">Pro market, summed</span></div><div class="gauge g"><b>${studied.filter(c => c.a >= 3.5).length}</b><span class="lbl">Score 3.5 or higher</span></div>
+    <div class="gauge"><b>${studied.length ? (studied.reduce((a, c) => a + c.a, 0) / studied.length).toFixed(2) : "—"}</b><span class="lbl">Average score</span></div></div>
+  <section class="panel"><header><h2>Weights</h2><span class="sp"></span><span class="lbl">${changed ? `Your weights · <button type="button" class="linkbtn" data-act="cwreset" style="color:inherit;text-decoration:underline">reset to the workbook's</button>` : "The workbook's weights · change them to re-rank"}</span></header>
+    <div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">${CRIT.map((c, j) => `<label style="display:grid;gap:4px"><span class="lbl">${esc(CRIT_SHORT[j] || c[0])}</span><select data-cw="${j}" aria-label="Weight for ${esc(c[0])}">${[0, 0.5, 1, 1.5, 2, 3].map(v => `<option value="${v}" ${v === w[j] ? "selected" : ""}>${v === 0 ? "Ignore" : "× " + v}</option>`).join("")}</select></label>`).join("")}</div></section>
+  <section class="panel"><header><h2>Attractiveness against size</h2><span class="sp"></span><span class="lbl">One dot per category · hover for detail, click to open</span></header><div class="body">${attrChart(studied)}</div></section>
   <div class="bar"><select id="cseg" aria-label="Segment"><option value="">All segments</option>${segs.map(s => `<option ${s === ui.cseg ? "selected" : ""}>${esc(s)}</option>`).join("")}</select>
-    <select id="csort" aria-label="Sort">${[["n", "Most core brands"], ["play", "Most brands selling"], ["pe", "Most PE-backed"], ["pepw", "Most PE-backed, pro-weighted"], ["ret", "Least retail"], ["priv", "Most privately owned"], ["fams", "Most roll-up candidates"], ["cpo", "Highest $/oz"], ["name", "Name"]].map(([k, l]) => `<option value="${k}" ${k === ui.csort ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select>
-    <span style="flex:1"></span>${olegend()}</div>
-  <section class="panel"><div class="tw"><table><thead><tr><th>Category</th><th class="r">Core brands</th><th class="r">Brands selling</th><th>Ownership of core brands</th><th class="r">PE</th><th class="r">Private</th><th class="r">PE, pro-weighted</th><th class="r">Avg retail share</th><th>Roll-up candidates</th><th class="r">$/oz</th></tr></thead><tbody>
-  ${rows.map(c => `<tr class="cons-row" data-go="cat.${c.i}"><td><b><a href="#cat.${c.i}">${esc(c.cat)}</a></b><br><span class="faint" style="font-size:12.5px">${esc(c.seg)}</span></td><td class="r num">${c.n || 0}</td><td class="r num">${c.play}</td>
-    <td>${obar(c.mix)}</td><td class="r num">${pct(c.pct_pe)}${c.pes ? `<br><span class="faint">${c.pes} player${c.pes === 1 ? "" : "s"}</span>` : ""}</td><td class="r num">${pct(c.pct_priv)}</td><td class="r num">${c.pct_pe_pw !== undefined ? pct(c.pct_pe_pw) : "—"}</td><td class="r num">${c.avg_ret !== undefined ? pct(c.avg_ret > 1 ? c.avg_ret / 100 : c.avg_ret) : "—"}</td>
-    <td style="font-size:13px"><b class="num">${c.fams || "—"}</b>${c.fams ? ` <span class="muted">${splitPlayers(c.fam_players).slice(0, 2).map(p => esc(p.split(": ")[0])).join(", ")}${c.fams > 2 ? "…" : ""}</span>` : ""}</td>
-    <td class="r num">${c.cpo ? "$" + c.cpo.toFixed(2) : "—"}</td></tr>`).join("")}
-  </tbody></table></div></section>`;
+    <select id="csort" aria-label="Sort">${[["attr", "Most attractive"], ["pro", "Largest pro market"], ["tam", "Largest US market"], ["cagr", "Fastest growth"], ["frag", "Most fragmented"], ["price", "Most pricing power"], ["spread", "Widest price spread"], ["priv", "Most privately owned"], ["name", "Name"]].map(([k, l]) => `<option value="${k}" ${k === ui.csort ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select></div>
+  <section class="panel"><div class="tw"><table><thead><tr><th>Category</th><th class="r">Score</th>${CRIT_SHORT.map(h => `<th class="r" style="font-size:10.5px;max-width:70px;white-space:normal">${h}</th>`).join("")}<th class="r">Pro market</th><th class="r">US market</th><th class="r">CAGR</th><th>Top end markets</th><th class="r">Owners · private</th><th class="r">Price spread</th></tr></thead><tbody>
+  ${rows.map(c => `<tr class="cons-row" data-go="cat.${c.i}"><td><b><a href="#cat.${c.i}">${esc(c.cat)}</a></b><br><span class="faint" style="font-size:12.5px">${esc(c.seg)}</span></td>
+    <td class="r num"><b style="font-size:16px">${c.a !== null ? c.a.toFixed(2) : "—"}</b></td>${(c.s.sc || Array(7).fill(null)).map(scoreCell).join("")}
+    <td class="r num">${fmtTam(c.s.pro)}</td><td class="r num">${fmtTam(c.s.tam)}${c.s.lo && c.s.hi ? `<br><span class="faint" style="font-size:11.5px">${fmtTam(c.s.lo)}–${fmtTam(c.s.hi)}</span>` : ""}</td>
+    <td class="r num">${c.s.cagr !== undefined ? c.s.cagr + "%" : "—"}${c.s.conf ? `<br><span class="faint" style="font-size:11.5px">${esc(c.s.conf)} conf.</span>` : ""}</td>
+    <td style="font-size:12.5px">${(c.s.em || []).map(([m, p]) => `${esc(m)} <span class="num faint">${pct(p)}</span>`).join("<br>") || "—"}</td>
+    <td class="r num">${c.s.no ?? c.play}<br><span class="faint" style="font-size:11.5px">${pct(c.s.priv ?? c.pct_priv)} private${c.s.pe ? " · " + pct(c.s.pe) + " PE" : ""}</span></td>
+    <td class="r num">${c.spread ? c.spread.toFixed(1) + "×" : "—"}</td></tr>`).join("")}
+  </tbody></table></div></section>
+  <div class="note">Scores are the market map's research judgments (1 = weak, 5 = strong); "Pro channel" scores low retail exposure. Market sizes are estimates with the confidence shown, and categories overlap, so sums overstate the total. Price spread is the 90th over the 10th percentile like-for-like index among brands with 2+ prices.</div>`;
+}
+function catHbars(rows, cls = "var(--accent)") {
+  const max = Math.max(0.0001, ...rows.map(r => r[1] || 0));
+  return `<div style="display:grid;gap:7px">${rows.map(([k, v, note]) => `<div><div style="display:flex;gap:8px;align-items:baseline"><span style="flex:1">${esc(k)}</span><b class="num">${pct(v)}</b></div>
+    <div style="height:8px;background:var(--sunk);margin-top:3px"><div style="height:8px;width:${(v || 0) / max * 100}%;background:${cls}"></div></div>${note ? `<div class="faint" style="font-size:12px;margin-top:2px">${esc(note)}</div>` : ""}</div>`).join("")}</div>`;
+}
+function tamBar(st, s) {
+  const lo = num(s.lo), hi = num(s.hi), pt = num(s.tam), pro = num(s.pro); if (!pt) return "";
+  const max = Math.max(hi || pt, pt) * 1.08, X = v => v / max * 100;
+  return `<div style="position:relative;height:46px;margin:6px 0 4px">
+    ${lo && hi ? `<div title="Range" style="position:absolute;top:14px;height:14px;left:${X(lo)}%;width:${X(hi) - X(lo)}%;background:var(--sunk);border:1px solid var(--line-2)"></div>` : ""}
+    ${pro ? `<div title="Pro market" style="position:absolute;top:17px;height:8px;left:0;width:${X(pro)}%;background:var(--accent)"></div>` : ""}
+    <div style="position:absolute;top:8px;height:26px;left:${X(pt)}%;width:2px;background:var(--ink)"></div>
+    <div class="num faint" style="position:absolute;top:34px;left:${X(pt)}%;transform:translateX(-50%);font-size:11.5px">${fmtTam(pt)}</div></div>
+  <p class="faint" style="font-size:12.5px;margin:6px 0 0"><span style="display:inline-block;width:10px;height:8px;background:var(--accent);margin-right:5px"></span>Pro market ${fmtTam(pro)} · <span style="display:inline-block;width:10px;height:8px;background:var(--sunk);border:1px solid var(--line-2);margin-right:5px"></span>range ${fmtTam(lo)}–${fmtTam(hi)} · line: point estimate</p>`;
 }
 function viewCat(i) {
-  const c = CATS.find(x => String(x.i) === String(i)) || (CATNAMES[i] ? { cat: CATNAMES[i], seg: SEGOF[CATNAMES[i]] } : null);
+  const c = CATS.find(x => String(x.i) === String(i)) || (CATNAMES[i] ? { cat: CATNAMES[i], seg: SEGOF[CATNAMES[i]], i: +i } : null);
   if (!c) return `<a class="back" href="#cats">← Categories</a><div class="empty">No such category.</div>`;
-  const bs = (catPlayers().get(c.cat) || []).slice().sort((a, b) => (b.ncat === c.cat) - (a.ncat === c.cat) || (b.dists || []).length - (a.dists || []).length);
+  const ci = String(c.i ?? i), s = CSTUDY[ci] || {}; if (CSTUDY[ci]) loadStudy(ci);
+  const st = STUDY.get(ci), a = attrOf(ci);
+  const bs = (catPlayers().get(c.cat) || []).slice().sort((x, y) => (y.ncat === c.cat) - (x.ncat === c.cat) || (y.dists || []).length - (x.dists || []).length);
   const owners = new Map();
-  for (const b of bs) {
-    const k = b.owner_id || (b.owner ? "n:" + norm(b.owner) : "u:" + b.id);
-    const o = owners.get(k) || owners.set(k, { x: b, brands: [], skus: 0, known: !!b.owner }).get(k);
-    o.brands.push(b); o.skus += b.allc?.[c.cat] || 0;
-  }
-  const orows = [...owners.values()].filter(o => o.known).sort((a, b) => b.brands.length - a.brands.length || b.skus - a.skus);
-  const live = {}; for (const o of orows) { const k = OCLS[o.x.oclass] || "Unknown"; live[k] = (live[k] || 0) + 1; }
-  return `<a class="back" href="#cats">← Categories</a>
-  <div class="page-h"><div class="grow"><div class="lbl">${esc(c.seg || "")}</div><h1>${esc(c.cat)}</h1>
-    <p>${bs.length} brands sell here (${c.n || 0} with it as their primary category), from ${orows.length} known owners${bs.length - bs.filter(b => b.owner).length ? ` plus ${bs.length - bs.filter(b => b.owner).length} brands with no owner identified` : ""}.</p></div></div>
-  <div class="gauges"><div class="gauge"><b>${c.n || 0}</b><span class="lbl">Core brands</span></div><div class="gauge"><b>${bs.length}</b><span class="lbl">Brands selling</span></div>
-    <div class="gauge"><b>${pct(c.pct_pe)}</b><span class="lbl">PE-backed</span></div><div class="gauge"><b>${pct(c.pct_priv)}</b><span class="lbl">Privately owned</span></div>
-    <div class="gauge"><b>${(c.skus || 0).toLocaleString()}</b><span class="lbl">SKUs (core)</span></div><div class="gauge"><b>${c.cpo ? "$" + c.cpo.toFixed(2) : "—"}</b><span class="lbl">Avg $/oz${c.npriced ? ` · ${c.npriced} priced` : ""}</span></div></div>
-  ${c.mix ? `<section class="panel"><header><h2>Who owns the core brands</h2><span class="sp"></span>${olegend()}</header><div class="body">${obar(c.mix)}</div></section>` : ""}
+  for (const b of bs) { const k = b.owner_id || (b.owner ? "n:" + norm(b.owner) : "u:" + b.id); const o = owners.get(k) || owners.set(k, { x: b, brands: [], skus: 0, known: !!b.owner }).get(k); o.brands.push(b); o.skus += b.allc?.[c.cat] || 0; }
+  const orows = [...owners.values()].filter(o => o.known).sort((x, y) => y.brands.length - x.brands.length || y.skus - x.skus);
+  const ladder = pRows(ci).sort((x, y) => y.ix - x.ix), coByName = n => { const k = norm(n); return [...CO.values()].find(x => norm(x.name) === k || norm(x.name).startsWith(k + " ")); };
+  const panel = (h, lbl, body) => `<section class="panel"><header><h2>${h}</h2><span class="sp"></span>${lbl ? `<span class="lbl">${lbl}</span>` : ""}</header>${body}</section>`;
+  const live = `${panel("Owners selling here", ownMix(orows.map(o => o.x)), `<div class="tw"><table><thead><tr><th>Owner</th><th class="r">Brands here</th><th class="r">SKUs here</th><th>Brands</th></tr></thead><tbody>
+    ${orows.slice(0, 60).map(o => `<tr><td>${ownerCell(o.x)}</td><td class="r num">${o.brands.length}</td><td class="r num">${o.skus}</td><td>${o.brands.slice(0, 6).map(b => `<a href="#b.${esc(b.id)}">${esc(b.name)}</a>`).join(", ")}${o.brands.length > 6 ? ` <span class="faint">+${o.brands.length - 6}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="4" class="faint">No owners identified.</td></tr>`}
+    </tbody></table></div>`)}
+    ${panel("Brands", `${bs.length} · ${c.n || 0} with it as their primary category`, `<div class="tw"><table><thead><tr><th>Brand</th><th>Owner</th><th>Here as</th><th class="r">SKUs here</th><th class="r">Distributors</th><th>Price</th></tr></thead><tbody>
+    ${bs.map(b => `<tr><td><b><a href="#b.${esc(b.id)}">${esc(b.name)}</a></b>${b.hero ? `<br><span class="faint">${esc(b.hero)}</span>` : ""}</td><td>${ownerCell(b)}</td><td>${b.ncat === c.cat ? "Primary" : `<span class="muted">Also sells · main: ${catLink(b.ncat)}</span>`}</td>
+      <td class="r num">${b.allc?.[c.cat] || 0}</td><td class="r num">${(b.dists || []).length}</td><td>${priceBadge(b.id, { x: true, lead: false }) || (b.price?.pos ? esc(b.price.pos) : "")}</td></tr>`).join("")}
+    </tbody></table></div>`)}`;
+  const priceSec = ladder.length ? panel("Price ladder", `Like-for-like index · <a href="#price.${ci}">full ladder and table</a>`, `<div class="body">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:10px">
+        ${[["Brands priced", ladder.length], ["Premium · 1.25×+", ladder.filter(r => r.ix >= 1.25).length], ["Value · 0.80× and under", ladder.filter(r => r.ix <= 0.8).length], ["Price spread", catSpread(ci) ? catSpread(ci).toFixed(1) + "×" : "—"],
+          ...(st?.pp ? [["Median $/oz", st.pp["Median list $/oz"] !== undefined ? "$" + (+st.pp["Median list $/oz"]).toFixed(2) : "—"], ["25th–75th pct $/oz", st.pp["25th pct $/oz"] !== undefined ? `$${(+st.pp["25th pct $/oz"]).toFixed(2)}–$${(+st.pp["75th pct $/oz"]).toFixed(2)}` : "—"]] : [])].map(([k, v]) => `<div><div class="lbl">${k}</div><b class="num" style="font-size:20px">${v}</b></div>`).join("")}</div>
+      ${ladderChart(ladder.slice(0, 30))}${ladder.length > 30 ? `<p class="faint" style="margin:6px 0 0;font-size:12.5px">Top 30 by index of ${ladder.length}. <a href="#price.${ci}">See all</a>.</p>` : ""}</div>`) : "";
+  if (!CSTUDY[ci]) return `<a class="back" href="#cats">← Categories</a><div class="page-h"><div class="grow"><div class="lbl">${esc(c.seg || "")}</div><h1>${esc(c.cat)}</h1><p>No market study for this category yet.</p></div></div>${priceSec}${live}`;
+  const head = `<a class="back" href="#cats">← Categories</a>
+  <div class="page-h"><div class="grow"><div class="lbl">Market study · ${esc(c.seg || "")}</div><h1>${esc(c.cat)}</h1>${st?.what ? `<p>${esc(st.what)}</p>` : ""}</div>
+    <div class="dial"><b class="${a >= 3.5 ? "g" : a >= 2.75 ? "a" : "r"}">${a !== null ? a.toFixed(1) : "—"}</b><span class="lbl">Attractiveness · of 5</span></div></div>
+  <div class="gauges"><div class="gauge"><b>${fmtTam(s.tam)}</b><span class="lbl">US market${s.lo ? ` · ${fmtTam(s.lo)}–${fmtTam(s.hi)}` : ""}</span></div><div class="gauge g"><b>${fmtTam(s.pro)}</b><span class="lbl">Pro market</span></div>
+    <div class="gauge"><b>${s.cagr !== undefined ? s.cagr + "%" : "—"}</b><span class="lbl">Growth (CAGR)</span></div><div class="gauge"><b>${esc(s.conf || "—")}</b><span class="lbl">Sizing confidence</span></div>
+    <div class="gauge"><b>${s.no ?? orows.length}</b><span class="lbl">Owners · ${pct(s.priv)} private · ${pct(s.pe)} PE</span></div><div class="gauge"><b>${bs.length}</b><span class="lbl">Brands selling here</span></div></div>`;
+  if (!st) return head + `<section class="panel"><div class="body faint">${STUDY.has(ci) ? "The market study couldn't be loaded." : "Loading the market study…"}</div></section>` + priceSec + live;
+  const list = xs => xs.length ? `<ul style="margin:0;padding-left:18px">${xs.map(x => `<li style="margin:0 0 5px">${esc(x)}</li>`).join("")}</ul>` : `<p class="faint">—</p>`;
+  const adjGroups = ["Definitely also buy", "Maybe also buy", "Sometimes buy", "Less likely"].map(k => [k, st.adj.filter(x => x[0] === k)]).filter(([, xs]) => xs.length);
+  const deals = st.know.find(k => k[0].startsWith("Deals")), know = st.know.filter(k => !k[0].startsWith("Deals"));
+  return head + `
   <div class="grid2">
-    <section class="panel"><header><h2>PE players</h2><span class="sp"></span><span class="lbl">${splitPlayers(c.pe_players).length}</span></header><div class="body">${splitPlayers(c.pe_players).length ? `<ul class="players">${splitPlayers(c.pe_players).map(p => `<li>${playerLine(p)}</li>`).join("")}</ul>` : `<p class="faint">None in the market map.</p>`}</div></section>
-    <section class="panel"><header><h2>Roll-up candidates</h2><span class="sp"></span><span class="lbl">Family and ESOP owners</span></header><div class="body">${splitPlayers(c.fam_players).length ? `<ul class="players">${splitPlayers(c.fam_players).map(p => `<li>${playerLine(p)}</li>`).join("")}</ul>` : `<p class="faint">None in the market map.</p>`}</div></section>
+    ${panel("Why it is (or isn't) attractive", `Weighted score ${a !== null ? a.toFixed(2) : "—"} · <a href="#cats">change weights</a>`, `<div class="body"><table><tbody>${st.scores.map(([k, v], j) => `<tr><td>${esc(k)}</td><td>${blocks(v)}</td><td class="r num"><b>${v}</b></td><td class="r faint num" style="font-size:12px">× ${critWeights()[j] ?? 1}</td></tr>`).join("")}</tbody></table></div>`)}
+    ${panel("What it is used for", "", `<div class="body">${list(st.uses)}</div>`)}
   </div>
-  ${c.top ? `<div class="note">Top 10 by distributor reach (market map): ${esc(c.top)}</div>` : ""}
-  <section class="panel"><header><h2>Owners selling here</h2><span class="sp"></span><span class="lbl">${ownMix(orows.map(o => o.x))}</span></header>
-  <div class="tw"><table><thead><tr><th>Owner</th><th class="r">Brands here</th><th class="r">SKUs here</th><th>Brands</th></tr></thead><tbody>
-  ${orows.slice(0, 60).map(o => `<tr><td>${ownerCell(o.x)}</td><td class="r num">${o.brands.length}</td><td class="r num">${o.skus}</td><td>${o.brands.slice(0, 6).map(b => `<a href="#b.${esc(b.id)}">${esc(b.name)}</a>`).join(", ")}${o.brands.length > 6 ? ` <span class="faint">+${o.brands.length - 6}</span>` : ""}</td></tr>`).join("") || `<tr><td colspan="4" class="faint">No owners identified.</td></tr>`}
-  </tbody></table></div></section>
-  <section class="panel"><header><h2>Brands</h2><span class="sp"></span><span class="lbl">${bs.length}</span></header>
-  <div class="tw"><table><thead><tr><th>Brand</th><th>Owner</th><th>Here as</th><th class="r">SKUs here</th><th class="r">Distributors</th><th>Price</th></tr></thead><tbody>
-  ${bs.map(b => `<tr><td><b><a href="#b.${esc(b.id)}">${esc(b.name)}</a></b>${b.hero ? `<br><span class="faint">${esc(b.hero)}</span>` : ""}</td><td>${ownerCell(b)}</td><td>${b.ncat === c.cat ? "Primary" : `<span class="muted">Also sells · main: ${catLink(b.ncat)}</span>`}</td>
-    <td class="r num">${b.allc?.[c.cat] || 0}</td><td class="r num">${(b.dists || []).length}</td><td>${priceBadge(b.id, { x: true, lead: false }) || (b.price?.pos ? esc(b.price.pos) : "")}</td></tr>`).join("")}
-  </tbody></table></div></section>`;
+  <div class="grid2">
+    ${panel("Bull case", "", `<div class="body">${list(st.bull)}</div>`)}
+    ${panel("Bear case and risks", "", `<div class="body">${list(st.bear)}</div>`)}
+  </div>
+  ${panel("End-market mix", "Where the dollars go, and where the map finds it listed", `<div class="body grid2" style="margin:0;gap:24px">
+    <div><div class="lbl" style="margin:0 0 8px">Research: estimated share of US dollars</div>${catHbars(st.em)}</div>
+    <div><div class="lbl" style="margin:0 0 8px">Observed: share of scraped SKUs by the listing distributor's market</div>${catHbars(st.obs, "var(--ink-3)")}</div></div>
+    ${st.em_note ? `<div class="body faint" style="padding-top:0;font-size:12.5px">${esc(st.em_note)}</div>` : ""}`)}
+  ${priceSec}
+  <div class="grid2">
+    ${panel("How big is the market", `US · ${esc(String(st.Year || ""))}`, `<div class="body">${tamBar(st, s)}
+      <table style="margin-top:8px"><tbody>${Object.entries(st.size).map(([k, v]) => `<tr><td>${esc(k)}</td><td class="r num">${typeof v === "number" ? (v < 1 ? +(v * 100).toFixed(1) + "%" : fmtTam(v)) : esc(String(v))}</td></tr>`).join("")}</tbody></table>
+      ${st.built ? `<p class="muted" style="font-size:13px;margin:10px 0 0"><b>How it was built.</b> ${esc(st.built)}</p>` : ""}</div>`)}
+    ${panel("Form factors", st.pp?.["# priced items"] ? `${st.pp["# priced items"]} priced items` : "", `<div class="body">${catHbars(st.forms, "var(--ink-3)")}</div>`)}
+  </div>
+  ${panel("Who competes", `${(st.otypes || []).map(([k, n]) => `${esc(k)} ${n}`).join(" · ")}`, `<div class="body"><div class="lbl" style="margin:0 0 8px">Top brands by distributor reach</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px 18px">${st.tops.map(([b, d, o]) => `<div><b>${brandLink(b)}</b> <span class="num faint" style="font-size:12px">${esc(d.replace(" distributors", " dist."))}</span><br><span class="faint" style="font-size:12px">${esc(o)}</span></div>`).join("")}</div></div>
+    <div class="body" style="padding-top:0"><div class="lbl" style="margin:0 0 8px">Private owners here (PE, family, ESOP, private subs), by reach</div><div class="tw"><table><thead><tr><th>Owner</th><th class="r">Revenue</th><th class="r">Brands · max dist.</th><th class="r">Retail</th><th class="r">EBITDA margin</th></tr></thead><tbody>
+      ${st.priv.map(([o, t, sp, rev, nb, md, ret, m]) => { const co = coByName(o); return `<tr><td>${co ? `<a href="#c.${esc(co.id)}">${esc(o)}</a>` : esc(o)}<br><span class="faint" style="font-size:12px">${esc(t)}${sp ? " · " + esc(sp) : ""}</span></td><td class="r num">${rev ? fmtM(rev) : "—"}</td><td class="r num">${nb ?? "—"} · ${md ?? "—"}</td><td class="r num">${ret !== null && ret !== undefined ? pct(ret) : "—"}</td><td class="r num">${m ? (m * 100).toFixed(1) + "%" : "—"}</td></tr>`; }).join("")}
+    </tbody></table></div></div>`)}
+  ${panel("Adjacent categories", "If a customer uses this, they…", `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+    ${adjGroups.map(([k, xs]) => `<div><div class="lbl" style="margin:0 0 6px">${esc(k)}</div>${xs.map(([, n, note]) => `<p style="margin:0 0 6px">${catLink(n)}${note ? `<br><span class="faint" style="font-size:12px">${esc(note)}</span>` : ""}</p>`).join("")}</div>`).join("")}
+    ${st.adj_in.length ? `<div><div class="lbl" style="margin:0 0 6px">Listed as an adjacency by</div>${st.adj_in.map(n => `<p style="margin:0 0 6px">${catLink(n)}</p>`).join("")}</div>` : ""}</div>`)}
+  ${panel("What else to know", "", `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">
+    ${know.map(([k, xs]) => `<div><div class="lbl" style="margin:0 0 6px">${esc(k)}</div>${xs.length > 1 ? list(xs) : `<p style="margin:0">${esc(xs[0] || "")}</p>`}</div>`).join("")}</div>`)}
+  ${deals ? panel("Deals in this category", "From the Deals tab", `<div class="body">${list(deals[1])}</div>`) : ""}
+  ${panel("Diligence questions", "", `<div class="body">${list(st.dq)}</div>`)}
+  <details class="panel" style="padding:0"><summary style="padding:14px 18px;cursor:pointer"><b>All owners and brands from the map</b> <span class="faint">· ${orows.length} owners · ${bs.length} brands</span></summary>${live}</details>
+  ${panel("Sources", "", `<div class="body">${st.src.map(([t, u, n]) => `<p style="margin:0 0 8px">${u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>` : esc(t)}${n ? `<br><span class="faint" style="font-size:12.5px">${esc(n)}</span>` : ""}</p>`).join("")}${st.foot ? `<p class="faint" style="font-size:12.5px;margin:10px 0 0">${esc(st.foot)}</p>` : ""}</div>`)}`;
 }
 
 /* ---------- view: distributors (who carries what, and whose brands fill each shelf) ---------- */
@@ -2116,6 +2223,7 @@ document.addEventListener("click", e => {
     else if (act === "pall") { ui.pall = !ui.pall; render(); }
     else if (act === "rview") { ui.rview = a.dataset.v; render(); }
     else if (act === "ppos") { ui.pp.pos = ui.pp.pos === a.dataset.v ? "" : a.dataset.v; ui.pp.limit = 100; render(); }
+    else if (act === "cwreset") { store.set("cw", null); render(); }
     else if (act === "ppmore") { ui.pp.limit += 100; render(); }
     else if (act === "wsmk") { ui.wsmk = a.dataset.v; ui.wslimit = 40; render(); }
     else if (act === "wsmore") { ui.wslimit += 40; render(); }
@@ -2164,6 +2272,7 @@ document.addEventListener("change", e => {
   if (e.target.id === "dch") { ui.dch = e.target.value; render(); }
   if (e.target.id === "dmk") { ui.dmk = e.target.value; render(); }
   if (e.target.id === "dsort") { ui.dsort = e.target.value; render(); }
+  if (e.target.dataset?.cw !== undefined) { const w = critWeights(); w[+e.target.dataset.cw] = +e.target.value; store.set("cw", w); render(); }
   if (e.target.id === "cseg") { ui.cseg = e.target.value; render(); }
   if (e.target.id === "csort") { ui.csort = e.target.value; render(); }
   const bmap = { btri: "tri", bstatus: "status", bown: "own", bfam: "fam", bseg: "seg", bch: "ch", bdist: "dist", bmkt: "mkt", bfmt: "fmt" };
@@ -2218,7 +2327,7 @@ render();
       else if (x.id === "index") SRC = v.source || "";
       else if (x.id === "margin") MARGIN = v;
       else if (x.id === "pricing") { PRICING = v.cats || {}; PLEARN = v.learn || null; }
-      else if (x.id === "cats") { CATS = v.cats || []; CATNAMES = v.names || []; SEGOF = v.segs || {}; }
+      else if (x.id === "cats") { CATS = v.cats || []; CATNAMES = v.names || []; SEGOF = v.segs || {}; CSTUDY = v.study || {}; CRIT = v.crit || []; }
     });
     const dmk = new Map(DISTS.map(d => [d.name, d.market]));
     for (const b of BR.values()) {  // categories arrive as indexes into the Competition tab's list

@@ -33,7 +33,9 @@ Live app: https://claude.ai/artifact/UkLSFqKaS38kQqd4JmvNhk (private to the owne
 - **Company**: a Profitability panel (see "Profitability" below), the DNA test check by check, SKU mix (package format, end market, brand, distributor), the brand list with who carries each one, deals, the workbook's write-up and sources.
 - **Brands**: all 3,094 brands, searchable by brand, owner, product, maker or distributor, and filterable by the workbook's triage bucket (for example Actionable candidate), owner status (including where Claude's owner guess and the market map's disagree), owner type, segment, category, format, end market and distributor. Each brand has a page with its owner, where it's sold (with the broadline, specialty and retail split), package formats and every scraped SKU with links to the distributor listing.
 - **Competitors**: every brand page shows the market map's competitor list first (same category, ranked by distributor reach, with each owner's type and sponsor), then up to 8 more rival brands with each one's owner and ownership type (PE, Family, ESOP, Private, Corporate), and the Brands table shows the top 3. Rivals are matched in `import/build_import.py` by how alike their products look on distributor shelves (product categories, hero product and SKU names), ranked higher when they share distributors. Brands with the same owner are left out. Each company page rolls this up into "Who it competes with": the owners of rival brands, ranked by how many of the company's brands they meet.
-- **Categories**: the market map's Competition tab, one row per normalized category (60, in 13 segments). For each category it shows the ownership mix of the core brands, % PE-backed and % privately owned, the PE players and the family and ESOP roll-up candidates, and the average $/oz. A category page lists every owner and brand selling there, ranked by how many brands each owner has in the category.
+- **Categories**: a market study of each product category (v29+). See "Category market studies" below.
+  - **The list** is an attractiveness screen: every studied category scored 1-5 on seven criteria (repeat purchase, brand loyalty, pricing power, fragmentation, growth, regulatory moat, pro channel). Weights start from the workbook's and can be changed per viewer (saved in that browser). A chart plots attractiveness against pro market size. The table shows the seven scores, pro and US market, growth with sizing confidence, top end markets, owners and private share, and price spread. It sorts by any of these and filters by segment.
+  - **A category page** is the study: what it is, the attractiveness scorecard, use occasions, bull and bear case, **end-market mix** (research share of dollars next to where the map finds it listed), the **price ladder** (like-for-like, top 30 brands, with $/oz quartiles), market size with how it was built, form factors, who competes (top brands by reach, private owners with revenue and EBITDA margin), adjacent categories (both directions), buying criteria, value chain, channels, regulation, seasonality, substitutes, trends, consolidation, deals, diligence questions and sources. The map's own owners and brands for the category sit in a collapsed section.
 - **Pricing**: who is premium in each category. One row per category with brands priced, median $/oz, the spread (90th / 10th percentile index, how much room the category gives a premium brand), the premium leaders, the value end, and how many premium brands are PE or family owned. A category page draws the price ladder: every brand's index on a log scale (0.25× to 4×), coloured by owner type, with a line from its lowest to highest price and a shaded premium zone (1.15× and up), plus a table with pro-channel and retail-channel indices. The top of the page has "What pricing teaches" (lessons from the whole ladder) and "Price-lever targets": Good-tier brands (Medium or High confidence) on 5+ pro distributors whose owner is PE, family, ESOP or private with DNA 45+, where distribution already proves pull but the price hasn't followed. A second tab, **Leaders & laggards** (`#premium`), ranks every priced brand by its price multiple, leaders first or laggards first. It can be filtered by price position (click a count), segment, category (which ranks brands on that category alone), owner type, evidence (Medium or High confidence by default, the clear calls) and search. Each row shows the multiple with a bar on a log scale, the range, the categories priced, the share of prices in Best and Good, and pro vs retail. See "Price ladder", "Price position" and "Pricing strategy" below.
 - **Distributors**: all 186 distributors in the market map. For each one it shows the channel (broadline MRO, trade specialty, retail-leaning), end market, brands found, SKUs scraped and a bar of whose brands fill the shelf by owner type. It also shows the PE + family share, how many green-DNA PE or family owners sell there, and how many brands are carried only there. Sort by PE + family share to find the channels where independent pro brands win. A distributor page lists the owners on its shelf with their DNA scores, a category breakdown and every brand. Brand pages link to their distributors.
 - **Consolidators**: who is buying pro brands, ranked by add-on deals in the ledger and then by brands owned; PE sponsors and their platforms; add-ons by year; the deal log.
@@ -120,6 +122,15 @@ Rates under 50 observations fall back to the broader row.
 
 Every company page has a "Distribution headroom" panel with the missing doors, the rivals already there, and new end markets. The screen's last column is reach.
 
+## Category market studies
+
+From v29 the workbook has a Categories tab and one tab per category (59). `import/build_import.py` reads them:
+
+- **Categories tab**: per category, the seven 1-5 scores, the weights (header row), US TAM point, low and high, pro TAM, CAGR, TAM confidence, owners, private and PE share, median $/oz and SKUs. These ride on `data/cats` (`study`, keyed by category index, plus `crit` for the criteria and weights), with the top three researched end markets added.
+- **Category tabs**: the ten sections are parsed by their numbered headings and sub-headings into one document per category in the `study` collection (doc id = category index, about 11 KB each), loaded when a category page opens.
+- The attractiveness score in the app is the weighted mean of the seven scores using the viewer's weights; with the workbook's weights (all 1 in v29) it matches the tab's "Attractiveness (weighted)".
+- On v29 the most attractive are Lab & cleanroom chemicals (4.6), Firestop sealants (4.1), then wire-pulling lubricants, spill control, pest/turf, boiler and glycol treatments (3.7). The least are ice melt (2.3) and plumber's putty (2.4).
+
 ## Profitability
 
 Every company page has a Profitability panel: revenue, EBITDA margin, EBITDA and its like-for-like price index against peers, with the source named.
@@ -180,7 +191,7 @@ Seven checks, each Pass (full points), Partly (half) or Fail:
 
 Claude's judgments for all owners are in `import/judgments.json`. They come from Claude's knowledge plus the workbook facts, without new web research. On a company page you can click any check to change it, which saves as "Your call", or ask Claude to re-check the three judgment calls. Overrides live in the `dna` collection (one document per company), so re-importing the workbook never erases them. Precedence: your call, then a re-check from the page, then the imported judgment, then the data rule.
 
-**DNA workbook.** `Probrands_DNA_v28.xlsx` holds the DNA test in Excel, ready to paste into the market map. It has three sheets:
+**DNA workbook.** `Probrands_DNA_v29.xlsx` holds the DNA test in Excel, ready to paste into the market map. It has three sheets:
 - DNA by owner: every check's result, points, source and reason, keyed by the Master tab's Owner ID.
 - DNA by brand: each brand's owner score plus the three data checks scored for the brand alone, keyed by the Brands tab's Brand ID.
 - How it's scored.
@@ -189,7 +200,7 @@ To rebuild it after an import:
 
 ```
 NODE_PATH=$(npm root -g) node probrands/import/dump_dna.js dna.json
-python3 probrands/import/export_dna.py Professional_Brands_Market_Map_v28.xlsx dna.json probrands/Probrands_DNA_v28.xlsx
+python3 probrands/import/export_dna.py Professional_Brands_Market_Map_v29.xlsx dna.json probrands/Probrands_DNA_v29.xlsx
 ```
 
 The dump scores with the app's own code, so the numbers match the screen. Overrides saved in the app are not included.
@@ -199,7 +210,7 @@ Distributor channels (broadline MRO, trade specialty, retail-leaning) and the en
 ## Data
 
 ```
-python3 probrands/import/build_import.py Professional_Brands_Market_Map_v28.xlsx
+python3 probrands/import/build_import.py Professional_Brands_Market_Map_v29.xlsx
 ```
 
 This writes `import/out/data/*.json`, one file per document in the app's `data` collection: `co-N` (company summaries), `dt-N` (details), `br-N` (every brand), `deals`, `dists` and `index`. Every SKU goes in `import/out/sku/p-N.json`, the `sku` collection, which loads one document at a time when a brand page opens. Lists are split across documents because the database stores at most 256 KB per document; nothing is dropped. Load them with the ArtifactData tool (a `set` of each file). It also writes `import/out/judge/batch-N.json`, the facts behind the judgment calls, for scoring new owners.
@@ -213,4 +224,4 @@ The database still holds the earlier version's `companies`, `details` and `meta`
 
 Columns read when the workbook fills them (empty in v9): Est. brand rev, Pro brand rev, EBITDA reported, Platform EBITDA, EBITDA margin, the Master % by trade and % by package format splits, and List price. The app shows each one as soon as it has a value. Mfr part # is shown in the product table.
 
-Loaded now: v28 (3 Oct 2026), with 1,101 owners (all judged), all 4,288 brands, 15,728 SKUs, 2,627 usable prices, 529 deals and 201 distributors, plus the new Margin Model (47 comps, implied margins for 281 owners). Brands: 1,609 verified owner, 79 workbook prior, 418 not identified, the rest Claude or workbook-triage guesses. Of the 183 brands newly verified in v27 that carried a Claude guess, the guess matched for 85% of High-confidence, 77% of Medium and 51% of Low.
+Loaded now: v29 (3 Oct 2026), with 1,101 owners (all judged), all 4,288 brands, 15,728 SKUs, 2,627 usable prices, 529 deals and 201 distributors, the Margin Model (47 comps, implied margins for 281 owners) and 59 category market studies. Brands: 1,609 verified owner, 79 workbook prior, 418 not identified, the rest Claude or workbook-triage guesses. Of the 183 brands newly verified in v27 that carried a Claude guess, the guess matched for 85% of High-confidence, 77% of Medium and 51% of Low.

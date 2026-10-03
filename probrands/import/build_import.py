@@ -911,7 +911,114 @@ json.dump({"cats": {CAT_IX[c]: {"b": v, **pricing_meta[c]} for c, v in pricing_o
           open(f"{OUT}/data/pricing.json", "w"), separators=(",", ":"))
 if margin_doc:
     json.dump({**margin_doc, "updated_at": NOW}, open(f"{OUT}/data/margin.json", "w"), separators=(",", ":"))
-json.dump({"cats": cats_out, "names": CATS, "segs": {c: SEG_OF.get(c, "Unclassified") for c in CATS}, "updated_at": NOW}, open(f"{OUT}/data/cats.json", "w"), separators=(",", ":"))
+# ---- v29+: category market studies. The Categories tab scores every category on seven attractiveness criteria
+# (weights in its header row) and sizes it; each category's own tab is a ten-section market study. Studies go to the
+# "study" collection (one doc per category index, loaded when a category page opens); the scores and sizes ride on
+# data/cats so the list can rank by them.
+def bullets(rows):
+    return [str(r[0]).lstrip("•? ").strip() for r in rows if isinstance(r[0], str) and r[0].strip()[:1] in ("•", "?")]
+def norm_cat(x):
+    return re.sub(r"[^a-z0-9]+", " ", str(x).lower().replace("'", "")).strip()
+CAT_BY_NORM = {norm_cat(c): c for c in CATS}
+cat_sum, study_out, crit = {}, {}, []
+if "Categories" in wb.sheetnames:
+    rows = list(wb["Categories"].iter_rows(values_only=True))
+    hi = next(i for i, r in enumerate(rows) if r and r[1] == "Category")
+    H = [str(x).strip() if x is not None else "" for x in rows[hi]]
+    wrow = rows[hi - 1]
+    crit = [[H[j], n0(wrow[j]) if wrow[j] is not None else 1] for j in range(4, 11)]
+    for r in rows[hi + 1:]:
+        c = CAT_BY_NORM.get(norm_cat(r[1])) if r[1] else None
+        if not c:
+            continue
+        g = dict(zip(H, r))
+        cat_sum[c] = {k: v for k, v in {"attr": r1(n0(g.get("Attractiveness (weighted)")), 2), "sc": [n0(r[j]) for j in range(4, 11)],
+            "tam": r1(n0(g.get("US TAM point ($M)")), 0), "lo": r1(n0(g.get("TAM low ($M)")), 0), "hi": r1(n0(g.get("TAM high ($M)")), 0),
+            "pro": r1(n0(g.get("Pro TAM ($M)")), 0), "cagr": r1(n0(g.get("CAGR %")), 2), "conf": s(g.get("TAM confidence")),
+            "nb": r1(n0(g.get("# core brands (map)")), 0), "no": r1(n0(g.get("# owners (map)")), 0),
+            "priv": r1(n0(g.get("% owners private (PE+family+ESOP+private sub)")), 3), "pe": r1(n0(g.get("% owners PE-backed")), 3),
+            "ppo": r1(n0(g.get("Median list $/oz")), 3), "skus": r1(n0(g.get("# SKUs scraped")), 0)}.items() if v not in (None, "")}
+for ws in wb.worksheets:
+    rows = [r for r in ws.iter_rows(values_only=True)]
+    if not any(isinstance(r[0], str) and r[0].startswith("1. WHAT IT IS") for r in rows if r):
+        continue
+    c = CAT_BY_NORM.get(norm_cat(rows[0][0]))
+    if not c:
+        print("study: no category for tab", ws.title); continue
+    st = {"name": c}
+    for i in (3, 5):  # header/value pairs under the title
+        st.update({s(k): v for k, v in zip(rows[i], rows[i + 1]) if k and v not in (None, "")})
+    secs, cur = {}, None
+    for r in rows[7:]:
+        c0 = r[0] if r else None
+        if isinstance(c0, str) and re.match(r"^\d+\. ", c0):
+            cur = int(c0.split(".")[0]); secs[cur] = []; continue
+        if cur and r and any(x is not None for x in r):
+            secs[cur].append(r)
+    def subsplit(rs, labels):  # {label: rows} for sub-headed sections; rows before any label go under ""
+        out, k = {"": []}, ""
+        for r in rs:
+            if isinstance(r[0], str) and r[0].strip() in labels and all(x is None for x in r[1:]):
+                k = r[0].strip(); out[k] = []; continue
+            out[k].append(r)
+        return out
+    t = lambda x, lim=1200: s(x, lim)
+    one = subsplit(secs.get(1, []), {"Use occasions"})
+    st["what"] = " ".join(t(r[0]) for r in one[""] if isinstance(r[0], str)); st["uses"] = bullets(one.get("Use occasions", []))
+    two = subsplit(secs.get(2, []), {"Bull case", "Bear case / risks"})
+    st["scores"] = [[t(r[0], 60), n0(r[1])] for r in two[""] if isinstance(r[0], str) and isinstance(r[1], (int, float)) and not str(r[0]).startswith("Weighted")]
+    st["bull"], st["bear"] = bullets(two.get("Bull case", [])), bullets(two.get("Bear case / risks", []))
+    em, ob, note = [], [], ""
+    for r in secs.get(3, [])[1:]:
+        if isinstance(r[0], str) and r[0].startswith("Research mix"):
+            note = t(r[0], 600); continue
+        if r[0] and isinstance(r[1], (int, float)):
+            em.append([t(r[0], 60), r1(r[1], 3), t(r[2], 200)])
+        if len(r) > 6 and r[5] and isinstance(r[6], (int, float)):
+            ob.append([t(r[5], 60), r1(r[6], 3)])
+    st["em"], st["obs"], st["em_note"] = em, ob, note
+    four = subsplit(secs.get(4, []), {"How it was built"})
+    st["size"] = {t(r[0], 60): r[1] for r in four[""] if r[0] and r[1] is not None}
+    st["built"] = " ".join(t(r[0], 2000) for r in four.get("How it was built", []) if r[0])
+    five = subsplit(secs.get(5, []), {"Users of these categories list this one as an adjacency:"})
+    st["adj"] = [[t(r[0], 30), CAT_BY_NORM.get(norm_cat(r[1]), t(r[1], 80)), t(r[4] if len(r) > 4 else "", 160)] for r in five[""] if r[0] and r[1]]
+    st["adj_in"] = [CAT_BY_NORM.get(norm_cat(x), t(x, 80)) for r in five.get("Users of these categories list this one as an adjacency:", []) for x in r if x]
+    six = subsplit(secs.get(6, []), {"Private owners in this category (PE, family, ESOP, private subs) - ranked by brand reach"})
+    otypes, tops = [], []
+    for r in six[""][1:]:
+        if r[0] and isinstance(r[1], (int, float)):
+            otypes.append([t(r[0], 40), int(r[1])])
+        if len(r) > 5 and r[3]:
+            tops.append([t(r[3], 60), t(r[4], 30), t(r[5], 140)])
+    priv = []
+    for r in six.get("Private owners in this category (PE, family, ESOP, private subs) - ranked by brand reach", [])[1:]:
+        if r[0]:
+            priv.append([t(r[0], 100), t(r[1], 40), t(r[2], 60), r1(n0(r[3]), 1), r1(n0(r[4]), 0), r1(n0(r[5]), 0), r1(n0(r[6]), 3), r1(n0(r[7]), 3) if len(r) > 7 else None])
+    st["otypes"], st["tops"], st["priv"] = otypes, tops, priv
+    forms, pp = [], {}
+    for r in secs.get(7, []):
+        if r[0] and isinstance(r[1], (int, float)):
+            forms.append([t(r[0], 40), r1(r[1], 3)])
+        if len(r) > 5 and r[4] and isinstance(r[5], (int, float)):
+            pp[t(r[4], 40)] = r1(r[5], 3)
+    st["forms"], st["pp"] = forms, pp
+    LBL8 = ["Key buying criteria", "Value chain & cost drivers", "Channels & specification", "Regulation", "Seasonality / cyclicality",
+            "Substitutes / disruption", "Trends", "Consolidation & M&A", "Deals in this category (from Deals tab)"]
+    eight = subsplit(secs.get(8, []), set(LBL8))
+    st["know"] = [[k, bullets(eight[k]) or [t(" ".join(str(r[0]) for r in eight[k] if r[0]), 2500)]] for k in LBL8 if eight.get(k)]
+    st["dq"] = bullets(secs.get(9, []))
+    st["src"] = [[t(r[0], 160), t(r[3], 300) if len(r) > 3 else "", t(r[6], 300) if len(r) > 6 else ""] for r in secs.get(10, []) if r[0] and not str(r[0]).startswith("Profile researched")]
+    st["foot"] = next((t(r[0], 600) for r in secs.get(10, []) if r[0] and str(r[0]).startswith("Profile researched")), "")
+    study_out[CAT_IX[c]] = st
+    if c in cat_sum and em:
+        cat_sum[c]["em"] = [[m, p] for m, p, _ in sorted(em, key=lambda x: -(x[1] or 0))[:3]]
+os.makedirs(f"{OUT}/study", exist_ok=True)
+for ci, st in study_out.items():
+    json.dump({**st, "updated_at": NOW}, open(f"{OUT}/study/{ci}.json", "w"), separators=(",", ":"), default=str)
+if study_out:
+    print("category studies:", len(study_out), "| largest KB", max(len(json.dumps(v, default=str)) for v in study_out.values()) // 1024, "| scored", len(cat_sum))
+
+json.dump({"cats": cats_out, "names": CATS, "study": {CAT_IX[c]: v for c, v in cat_sum.items()}, "crit": crit, "segs": {c: SEG_OF.get(c, "Unclassified") for c in CATS}, "updated_at": NOW}, open(f"{OUT}/data/cats.json", "w"), separators=(",", ":"))
 json.dump({"deals": deals_out, "updated_at": NOW}, open(f"{OUT}/data/deals.json", "w"), separators=(",", ":"))
 json.dump({"list": dist_out, "updated_at": NOW}, open(f"{OUT}/data/dists.json", "w"), separators=(",", ":"))
 json.dump({"source": SEEDED, "updated_at": NOW, "co": nco, "dt": ndt, "br": nbr, "sku": len(set(where.values())), "q": len(set(qwhere.values()))}, open(f"{OUT}/data/index.json", "w"))
