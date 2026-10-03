@@ -47,6 +47,31 @@ Live app: https://claude.ai/artifact/UkLSFqKaS38kQqd4JmvNhk (private to the owne
 
 The ownership filter in the left rail (PE, Family, ESOP, Private, Corporate) applies to every page. PE + Family is the default.
 
+## Home Base
+
+**Home Base** (the link under the page list, `#hb`) is a company repository built into Probrands. It uses the Home Base profiler's interface and look, but it is a separate module running only on this app's market map. It carries no Home Base data and has no link to any other app.
+
+**Where it lives and how it's built**
+- It runs in its own full-screen frame with its own header. "← Probrands" returns to the screen. Its pages sit under `#hb/<route>` (for example `#hb/c.zep-inc`), so links and the Back button work.
+- The source is `homebase/hb.html`. `python3 probrands/homebase/embed.py` copies it into `index.html` (between the `<!--HB-->` markers). Run it after every change to `hb.html`.
+
+**What it shows.** It reads the market map from Probrands when the data loads:
+- One profile per owner (1,101). Each has revenue, employees, owner type, sponsor and entry year, parent, HQ, website, business model, the write-up and sourced evidence.
+- **Sectors** are the market map's segments (Janitorial / Facility, MRO / Industrial, Plumbing / HVAC and so on). Each company's split comes from its SKU mix.
+- **End markets** are the 14 distributor end markets.
+- The **product catalog** is the owner's brands by category, with hero products and formats.
+- The **deal book** holds the market map's 529 deals.
+- Brand names resolve to their owners in search and buyer matching.
+
+**What it keeps.** Everything changed in Home Base is saved over that base in its own collections, `hb_*` (`hb_companies`, `hb_details`, `hb_dealbook`, `hb_sponsors`, `hb_tam`, `hb_chats` and so on). The market map itself is never touched. Deleting a market-map company there hides it in Home Base only.
+
+**Pages.** Home, Sectors, Companies, Buyer finder, Precedents, End markets, Market size, PE owned, In market and Campaign. There is also the Private equity side: firms, funds, portfolio, exits, fundraising, people and coverage. Company pages have the profile builder, inline editing with confidence and source of truth, and the company chat.
+
+**Left out of this version**
+- Other industries and verticals: it is pro brands only.
+- EBITDA, margins and EV/EBITDA, the same as the rest of the app.
+- Cloud deep research, which needs a scheduled research session. Research runs in the page instead: the builder steps and the chat use Claude, with web search through the Parallel Search connector when the viewer has it connected.
+
 ## Look
 
 Rugged shop-floor design: gunmetal and steel, safety yellow used sparingly, a hazard stripe, condensed signage-style headings, and a left control rail. DNA bands are green, amber and red. (A navy and orange version following the Workmark brand board was tried and set aside; it is in commit 2ccfcf2.)
