@@ -696,31 +696,72 @@ for (cat, bid), x in pb.items():
     pricing_out[cat][bid] = [len(x["i"]), r1(med(x["i"]), 3), r1(med(x["p"]), 3), r1(min(x["i"]), 3), r1(max(x["i"]), 3),
                              r1(med(x["pro"]), 3) if x["pro"] else None, r1(med(x["ret"]), 3) if x["ret"] else None,
                              [sum(i <= 0.87 for i in x["i"]), sum(0.87 < i < 1.15 for i in x["i"]), sum(i >= 1.15 for i in x["i"])]]
-pricing_meta = {cat: {"rows": len(cat_all[cat]), "med": r1(cat_med[cat], 3),
+# v28+: the market map's like-for-like index (Margin Model section D) replaces the pack-size index as the headline:
+# log $/oz = category + distributor + category x form + category-specific size slope + a ridge-shrunk brand effect,
+# so 1.00 = the median brand in the category on the same shelf, format and size. Our own per-price indices are kept
+# for the spread and channel split, rescaled so their median equals the like-for-like index. Tiers follow the
+# workbook: Good <= 0.80, Better, Best >= 1.25. Rows the model doesn't cover keep the pack-size index (no confidence).
+LO, HI = 0.80, 1.25
+lfl = {}
+if "Margin Model" in wb.sheetnames:
+    sec, hdr = None, None
+    for row in wb["Margin Model"].iter_rows(values_only=True):
+        c0 = str(row[0]).strip() if row[0] is not None else ""
+        if c0[:3] in ("A. ", "B. ", "C. ", "D. "):
+            sec, hdr = c0[0], None
+            continue
+        if sec != "D" or not c0:
+            continue
+        if hdr is None:
+            hdr = [str(x).strip() if x is not None else "" for x in row]
+            continue
+        r = dict(zip(hdr, row))
+        b2 = bid_by_name.get(key(c0)) or bid_by_name.get(c0.lower())
+        if b2 and n0(r.get("Price index")):
+            lfl[(s(r.get("Category")), b2)] = (n0(r["Price index"]), int(n0(r.get("# items")) or 0), int(n0(r.get("# distributors")) or 0),
+                                               int(n0(r.get("# same-shelf peer brands")) or 0), (s(r.get("Confidence")) or "L")[:1])
+tier3 = lambda xs: [sum(i <= LO for i in xs), sum(LO < i < HI for i in xs), sum(i >= HI for i in xs)]
+n_lfl = 0
+for (cat, bid), (ix, items, nd, npeer, conf) in lfl.items():
+    x = pb.get((cat, bid))
+    if x:
+        k = ix / med(x["i"]); sc = lambda xs: [i * k for i in xs]
+        pricing_out[cat][bid] = [len(x["i"]), r1(ix, 3), r1(med(x["p"]), 3), r1(min(x["i"]) * k, 3), r1(max(x["i"]) * k, 3),
+                                 r1(med(x["pro"]) * k, 3) if x["pro"] else None, r1(med(x["ret"]) * k, 3) if x["ret"] else None, tier3(sc(x["i"])), conf, nd, npeer]
+    else:
+        pricing_out[cat][bid] = [items or 1, r1(ix, 3), None, r1(ix, 3), r1(ix, 3), None, None, tier3([ix] * (items or 1)), conf, nd, npeer]
+    n_lfl += 1
+for cat, bs in pricing_out.items():  # rows the model doesn't cover: pack-size index, re-tiered on the same cutoffs
+    for bid, v in bs.items():
+        if len(v) < 9:
+            x = pb[(cat, bid)]; v[7] = tier3(x["i"]); v += [None, None, None]
+print("like-for-like:", n_lfl, "brand-category rows from the Margin Model;", sum(1 for bs in pricing_out.values() for v in bs.values() if v[8] is None), "kept on the pack-size index")
+pricing_meta = {cat: {"rows": len(cat_all.get(cat, [])), "med": r1(cat_med.get(cat), 3), "src": "lfl",
                       "bands": {b: r1(v, 3) for (c, b), v in cell_med.items() if c == cat}} for cat in pricing_out}
 # what the ladder teaches, for the Pricing page and the plans: who prices low by owner type, whether price costs
 # distribution, pro vs retail on the same brand, and how multi-brand owners ladder good / better / best.
-GBB = lambda i: "g" if i <= 0.87 else "best" if i >= 1.15 else "b"
-solid = [(cat, bid, med(x["i"])) for (cat, bid), x in pb.items() if len(x["i"]) >= 3]
+GBB = lambda i: "g" if i <= LO else "best" if i >= HI else "b"
+solid = [(cat, bid, v[1]) for cat, bs in pricing_out.items() for bid, v in bs.items() if v[0] >= 3]
 learn = {"own": {}, "reach": [], "chan": None, "ladders": None}
 by_own = collections.defaultdict(list)
 for cat, bid, ix in solid:
     by_own[out_br[bid].get("oclass") or "unknown"].append(ix)
 for k, v in by_own.items():
     if len(v) >= 5:
-        learn["own"][k] = [len(v), r1(med(v), 3), r1(sum(i <= 0.87 for i in v) / len(v), 3), r1(sum(i >= 1.15 for i in v) / len(v), 3)]
+        learn["own"][k] = [len(v), r1(med(v), 3), r1(sum(i <= LO for i in v) / len(v), 3), r1(sum(i >= HI for i in v) / len(v), 3)]
 pro_doors = lambda bid: sum(1 for d in out_br[bid].get("dists", []) if ctype(d) in ("pro", "mixed"))
 for lo, hi, lbl in [(0, 2, "0-1"), (2, 5, "2-4"), (5, 10, "5-9"), (10, 10 ** 6, "10+")]:
     v = [ix for cat, bid, ix in solid if lo <= pro_doors(bid) < hi]
     if v:
         learn["reach"].append([lbl, len(v), r1(med(v), 3)])
-gap = [med(x["pro"]) / med(x["ret"]) for x in pb.values() if x["pro"] and x["ret"]]
+gap = [v[5] / v[6] for bs in pricing_out.values() for v in bs.values() if v[5] and v[6]]
 if gap:
     learn["chan"] = [len(gap), r1(med(gap), 3), r1(sum(g > 1.05 for g in gap) / len(gap), 3), r1(sum(g < 0.95 for g in gap) / len(gap), 3)]
 lad = collections.defaultdict(lambda: collections.defaultdict(set))
-for (cat, bid), x in pb.items():
-    if out_br[bid].get("owner_id"):
-        lad[out_br[bid]["owner_id"]][cat].add((bid, GBB(med(x["i"]))))
+for cat, bs in pricing_out.items():
+    for bid, v in bs.items():
+        if out_br[bid].get("owner_id"):
+            lad[out_br[bid]["owner_id"]][cat].add((bid, GBB(v[1])))
 multi = [v for cs in lad.values() for v in cs.values() if len(v) >= 2]
 learn["ladders"] = [len(multi), sum(len({t for _, t in v}) >= 2 for v in multi), sum(len({t for _, t in v}) == 3 for v in multi)]
 learn["n"] = len(solid)
