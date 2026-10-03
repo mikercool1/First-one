@@ -229,19 +229,6 @@ td.rv{font-size:13px;line-height:1.5;white-space:nowrap}
 .cons-row:hover td{background:var(--panel-2)}
 .rank{font:800 22px/1 var(--f-display);color:var(--ink-3);font-variant-numeric:tabular-nums}
 
-/* ---- web ---- */
-.webwrap{border:1px solid var(--line);background:var(--sunk);position:relative;height:min(72vh,760px);min-height:420px;overflow:hidden;touch-action:none}
-.webwrap svg{width:100%;height:100%;display:block;cursor:grab}
-.webwrap svg.drag{cursor:grabbing}
-.webwrap .ctl{position:absolute;right:10px;top:10px;display:flex;gap:6px}
-.webwrap .ctl button{width:34px;height:34px;border:1px solid var(--line-2);background:var(--panel);font:700 18px var(--f-mono)}
-.webwrap .key{position:absolute;left:10px;bottom:10px;display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 10px;background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);font:500 12px var(--f-mono);color:var(--ink-2);max-width:calc(100% - 20px)}
-.webwrap .key i{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px}
-.wl{font:600 11px var(--f-mono);fill:var(--ink-2);pointer-events:none}
-.wh{font:800 14px var(--f-display);fill:var(--ink);text-transform:uppercase;letter-spacing:.03em;pointer-events:none;paint-order:stroke;stroke:var(--sunk);stroke-width:4px}
-.hubg{cursor:pointer}
-.focus-list{margin-top:18px}
-
 /* ---- misc ---- */
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--accent);color:var(--accent-ink);font:700 13px var(--f-mono);padding:10px 16px;z-index:50;text-transform:uppercase;letter-spacing:.06em}
 .note{border-left:4px solid var(--accent);background:var(--panel);padding:10px 14px;margin-bottom:16px;color:var(--ink-2);font-size:14px}
@@ -303,7 +290,6 @@ td.rv{font-size:13px;line-height:1.5;white-space:nowrap}
       <a href="#pricing" data-v="pricing">Pricing</a>
       <a href="#dists" data-v="dists">Distributors<small id="nDists"></small></a>
       <a href="#consolidators" data-v="consolidators">Consolidators</a>
-      <a href="#web" data-v="web">The web</a>
       <a href="#mix" data-v="mix">SKU mix</a>
     </nav>
     <a class="hbgo" href="#crm" title="Open the CRM, the company repository, on this market map's data"><b>CRM &rarr;</b><small>Company repository · profiles, deals, sponsors</small></a>
@@ -530,7 +516,7 @@ function route() {
   const h = decodeURIComponent((location.hash || "#screen").slice(1));
   if (h.startsWith("c.")) return { v: "company", id: h.slice(2) };
   if (h.startsWith("b.")) return { v: "brand", id: h.slice(2) };
-  if (h.startsWith("web")) return { v: "web", id: h.split(".")[1] || null };
+  if (h.startsWith("web")) { const id = h.split(".")[1]; return id && CO.has(id) ? { v: "company", id } : { v: "consolidators" }; }  // the old web tab
   if (h.startsWith("cat.")) return { v: "cat", id: h.slice(4) };
   if (h.startsWith("price.")) return { v: "price", id: h.slice(6) };
   if (h.startsWith("d.")) return { v: "dist", id: h.slice(2) };
@@ -684,104 +670,22 @@ function viewConsolidators() {
   const byYear = new Map(); for (const d of deals) if (d.year >= YEAR - 11) byYear.set(d.year, (byYear.get(d.year) || 0) + 1);
   const yrs = [...byYear].sort((a, b) => a[0] - b[0]);
   return `<div class="page-h"><div class="grow"><div class="lbl">${esc(ownSummary())}</div><h1>Consolidators</h1>
-    <p>Who is buying pro brands. Ranked by add-on deals in the ledger, then by brands owned today. Open one to see its web of brands.${ui.own.has("corp") ? "" : " ITW, RPM, CSW and other corporates are hidden: add Corporate in the ownership filter to see them."}</p></div></div>
+    <p>Who is buying pro brands. Ranked by add-on deals in the ledger, then by brands owned today. Open one to see its brands and deals.${ui.own.has("corp") ? "" : " ITW, RPM, CSW and other corporates are hidden: add Corporate in the ownership filter to see them."}</p></div></div>
   <div class="gauges"><div class="gauge"><b>${rows.filter(r => r.n).length}</b><span class="lbl">Active buyers</span></div><div class="gauge"><b>${deals.length}</b><span class="lbl">Add-on deals</span></div>
     <div class="gauge"><b>${deals.filter(d => d.year >= YEAR - 3).length}</b><span class="lbl">In the last 3 yrs</span></div><div class="gauge"><b>${sps.length}</b><span class="lbl">PE sponsors</span></div></div>
   <section class="panel"><header><h2>Brand buyers</h2></header><div class="tw"><table><thead><tr><th>#</th><th>Consolidator</th><th>DNA</th><th class="r">Add-ons</th><th class="r">Last 5 yrs</th><th class="r">Brands now</th><th>Latest</th><th>Brands bought</th></tr></thead><tbody>
-    ${capList(rows.slice(0, 60), 15, "cons").map((r, i) => { const d = dnaOf(r.c); return `<tr class="cons-row" data-go="web.${esc(r.c.id)}"><td class="rank">${i + 1}</td><td><b>${esc(r.c.name)}</b><br><small class="muted">${ownerLine(r.c)}</small></td><td><span class="score ${d.band} num" style="font-size:22px">${d.score}</span></td>
+    ${capList(rows.slice(0, 60), 15, "cons").map((r, i) => { const d = dnaOf(r.c); return `<tr class="cons-row" data-go="c.${esc(r.c.id)}"><td class="rank">${i + 1}</td><td><b>${esc(r.c.name)}</b><br><small class="muted">${ownerLine(r.c)}</small></td><td><span class="score ${d.band} num" style="font-size:22px">${d.score}</span></td>
       <td class="r num">${r.n}</td><td class="r num">${r.recent}</td><td class="r num">${r.brands}</td><td class="num">${r.last || "—"}</td><td class="muted" style="max-width:320px">${esc(r.deals.slice(0, 4).map(x => x.target.replace(/\s*\(.*?\)/g, "")).join(", "))}${r.deals.length > 4 ? "…" : ""}</td></tr>`; }).join("") || `<tr><td colspan="8" class="faint">No consolidators for these owners.</td></tr>`}
   </tbody></table></div><div class="body" style="padding-top:6px">${showAll(Math.min(rows.length, 60), 15, "cons", "buyers")}</div></section>
   <div class="grid2">
     <section class="panel"><header><h2>PE sponsors</h2><span class="sp"></span><span class="lbl">Platforms held</span></header><div class="tw"><table><thead><tr><th>Sponsor</th><th>Platforms</th></tr></thead><tbody>
-      ${capList(sps, 10, "csp").map(s => `<tr><td><b>${esc(s.name)}</b></td><td>${s.cos.map(c => `<a href="#web.${esc(c.id)}">${esc(c.name)}</a>${c.pe_year ? ` <span class="faint num">${esc(c.pe_year)}</span>` : ""}`).join("<br>")}</td></tr>`).join("") || `<tr><td colspan="2" class="faint">No PE-owned companies in this filter.</td></tr>`}
+      ${capList(sps, 10, "csp").map(s => `<tr><td><b>${esc(s.name)}</b></td><td>${s.cos.map(c => `<a href="#c.${esc(c.id)}">${esc(c.name)}</a>${c.pe_year ? ` <span class="faint num">${esc(c.pe_year)}</span>` : ""}`).join("<br>")}</td></tr>`).join("") || `<tr><td colspan="2" class="faint">No PE-owned companies in this filter.</td></tr>`}
     </tbody></table></div><div class="body" style="padding-top:6px">${showAll(sps.length, 10, "csp", "sponsors")}</div></section>
     <section class="panel"><header><h2>Add-ons by year</h2></header><div class="body">${yrs.length ? hbars(yrs.map(([y, v]) => [String(y), v]), 0) : `<p class="faint">No dated add-ons.</p>`}</div></section>
   </div>
   <section class="panel"><header><h2>Deal log</h2><span class="sp"></span><span class="lbl">${deals.length} add-ons</span></header><div class="tw"><table><thead><tr><th>Date</th><th>Buyer</th><th>Target</th><th>Type</th><th class="r">Value</th></tr></thead><tbody>
     ${capList(deals.sort((a, b) => String(b.date).localeCompare(String(a.date))), 15, "cdl").map(x => `<tr><td class="num">${esc(x.date)}</td><td><a href="#c.${esc(x.acq_id)}">${esc(CO.get(x.acq_id).name)}</a></td><td><b>${esc(x.target)}</b>${x.brands ? `<br><span class="faint">${esc(x.brands)}</span>` : ""}</td><td class="muted">${esc(x.type)}</td><td class="r num">${x.value ? fmtM(x.value) : "—"}</td></tr>`).join("")}
   </tbody></table></div><div class="body" style="padding-top:6px">${showAll(deals.length, 15, "cdl", "deals")}</div></section>`;
-}
-
-/* ---------- view: the web ---------- */
-// Each consolidator is a hub; its brands sit on spokes joined by a ring. PE sponsors link to their platforms.
-let WEB = null;
-function buildWeb() {
-  const hubs = consolidators().filter(r => inOwn(r.c) && (r.n >= 1 || r.brands >= 4)).slice(0, 28);
-  const nodes = hubs.map(r => {
-    const bs = (DT.get(r.c.id)?.brands || []).slice(0, 24);
-    const bought = new Set(r.deals.flatMap(d => norm(d.target + " " + (d.brands || "")).split(" ")));
-    const R = 34 + Math.sqrt(Math.max(1, bs.length)) * 14, label = r.c.name.replace(/\s*\(.*?\)/g, "").slice(0, 26).length * 4.6;
-    return { id: r.c.id, c: r.c, r, bs, bought, R, col: Math.max(R, label) + (r.c.oclass === "pe" ? 26 : 8), x: 0, y: 0 };
-  });
-  // seed on a spiral, then relax: overlap push + gentle pull to centre + sponsor siblings attract
-  nodes.forEach((n, i) => { const a = i * 2.39996, rr = 70 * Math.sqrt(i + 1); n.x = Math.cos(a) * rr; n.y = Math.sin(a) * rr; });
-  const sp = new Map(); for (const n of nodes) if (n.c.oclass === "pe" && n.c.sponsor) { const k = norm(n.c.sponsor.split(/[;(]/)[0]); if (!sp.has(k)) sp.set(k, { name: n.c.sponsor.split(/[;(]/)[0].trim(), hubs: [] }); sp.get(k).hubs.push(n); }
-  for (let it = 0; it < 600; it++) {
-    for (const n of nodes) { n.x *= 0.97; n.y *= 0.97; }
-    for (const s of sp.values()) if (s.hubs.length > 1) { const cx = s.hubs.reduce((a, n) => a + n.x, 0) / s.hubs.length, cy = s.hubs.reduce((a, n) => a + n.y, 0) / s.hubs.length; for (const n of s.hubs) { n.x += (cx - n.x) * 0.02; n.y += (cy - n.y) * 0.02; } }
-    for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
-      const a = nodes[i], b = nodes[j], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 0.01, min = a.col + b.col + 18;
-      if (d < min) { const push = (min - d) / 2, ux = dx / d, uy = dy / d; a.x -= ux * push; a.y -= uy * push; b.x += ux * push; b.y += uy * push; }
-    }
-  }
-  const sponsorsN = [...sp.values()].map(s => { const cx = s.hubs.reduce((a, n) => a + n.x, 0) / s.hubs.length, cy = s.hubs.reduce((a, n) => a + n.y, 0) / s.hubs.length; const far = Math.max(...s.hubs.map(n => n.R)); return { ...s, x: cx, y: s.hubs.length === 1 ? cy - far - 12 : cy }; });
-  const xs = nodes.flatMap(n => [n.x - n.col - 20, n.x + n.col + 20]), ys = nodes.flatMap(n => [n.y - n.R - 40, n.y + n.R + 34]);
-  const box = nodes.length ? [Math.min(...xs), Math.min(...ys), Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)] : [-200, -200, 400, 400];
-  return { nodes, sponsors: sponsorsN, box, ver, own: [...ui.own].sort().join() };
-}
-function webSvg(focus) {
-  const W = WEB, f = focus && W.nodes.find(n => n.id === focus);
-  const col = n => ({ g: "var(--good)", a: "var(--mid)", r: "var(--bad)" })[dnaOf(n.c).band];
-  let out = "";
-  for (const s of W.sponsors) for (const h of s.hubs) out += `<line x1="${s.x.toFixed(1)}" y1="${s.y.toFixed(1)}" x2="${h.x.toFixed(1)}" y2="${h.y.toFixed(1)}" stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="5 4" opacity="${f && !s.hubs.includes(f) ? 0.15 : 0.8}"/>`;
-  for (const n of W.nodes) {
-    const dim = f && f !== n, k = n.bs.length, ring = n.R - 6;
-    const pts = n.bs.map((b, i) => { const a = -Math.PI / 2 + i / Math.max(1, k) * Math.PI * 2; return [n.x + Math.cos(a) * ring, n.y + Math.sin(a) * ring, a, b]; });
-    out += `<g class="hubg" data-hub="${esc(n.id)}" opacity="${dim ? 0.18 : 1}">`;
-    if (k > 2) out += `<polygon points="${pts.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ")}" fill="none" stroke="var(--line-2)" stroke-width="1"/>`;
-    if (k > 2) out += `<polygon points="${pts.map(p => (n.x + (p[0] - n.x) * 0.55).toFixed(1) + "," + (n.y + (p[1] - n.y) * 0.55).toFixed(1)).join(" ")}" fill="none" stroke="var(--line)" stroke-width="1"/>`;
-    for (const [x, y, a, b] of pts) {
-      const got = n.bought.has(norm(b.name).split(" ")[0]) && norm(b.name).length > 2;
-      out += `<line x1="${n.x.toFixed(1)}" y1="${n.y.toFixed(1)}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--line-2)" stroke-width="1"/>`;
-      out += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(3 + Math.min(5, Math.sqrt(b.skus || 1) * 0.8)).toFixed(1)}" fill="${got ? "var(--accent)" : "var(--ink-3)"}"><title>${esc(b.name)}: ${esc(b.cat || "")} · ${b.skus} SKUs${got ? " · acquired" : ""}</title></circle>`;
-      if (f === n) { const ax = Math.cos(a), anchor = ax > 0.25 ? "start" : ax < -0.25 ? "end" : "middle"; out += `<text class="wl" x="${(x + Math.cos(a) * 9).toFixed(1)}" y="${(y + Math.sin(a) * 9 + 4).toFixed(1)}" text-anchor="${anchor}">${esc(b.name.slice(0, 22))}</text>`; }
-    }
-    out += `<circle cx="${n.x.toFixed(1)}" cy="${n.y.toFixed(1)}" r="${(9 + Math.sqrt(n.r.n + 1) * 3).toFixed(1)}" fill="${col(n)}" stroke="var(--sunk)" stroke-width="3"><title>${esc(n.c.name)}: DNA ${dnaOf(n.c).score}, ${n.r.n} add-ons, ${n.r.brands} brands</title></circle>`;
-    out += `<text class="wh" x="${n.x.toFixed(1)}" y="${(n.y + n.R + (f === n ? 30 : 14)).toFixed(1)}" text-anchor="middle">${esc(n.c.name.replace(/\s*\(.*?\)/g, "").slice(0, 26))}</text></g>`;
-  }
-  for (const s of W.sponsors) out += `<g opacity="${f && !s.hubs.includes(f) ? 0.2 : 1}"><rect x="${(s.x - 7).toFixed(1)}" y="${(s.y - 7).toFixed(1)}" width="14" height="14" transform="rotate(45 ${s.x.toFixed(1)} ${s.y.toFixed(1)})" fill="var(--accent)" stroke="var(--sunk)" stroke-width="2"/><text class="wl" x="${s.x.toFixed(1)}" y="${(s.y - 13).toFixed(1)}" text-anchor="middle" style="fill:var(--accent-text);font-weight:600">${esc(s.name.slice(0, 28))}</text></g>`;
-  return out;
-}
-let view = null;
-function viewWeb(focus) {
-  const key = [...ui.own].sort().join();
-  if (!WEB || WEB.ver !== ver || WEB.own !== key) { WEB = buildWeb(); view = null; }
-  if (!view) view = [...WEB.box];
-  const prev = ui.focus;
-  ui.focus = focus && WEB.nodes.some(n => n.id === focus) ? focus : null;
-  if (ui.focus && ui.focus !== prev) { const n = WEB.nodes.find(x => x.id === ui.focus), m = Math.max(n.R + 190, 360); view = [n.x - m, n.y - m * 0.7, m * 2, m * 1.4]; }
-  const f = ui.focus && WEB.nodes.find(n => n.id === ui.focus);
-  const fdt = f ? DT.get(f.id) || {} : null;
-  return `<div class="page-h"><div class="grow"><div class="lbl">${esc(ownSummary())} · top ${WEB.nodes.length} consolidators</div><h1>The web</h1>
-    <p>Each hub is a consolidator; its brands hang on the spokes. Yellow brand dots came in through an acquisition in the ledger; dashed yellow lines tie PE sponsors to their platforms. Click a hub to see its brands below. Drag to pan, scroll or use the buttons to zoom.</p></div></div>
-  <div class="webwrap" id="webwrap">
-    <svg id="websvg" viewBox="${view.map(v => v.toFixed(1)).join(" ")}" role="img" aria-label="Consolidators and their brands">${webSvg(ui.focus)}</svg>
-    <div class="ctl"><button type="button" data-zoom="0.8" aria-label="Zoom in">+</button><button type="button" data-zoom="1.25" aria-label="Zoom out">−</button><button type="button" data-zoom="0" aria-label="Fit">⤢</button></div>
-    <div class="key"><span><i style="background:var(--good);border-radius:50%"></i>Hub DNA 70+</span><span><i style="background:var(--mid);border-radius:50%"></i>45–69</span><span><i style="background:var(--bad);border-radius:50%"></i>Under 45</span><span><i style="background:var(--accent);border-radius:50%"></i>Acquired brand</span><span><i style="background:var(--accent);transform:rotate(45deg)"></i>PE sponsor</span></div>
-  </div>
-  <div class="focus-list">${f ? `<section class="panel"><header><h2>${esc(f.c.name)}</h2><span class="sp"></span><a class="btn" href="#c.${esc(f.id)}">Open company</a><button class="btn" type="button" data-act="unfocus">Clear</button></header>
-    <div class="body" style="padding-bottom:4px"><div>${ownerLine(f.c)}</div><p class="muted" style="margin:6px 0 10px">${esc((fdt.what || f.c.blunt || "").slice(0, 300))}</p></div>
-    <div class="tw"><table><thead><tr><th>Brand</th><th>What it does</th><th>Hero product</th><th>Format</th><th class="r">SKUs</th><th class="r">Dist.</th></tr></thead><tbody>
-    ${(fdt.brands || []).map(b => `<tr><td><b>${brandLink(b.name)}</b></td><td>${b.ncat ? catLink(b.ncat) : esc(b.cat || b.family || "")}</td><td class="muted">${esc(b.hero)}</td><td>${esc(b.form)}</td><td class="r num">${b.skus}</td><td class="r num">${(b.dists || []).length}</td></tr>`).join("")}
-    </tbody></table></div>
-    ${f.r.deals.length ? `<div class="body"><div class="lbl" style="margin-bottom:6px">Acquisitions</div>${f.r.deals.map(x => `<div style="padding:4px 0;border-bottom:1px dashed var(--line)"><span class="num faint">${esc(x.date)}</span> <b>${esc(x.target)}</b> <span class="muted">${esc(x.type)}</span></div>`).join("")}</div>` : ""}
-  </section>` : `<div class="note">Click a hub in the web to list its brands here.</div>`}</div>`;
-}
-function zoomWeb(k, cx, cy) {
-  if (!WEB) return;
-  if (!k) { view = [...WEB.box]; }
-  else { const [x, y, w, h] = view; cx = cx ?? x + w / 2; cy = cy ?? y + h / 2; view = [cx - (cx - x) * k, cy - (cy - y) * k, w * k, h * k]; }
-  $("#websvg")?.setAttribute("viewBox", view.map(v => v.toFixed(1)).join(" "));
 }
 
 /* ---------- channels: the market map's channel type per distributor (v20+) ---------- */
@@ -2497,10 +2401,9 @@ function render() {
   chrome(r);
   if (!loaded) { if (dbState === "off") app.innerHTML = `<div class="empty"><h2>Not connected</h2><p>Probrands keeps the market map in a shared database that loads when this page is opened in Claude while signed in.</p></div>`; return; }
   const y = scrollY;
-  app.innerHTML = r.v === "fmt" ? viewFmt(r.id) : r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "ems" ? viewEms() : r.v === "product" ? viewProduct() : r.v === "em" ? viewEm(r.id) : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "web" ? viewWeb(r.id) : r.v === "mix" ? viewMix() : viewScreen();
+  app.innerHTML = r.v === "fmt" ? viewFmt(r.id) : r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "ems" ? viewEms() : r.v === "product" ? viewProduct() : r.v === "em" ? viewEm(r.id) : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "mix" ? viewMix() : viewScreen();
   if (render.last === location.hash) scrollTo(0, y); else scrollTo(0, 0);
   render.last = location.hash;
-  if (r.v === "web") bindWeb();
 }
 let toastT;
 function toast(m) { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
@@ -2588,15 +2491,12 @@ document.addEventListener("click", e => {
     else if (act === "cycle") cycle(a.dataset.id, a.dataset.k);
     else if (act === "askclaude") askClaude(a.dataset.id);
     else if (act === "reset") saveDna(a.dataset.id, {});
-    else if (act === "unfocus") location.hash = "web";
     return;
   }
   const bs = t.closest("[data-bsort]");
   if (bs) { const k = bs.dataset.bsort; if (ui.b.sort === k) ui.b.dir *= -1; else { ui.b.sort = k; ui.b.dir = k === "name" || k === "owner" ? 1 : -1; } render(); return; }
   const go = t.closest("[data-go]");
   if (go && !t.closest("a")) { location.hash = go.dataset.go; return; }
-  const z = t.closest("[data-zoom]");
-  if (z) { zoomWeb(+z.dataset.zoom || 0); return; }
 });
 document.addEventListener("input", e => {
   if (e.target.id === "ppq") { ui.pp.q = e.target.value; ui.pp.limit = 100; const pos = e.target.selectionStart; render(); const q = $("#ppq"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
@@ -2642,23 +2542,6 @@ document.addEventListener("pointermove", e => {
   const w = tip.offsetWidth, h = tip.offsetHeight;
   tip.style.left = Math.min(innerWidth - w - 8, e.clientX + 14) + "px"; tip.style.top = Math.max(8, Math.min(innerHeight - h - 8, e.clientY + 14)) + "px";
 });
-function bindWeb() {
-  const svg = $("#websvg"); if (!svg) return;
-  let drag = null, moved = false;
-  const toWorld = (cx, cy) => { const r = svg.getBoundingClientRect(), [x, y, w, h] = view, s = Math.max(w / r.width, h / r.height), ox = x + (w - r.width * s) / 2, oy = y + (h - r.height * s) / 2; return [ox + (cx - r.left) * s, oy + (cy - r.top) * s, s]; };
-  svg.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY, v: [...view] }; moved = false; svg.setPointerCapture(e.pointerId); svg.classList.add("drag"); });
-  svg.addEventListener("pointermove", e => {
-    if (!drag) return; const [, , s] = toWorld(e.clientX, e.clientY);
-    const dx = (e.clientX - drag.x) * s, dy = (e.clientY - drag.y) * s; if (Math.abs(dx) + Math.abs(dy) > 3 * s) moved = true;
-    view = [drag.v[0] - dx, drag.v[1] - dy, drag.v[2], drag.v[3]]; svg.setAttribute("viewBox", view.map(v => v.toFixed(1)).join(" "));
-  });
-  svg.addEventListener("pointerup", e => {
-    svg.classList.remove("drag"); const was = drag; drag = null;
-    if (was && !moved) { const hub = document.elementsFromPoint(e.clientX, e.clientY).map(el => el.closest?.("[data-hub]")).find(Boolean); if (hub) location.hash = "web." + hub.dataset.hub; }
-  });
-  svg.addEventListener("wheel", e => { e.preventDefault(); const [wx, wy] = toWorld(e.clientX, e.clientY); zoomWeb(e.deltaY > 0 ? 1.12 : 0.89, wx, wy); }, { passive: false });
-}
-
 /* ---------- CRM: the company repository, a separate module that runs on this app's data ---------- */
 // The CRM lives in its own frame, under #crm/<its route> (old #hb/ links still open it). It reads the market map from here
 // (window.PBHB) and keeps its own edits in hb_* collections of this artifact's database.
