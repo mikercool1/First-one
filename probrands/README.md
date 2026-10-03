@@ -30,7 +30,7 @@ Live app: https://claude.ai/artifact/UkLSFqKaS38kQqd4JmvNhk (private to the owne
   - add-ons that cross-sell
   - "Fix first": DNA gaps with advice
   - "Ask Claude for a growth plan" writes a plan from those facts. It is saved in the `strategy` collection (one document per company), so everyone with access sees the latest one.
-- **Company**: the DNA test check by check, SKU mix (package format, end market, brand, distributor), the brand list with who carries each one, deals, the workbook's write-up and sources.
+- **Company**: a Profitability panel (see "Profitability" below), the DNA test check by check, SKU mix (package format, end market, brand, distributor), the brand list with who carries each one, deals, the workbook's write-up and sources.
 - **Brands**: all 3,094 brands, searchable by brand, owner, product, maker or distributor, and filterable by the workbook's triage bucket (for example Actionable candidate), owner status (including where Claude's owner guess and the market map's disagree), owner type, segment, category, format, end market and distributor. Each brand has a page with its owner, where it's sold (with the broadline, specialty and retail split), package formats and every scraped SKU with links to the distributor listing.
 - **Competitors**: every brand page shows the market map's competitor list first (same category, ranked by distributor reach, with each owner's type and sponsor), then up to 8 more rival brands with each one's owner and ownership type (PE, Family, ESOP, Private, Corporate), and the Brands table shows the top 3. Rivals are matched in `import/build_import.py` by how alike their products look on distributor shelves (product categories, hero product and SKU names), ranked higher when they share distributors. Brands with the same owner are left out. Each company page rolls this up into "Who it competes with": the owners of rival brands, ranked by how many of the company's brands they meet.
 - **Categories**: the market map's Competition tab, one row per normalized category (60, in 13 segments). For each category it shows the ownership mix of the core brands, % PE-backed and % privately owned, the PE players and the family and ESOP roll-up candidates, and the average $/oz. A category page lists every owner and brand selling there, ranked by how many brands each owner has in the category.
@@ -76,14 +76,14 @@ Every priced brand gets a label, shown on its brand page (badge, plus a Price li
 - **Deep discount**: 0.67× and under on 3+ prices, with two thirds or more of its prices in Good.
 - Under 3 prices a brand gets the plain label, marked thin, and never Premium leader or Deep discount.
 - **★ Category price leader**: the highest multiple among brands with 3+ prices in a category, when it is 1.5× or more.
-- On v27, among brands with 3+ prices: 30 premium leaders, 37 premium, 57 at market, 43 discount, 31 deep discount.
+- On v28, among brands with 3+ prices: 36 premium leaders, 39 premium, 62 at market, 47 discount, 39 deep discount.
 
 ### Pricing strategy
 
 - **Tiers**: Good is 0.87× the same-size median or under, Better is between, Best is 1.15× and up. A brand's tier is its median index. Each brand-category row also counts its individual prices per tier, so a single brand that ladders on its own shows up.
 - **Upper quartile**: the 75th percentile index among the category's brands with 2+ prices (needs 4 such brands).
 - **Price lever**: in each category where the company sits below the upper quartile on 2+ prices, close half the gap, capped at 5%, on the company's share of priced items in that category, times revenue. It is a list-price estimate before any volume loss, not a forecast. Share of priced items stands in for revenue by category.
-- **What pricing teaches** is computed by the importer from brand-category pairs with 3+ prices (`learn` in `data/pricing`). On v27:
+- **What pricing teaches** is computed by the importer from brand-category pairs with 3+ prices (`learn` in `data/pricing`). Figures below are from v27; v28 is within a point or two:
   - Family-owned brands sit at a median 0.93× (42% Good, 23% Best) against 1.03× for corporate brands (34% Good, 41% Best).
   - PE-owned brands sit at 1.00×, but only 19% are Best (27 brands).
   - Price shows no link to reach: brands on 10+ pro distributors sit at 0.98× and on 0-1 at 1.00×.
@@ -118,6 +118,25 @@ Prices and reviews do not feed the DNA test yet; coverage is too thin (258 price
 Rates under 50 observations fall back to the broader row.
 
 Every company page has a "Distribution headroom" panel with the missing doors, the rivals already there, and new end markets. The screen's last column is reach.
+
+## Profitability
+
+Every company page has a Profitability panel: revenue, EBITDA margin, EBITDA and its like-for-like price index against peers, with the source named.
+
+- **Which number is used.** In order of preference:
+  1. A recent (2023+) consolidated EBITDA margin the company itself discloses, from the Margin Model's evidence (e.g. WD-40, Oil-Dri, CSW).
+  2. The market map's **Margin Model** (Targets tab, "Implied EBITDA margin" and "Implied EBITDA").
+  3. The Master tab's business-model estimate (revenue × the assumed margin for its business model).
+  The panel lists every estimate side by side, plus any older or segment-level disclosure (e.g. Zep's 7.9% in 2014, ITW Polymers & Fluids' 27.9% EBIT).
+- **Margin Model build-up** (from the workbook's Margin Model tab, section C), drawn as a small waterfall:
+  - comps median EBITDA margin (18.4% across 13 public comps on v28);
+  - plus the scale haircut (0, −3, −5 or −8 pts by revenue band; unknown revenue takes −8);
+  - plus the price-premium uplift, capture × (1 − gross margin) × (1 − 1/P), with P the owner's like-for-like price index clipped to 0.75–1.75, capture 50% and gross margin 37.5%;
+  - the result is clipped to 5–35%.
+- **Comps**: every row of the Margin Model's evidence (section B), closest to the company first, with year, EBITDA and gross margin, revenue, and a link to the filing. Rows marked "in the anchor" make up the median.
+- The importer stores the inputs and comps in `data/margin`, and each owner's section-C row on its company record (`mm`, plus `im_m`, `im_e`, `lfl`, `lfl_conf` from Targets).
+- The header's EBITDA line, the Strategy page's "each 1% of price" figure, growth plans and roll-up plans all use the same best-available number. The Roll-up page adds a combined EBITDA gauge.
+- No company in v28 has a reported EBITDA on the Companies tab yet.
 
 ## Channels
 
@@ -160,7 +179,7 @@ Seven checks, each Pass (full points), Partly (half) or Fail:
 
 Claude's judgments for all owners are in `import/judgments.json`. They come from Claude's knowledge plus the workbook facts, without new web research. On a company page you can click any check to change it, which saves as "Your call", or ask Claude to re-check the three judgment calls. Overrides live in the `dna` collection (one document per company), so re-importing the workbook never erases them. Precedence: your call, then a re-check from the page, then the imported judgment, then the data rule.
 
-**DNA workbook.** `Probrands_DNA_v27.xlsx` holds the DNA test in Excel, ready to paste into the market map. It has three sheets:
+**DNA workbook.** `Probrands_DNA_v28.xlsx` holds the DNA test in Excel, ready to paste into the market map. It has three sheets:
 - DNA by owner: every check's result, points, source and reason, keyed by the Master tab's Owner ID.
 - DNA by brand: each brand's owner score plus the three data checks scored for the brand alone, keyed by the Brands tab's Brand ID.
 - How it's scored.
@@ -169,7 +188,7 @@ To rebuild it after an import:
 
 ```
 NODE_PATH=$(npm root -g) node probrands/import/dump_dna.js dna.json
-python3 probrands/import/export_dna.py Professional_Brands_Market_Map_v27.xlsx dna.json probrands/Probrands_DNA_v27.xlsx
+python3 probrands/import/export_dna.py Professional_Brands_Market_Map_v28.xlsx dna.json probrands/Probrands_DNA_v28.xlsx
 ```
 
 The dump scores with the app's own code, so the numbers match the screen. Overrides saved in the app are not included.
@@ -179,7 +198,7 @@ Distributor channels (broadline MRO, trade specialty, retail-leaning) and the en
 ## Data
 
 ```
-python3 probrands/import/build_import.py Professional_Brands_Market_Map_v27.xlsx
+python3 probrands/import/build_import.py Professional_Brands_Market_Map_v28.xlsx
 ```
 
 This writes `import/out/data/*.json`, one file per document in the app's `data` collection: `co-N` (company summaries), `dt-N` (details), `br-N` (every brand), `deals`, `dists` and `index`. Every SKU goes in `import/out/sku/p-N.json`, the `sku` collection, which loads one document at a time when a brand page opens. Lists are split across documents because the database stores at most 256 KB per document; nothing is dropped. Load them with the ArtifactData tool (a `set` of each file). It also writes `import/out/judge/batch-N.json`, the facts behind the judgment calls, for scoring new owners.
@@ -193,4 +212,4 @@ The database still holds the earlier version's `companies`, `details` and `meta`
 
 Columns read when the workbook fills them (empty in v9): Est. brand rev, Pro brand rev, EBITDA reported, Platform EBITDA, EBITDA margin, the Master % by trade and % by package format splits, and List price. The app shows each one as soon as it has a value. Mfr part # is shown in the product table.
 
-Loaded now: v27 (3 Oct 2026), with 1,101 owners (147 new, all judged), all 4,288 brands, 15,728 SKUs, 529 deals and 201 distributors. Brands: 1,609 verified owner, 79 workbook prior, 418 not identified, the rest Claude or workbook-triage guesses. Of the 183 brands newly verified in v27 that carried a Claude guess, the guess matched for 85% of High-confidence, 77% of Medium and 51% of Low.
+Loaded now: v28 (3 Oct 2026), with 1,101 owners (all judged), all 4,288 brands, 15,728 SKUs, 2,627 usable prices, 529 deals and 201 distributors, plus the new Margin Model (47 comps, implied margins for 281 owners). Brands: 1,609 verified owner, 79 workbook prior, 418 not identified, the rest Claude or workbook-triage guesses. Of the 183 brands newly verified in v27 that carried a Claude guess, the guess matched for 85% of High-confidence, 77% of Medium and 51% of Low.

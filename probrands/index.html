@@ -525,7 +525,7 @@ function viewCompany(id) {
     c.parent && c.oclass !== "pe" ? ["Parent", c.parent] : null, ["Model", c.model || "Not mapped"], ["Trade", c.trade], c.hq ? ["HQ", c.hq] : null,
     c.rev ? ["Revenue", `${fmtM(c.rev)}${c.rev_year ? " (" + c.rev_year + ")" : ""}${c.size_conf ? " · " + c.size_conf + " confidence" : ""}`] : null,
     c.emp || c.emp_band ? ["Employees", `${c.emp ? Math.round(c.emp).toLocaleString() : ""}${c.emp_band && c.emp ? " · " : ""}${c.emp_band && (!c.emp || !String(c.emp_band).includes(String(Math.round(c.emp)))) ? c.emp_band + " band" : ""}${c.li_emp ? ` · ${c.li_emp} on LinkedIn` : ""}`] : null,
-    c.pro_rev ? ["Pro brand revenue", fmtM(c.pro_rev)] : null, c.ebitda ? ["EBITDA (est.)", fmtM(c.ebitda) + (c.margin ? ` · assumes ${Math.round(c.margin * 100)}% margin` : "")] : null,
+    c.pro_rev ? ["Pro brand revenue", fmtM(c.pro_rev)] : null, (b => b?.e ? ["EBITDA", `${fmtM1(b.e)}${b.m !== null && b.m !== undefined ? ` · ${(b.m * 100).toFixed(1)}% margin` : ""} · ${b.src}`] : null)(ebitdaOf(c).best),
   ].filter(Boolean);
   const total = c.skus || 0, mix = c.mix || {};
   const rows = o => Object.entries(o || {}).sort((a, b) => b[1] - a[1]);
@@ -541,6 +541,7 @@ function viewCompany(id) {
       <div class="specs">${specs.map(([k, v]) => `<span>${esc(k)} <b>${esc(v)}</b></span>`).join("")}${c.web ? `<span><a href="${esc(c.web)}" target="_blank" rel="noopener">${esc(c.web.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))}</a></span>` : ""}</div></div>
     <div class="dial"><b class="${d.band}">${d.score}</b><span class="lbl">DNA score${d.out ? " · out of scope" : ""}</span></div>
   </section>
+  ${profitPanel(c)}
   <div class="grid2">
     <section class="panel"><header><h2>DNA test</h2><span class="sp"></span>
       ${sample && canEdit ? `<button class="btn" type="button" data-act="askclaude" data-id="${esc(id)}" ${busy ? "disabled" : ""}>${busy ? esc(busy) : "Ask Claude to re-check"}</button>` : ""}
@@ -1296,7 +1297,7 @@ function viewRollup() {
   const heat = (v, f) => `<td class="r num" style="background:color-mix(in srgb, var(--accent) ${Math.round(f * 55)}%, transparent)">${v}</td>`;
   const heatPct = v => v === null ? `<td class="faint">—</td>` : `<td class="r num" style="background:color-mix(in srgb, var(--mid) ${Math.round(v * 60)}%, transparent)">${Math.round(v * 100)}%</td>`;
   const maxM = Math.max(1, ...X.matrix.flat().filter(v => v !== null));
-  return head + `<div class="gauges"><div class="gauge"><b>${M.length}</b><span class="lbl">Companies</span></div><div class="gauge"><b>${rev ? fmtM(rev) : "—"}</b><span class="lbl">Combined revenue</span></div>
+  return head + `<div class="gauges"><div class="gauge"><b>${M.length}</b><span class="lbl">Companies</span></div><div class="gauge"><b>${rev ? fmtM(rev) : "—"}</b><span class="lbl">Combined revenue</span></div>${(E => `<div class="gauge"><b>${E.v ? fmtM(E.v) : "—"}</b><span class="lbl">Combined EBITDA${E.miss ? ` · ${E.miss} without an estimate` : ""}${rev && E.v ? ` · ${(E.v / rev * 100).toFixed(1)}%` : ""}</span></div>`)(M.reduce((a, x) => { const e = ebitdaOf(x.c).best?.e; return e ? { ...a, v: a.v + e } : { ...a, miss: a.miss + 1 }; }, { v: 0, miss: 0 }))}
     <div class="gauge"><b>${nb}</b><span class="lbl">Brands</span></div><div class="gauge"><b>${X.union.size}</b><span class="lbl">Doors combined</span></div>
     <div class="gauge"><b>${X.union.size ? pct(X.shared / X.union.size) : "—"}</b><span class="lbl">Doors shared by 2+</span></div>
     <div class="gauge g"><b>${fmtM(xs)}</b><span class="lbl">Cross-sell at ${capLbl()}</span></div></div>
@@ -1365,7 +1366,7 @@ function rollupFacts(ids) {
   return `Platform: ${M.length} companies, ${nb} brands (${X.focused ? "focused" : "sprawling"} portfolio), combined revenue ${fmtM(M.reduce((a, x) => a + (num(x.c.rev) || 0), 0))}, ${X.union.size} distributor doors combined, ${X.shared} shared by 2+ members. Cross-sell at demonstrated rates: ${fmtM(M.reduce((a, x) => a + (x.gainDemo || 0), 0))} (ceiling at 100%: ${fmtM(M.reduce((a, x) => a + (x.gainUsd || 0), 0))}).
 Demonstrated cross-sell rates (share of sister-brand doors that also carry a brand, across all multi-brand owners): native channel with rivals present ${pct(rt.get(true, true, true))} focused / ${pct(rt.get(false, true, true))} sprawling; native, no rivals ${pct(rt.get(true, true, false))}; off-channel with rivals ${pct(rt.get(true, false, true))}; off-channel, no rivals ${pct(rt.get(true, false, false))}. Benchmark: ITW Pro Brands (31 brands) co-stocks only ~24% of its brands across its own distributors because it runs channel-specialist divisions; focused roll-ups (Kano, DiversiTech, Oatey) reach 55-75%.
 Members:
-${M.map(x => `- ${x.c.name} (${x.c.otype}${x.c.sponsor ? ", " + x.c.sponsor : ""}; DNA ${dnaOf(x.c).score}; revenue ${x.c.rev ? fmtM(x.c.rev) : "unknown"}; main categories ${cats(x.c)}; on ${x.r.carried.size} doors; reach ${x.r.pen === null ? "n/a" : pct(x.r.pen)}). Gains ${x.gain.length} doors from the others${x.gainDemo !== null ? `, worth ${fmtM(x.gainDemo)} at demonstrated rates` : " (no revenue or thin, so doors only)"}. Best: ${x.gain.slice(0, 6).map(g => `${g.d} (${pct(g.rtw)} of its SKUs fit${g.prv ? ", rivals already there" : ""}; via ${g.from.map(short).join("/")})`).join("; ") || "none"}.`).join("\n")}
+${M.map(x => `- ${x.c.name} (${x.c.otype}${x.c.sponsor ? ", " + x.c.sponsor : ""}; DNA ${dnaOf(x.c).score}; revenue ${x.c.rev ? fmtM(x.c.rev) : "unknown"};${(b => b?.e ? ` EBITDA ${fmtM1(b.e)}${b.m ? ` (${(b.m * 100).toFixed(1)}%, ${b.src.toLowerCase()})` : ""};` : "")(ebitdaOf(x.c).best)} main categories ${cats(x.c)}; on ${x.r.carried.size} doors; reach ${x.r.pen === null ? "n/a" : pct(x.r.pen)}). Gains ${x.gain.length} doors from the others${x.gainDemo !== null ? `, worth ${fmtM(x.gainDemo)} at demonstrated rates` : " (no revenue or thin, so doors only)"}. Best: ${x.gain.slice(0, 6).map(g => `${g.d} (${pct(g.rtw)} of its SKUs fit${g.prv ? ", rivals already there" : ""}; via ${g.from.map(short).join("/")})`).join("; ") || "none"}.`).join("\n")}
 Who unlocks whom (doors one member opens for another): ${pairs.sort((a, b) => b[2] - a[2]).slice(0, 6).map(([a, b, n]) => `${a} opens ${n} for ${b}`).join("; ") || "n/a"}.
 Category overlap (cosine of SKU mix): ${ov.sort((a, b) => b[2] - a[2]).map(([a, b, v]) => `${a}–${b} ${Math.round(v * 100)}%`).join("; ") || "n/a"}.
 Whitespace (distributors no member sells to that stock members' categories): ${(W => `${W.core.length} in the platform's end markets worth ${fmtM(W.core.reduce((a, o) => a + o.value, 0))} at demonstrated rates; best: ${W.core.slice(0, 8).map(o => `${o.d.name} (fits ${o.fits.slice(0, 2).map(f => f.c.name.replace(/\s*\(.*\)$/, "") + " " + pct(f.rtw)).join(", ")}${o.rv.size ? "; rivals there: " + [...o.rv].slice(0, 2).join(", ") : ""})`).join("; ")}. New end markets: ${W.fresh.length} doors, e.g. ${W.fresh.slice(0, 4).map(o => o.d.name + " (" + o.d.market + ")").join(", ")}`)(rollWhitespace(X))}.
@@ -1516,7 +1517,7 @@ function strategyFacts(c, r, ext, adds) {
   const d = dnaOf(c), dt = DT.get(c.id) || {};
   const mk = [...r.adj.reduce((m, x) => m.set(x.d.market, (m.get(x.d.market) || 0) + 1), new Map())].sort((a, b) => b[1] - a[1]).slice(0, 4);
   const brands = (reachIndex().byOwner.get(c.id) || []);
-  return `Company: ${c.name} (${c.otype}${c.sponsor ? ", " + c.sponsor : ""}${c.pe_year ? ", since " + c.pe_year : ""}). ${c.model || ""}. HQ ${c.hq || "n/a"}. Revenue ${c.rev ? fmtM(c.rev) : "unknown"}${c.emp ? ", " + Math.round(c.emp) + " staff" : ""}.
+  return `Company: ${c.name} (${c.otype}${c.sponsor ? ", " + c.sponsor : ""}${c.pe_year ? ", since " + c.pe_year : ""}). ${c.model || ""}. HQ ${c.hq || "n/a"}. Revenue ${c.rev ? fmtM(c.rev) : "unknown"}${c.emp ? ", " + Math.round(c.emp) + " staff" : ""}.${(b => b ? ` EBITDA ${b.e ? fmtM1(b.e) : "n/a"}${b.m !== null && b.m !== undefined ? ` (${(b.m * 100).toFixed(1)}% margin)` : ""}, ${b.src.toLowerCase()}${b.k === "mm" ? ` (comps median ${pct(MARGIN?.anchor)}, scale haircut ${pctPts(c.mm?.hc || 0)}, price premium ${pctPts(c.mm?.up || 0)})` : ""}.` : "")(ebitdaOf(c).best)}
 What it is: ${(dt.what || c.blunt || "").slice(0, 500)}
 Brands: ${brands.slice(0, 12).map(b => `${b.name} (${b.ncat}, ${(b.dists || []).length} distributors)`).join("; ")}
 DNA ${d.score}/100: ${d.tests.map(t => `${t.t}: ${["fail", "partly", "pass"][t.v]} (${t.why})`).join("; ")}
@@ -1778,7 +1779,7 @@ function pricingPanel(c) {
   <div class="gauges" style="margin:0;border:0;border-bottom:1px solid var(--line)"><div class="gauge"><b>${oix ? oix.toFixed(2) + "×" : "—"}</b><span class="lbl">Price index, all priced items</span></div>
     <div class="gauge"><b>${cover[0]} · ${cover[1]} · ${cover[2]}</b><span class="lbl">Categories with a Good · Better · Best brand</span></div>
     <div class="gauge g"><b>${lever !== null ? fmtM1(lever) : "—"}</b><span class="lbl">Price lever (half the gap, max 5%)</span></div>
-    <div class="gauge"><b>${rev ? fmtM1(rev * 0.01) : "—"}</b><span class="lbl">Each 1% of price${c.ebitda ? ` · +${pct(rev * 0.01 / num(c.ebitda))} EBITDA` : ""}</span></div></div>
+    <div class="gauge"><b>${rev ? fmtM1(rev * 0.01) : "—"}</b><span class="lbl">Each 1% of price${(e => e ? ` · +${pct(rev * 0.01 / e)} EBITDA` : "")(ebitdaOf(c).best?.e)}</span></div></div>
   <div class="tw"><table><thead><tr><th>Category</th><th>Good</th><th>Better</th><th>Best</th><th>Category bar</th><th>Move</th></tr></thead><tbody>
   ${rows.map(({ e, lv }) => `<tr><td><b><a href="#price.${e.ci}">${esc(e.name)}</a></b><br><span class="faint num" style="font-size:12px">${e.ix.toFixed(2)}× · ${e.n} price${e.n === 1 ? "" : "s"}${e.chan !== null ? ` · pro/retail ${e.chan.toFixed(2)}` : ""}</span></td>
     ${[0, 1, 2].map(k => gbbCell(e.tiers[k], k, e.pts)).join("")}
@@ -1940,6 +1941,74 @@ function viewPremium() {
   </tbody></table></div>
   ${rows.length > f.limit ? `<button class="more" type="button" data-act="ppmore">Show ${Math.min(100, rows.length - f.limit)} more of ${rows.length - f.limit}</button>` : ""}</section>
   <div class="note"><b>Labels.</b> ${PPOS_ORDER.map(k => `${PPOS[k][0]}: ${PPOS[k][1]}`).join(" · ")}. "Consistently" means two thirds or more of its prices sit in that tier, and leader and deep-discount labels need 3+ prices; with fewer the label is marked thin. ★ Category price leader: the highest multiple among brands with 3+ prices in a category, at 1.5× or more. Multiple across categories is the price-weighted geometric mean of its category indices. List prices, not net.</div>`;
+}
+
+
+/* ---------- profitability: EBITDA and margin ----------
+   Best available, in order: EBITDA the company reports; the market map's Margin Model (comps median anchor + scale
+   haircut + price-premium uplift, Targets tab and Margin Model section C); the Master tab's business-model estimate. */
+let MARGIN = null;
+function ebitdaOf(c) {
+  const rev = num(c.rev), out = [];
+  if (c.ebitda_rep && num(c.ebitda)) out.push({ k: "rep", src: "Reported", e: num(c.ebitda), m: rev ? num(c.ebitda) / rev : null, why: "EBITDA the company or its sponsor reports (Companies tab)." });
+  // a recent (2023+) EBITDA margin the company itself discloses in the Margin Model's evidence beats the model
+  for (const { x } of compsFor(c).filter(r => r.self && r.x.m && +r.x.yr >= 2023 && (!r.x.seg || /^(consolidated|group)$/i.test(r.x.seg))).slice(0, 1))
+    out.push({ k: "disc", src: "Disclosed", e: rev ? rev * x.m : x.rev ? x.rev * x.m : null, m: x.m, why: `${x.co}${x.seg ? " · " + x.seg : ""}, ${x.yr} (Margin Model evidence).` });
+  const mm = c.mm || {}, im = num(c.im_m) ?? num(mm.m), ie = num(c.im_e) ?? num(mm.e);
+  if (im !== null) out.push({ k: "mm", src: "Margin Model", e: ie ?? (rev ? rev * im : null), m: im, why: "Comps median, less a scale haircut, plus or minus the price premium." });
+  if (!c.ebitda_rep && num(c.ebitda)) out.push({ k: "bm", src: "Business-model estimate", e: num(c.ebitda), m: num(c.margin) ?? (rev ? num(c.ebitda) / rev : null), why: `Revenue × the Master tab's assumed margin for its business model${c.model ? ` (${c.model})` : ""}.` });
+  return { best: out[0] || null, all: out };
+}
+const pctPts = v => (v >= 0 ? "+" : "−") + Math.abs(v * 100).toFixed(1) + " pts";
+function marginBridge(c) {
+  const mm = c.mm, M = MARGIN; if (!mm || !M || mm.m === undefined) return "";
+  const a = M.anchor, hc = mm.hc || 0, up = mm.up || 0, raw = a + hc + up, fin = mm.m, clip = Math.abs(raw - fin) > 0.0005 ? fin - raw : 0;
+  const steps = [["Comps median", 0, a, "a"], ["Scale haircut", a, a + hc, "d"], ["Price premium", a + hc, raw, "d"], ...(clip ? [["Clipped to range", raw, fin, "d"]] : []), ["Implied margin", 0, fin, "a"]];
+  const W = 560, L = 150, R = 80, rowH = 30, H = steps.length * rowH + 26, max = Math.max(0.36, ...steps.map(s => Math.max(s[1], s[2]))) * 1.05, X = v => L + v / max * (W - L - R);
+  const ticks = [0, 0.1, 0.2, 0.3].filter(t => t <= max);
+  return `<svg class="qchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Margin build-up: comps median ${pct(a)}, scale haircut ${pctPts(hc)}, price premium ${pctPts(up)}, implied ${pct(fin)}">
+    ${ticks.map(t => `<line class="gl" x1="${X(t)}" x2="${X(t)}" y1="4" y2="${H - 20}"/><text class="ax" x="${X(t)}" y="${H - 6}" text-anchor="middle">${Math.round(t * 100)}%</text>`).join("")}
+    ${steps.map(([lbl, x0, x1, kind], i) => { const y = 8 + i * rowH, lo = Math.min(x0, x1), w = Math.max(2, X(Math.max(x0, x1)) - X(lo)), v = kind === "a" ? (x1 * 100).toFixed(1) + "%" : pctPts(x1 - x0);
+      return `<g data-tip="${esc(`<b>${lbl}</b>${kind === "a" ? (x1 * 100).toFixed(1) + "%" : pctPts(x1 - x0)}`)}"><rect x="0" y="${y - 4}" width="${W}" height="${rowH}" fill="transparent"/>
+        <text class="ax" x="${L - 10}" y="${y + 13}" text-anchor="end" style="fill:var(--ink-2);font:500 12.5px var(--f-body)">${lbl}</text>
+        <rect x="${X(lo)}" y="${y + 2}" width="${w}" height="16" rx="2" fill="${kind === "a" ? "var(--ink-2)" : "var(--accent)"}" opacity="${kind === "a" ? 0.85 : 1}"/>
+        ${kind === "d" && i < steps.length - 1 ? `<line x1="${X(x1)}" x2="${X(x1)}" y1="${y + 18}" y2="${y + rowH + 2}" stroke="var(--ink-3)" stroke-dasharray="2 2"/>` : ""}
+        <text class="ax" x="${X(Math.max(x0, x1)) + 8}" y="${y + 14}" style="fill:var(--ink);font:600 12px var(--f-mono)">${v}</text></g>`; }).join("")}
+  </svg>`;
+}
+function compsFor(c) {
+  if (!MARGIN?.comps) return [];
+  const words = t => new Set(String(t || "").toLowerCase().match(/[a-z]{4,}/g) || []);
+  const mine = words(Object.keys(c.mix?.cat || {}).join(" ") + " " + (c.category || "") + " " + (c.trade || "") + " " + (c.mm?.cat || ""));
+  return MARGIN.comps.filter(x => x.use === "Y" || x.use === "Ref" || x.use === "N").map(x => ({ x, fit: [...words(x.cat + " " + x.seg)].filter(w => mine.has(w)).length, self: (t => { if (t[0] === "the") t.shift(); const w = t[0] && t[0].length < 4 && t[1] ? t[0] + " " + t[1] : t[0] || ""; return w.length >= 4 && (" " + norm(c.name) + " ").includes(" " + w + " "); })(norm(x.co).split(" ")) }))
+    .sort((a, b) => b.self - a.self || (b.x.use === "Y") - (a.x.use === "Y") || b.fit - a.fit || (b.x.m || 0) - (a.x.m || 0));
+}
+function profitPanel(c) {
+  const E = ebitdaOf(c), rev = num(c.rev), M = MARGIN, mm = c.mm || {};
+  if (!E.best && !rev) return "";
+  const b = E.best, comps = compsFor(c), anchor = comps.filter(r => r.x.use === "Y");
+  const self = comps.filter(r => r.self);
+  return `<section class="panel"><header><h2>Profitability</h2><span class="sp"></span><span class="lbl">${b ? `Best available: ${esc(b.src)}` : "No EBITDA estimate yet"}</span></header>
+  <div class="gauges" style="margin:0;border:0;border-bottom:1px solid var(--line)"><div class="gauge"><b>${rev ? fmtM(rev) : "—"}</b><span class="lbl">Revenue${c.rev_year ? " · " + esc(c.rev_year) : ""}${c.size_conf ? " · " + esc(c.size_conf) : ""}</span></div>
+    <div class="gauge g"><b>${b?.m !== null && b?.m !== undefined ? (b.m * 100).toFixed(1) + "%" : "—"}</b><span class="lbl">EBITDA margin · ${b ? esc(b.src) : "n/a"}</span></div>
+    <div class="gauge g"><b>${b?.e ? fmtM1(b.e) : "—"}</b><span class="lbl">EBITDA · ${b ? esc(b.src) : "n/a"}</span></div>
+    <div class="gauge"><b>${num(c.lfl) !== null ? num(c.lfl).toFixed(2) + "×" : mm.p ? mm.p.toFixed(2) + "×" : "—"}</b><span class="lbl">Price vs peers, like-for-like${c.lfl_conf || mm.conf ? " · " + esc(c.lfl_conf || mm.conf) + " confidence" : ""}</span></div></div>
+  <div class="body grid2" style="gap:18px;margin:0">
+    <div>${c.mm && M ? `<div class="lbl" style="margin:0 0 6px">How the Margin Model gets there</div>${marginBridge(c)}
+      <p class="muted" style="margin:6px 0 0;font-size:13px">Starts from the ${(M.anchor * 100).toFixed(1)}% median EBITDA margin of ${anchor.length} public pro and specialty chemical comps. ${mm.hc ? `Takes ${pctPts(mm.hc)} for scale (${rev ? fmtM(rev) : "unknown"} revenue; comps are mostly over $250M). ` : "No scale haircut at its size. "}${mm.p ? `Its prices run ${mm.p.toFixed(2)}× same-category competitors at the same distributors${mm.pu && Math.abs(mm.pu - mm.p) > 0.001 ? ` (clipped to ${mm.pu.toFixed(2)}×)` : ""}, from ${mm.n || "?"} priced item${mm.n === 1 ? "" : "s"} across ${mm.nb || "?"} brand${mm.nb === 1 ? "" : "s"}${mm.cat ? ", mostly " + esc(mm.cat) : ""}; at ${Math.round(M.capture * 100)}% capture and a ${(M.gm * 100).toFixed(1)}% gross margin that is ${pctPts(mm.up || 0)}.` : "No captured prices, so no price adjustment."}</p>` : `<p class="muted" style="margin:0">The Margin Model has no row for this owner yet${rev ? "" : " (no revenue)"}.</p>`}</div>
+    <div><div class="lbl" style="margin:0 0 6px">Every estimate</div>
+      <table><thead><tr><th>Source</th><th class="r">Margin</th><th class="r">EBITDA</th></tr></thead><tbody>
+      ${E.all.map(x => `<tr><td><b>${esc(x.src)}</b>${x === b ? ` <span class="tag tri">Used</span>` : ""}<br><span class="faint" style="font-size:12px">${esc(x.why)}</span></td><td class="r num">${x.m !== null && x.m !== undefined ? (x.m * 100).toFixed(1) + "%" : "—"}</td><td class="r num">${x.e ? fmtM1(x.e) : "—"}</td></tr>`).join("") || `<tr><td colspan="3" class="faint">None yet.</td></tr>`}
+      ${self.map(r => `<tr><td><b>Disclosed: ${esc(r.x.co)}</b><br><span class="faint" style="font-size:12px">${esc(r.x.seg || "")} · ${esc(String(r.x.yr || ""))}${r.x.url ? ` · <a href="${esc(r.x.url)}" target="_blank" rel="noopener">source</a>` : ""}</span></td><td class="r num">${r.x.m ? (r.x.m * 100).toFixed(1) + "%" : r.x.ebit ? (r.x.ebit * 100).toFixed(1) + "% EBIT" : "—"}</td><td class="r num">${r.x.m && r.x.rev ? fmtM1(r.x.m * r.x.rev) : "—"}</td></tr>`).join("")}
+      </tbody></table></div>
+  </div>
+  ${comps.length ? `<div class="body" style="padding-top:0"><details><summary class="lbl" style="cursor:pointer">Comps: ${anchor.length} in the anchor, ${comps.length - anchor.length} shown for reference · closest to this company first</summary>
+    <div class="tw" style="margin-top:8px"><table><thead><tr><th>Company · segment</th><th class="r">Year</th><th class="r">EBITDA margin</th><th class="r">Gross margin</th><th class="r">Revenue</th><th>Category</th><th>In anchor</th></tr></thead><tbody>
+    ${comps.map(({ x }) => `<tr><td><b>${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.co)}</a>` : esc(x.co)}</b>${x.seg ? `<br><span class="faint" style="font-size:12px">${esc(x.seg)}</span>` : ""}</td><td class="r num">${esc(String(x.yr || ""))}</td>
+      <td class="r num">${x.m ? (x.m * 100).toFixed(1) + "%" : x.ebit ? `<span class="faint">${(x.ebit * 100).toFixed(1)}% EBIT</span>` : "—"}</td><td class="r num">${x.gm ? (x.gm * 100).toFixed(1) + "%" : "—"}</td><td class="r num">${x.rev ? fmtM(x.rev) : "—"}</td><td style="font-size:12.5px">${esc(x.cat || "")}</td><td>${x.use === "Y" ? "Yes" : x.use === "Ref" ? "Cross-check" : "No"}</td></tr>`).join("")}
+    </tbody></table></div></details>
+  <p class="faint" style="font-size:12.5px;margin:10px 0 0">Directional: the Margin Model uses list prices, not net, and comps that are mostly larger public companies. Edit its inputs on the workbook's Margin Model tab.</p></div>` : ""}
+</section>`;
 }
 
 /* ---------- view: SKU mix ---------- */
@@ -2143,6 +2212,7 @@ render();
       else if (x.id === "deals") DEALS = v.deals || [];
       else if (x.id === "dists") DISTS = v.list || [];
       else if (x.id === "index") SRC = v.source || "";
+      else if (x.id === "margin") MARGIN = v;
       else if (x.id === "pricing") { PRICING = v.cats || {}; PLEARN = v.learn || null; }
       else if (x.id === "cats") { CATS = v.cats || []; CATNAMES = v.names || []; SEGOF = v.segs || {}; }
     });

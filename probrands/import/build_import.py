@@ -136,6 +136,43 @@ def n0(v):
         return float(v) if v not in (None, "") else None
     except (TypeError, ValueError):
         return None
+
+
+# v28+: the Margin Model tab. A = inputs (anchor margin, gross margin, capture, haircuts, clips); B = EBITDA margin
+# evidence from public comps; C = implied EBITDA margin per owner (anchor + scale haircut + price uplift).
+margin_doc, mm_by_key = None, {}
+if "Margin Model" in wb.sheetnames:
+    sec, hdr, A, B = None, None, {}, []
+    for row in wb["Margin Model"].iter_rows(values_only=True):
+        c0 = str(row[0]).strip() if row[0] is not None else ""
+        if c0[:3] in ("A. ", "B. ", "C. ", "D. "):
+            sec, hdr = c0[0], None
+            continue
+        if not c0:
+            continue
+        if sec == "A":
+            if isinstance(row[1], (int, float)):
+                A[c0] = row[1]
+        elif sec in ("B", "C") and hdr is None:
+            hdr = [str(x).strip() if x is not None else "" for x in row]
+        elif sec in ("B", "C"):
+            r = dict(zip(hdr, row))
+            if sec == "B":
+                B.append({k: v for k, v in {"co": s(r.get("Company / source"), 80), "seg": s(r.get("Segment"), 120), "yr": r.get("Year"), "use": s(r.get("Use (Y/N/Ref)")),
+                          "m": r1(n0(r.get("EBITDA margin")), 3), "ebit": r1(n0(r.get("EBIT margin")), 3), "gm": r1(n0(r.get("Gross margin")), 3),
+                          "rev": r1(n(r.get("Revenue ($M)"))), "type": s(r.get("Type"), 40), "cat": s(r.get("Category"), 60), "note": s(r.get("Note"), 320),
+                          "conf": s(r.get("Confidence")), "url": s(r.get("Source URL"), 300)}.items() if v not in ("", None)})
+            else:
+                mm_by_key[key(c0)] = {k: v for k, v in {"hc": r1(n0(r.get("Scale haircut")), 3), "up": r1(n0(r.get("Price uplift")), 4), "p": r1(n0(r.get("Price index (P)")), 3),
+                    "pu": r1(n0(r.get("Index used (clipped)")), 3), "n": r1(n0(r.get("# priced items")), 0), "nb": r1(n0(r.get("# priced brands")), 0),
+                    "conf": s(r.get("Best index confidence")), "lfl": s(r.get("Like-for-like pair data?")), "cat": s(r.get("Main priced category")),
+                    "m": r1(n0(r.get("Implied EBITDA margin")), 4), "e": r1(n0(r.get("Implied EBITDA ($M)")))}.items() if v not in ("", None)}
+    g = lambda pre: next((v for k, v in A.items() if k.startswith(pre)), None)
+    margin_doc = {"anchor": g("Anchor EBITDA margin used"), "gm": g("Gross margin used"), "capture": g("Capture of price premium"),
+                  "comps_med": g("Median EBITDA margin - comps"), "gm_med": g("Median gross margin - comps"),
+                  "hc": [g("Scale haircut: revenue >= $250M"), g("Scale haircut: $50-250M"), g("Scale haircut: $10-50M"), g("Scale haircut: <$10M")],
+                  "pclip": [g("Price index floor"), g("Price index cap")], "mclip": [g("Implied margin floor"), g("Implied margin cap")], "comps": B}
+    print("margin model:", len(B), "comps,", sum(1 for b in B if b.get("use") == "Y"), "in the anchor,", len(mm_by_key), "owners with an implied margin")
 deal_rows = [d for d in table("Deals") if s(d.get("Target"))]
 profiles = {s(p.get("ID")): p for p in table("Profiles") if s(p.get("Company"))}
 sources = [x for x in table("Sources") if s(x.get("Company"))]
@@ -439,11 +476,14 @@ for oid, o in owners.items():
         "web": s(c.get("Website")), "rev": r1(rev), "rev_year": s(c.get("Revenue year")), "rev_basis": s(c.get("Revenue basis / evidence"), 200),
         **(lambda tg: {k: v for k, v in {"ret_pct": r1(n0(tg.get("Retail share - company-level (%)")), 1),
             "ch_class": s(tg.get("Channel classification (best available)")), "ch_conf": s(tg.get("Split confidence")),
-            "prorev": r1(n(tg.get("Pro-channel revenue est. ($M)")))}.items() if v not in ("", None)})(targets_by_key.get(key(o["name"]), {})),
+            "prorev": r1(n(tg.get("Pro-channel revenue est. ($M)"))),
+            "im_m": r1(n0(tg.get("Implied EBITDA margin (Margin Model)")), 4), "im_e": r1(n(tg.get("Implied EBITDA ($M)"))),
+            "lfl": r1(n0(tg.get("Price index vs peers (like-for-like)")), 3), "lfl_conf": s(tg.get("Price index confidence"))}.items() if v not in ("", None)})(targets_by_key.get(key(o["name"]), {})),
+        **({"mm": mm_by_key[key(o["name"])]} if key(o["name"]) in mm_by_key else {}),
         "emp": r1(n(c.get("Employees (total)")), 0), "emp_band": s(c.get("Employees band")), "size_basis": s(c.get("Size basis")),
         "size_conf": s(c.get("Size confidence")), "linkedin": s(c.get("LinkedIn URL")), "li_emp": r1(n(c.get("LinkedIn employees (baseline Oct-2026)")), 0),
         "pro_rev": r1(n(c.get("Pro brand rev ($M, US)")) or n(m.get("PRO BRAND REV ($M, pro forma)"))),
-        "ebitda": r1(n(c.get("EBITDA reported ($M)")) or n(m.get("PLATFORM EBITDA ($M)"))), "margin": r1(n(m.get("EBITDA margin")), 3),
+        "ebitda": r1(n(c.get("EBITDA reported ($M)")) or n(m.get("PLATFORM EBITDA ($M)"))), "ebitda_rep": True if n(c.get("EBITDA reported ($M)")) else None, "margin": r1(n(m.get("EBITDA margin")), 3),
         "rev_mix": {g: {k[2:]: r1(n(m.get(k)) * (100 if n(m.get(k)) <= 1 else 1)) for k in ks if n(m.get(k))} for g, ks in REV_MIX.items()
                     if any(n(m.get(k)) for k in ks)},
         "conf": s(m.get("Confidence")) or "Low",
@@ -828,6 +868,8 @@ for bid, i in qwhere.items():
 nbr = len(set(shard(out_br, "br", "brands").values()))
 json.dump({"cats": {CAT_IX[c]: {"b": v, **pricing_meta[c]} for c, v in pricing_out.items() if c in CAT_IX}, "learn": learn, "updated_at": NOW},
           open(f"{OUT}/data/pricing.json", "w"), separators=(",", ":"))
+if margin_doc:
+    json.dump({**margin_doc, "updated_at": NOW}, open(f"{OUT}/data/margin.json", "w"), separators=(",", ":"))
 json.dump({"cats": cats_out, "names": CATS, "segs": {c: SEG_OF.get(c, "Unclassified") for c in CATS}, "updated_at": NOW}, open(f"{OUT}/data/cats.json", "w"), separators=(",", ":"))
 json.dump({"deals": deals_out, "updated_at": NOW}, open(f"{OUT}/data/deals.json", "w"), separators=(",", ":"))
 json.dump({"list": dist_out, "updated_at": NOW}, open(f"{OUT}/data/dists.json", "w"), separators=(",", ":"))
