@@ -671,14 +671,14 @@ function route() {
   if (h.startsWith("d.")) return { v: "dist", id: h.slice(2) };
   if (h.startsWith("s.")) return { v: "strategy", id: h.slice(2) };
   if (h.startsWith("rollup")) { const ids = h.split(":")[1]; if (ids !== undefined) { ui.roll = ids.split(",").filter(x => CO.has(x) || !loaded); store.set("roll", ui.roll); } return { v: "rollup" }; }
-  if (["engine", "screen", "consolidators", "mix", "brands", "cats", "dists", "reach", "pricing", "premium", "ems", "product"].includes(h)) return { v: h };
+  if (["engine", "review", "screen", "consolidators", "mix", "brands", "cats", "dists", "reach", "pricing", "premium", "ems", "product"].includes(h)) return { v: h };
   if (h.startsWith("em.")) return { v: "em", id: h.slice(3) };
   if (h.startsWith("fmt.")) return { v: "fmt", id: h.slice(4) };
   if (h.startsWith("rm.")) return { v: "rm", id: h.slice(3) };
   return { v: "screen" };
 }
 function chrome(r) {
-  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v === "cat" ? "cats" : r.v === "price" || r.v === "premium" ? "pricing" : r.v === "em" ? "ems" : r.v === "fmt" ? "mix" : r.v === "rm" ? "product" : r.v === "dist" ? "dists" : r.v === "strategy" ? "screen" : r.v) ? "page" : "false"));
+  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v === "cat" ? "cats" : r.v === "price" || r.v === "premium" ? "pricing" : r.v === "em" ? "ems" : r.v === "fmt" ? "mix" : r.v === "rm" ? "product" : r.v === "review" ? "ems" : r.v === "dist" ? "dists" : r.v === "strategy" ? "screen" : r.v) ? "page" : "false"));
   const counts = {}; for (const c of list()) counts[ownKey(c)] = (counts[ownKey(c)] || 0) + 1;
   $("#ownChips").innerHTML = OWN.map(([k, l]) => `<button class="chip" type="button" data-own="${k}" aria-pressed="${ui.own.has(k)}">${l}<small>${counts[k] || 0}</small></button>`).join("");
   $("#nBrands").textContent = BR.size || "";
@@ -1113,6 +1113,7 @@ function attrChart(rows) {
   </svg>`;
 }
 function viewCats() {
+  loadAudit();
   const pm = catPlayers(), w = critWeights();
   const base = CATS.filter(c => !ui.cseg || c.seg === ui.cseg).map(c => ({ ...c, ci: c.i, name: c.cat, s: CSTUDY[c.i] || {}, a: attrOf(c.i), play: (pm.get(c.cat) || []).length, spread: catSpread(c.i) }));
   const studied = base.filter(c => c.a !== null);
@@ -1131,7 +1132,7 @@ function viewCats() {
   <div class="bar"><select id="cseg" aria-label="Segment"><option value="">All segments</option>${segs.map(s => `<option ${s === ui.cseg ? "selected" : ""}>${esc(s)}</option>`).join("")}</select>
     <select id="csort" aria-label="Sort">${[["attr", "Most attractive"], ["pro", "Largest pro market"], ["tam", "Largest US market"], ["cagr", "Fastest growth"], ["sec", "Best secular position"], ["emc", "Fastest-growing end markets"], ["frag", "Most fragmented"], ["price", "Most pricing power"], ["spread", "Widest price spread"], ["priv", "Most privately owned"], ["name", "Name"]].map(([k, l]) => `<option value="${k}" ${k === ui.csort ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select></div>
   <section class="panel"><div class="tw"><table><thead><tr><th>Category</th><th class="r">Score</th>${CRIT_SHORT.map(h => `<th class="r" style="font-size:10.5px;max-width:70px;white-space:normal">${h}</th>`).join("")}<th class="r">Pro market</th><th class="r">US market</th><th class="r">CAGR</th><th class="r">Secular · end-mkt CAGR</th><th>Top end markets</th><th class="r">Owners · private</th><th class="r">Price spread</th></tr></thead><tbody>
-  ${rows.map(c => `<tr class="cons-row" data-go="cat.${c.i}"><td><b><a href="#cat.${c.i}">${esc(c.cat)}</a></b><br><span class="faint" style="font-size:12.5px">${esc(c.seg)}</span></td>
+  ${rows.map(c => `<tr class="cons-row" data-go="cat.${c.i}"><td><b><a href="#cat.${c.i}">${esc(c.cat)}</a></b><br><span class="faint" style="font-size:12.5px">${esc(c.seg)}</span>${auditOf(c.i) ? `<br>${verdTag(auditOf(c.i).verdict)}<span class="faint" style="font-size:11px">reviewed</span>` : ""}</td>
     <td class="r num"><b style="font-size:16px">${c.a !== null ? c.a.toFixed(2) : "—"}</b></td>${(c.s.sc || Array(7).fill(null)).map(scoreCell).join("")}
     <td class="r num">${fmtTam(c.s.pro)}</td><td class="r num">${fmtTam(c.s.tam)}${c.s.lo && c.s.hi ? `<br><span class="faint" style="font-size:11.5px">${fmtTam(c.s.lo)}–${fmtTam(c.s.hi)}</span>` : ""}</td>
     <td class="r num">${c.s.cagr !== undefined ? c.s.cagr + "%" : "—"}${c.s.conf ? `<br><span class="faint" style="font-size:11.5px">${esc(c.s.conf)} conf.</span>` : ""}</td>
@@ -1160,7 +1161,7 @@ function tamBar(st, s) {
 function viewCat(i) {
   const c = CATS.find(x => String(x.i) === String(i)) || (CATNAMES[i] ? { cat: CATNAMES[i], seg: SEGOF[CATNAMES[i]], i: +i } : null);
   if (!c) return `<a class="back" href="#cats">← Categories</a><div class="empty">No such category.</div>`;
-  const ci = String(c.i ?? i), s = CSTUDY[ci] || {}; if (CSTUDY[ci]) loadStudy(ci);
+  const ci = String(c.i ?? i), s = CSTUDY[ci] || {}; if (CSTUDY[ci]) loadStudy(ci); loadAudit();
   const st = STUDY.get(ci);
   const bs = (catPlayers().get(c.cat) || []).slice().sort((x, y) => (y.ncat === c.cat) - (x.ncat === c.cat) || (y.dists || []).length - (x.dists || []).length);
   const owners = new Map();
@@ -1206,6 +1207,7 @@ function viewCat(i) {
     <div><div class="lbl" style="margin:0 0 8px">Research: estimated share of US dollars</div>${catHbars(st.em)}</div>
     <div>${EMS?.matrix?.[ci] ? `<div class="lbl" style="margin:0 0 8px">Observed: share of its ${EMS.matrix[ci][0]} scraped SKUs by the listing distributor's end market</div>${(rows => `<div style="display:grid;gap:7px">${rows.map(([k, v]) => `<div><div style="display:flex;gap:8px;align-items:baseline"><span style="flex:1">${emLink(k)}</span><b class="num">${pct(v)}</b></div><div style="height:8px;background:var(--sunk);margin-top:3px"><div style="height:8px;width:${v / rows[0][1] * 100}%;background:var(--ink-3)"></div></div></div>`).join("")}</div>`)(EMS.cols.map((k, j) => [k, EMS.matrix[ci][j + 1] || 0]).filter(([, v]) => v >= 0.01).sort((a, b) => b[1] - a[1]))}` : `<div class="lbl" style="margin:0 0 8px">Observed: share of scraped SKUs by the listing distributor's market</div>${catHbars(st.obs, "var(--ink-3)")}`}</div></div>
     ${st.em_note ? `<div class="body faint" style="padding-top:0;font-size:12.5px">${esc(st.em_note)}</div>` : ""}`)}
+  ${auditPanel(ci)}
   ${priceSec}
   <div class="grid2">
     ${panel("How big is the market", `US · ${esc(String(st.Year || ""))}`, `<div class="body">${tamBar(st, s)}
@@ -1273,6 +1275,7 @@ function viewEms() {
     <p>Who buys handheld pro chemicals, how they use them, and how and from whom they order. Every distributor in the map belongs to one end market. Implied spend is each category's US market times the research share sold into that end market, summed over our categories. Open one for its profile.</p></div></div>
   <div class="gauges"><div class="gauge"><b>${L.length}</b><span class="lbl">End markets</span></div><div class="gauge g"><b>${fmtTam(sp)}</b><span class="lbl">Implied spend, our categories</span></div>
     <div class="gauge"><b>${L.reduce((a, x) => a + (x.nd || 0), 0)}</b><span class="lbl">Distributors in the map</span></div><div class="gauge"><b>${L.reduce((a, x) => a + (x.skus || 0), 0).toLocaleString()}</b><span class="lbl">Core SKUs scraped</span></div></div>
+  ${(loadAudit(), AUDIT && !AUDIT.missing) ? (xs => `<a class="panel" href="#review" style="display:flex;gap:14px;align-items:center;padding:14px 18px;text-decoration:none;color:inherit"><div style="flex:1"><b style="font:700 18px var(--f-head);text-transform:uppercase">End-market review →</b><br><span class="muted" style="font-size:13.5px">An outside audit of the end-market splits for the ${xs.length} largest categories: what holds up, which buckets hide distinct verticals, what needs correcting.</span></div>${["keep", "refine", "challenge", "correct"].map(v => `<span class="num" style="text-align:center"><b style="font-size:20px;color:${VERD[v][1]}">${xs.filter(x => x.verdict === v).length}</b><br><span class="lbl">${VERD[v][0]}</span></span>`).join("")}</a>`)(Object.values(AUDIT.cats)) : ""}
   <section class="panel"><header><h2>Implied spend in our categories</h2><span class="sp"></span><span class="lbl">Aviation, Electronics & Lab and Woodworking sit in "Other" in the category research, so have no figure</span></header>
     <div class="body" style="display:grid;gap:8px">${bySpend.map(x => `<div style="display:grid;grid-template-columns:minmax(120px,210px) 1fr 70px;gap:10px;align-items:center" data-tip="${esc(`<b>${esc(x.name)}</b>${x.spend ? fmtTam(x.spend) + " implied spend" : "No figure"} · ${x.nd || 0} distributors · ${(x.skus || 0).toLocaleString()} SKUs`)}">
       <a href="#em.${x.i}">${esc(x.name)}</a><div style="height:12px;background:var(--sunk)"><div style="height:12px;width:${(x.spend || 0) / maxSp * 100}%;background:var(--accent)"></div></div><b class="num r">${x.spend ? fmtTam(x.spend) : "—"}</b></div>`).join("")}</div></section>
@@ -1420,6 +1423,59 @@ function viewProduct() {
   <div class="note">Averages are weighted by each category's revenue. For the savings a specific roll-up can get, use <a href="#rollup" data-act="rview" data-v="pc">Roll-up → Procurement</a>.</div>`;
 }
 
+
+/* ---------- independent end-market review ----------
+   An outside audit of the end-market splits for the 27 largest categories (audit/main, from the consolidated
+   research PDF). Suggestions only: the market studies, scores and DNA keep the workbook's numbers. Each category's
+   review sits on its page under the end-market mix; #review is the summary. */
+let AUDIT = null, auditLoading = false;
+function loadAudit() {
+  if (AUDIT || auditLoading || !db) return; auditLoading = true;
+  db.doc("audit/main").get().then(d => { AUDIT = d.exists ? d.data() : { missing: true }; }).catch(() => { AUDIT = { missing: true }; }).finally(() => { auditLoading = false; render(); });
+}
+const VERD = { keep: ["Keep", "var(--good)"], refine: ["Refine", "var(--accent-text)"], challenge: ["Challenge", "var(--warn)"], correct: ["Correct", "var(--bad)"] };
+const verdTag = v => VERD[v] ? `<span class="tag" style="border-color:${VERD[v][1]};color:${VERD[v][1]}">${VERD[v][0]}</span>` : "";
+const auditOf = ci => AUDIT && !AUDIT.missing ? AUDIT.cats?.[ci] || null : null;
+// "42-46%" -> [42, 46]; "about 30-40%" -> [30, 40]; "4%" -> [4, 4]; anything else -> null
+const rangeOf = t => { const m = String(t || "").match(/(\d+(?:\.\d+)?)\s*%?\s*(?:-|–|to)\s*(\d+(?:\.\d+)?)\s*%/) || String(t || "").match(/(\d+(?:\.\d+)?)\s*%/); return m ? [+m[1], +(m[2] ?? m[1])] : null; };
+const normEm = t => String(t || "").toLowerCase().replace(/[^a-z]+/g, " ").trim().split(" ")[0];
+function auditPanel(ci) {
+  const a = auditOf(ci); if (!a) return "";
+  const cur = new Map(a.current.map(([m, p]) => [normEm(m), p]));
+  const rows = a.sugg.map(([m, act, sens, why]) => { const r = rangeOf(sens), now = cur.get(normEm(m)); return { m, act, sens, why, now, out: r && now !== undefined && (now < r[0] || now > r[1]) ? (now < r[0] ? "up" : "down") : "" }; });
+  const listed = new Set(rows.map(r => normEm(r.m)));
+  const extra = a.current.filter(([m]) => !listed.has(normEm(m)));
+  return `<section class="panel" id="audit"><header><h2>Independent review</h2><span class="sp"></span><span class="lbl">${verdTag(a.verdict)} ${esc(a.assessment)}${a.confidence ? ` · ${esc(a.confidence)} confidence` : ""} · <a href="#review">all 27 reviews</a></span></header>
+    <div class="body">${a.read ? `<p style="margin:0 0 8px">${esc(a.read)}</p>` : ""}<p style="margin:0"><b>Suggestion.</b> ${esc(a.suggest)}</p></div>
+    ${rows.length ? `<div class="tw"><table style="font-size:13px"><thead><tr><th>End market</th><th class="r">Now</th><th class="r">Suggested</th><th>Action</th><th>Why</th></tr></thead><tbody>
+      ${rows.map(r => `<tr><td><b>${esc(r.m)}</b></td><td class="r num">${r.now !== undefined ? r.now + "%" : "—"}</td><td class="r num" style="white-space:nowrap${r.out ? ";color:var(--warn)" : ""}">${esc(r.sens || "—")}${r.out ? (r.out === "up" ? " ↑" : " ↓") : ""}</td><td>${esc(r.act || "")}</td><td class="muted" style="font-size:12.5px">${esc(r.why || "")}</td></tr>`).join("")}
+      ${extra.map(([m, p]) => `<tr class="faint"><td>${esc(m)}</td><td class="r num">${p}%</td><td class="r">—</td><td colspan="2" style="font-size:12.5px">No suggestion</td></tr>`).join("")}
+    </tbody></table></div>` : ""}
+    <details class="body" style="padding-top:8px"><summary class="lbl" style="cursor:pointer">The evidence · ${a.evidence.length} findings · ${a.sources.length} sources</summary>
+      <ul style="margin:8px 0 0;padding-left:18px">${a.evidence.map(x => `<li style="margin:0 0 6px">${esc(x)}</li>`).join("")}</ul>
+      ${a.sources.length ? `<p class="lbl" style="margin:10px 0 4px">Sources</p>${a.sources.map(([t, u]) => `<p style="margin:0 0 4px;font-size:13px">${u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t || u)}</a>` : esc(t)}</p>`).join("")}` : ""}</details>
+    <div class="body faint" style="padding-top:0;font-size:12.5px">Suggestions from an outside audit, not changes: the market study, scores and end-market mix above keep the workbook's numbers. ↑ ↓ marks where today's share sits outside the suggested range.</div></section>`;
+}
+function viewReview() {
+  loadAudit(); const A = AUDIT;
+  const head = `<a class="back" href="#ems">← End markets</a><div class="page-h"><div class="grow"><div class="lbl">Outside audit · suggestions, not changes</div><h1>End-market review</h1>
+    <p>An independent check of the end-market splits for the largest categories: where the mix holds up, where a bucket hides a distinct vertical, and where a number needs correcting. The market studies keep the workbook's figures; each review sits on its category page.</p></div></div>`;
+  if (!A) return head + `<div class="empty">Loading…</div>`;
+  if (A.missing) return head + `<div class="empty">The review isn't loaded yet.</div>`;
+  const xs = Object.entries(A.cats).map(([ci, a]) => ({ ci, ...a })).sort((x, y) => (y.tam || 0) - (x.tam || 0));
+  const n = v => xs.filter(x => x.verdict === v).length, tam = xs.reduce((s, x) => s + (x.tam || 0), 0);
+  const catOf = t => { const ci = CATNAMES.indexOf(t); return ci >= 0 ? `<a href="#cat.${ci}">${esc(t)}</a>` : esc(t); };
+  return head + `<div class="gauges"><div class="gauge"><b>${xs.length}</b><span class="lbl">Categories reviewed · ${fmtTam(tam)} US market</span></div>
+    ${["keep", "refine", "challenge", "correct"].map(v => `<div class="gauge"><b style="color:${VERD[v][1]}">${n(v)}</b><span class="lbl">${VERD[v][0]}</span></div>`).join("")}</div>
+  <section class="panel"><header><h2>What matters most</h2><span class="sp"></span><span class="lbl">The audit's highest-priority findings</span></header>
+    <div class="tw"><table><tbody>${(A.findings || []).map(([c, f, cat]) => `<tr><td style="width:26%"><b>${cat ? catOf(cat) : esc(c)}</b>${cat && auditOf(CATNAMES.indexOf(cat)) ? `<br>${verdTag(auditOf(CATNAMES.indexOf(cat)).verdict)}` : ""}</td><td>${esc(f)}</td></tr>`).join("")}</tbody></table></div></section>
+  <section class="panel"><header><h2>Every category reviewed</h2><span class="sp"></span><span class="lbl">Largest first · open one for the end-market table and evidence</span></header>
+    <div class="tw"><table><thead><tr><th>Category</th><th class="r">US market</th><th class="r">Pro share</th><th>Verdict</th><th>Headline suggestion</th><th>Confidence</th></tr></thead><tbody>
+    ${xs.map(x => `<tr class="cons-row" data-go="cat.${x.ci}"><td><b>${catOf(x.cat)}</b></td><td class="r num">${fmtTam(x.tam)}</td><td class="r num">${x.pro ? Math.round(x.pro * 100) + "%" : "—"}</td><td>${verdTag(x.verdict)}<br><span class="faint" style="font-size:12px">${esc(x.assessment)}</span></td><td style="font-size:13px;min-width:280px">${esc(x.suggest)}</td><td class="faint" style="font-size:12.5px">${esc(x.confidence || "—")}</td></tr>`).join("")}
+    </tbody></table></div></section>
+  ${A.batches ? fold("Cross-category observations", "From each batch of the audit", `<div class="body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">${Object.entries(A.batches).map(([b, v]) => `<div><div class="lbl" style="margin:0 0 6px">Batch ${esc(b)}</div><ul style="margin:0;padding-left:18px">${(v.takeaways || []).map(t => `<li style="margin:0 0 6px;font-size:13.5px">${esc(t)}</li>`).join("")}</ul></div>`).join("")}</div>`, false, "revobs") : ""}
+  ${A.key ? `<div class="note">${esc(A.key)}</div>` : ""}`;
+}
 
 /* ---------- view: a raw-material family ----------
    Spend pool from the Product study; split across categories by each category's revenue × raw-material % of sales ×
@@ -2804,7 +2860,7 @@ function render() {
   chrome(r);
   if (!loaded) { if (dbState === "off") app.innerHTML = `<div class="empty"><h2>Not connected</h2><p>Probrands keeps the market map in a shared database that loads when this page is opened in Claude while signed in.</p></div>`; return; }
   const y = scrollY;
-  app.innerHTML = r.v === "engine" ? viewEngine() : r.v === "rm" ? viewRm(r.id) : r.v === "fmt" ? viewFmt(r.id) : r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "ems" ? viewEms() : r.v === "product" ? viewProduct() : r.v === "em" ? viewEm(r.id) : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "mix" ? viewMix() : viewScreen();
+  app.innerHTML = r.v === "engine" ? viewEngine() : r.v === "review" ? viewReview() : r.v === "rm" ? viewRm(r.id) : r.v === "fmt" ? viewFmt(r.id) : r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "ems" ? viewEms() : r.v === "product" ? viewProduct() : r.v === "em" ? viewEm(r.id) : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "mix" ? viewMix() : viewScreen();
   if (render.last === location.hash) scrollTo(0, y); else scrollTo(0, 0);
   render.last = location.hash;
 }
