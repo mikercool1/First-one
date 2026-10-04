@@ -1433,7 +1433,7 @@ function loadAudit() {
   if (AUDIT || auditLoading || !db) return; auditLoading = true;
   db.doc("audit/main").get().then(d => { AUDIT = d.exists ? d.data() : { missing: true }; }).catch(() => { AUDIT = { missing: true }; }).finally(() => { auditLoading = false; render(); });
 }
-const VERD = { keep: ["Keep", "var(--good)"], refine: ["Refine", "var(--accent-text)"], challenge: ["Challenge", "var(--warn)"], correct: ["Correct", "var(--bad)"] };
+const VERD = { keep: ["Keep", "var(--good)"], refine: ["Refine", "var(--accent-text)"], challenge: ["Challenge", "var(--c4)"], correct: ["Correct", "var(--bad)"] };
 const verdTag = v => VERD[v] ? `<span class="tag" style="border-color:${VERD[v][1]};color:${VERD[v][1]}">${VERD[v][0]}</span>` : "";
 const auditOf = ci => AUDIT && !AUDIT.missing ? AUDIT.cats?.[ci] || null : null;
 // "42-46%" -> [42, 46]; "about 30-40%" -> [30, 40]; "4%" -> [4, 4]; anything else -> null
@@ -1447,11 +1447,11 @@ function auditPanel(ci) {
   const extra = a.current.filter(([m]) => !listed.has(normEm(m)));
   return `<section class="panel" id="audit"><header><h2>Independent review</h2><span class="sp"></span><span class="lbl">${verdTag(a.verdict)} ${esc(a.assessment)}${a.confidence ? ` · ${esc(a.confidence)} confidence` : ""} · <a href="#review">all 27 reviews</a></span></header>
     <div class="body">${a.read ? `<p style="margin:0 0 8px">${esc(a.read)}</p>` : ""}${a.suggest ? `<p style="margin:0"><b>Suggestion.</b> ${esc(a.suggest)}</p>` : ""}</div>
-    ${rows.length ? `<div class="tw"><table style="font-size:13px"><thead><tr><th>End market</th><th class="r">Now</th><th class="r">Suggested</th><th>Action</th><th>Why</th></tr></thead><tbody>
-      ${rows.map(r => `<tr><td><b>${esc(r.m)}</b></td><td class="r num">${r.now !== undefined ? r.now + "%" : "—"}</td><td class="r num" style="white-space:nowrap${r.out ? ";color:var(--warn)" : ""}">${esc(r.sens || "—")}${r.out ? (r.out === "up" ? " ↑" : " ↓") : ""}</td><td>${esc(r.act || "")}</td><td class="muted" style="font-size:12.5px">${esc(r.why || "")}</td></tr>`).join("")}
+    ${rows.length ? `<div class="tw"><table style="font-size:13px"><thead><tr><th>End market / lens</th><th class="r">Now</th><th class="r">Suggested</th><th>Action</th><th>Why</th></tr></thead><tbody>
+      ${rows.map(r => `<tr><td><b>${esc(r.m)}</b></td><td class="r num">${r.now !== undefined ? r.now + "%" : "—"}</td><td class="r num" style="white-space:nowrap${r.out ? ";color:var(--c4)" : ""}">${esc(r.sens || "—")}${r.out ? (r.out === "up" ? " ↑" : " ↓") : ""}</td><td>${esc(r.act || "")}</td><td class="muted" style="font-size:12.5px">${esc(r.why || "")}</td></tr>`).join("")}
       ${extra.map(([m, p]) => `<tr class="faint"><td>${esc(m)}</td><td class="r num">${p}%</td><td class="r">—</td><td colspan="2" style="font-size:12.5px">No suggestion</td></tr>`).join("")}
     </tbody></table></div>` : ""}
-    <details class="body" style="padding-top:8px"><summary class="lbl" style="cursor:pointer">The evidence · ${a.evidence.length} findings · ${a.sources.length} sources</summary>
+    <details class="body" style="padding-top:8px"><summary class="lbl" style="cursor:pointer">The evidence · ${a.evidence.length} finding${a.evidence.length === 1 ? "" : "s"} · ${a.sources.length} source${a.sources.length === 1 ? "" : "s"}</summary>
       <ul style="margin:8px 0 0;padding-left:18px">${a.evidence.map(x => `<li style="margin:0 0 6px">${esc(x)}</li>`).join("")}</ul>
       ${a.sources.length ? `<p class="lbl" style="margin:10px 0 4px">Sources</p>${a.sources.map(([t, u]) => `<p style="margin:0 0 4px;font-size:13px">${u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t || u)}</a>` : esc(t)}</p>`).join("")}` : ""}</details>
     <div class="body faint" style="padding-top:0;font-size:12.5px">Suggestions from an outside audit, not changes: the market study, scores and end-market mix above keep the workbook's numbers. ↑ ↓ marks where today's share sits outside the suggested range.</div></section>`;

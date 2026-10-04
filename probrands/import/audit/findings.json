@@ -1,0 +1,12 @@
+[["Paints / coatings","Scope mismatch: automotive refinish appears under-allocated versus a TAM definition that includes special-purpose coatings.","Paints, primers & coatings"],
+["Pool / water testing","Professional pool service, dealer and builder channels should be explicit; Claude likely understates professional exposure.","Pool & water testing"],
+["Wood finishes","Factory/OEM furniture and cabinetry demand appears far larger than the current 15% allocation if the TAM includes factory-applied coatings.","Wood finishes, waxes & polishes"],
+["Hand cleaners / soaps / sanitizers","50% professional likely deserves a 60-70% sensitivity; healthcare, foodservice, education and BSC demand are meaningful.","Hand cleaners, soaps & sanitizers"],
+["Metalworking fluids","The $1.472B point estimate is defensible, but published U.S. estimates vary materially; confidence should be lower and the end market should be manufacturing-process chemistry, not generic MRO.","Cutting & metalworking fluids"],
+["Greases","Current manufacturer-level U.S. market data are far below Claude's $1.3B; build a manufacturer-to-distributor/retail revenue-stage bridge before changing TAM.","Greases"],
+["Marine care & coatings","Washington copper-antifouling restriction did not take effect in 2026; regulatory language needs updating.","Marine care & coatings"],
+["Penetrants","Claude's WD-40 U.S. anchor exceeds WD-40 Company's total reported U.S. revenue. This is a factual correction, not a sensitivity.","Penetrants"],
+["Spill control & absorbents","One of the strongest validations: current research is essentially on top of Claude's $1.08B TAM.","Spill control & absorbents"],
+["Solvents / thinners / dusters","The category combines unlike markets; split liquid solvents/thinners from aerosol/electric dusters analytically.","Solvents, thinners & dusters"],
+["Removers","Methylene chloride restrictions are now current, not future; professional exposure likely deserves a higher sensitivity.","Removers (graffiti, adhesive, paint)"],
+["Cross-category","Create explicit overlap rules across penetrants, lubricants, corrosion control, adhesives, sealants, roofing, epoxies and construction adhesives to avoid double counting.",null]]

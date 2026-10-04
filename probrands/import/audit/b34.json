@@ -1,0 +1,1305 @@
+[
+ {
+  "cat": "Concrete, masonry & hardscape",
+  "batch": 3,
+  "rank": 14,
+  "tam": 1800,
+  "pro_tam": 1260,
+  "pro": 0.7,
+  "assessment": "Refine - add a missing infrastructure/public-works lens",
+  "verdict": "refine",
+  "priority": "High",
+  "read": "The 70% professional orientation is directionally sensible, but the taxonomy understates civil/public infrastructure and over-compresses professional construction demand into one bucket.",
+  "suggest": "Keep Claude's current mix as the base case, but add a sensitivity with 75-85% professional demand. Within the pro share, explicitly expose Road & Infrastructure / Public Works / Parking Structures (roughly 15-25% sensitivity) and reduce Consumer / DIY toward 15-20% if broad structural repair remains inside the TAM. Do not force this change for polymeric-sand or retail-sealer-heavy scopes.",
+  "confidence": "Medium-High on direction; Medium on exact split",
+  "current": [
+   [
+    "Construction & Contractor",
+    50,
+    "Concrete, masonry, restoration and hardscape contractors"
+   ],
+   [
+    "Consumer / DIY",
+    25,
+    "Big-box bagged patch, driveway/paver sealers"
+   ],
+   [
+    "Facilities & Janitorial",
+    10,
+    "Property/facility repair"
+   ],
+   [
+    "Industrial MRO",
+    7,
+    "Plant repair / maintenance"
+   ],
+   [
+    "Water & Wastewater",
+    5,
+    "Concrete structures / repair"
+   ],
+   [
+    "Agriculture & Turf",
+    3,
+    "Farm / hardscape applications"
+   ]
+  ],
+  "evidence": [
+   "Current U.S. concrete repair mortar research sizes that submarket alone at about $682M in 2025, with structural repair roughly 65% of revenue. North America is about $1.01B. This supports a large professional core before adding sealers, cure-and-seal, polymeric sand, masonry cleaners and other hardscape products.",
+   "The published repair-mortar taxonomy explicitly includes Road & Infrastructure, Building & Car Park, and Marine. Globally, road & infrastructure represented 60.5% of 2025 repair-mortar revenue. That is not a direct U.S. mix, but it demonstrates that public/civil infrastructure is a first-order demand pool in a broad repair category.",
+   "Claude's 50% Construction & Contractor bucket may economically contain much of this demand, but the current labels hide the asset owner/specifier: DOT/public works, parking structures, bridges, institutional facilities and civil restoration contractors behave differently from residential hardscape contractors.",
+   "The 25% DIY share is plausible only because Claude's scope is broader than structural repair and includes bagged patch, paver/driveway sealers and polymeric sand. If the $1.8B TAM is increasingly anchored to structural repair/sealers sold through professional channels, DIY should be sensitivity-tested lower rather than assumed at 25%."
+  ],
+  "sugg": [
+   [
+    "Construction / restoration contractors",
+    "Keep / refine",
+    "40-50%",
+    "Core professional field applicators remain the largest visible channel."
+   ],
+   [
+    "Road / infrastructure / public works",
+    "Add explicitly",
+    "15-25%",
+    "Material in structural repair; currently hidden in contractor/other buckets."
+   ],
+   [
+    "Consumer / DIY",
+    "Test lower",
+    "15-20%",
+    "Still meaningful for patch, sealer and polymeric sand, but less so for structural repair."
+   ],
+   [
+    "Facilities / property / institutional",
+    "Keep",
+    "8-12%",
+    "Parking decks, campuses and building maintenance are distinct recurring repair users."
+   ],
+   [
+    "Industrial / water / other",
+    "Keep combined",
+    "8-15%",
+    "Plant, wastewater and specialized civil assets are professional but smaller."
+   ]
+  ],
+  "sources": [
+   [
+    "Grand View Research - U.S. concrete repair mortars",
+    "https://www.grandviewresearch.com/horizon/outlook/concrete-repair-mortars-market/united-states"
+   ],
+   [
+    "Grand View Research - North America concrete repair mortars",
+    "https://www.grandviewresearch.com/horizon/outlook/concrete-repair-mortars-market/north-america"
+   ],
+   [
+    "Grand View Research - global concrete repair mortars",
+    "https://www.grandviewresearch.com/industry-analysis/concrete-repair-mortars-market"
+   ]
+  ]
+ },
+ {
+  "cat": "Caulks & sealants",
+  "batch": 3,
+  "rank": 15,
+  "tam": 1750,
+  "pro_tam": 1140,
+  "pro": 0.65,
+  "assessment": "Challenge / refine - likely too DIY-heavy for the stated scope",
+  "verdict": "challenge",
+  "priority": "High",
+  "read": "Claude's 65% professional share is possible for a retail-heavy caulk definition, but current construction-sealant evidence suggests the broad category is substantially pro/specification driven.",
+  "suggest": "Run a 70-80% professional sensitivity: Construction & Contractor 50-60%, Consumer / DIY 20-25%, Facilities 8-12%, Plumbing + HVAC 8-12% combined, Industrial 5-8%, Other 1-3%. Only adopt it if roofing, firestop and anchoring overlap is removed consistently.",
+  "confidence": "Medium-High on direction; Medium on exact percentages",
+  "current": [
+   [
+    "Construction & Contractor",
+    45,
+    "Windows/doors, roofing, concrete, façade and general construction"
+   ],
+   [
+    "Consumer / DIY",
+    30,
+    "Retail caulk / weatherization / bath repair"
+   ],
+   [
+    "Facilities & Janitorial",
+    8,
+    "Building repair and maintenance"
+   ],
+   [
+    "Plumbing",
+    6,
+    "Kitchen/bath/plumbing sealing"
+   ],
+   [
+    "Industrial MRO",
+    6,
+    "Plant and equipment sealing"
+   ],
+   [
+    "HVAC/R",
+    3,
+    "Duct/envelope sealing"
+   ],
+   [
+    "Other",
+    2,
+    "Marine, RV and niche"
+   ]
+  ],
+  "evidence": [
+   "North American building-and-construction sealants alone were estimated at about $1.43B in 2024. That is already close to Claude's entire $1.75B U.S. caulks/sealants TAM, which also includes DIY and non-construction uses. This does not prove Claude's TAM is low, because geography and category definitions differ, but it makes a 30% DIY share look aggressive under a broad construction-inclusive scope.",
+   "A current U.S. construction-silicone view sizes that narrower chemistry at $288M in 2025; commercial construction is the largest sector at 38.3% and exterior applications are 57.6%. Commercial façades, glazing, expansion joints and envelope work are specification-driven and strongly professional.",
+   "MarketsandMarkets likewise identifies building & construction as the largest North American sealant application in 2024, citing roofing, façades, glazing, insulation and repair of aging infrastructure.",
+   "The bigger modeling issue is overlap: roofing sealants can sit in Roofing & Waterproofing, fire-rated products in Firestop, and some polyurethane/epoxy construction products in Construction & Anchoring Adhesives. Claude should set explicit product/application boundary rules before moving percentages."
+  ],
+  "sugg": [],
+  "sources": [
+   [
+    "Grand View Research - North America building & construction sealants",
+    "https://www.grandviewresearch.com/horizon/outlook/building-and-construction-sealants-market/north-america"
+   ],
+   [
+    "Grand View Research - U.S. construction silicone sealants",
+    "https://www.grandviewresearch.com/industry-analysis/us-construction-silicone-sealants-market"
+   ],
+   [
+    "MarketsandMarkets - North America adhesives & sealants",
+    "https://www.marketsandmarkets.com/PressReleases/north-america-adhesives-%26-sealants.asp"
+   ],
+   [
+    "Grand View Research - North America DIY & household adhesives/sealants",
+    "https://www.grandviewresearch.com/industry-analysis/north-america-diy-household-adhesives-sealants-market-report"
+   ]
+  ]
+ },
+ {
+  "cat": "Adhesives & glues",
+  "batch": 3,
+  "rank": 16,
+  "tam": 1600,
+  "pro_tam": 800,
+  "pro": 0.5,
+  "assessment": "Mostly right - tighten the scope and professional taxonomy",
+  "verdict": "keep",
+  "priority": "Medium",
+  "read": "The 35% DIY share is defensible for a narrow general-purpose/hand-used adhesives bucket. The biggest risk is accidentally importing OEM, structural construction, epoxy, cyanoacrylate, anchoring or PVC-cement revenue from broader market reports.",
+  "suggest": "Keep Claude's 50% pro base case. Add a 55-65% pro sensitivity only if professional woodworking/flooring/installation products are demonstrably included. Rename part of Industrial MRO into Professional Woodworking / Cabinetry / Flooring, and document exclusions line-by-line against the adjacent categories.",
+  "confidence": "Medium",
+  "current": [
+   [
+    "Construction & Contractor",
+    35,
+    "Field-use bonding / flooring / finish carpentry"
+   ],
+   [
+    "Consumer / DIY",
+    35,
+    "Wood glue, multipurpose glue, spray adhesive, repair products"
+   ],
+   [
+    "Industrial MRO",
+    10,
+    "General plant/shop bonding"
+   ],
+   [
+    "HVAC/R",
+    8,
+    "Insulation / duct / field bonding"
+   ],
+   [
+    "Facilities & Janitorial",
+    5,
+    "Repair and maintenance"
+   ],
+   [
+    "Automotive & Fleet",
+    5,
+    "General repair bonding"
+   ],
+   [
+    "Other",
+    2,
+    "Miscellaneous"
+   ]
+  ],
+  "evidence": [
+   "The North American DIY + household adhesives-and-sealants market was about $1.45B in 2024. Because that figure includes sealants as well as adhesives, it cannot be used directly as Claude's adhesives TAM, but it confirms that a large retail/DIY pool exists and makes Claude's 35% consumer share plausible for a narrow hand-used product definition.",
+   "Franklin International's own architecture is a useful reality check: Titebond explicitly serves both seasoned professionals and weekend warriors across woodworking glues, construction adhesives, caulks/sealants and flooring adhesives, while Franklin Adhesives & Polymers separately serves factory furniture, millwork, engineered lamination, labels and other industrial uses.",
+   "That separation is exactly the modeling guardrail Claude needs. Broad construction-adhesive and industrial wood-adhesive reports are many billions of dollars and include chemistries/applications that the workbook intentionally places elsewhere. Using those broad TAMs would contaminate this narrow $1.6B category.",
+   "The current 50% pro share therefore looks more credible than the broad-market reports might initially imply. The pro taxonomy could still improve by naming professional woodworking/cabinetry/flooring and field installation instead of putting 10% into generic Industrial MRO."
+  ],
+  "sugg": [],
+  "sources": [
+   [
+    "Grand View Research - North America DIY & household adhesives/sealants",
+    "https://www.grandviewresearch.com/industry-analysis/north-america-diy-household-adhesives-sealants-market-report"
+   ],
+   [
+    "Franklin International - businesses",
+    "https://franklininternational.com/our-businesses"
+   ],
+   [
+    "Franklin Adhesives & Polymers - wood adhesives",
+    "https://www.franklinap.com/wood-adhesives"
+   ]
+  ]
+ },
+ {
+  "cat": "Cutting & metalworking fluids",
+  "batch": 3,
+  "rank": 17,
+  "tam": 1472,
+  "pro_tam": 1430,
+  "pro": 0.97,
+  "assessment": "Major taxonomy challenge; TAM point estimate validated but confidence overstated",
+  "verdict": "challenge",
+  "priority": "High",
+  "read": "Claude has a defensible TAM anchor, but the end-market labels obscure the true economics. This is overwhelmingly professional manufacturing-process chemistry, with only a very small retail/DIY tail.",
+  "suggest": "Retain $1.472B as the base case but lower TAM confidence to Medium until the $2.77B external estimate is reconciled. Replace the 70% 'Industrial MRO' conceptually with manufacturing verticals: machinery/precision & job shops, automotive/transportation manufacturing, fabricated metal/tube & pipe, aerospace/defense, then a small field-service/plumbing/consumer tail. Do not treat the illustrative split below as sourced market share.",
+  "confidence": "High on taxonomy; Medium on TAM and exact vertical mix",
+  "current": [
+   [
+    "Industrial MRO",
+    70,
+    "OEM machining plants and job shops (auto, aero, equipment)"
+   ],
+   [
+    "Welding & Fabrication",
+    10,
+    "Fabrication / shop use"
+   ],
+   [
+    "Automotive & Fleet",
+    8,
+    "Service-shop drilling/tapping"
+   ],
+   [
+    "Plumbing",
+    6,
+    "Pipe-threading oil"
+   ],
+   [
+    "Construction & Contractor",
+    3,
+    "Field cutting / threading"
+   ],
+   [
+    "Consumer / DIY",
+    3,
+    "Small-pack retail"
+   ]
+  ],
+  "evidence": [
+   "Claude's $1.472B U.S. TAM and 3.1% CAGR are directly corroborated by an August 2026 MarketsandMarkets U.S. metalworking-fluids report: $1,472.3M in 2025 growing to $1,715.1M by 2030 at 3.1%.",
+   "However, Grand View Research currently estimates U.S. metalworking fluids at $2,768.5M in 2025, almost 1.9x the MarketsandMarkets figure. The difference is large enough that the workbook's 'High' TAM confidence should be lowered until scope and revenue stage are reconciled.",
+   "The 70% 'Industrial MRO' label is the more important conceptual error. Metalworking fluids are consumed in production processes - machining, grinding, stamping, forming and precision manufacturing. Grand View identifies machinery as the largest end-use segment (41.6% globally in 2025) and automotive as the largest industrial end-use (34.5%). Those are manufacturing verticals, not MRO spend.",
+   "Automotive & Fleet is also conflating two very different markets: automotive OEM/component manufacturing is a major MWF end-use, while service-shop drilling/tapping is comparatively small. Aerospace/defense and precision engineering deserve their own named lens because of high-value alloys, process criticality and specialized fluids."
+  ],
+  "sugg": [
+   [
+    "General machinery / precision / job shops",
+    "",
+    "30-40%",
+    "Core machining base; broad machine-tool usage."
+   ],
+   [
+    "Automotive / transportation manufacturing",
+    "",
+    "20-30%",
+    "Large production end-use; separate from fleet service."
+   ],
+   [
+    "Fabricated metal / tube & pipe",
+    "",
+    "15-20%",
+    "Cutting, forming and threading-intensive manufacturing."
+   ],
+   [
+    "Aerospace / defense",
+    "",
+    "5-10%",
+    "High-spec alloys and precision machining; premium fluids."
+   ],
+   [
+    "Field trades / service / plumbing",
+    "",
+    "5-10%",
+    "Threading/cutting oils and smaller-pack professional use."
+   ],
+   [
+    "Consumer / DIY",
+    "",
+    "1-3%",
+    "Small retail tail; likely lower than current 3% in broad MWF scope."
+   ]
+  ],
+  "sources": [
+   [
+    "MarketsandMarkets - U.S. metalworking fluids",
+    "https://www.marketsandmarkets.com/Market-Reports/geography/metal-working-fluid-market/us"
+   ],
+   [
+    "Grand View Research - U.S. metalworking fluids",
+    "https://www.grandviewresearch.com/horizon/outlook/metalworking-fluids-market/united-states"
+   ],
+   [
+    "Grand View Research - global metalworking fluids",
+    "https://www.grandviewresearch.com/industry-analysis/metalworking-fluids-market"
+   ]
+  ]
+ },
+ {
+  "cat": "Ice melt",
+  "batch": 3,
+  "rank": 18,
+  "tam": 1300,
+  "pro_tam": 780,
+  "pro": 0.6,
+  "assessment": "Mostly right - rename channels and normalize weather",
+  "verdict": "keep",
+  "priority": "Medium",
+  "read": "Claude's 60% professional / 35% consumer structure looks reasonable for packaged walkway/lot products, provided bulk highway salt is explicitly excluded.",
+  "suggest": "Keep 60% pro as the base case and test 60-65%. Rename Construction & Contractor to Snow & Ice Management / Landscape Contractor; split Institutions / Public Sector from Other; and add a note that TAM/revenue should be weather-normalized over multiple winters.",
+  "confidence": "Medium",
+  "current": [
+   [
+    "Facilities & Janitorial",
+    35,
+    "Commercial property / facility walkway treatment"
+   ],
+   [
+    "Consumer / DIY",
+    35,
+    "Homeowner packaged ice melt"
+   ],
+   [
+    "Construction & Contractor",
+    20,
+    "Snow & ice management / landscape contractors"
+   ],
+   [
+    "Other",
+    7,
+    "Municipal sidewalks, universities"
+   ],
+   [
+    "Industrial MRO",
+    3,
+    "Industrial sites"
+   ]
+  ],
+  "evidence": [
+   "Compass Minerals explicitly describes its salt portfolio as serving roadway deicing plus consumer and professional deicing. That supports Claude's basic premise that packaged ice melt has meaningful demand on both sides of the consumer/pro boundary.",
+   "Compass also shows why category scope matters: highway deicing was 63% of its fiscal-2025 Salt segment sales, but that is bulk/tendered public-road salt and should remain outside Claude's packaged commercial ice-melt TAM. Consumer & industrial salt was 37%, but that bucket also includes water conditioning, food and industrial salts, so it is not a direct market-share benchmark.",
+   "The current 20% Construction & Contractor bucket is really a channel/end-user mismatch. Snow and ice management contractors and landscape contractors are a distinct route/service channel and should be named that way rather than treated as generic construction.",
+   "The 7% Other bucket also contains strategically important institutional/public buyers - municipalities, universities, schools, hospitals, airports and campuses. These users purchase like facilities/public works organizations, not miscellaneous demand.",
+   "Demand is exceptionally weather-normalized. A 3% long-term CAGR may be fine as a price/volume framework, but annual revenue should be sensitized to winter severity and regional snowfall/ice events rather than modeled as a smooth line."
+  ],
+  "sugg": [],
+  "sources": [
+   [
+    "Compass Minerals 2025 Form 10-K",
+    "https://www.sec.gov/Archives/edgar/data/1227654/000122765425000199/cmp-20250930.htm"
+   ],
+   [
+    "Compass Minerals FY2026 Q1 filing - seasonality/current volume context",
+    "https://www.sec.gov/Archives/edgar/data/1227654/000122765426000012/cmp-20251231.htm"
+   ]
+  ]
+ },
+ {
+  "cat": "Greases",
+  "batch": 3,
+  "rank": 19,
+  "tam": 1300,
+  "pro_tam": 1170,
+  "pro": 0.9,
+  "assessment": "Challenge TAM stage; refine end-market taxonomy",
+  "verdict": "challenge",
+  "priority": "High",
+  "read": "Claude is probably right that ~90% of grease demand is professional/industrial, but the $1.3B TAM is not directly supported by current manufacturer-level market data and the current mix hides manufacturing, mining/power and food processing.",
+  "suggest": "Do not automatically cut TAM to $607M. First bridge manufacturer sales to distributor/retail sell-through, packaging/value-add and any specialty products included by Claude. Separately, split Industrial MRO into General Manufacturing, Metal/Mining/Power, and Food Processing; split Automotive OEM/transport from Fleet/aftermarket. Consumer 7% should be sensitivity-tested lower if the TAM is manufacturer-level.",
+  "confidence": "High on TAM discrepancy and taxonomy; Medium on corrected TAM",
+  "current": [
+   [
+    "Industrial MRO",
+    38,
+    "Plant maintenance / general industrial"
+   ],
+   [
+    "Automotive & Fleet",
+    20,
+    "Vehicle / fleet lubrication"
+   ],
+   [
+    "Construction & Contractor",
+    15,
+    "Heavy equipment / construction"
+   ],
+   [
+    "Agriculture & Turf",
+    12,
+    "Farm and equipment lubrication"
+   ],
+   [
+    "Consumer / DIY",
+    7,
+    "Cartridges / small packs"
+   ],
+   [
+    "Other",
+    5,
+    "Mining, power generation, rail"
+   ],
+   [
+    "Marine",
+    3,
+    "Marine equipment"
+   ]
+  ],
+  "evidence": [
+   "The largest issue is TAM reconciliation. Grand View Research currently sizes the U.S. greases market at about $606.8M in 2025, versus Claude's $1.3B - more than a 2x gap. Claude's number may still be defensible if it is measured at downstream distributor/retail sell-through and includes a broader packaged specialty set, but that bridge needs to be explicit.",
+   "The professional orientation is directionally right. Grand View's global work says manufacturing represented 49.6% of grease application revenue in 2024, while its U.S. segmentation explicitly includes construction, metal & mining, power generation, food processing, agriculture and manufacturing.",
+   "MarketsandMarkets' September 2026 update says automotive was the largest global grease end-use in 2025 and construction the second-largest. This reinforces that Claude's 38% Industrial MRO bucket should be unpacked into actual asset-intensive verticals rather than treated as generic maintenance.",
+   "Automotive & Fleet should also distinguish OEM/transport-equipment production and installed-base fleet maintenance. Food processing is small versus auto/manufacturing but strategically attractive because H1/food-grade lubricants are specification-driven, compliance-sensitive and often premium priced."
+  ],
+  "sugg": [],
+  "sources": [
+   [
+    "Grand View Research - U.S. greases",
+    "https://www.grandviewresearch.com/horizon/outlook/greases-market/united-states"
+   ],
+   [
+    "Grand View Research - global greases",
+    "https://www.grandviewresearch.com/industry-analysis/grease-market-report"
+   ],
+   [
+    "MarketsandMarkets - Grease Market, Sep. 2026",
+    "https://www.marketsandmarkets.com/Market-Reports/grease-market-88373349.html"
+   ],
+   [
+    "MarketsandMarkets - grease industry players/end markets",
+    "https://www.marketsandmarkets.com/ResearchInsight/grease-market.asp"
+   ]
+  ]
+ },
+ {
+  "cat": "Marine care & coatings",
+  "batch": 3,
+  "rank": 20,
+  "tam": 1200,
+  "pro_tam": 480,
+  "pro": 0.4,
+  "assessment": "Keep overall mix as plausible; correct regulation and build from submarkets",
+  "verdict": "correct",
+  "priority": "High",
+  "read": "There is enough evidence for both a large DIY marine-maintenance channel and a meaningful professional boatyard/coatings channel that Claude's 40% pro figure is not obviously wrong. The weakness is treating all marine-care products as one homogeneous channel mix.",
+  "suggest": "Keep 40% pro as the base case, with a 40-50% sensitivity. Build it from product groups: antifouling bottom paint; topside/2K coatings; hull/deck cleaners & oxidation removers; wax/polish/teak; and commercial/workboat/government. Replace the Washington 2026 copper-ban statement with the current postponed status and retain regulatory reformulation as a watch item.",
+  "confidence": "High on regulatory correction; Medium-Low on exact channel split",
+  "current": [
+   [
+    "Consumer / DIY",
+    55,
+    "Boat owners buying bottom paint, cleaners, waxes and teak care"
+   ],
+   [
+    "Marine",
+    40,
+    "Boatyards, marinas, detailers, workboat fleets"
+   ],
+   [
+    "Other",
+    5,
+    "Government / military small craft"
+   ]
+  ],
+  "evidence": [
+   "The overall 55% DIY / 40% professional split is plausible as a blended category, but the products are too heterogeneous for one channel mix to explain all of them. West Marine's current guidance makes clear that bottom painting is commonly DIY-capable and cost-saving, while it separately maintains guidance for choosing professional boatyard painting services.",
+   "The professional skew rises sharply for complex 2-part topside systems, major surface restoration, large yachts, workboats and fleet/government craft; routine cleaners, waxes, oxidation removers and teak care are much more owner-DIY accessible. Claude should therefore build the blend from subcategories rather than assuming every product has a 55/40 channel split.",
+   "The recreational installed base is economically substantial: NMMA reports $54B of U.S. recreational marine retail spending in 2025, including $12.1B of aftermarket accessories; maintenance is included within broader boat-use spending. These are contextual anchors, not a coatings TAM.",
+   "Important factual correction: Washington's Department of Ecology says the possible copper-based antifouling paint restriction will NOT take effect in 2026. The restriction is postponed and the state will report again by June 30, 2029. Irgarol/cybutryne has been prohibited in Washington antifouling paints since 2023.",
+   "California is also more specific than a generic 'restrictions/studies' label: since 2018 it has maintained a maximum allowable copper leach rate for copper-based antifouling products registered for recreational-vessel use. The correct risk framing is ongoing biocide/copper formulation pressure, not an imminent Washington 2026 copper ban."
+  ],
+  "sugg": [],
+  "sources": [
+   [
+    "NMMA - U.S. recreational marine spending 2025",
+    "https://www.nmma.org/press/article/25545"
+   ],
+   [
+    "West Marine - DIY bottom painting guide",
+    "https://www.westmarine.com/west-advisor/DIY-Bottom-Painting.html"
+   ],
+   [
+    "West Marine - professional boat painting services guide",
+    "https://www.westmarine.com/boat-paint-directory/boat-painting-services.html"
+   ],
+   [
+    "Washington Department of Ecology - Antifouling Boat Paint law",
+    "https://ecology.wa.gov/waste-toxics/reducing-toxic-chemicals/washingtons-toxics-in-products-laws/antifouling-boat-paints"
+   ],
+   [
+    "California DPR - copper-based antifouling paint regulation",
+    "https://www.cdpr.ca.gov/proposed-regulation/dpr-16-005-copper-based-antifouling-paint-and-coating-products/"
+   ]
+  ]
+ },
+ {
+  "cat": "Solvents, thinners & dusters",
+  "batch": 4,
+  "rank": 21,
+  "tam": 1100,
+  "pro_tam": 495,
+  "pro": 0.45,
+  "assessment": "Challenge the architecture, not necessarily the $1.1B point estimate.",
+  "verdict": "challenge",
+  "priority": "High - mixed product families + regulatory nuance",
+  "read": "Challenge the architecture, not necessarily the $1.1B point estimate. This line combines packaged liquid solvents/thinners with aerosol computer/electronics dusters, which have different users, regulation, substitutes and growth rates.",
+  "suggest": "Split packaged liquid thinners/solvents from compressed-gas dusters. Correct the regulatory note: HFC-152a has GWP 124, below the federal 150-GWP aerosol limit; technical aerosol products face the 150-GWP limit beginning 2028.",
+  "confidence": "Low",
+  "current": [
+   [
+    "Consumer / DIY",
+    45,
+    "Home-center thinners; office/home dusters"
+   ],
+   [
+    "Construction & Contractor",
+    20,
+    "Painting contractors; finishers"
+   ],
+   [
+    "Industrial MRO",
+    20,
+    "Plant cleaning; wipe-down; electronics maintenance"
+   ],
+   [
+    "Electrical",
+    5,
+    "Panel/control dusting"
+   ],
+   [
+    "Automotive & Fleet",
+    5,
+    "Body-shop clean-up"
+   ],
+   [
+    "Other",
+    5,
+    "Labs, IT, print shops"
+   ]
+  ],
+  "evidence": [
+   "Claude is right to use a narrow packaged-products frame rather than the broad U.S. solvents market. The broad U.S. solvents market is about $7.3B in 2025 and includes large-volume paints/coatings, pharma, printing and other industrial solvent demand that is outside this professional-brands shelf set.",
+   "The dusters submarket is increasingly exposed to electric substitution. Grand View Research sizes U.S. electric air dusters at $64.8M in 2025, growing at 8% through 2033. That is a meaningful substitution vector for canned dusters and should not be blended into a generic 2.5% category CAGR without comment.",
+   "The existing HFC note needs refinement. EPA sets a 150-GWP limit for consumer aerosols from January 1, 2025 and for technical aerosols from January 1, 2028. HFC-152a has a GWP of 124, so the federal 150-GWP threshold does not itself require a switch away from 152a. HFO-1234ze(E) is lower-GWP and acceptable, but the \"forced conversion\" framing is too strong.",
+   "End-market mix is hard to interpret while thinners and dusters are combined. Paint thinner naturally skews to DIY + painting contractors; dusters skew to office/IT/electronics service, industrial maintenance and consumer electronics users."
+  ],
+  "sugg": [
+   [
+    "Split",
+    "Create two analytical sub-lines: (A) packaged thinners/solvents and (B) compressed-gas/electronics dusters. They can remain under one headline category for presentation.",
+    "",
+    "High - materially different demand drivers and regulation."
+   ],
+   [
+    "Correct",
+    "Replace the HFC statement with: consumer aerosols <=150 GWP from 2025; technical aerosols <=150 GWP from 2028; HFC-152a at GWP 124 remains under that cap.",
+    "",
+    "High - directly supported by EPA."
+   ],
+   [
+    "Add context",
+    "Flag electric dusters as an 8%-growth substitute category rather than assuming canned-duster volume follows packaged-solvent growth.",
+    "",
+    "High."
+   ],
+   [
+    "Sensitivity",
+    "Keep 45% pro as a base only if combined. Test 45-55% professional after re-cutting because office/IT/electronics maintenance is not well represented in the current 5% Electrical + 5% Other buckets.",
+    "45-55% professional",
+    "Medium - requires channel/SKU data to pin down."
+   ],
+   [
+    "Scope control",
+    "Explicitly exclude bulk/commodity solvents and process solvents already captured in paints/coatings, printing, pharma and manufacturing chemistry.",
+    "",
+    "High - prevents major TAM inflation/double count."
+   ]
+  ],
+  "sources": [
+   [
+    "EPA Technology Transitions - aerosol GWP limits",
+    "https://www.epa.gov/hfcs/technology-transitions-hfc-restrictions-sector"
+   ],
+   [
+    "EPA GWP reference table",
+    "https://www.epa.gov/hfcs/technology-transitions-gwp-reference-table"
+   ],
+   [
+    "EPA SNAP propellant substitutes",
+    "https://www.epa.gov/snap/substitutes-propellants"
+   ],
+   [
+    "Grand View Research - U.S. electric air duster market",
+    "https://www.grandviewresearch.com/horizon/outlook/electric-air-duster-market/united-states"
+   ],
+   [
+    "Grand View Research - U.S. solvents market",
+    "https://www.grandviewresearch.com/industry-analysis/us-solvents-market-report"
+   ]
+  ]
+ },
+ {
+  "cat": "Spill control & absorbents",
+  "batch": 4,
+  "rank": 23,
+  "tam": 1080,
+  "pro_tam": 1026,
+  "pro": 0.95,
+  "assessment": "Keep the TAM and professional orientation.",
+  "verdict": "keep",
+  "priority": "Medium - TAM validates; taxonomy needs work",
+  "read": "Keep the TAM and professional orientation. This is one of the strongest externally supported categories in the workbook. The main change should be end-market taxonomy.",
+  "suggest": "Keep TAM/high confidence; re-cut the 45% Industrial MRO bucket because current sources show oil & gas and chemical processing as major identifiable verticals.",
+  "confidence": "High",
+  "current": [
+   [
+    "Industrial MRO",
+    45,
+    "Manufacturing, chemical, warehouses, utilities, oil & gas"
+   ],
+   [
+    "Automotive & Fleet",
+    20,
+    "Repair, fleet and transport"
+   ],
+   [
+    "Marine",
+    8,
+    "Marine spill response"
+   ],
+   [
+    "Facilities & Janitorial",
+    8,
+    "Hospitals, labs, schools, commercial"
+   ],
+   [
+    "Construction & Contractor",
+    6,
+    "Jobsites"
+   ],
+   [
+    "Water & Wastewater",
+    5,
+    "Utilities"
+   ],
+   [
+    "Consumer / DIY",
+    4,
+    "Garage/home"
+   ],
+   [
+    "Other",
+    4,
+    "Military, aviation, emergency response"
+   ]
+  ],
+  "evidence": [
+   "MarketsandMarkets published a fresh August 2026 U.S. industrial absorbents report showing $1,012.7M in 2023 and $1,087.0M in 2025. That is effectively identical to Claude's $1.08B and supports High confidence in the TAM.",
+   "The same report exposes why \"Industrial MRO 45%\" is too aggregated: it lists 2025 oil & gas at $542.6M, chemical at $247.3M, food processing at $149.6M and healthcare at $100.6M. Grand View separately says oil & gas represented 28.3% of its U.S. industrial absorbents market, reinforcing the point that major verticals should be named.",
+   "Regulation provides recurring demand. EPA SPCC guidance explicitly recognizes sorbent materials and spill kits as active containment measures for regulated oil facilities. The category is therefore not just discretionary housekeeping spend.",
+   "The 95% pro share is consistent with the regulatory/industrial use case; consumer garage spill products are a small tail."
+  ],
+  "sugg": [
+   [
+    "Keep",
+    "Retain ~$1.08B TAM and High confidence.",
+    "",
+    "Very high - current published U.S. data lands at ~$1.087B in 2025."
+   ],
+   [
+    "Keep",
+    "Retain ~95% professional orientation.",
+    "",
+    "High - industrial/regulatory use overwhelmingly dominates."
+   ],
+   [
+    "Split",
+    "Break Industrial MRO into Oil & Gas; Chemical/Petrochemical; General Manufacturing/Logistics. Consider separate Food Processing and Healthcare/Lab verticals.",
+    "",
+    "High - current U.S. market source reports these verticals directly."
+   ],
+   [
+    "Refine",
+    "Reduce Auto/Fleet if its 20% duplicates transportation/logistics demand embedded in other market studies; reconcile to supplier SKU/channel data.",
+    "",
+    "Medium."
+   ],
+   [
+    "Add context",
+    "Describe absorbents/spill kits as partly compliance-driven recurring consumables under SPCC/workplace spill preparedness.",
+    "",
+    "High."
+   ]
+  ],
+  "sources": [
+   [
+    "MarketsandMarkets - U.S. industrial absorbents, Aug. 2026",
+    "https://www.marketsandmarkets.com/Market-Reports/geography/industrial-absorbent-market/us"
+   ],
+   [
+    "Grand View Research - U.S. industrial absorbents",
+    "https://www.grandviewresearch.com/industry-analysis/us-industrial-absorbents-market-report"
+   ],
+   [
+    "EPA - SPCC guidance and references",
+    "https://www.epa.gov/oil-spills-prevention-and-preparedness-regulations/oil-spills-prevention-and-preparedness-guidance"
+   ],
+   [
+    "EPA - secondary containment under SPCC",
+    "https://www.epa.gov/oil-spills-prevention-and-preparedness-regulations/secondary-containment-each-container-under-spcc"
+   ]
+  ]
+ },
+ {
+  "cat": "Lab & cleanroom chemicals",
+  "batch": 4,
+  "rank": 25,
+  "tam": 1000,
+  "pro_tam": 1000,
+  "pro": 1.0,
+  "assessment": "Directionally plausible, but the current $1.0B is not fully sourced.",
+  "verdict": "refine",
+  "priority": "High - $685M sourced, ~$315M add-ons need bridge",
+  "read": "Directionally plausible, but the current $1.0B is not fully sourced. Keep 100% professional, expose regulated verticals, and make the ~$315M bridge above cleanroom disinfectants explicit.",
+  "suggest": "Replace the 75% \"Other\" bucket with named regulated verticals. Pharma/biopharma alone represented 61.2% of the U.S. cleanroom disinfectant market in 2025.",
+  "confidence": "Medium",
+  "current": [
+   [
+    "Other",
+    75,
+    "Pharma/biotech, compounding pharmacy, semiconductor, medical device, research labs"
+   ],
+   [
+    "Industrial MRO",
+    10,
+    "Electronics, aerospace, food QC labs"
+   ],
+   [
+    "Facilities & Janitorial",
+    10,
+    "Contract cleanroom cleaners, hospital SPD"
+   ],
+   [
+    "Water & Wastewater",
+    5,
+    "Utility/environment labs"
+   ]
+  ],
+  "evidence": [
+   "Emergen Research sizes the U.S. cleanroom disinfectant market at $685M in 2025 and says pharmaceutical & biopharmaceutical represented 61.2% of that market. That provides a strong anchor for the largest component of Claude's $1.0B.",
+   "Claude then adds roughly $200M for critical-cleaning/lab detergents and $100M for decontaminants/instrument cleaners. Those additions are plausible but currently knowledge-based rather than independently sized, so the model should show them as an explicit bridge rather than a single sourced TAM.",
+   "USP <797> sterile compounding requirements and FDA aseptic-processing practices create structurally recurring cleaning/disinfection demand in pharmacy and sterile drug manufacturing. The demand is process/compliance linked, not generic janitorial.",
+   "The 75% \"Other\" bucket destroys useful economics. Pharma/biopharma, medical device, semiconductor/electronics, hospital/compounding and research/analytical labs have different contamination-control intensity, channel structure and willingness to pay."
+  ],
+  "sugg": [
+   [
+    "Keep",
+    "Retain 100% professional share.",
+    "",
+    "High."
+   ],
+   [
+    "Bridge",
+    "Show $685M published cleanroom disinfectants + approximately $315M of critical cleaners/decontaminants as separate components. Do not imply the full $1.0B is directly sourced.",
+    "",
+    "High."
+   ],
+   [
+    "Split",
+    "Replace 75% Other with named verticals: Pharma/Biopharma; Medical Device; Semiconductor/Electronics; Hospitals/Compounding; Research/Analytical/Food/Environmental Labs.",
+    "",
+    "Very high."
+   ],
+   [
+    "Sensitivity",
+    "A useful starting allocation is Pharma/Biopharma 50-60% of total, Semiconductor/Electronics 10-15%, Medical Device 8-12%, Hospital/Compounding 8-12%, and Research/Other Labs 10-20%. Treat as a review range, not a replacement.",
+    "Pharma/Biopharma 50-60%; Semiconductor/Electronics 10-15%; Medical Device 8-12%; Hospital/Compounding 8-12%; Research/Other Labs 10-20%",
+    "Medium - cleanroom disinfectant mix does not perfectly map to the broader $1.0B category."
+   ],
+   [
+    "Confidence",
+    "Keep Medium, or Medium-Low until the non-disinfectant $315M is independently triangulated.",
+    "",
+    "High."
+   ]
+  ],
+  "sources": [
+   [
+    "Emergen Research - U.S. cleanroom disinfectant market",
+    "https://www.emergenresearch.com/industry-report/us-cleanroom-disinfectant-market"
+   ],
+   [
+    "USP - General Chapter <797>",
+    "https://doi.usp.org/USPNF/USPNF_M99925_08_01.html"
+   ],
+   [
+    "FDA - sterile drug products produced by aseptic processing",
+    "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/sterile-drug-products-produced-aseptic-processing-current-good-manufacturing-practice"
+   ]
+  ]
+ },
+ {
+  "cat": "Patching & fillers",
+  "batch": 4,
+  "rank": 27,
+  "tam": 900,
+  "pro_tam": 495,
+  "pro": 0.55,
+  "assessment": "TAM is plausible but broad.",
+  "verdict": "refine",
+  "priority": "Medium - residential is not the same as DIY",
+  "read": "TAM is plausible but broad. The mix likely over-interprets a residential market statistic as DIY, and the current table contains an internal scope inconsistency around automotive body filler.",
+  "suggest": "",
+  "confidence": "Low",
+  "current": [
+   [
+    "Consumer / DIY",
+    45,
+    "Big-box/hardware patch kits"
+   ],
+   [
+    "Construction & Contractor",
+    35,
+    "Painters, remodelers, carpenters, drywall finishers"
+   ],
+   [
+    "Facilities & Janitorial",
+    15,
+    "Multifamily make-ready, hospitality, institutional"
+   ],
+   [
+    "Automotive & Fleet",
+    3,
+    "Polyester body fillers sold through same channels"
+   ],
+   [
+    "Industrial MRO",
+    2,
+    "Facility touch-up"
+   ]
+  ],
+  "evidence": [
+   "Future Market Insights says residential represented 54.2% of the global spackling-paste market in 2025. That supports residential as the largest end use, but residential work includes professional painters, remodelers and multifamily maintenance. It does not validate a 45% DIY share.",
+   "DAP markets major spackling products to both DIY and professional users, including products positioned for \"professional repairs.\" This supports a mixed channel rather than a simple retail-consumer split.",
+   "There is an internal scope inconsistency: Claude's TAM methodology explicitly says automotive body filler is excluded, while the end-market table allocates 3% to Automotive & Fleet based on polyester body fillers. Either remove that 3% or deliberately include a defined body-filler submarket in the TAM.",
+   "The biggest unresolved scope question is whether wood fillers/putties and glazing putty belong in this bucket or should be separated from wall patch/spackle. The current $900M adds roughly $200M for those products without a clean published source."
+  ],
+  "sugg": [
+   [
+    "Correct",
+    "Resolve the automotive-body-filler contradiction: either exclude Auto/Fleet from the mix or add body filler explicitly to TAM scope.",
+    "",
+    "High."
+   ],
+   [
+    "Sensitivity",
+    "Test Consumer/DIY at 30-40% and professional at 60-70%, rather than treating 54.2% residential as equivalent to consumer.",
+    "Consumer/DIY 30-40%; professional 60-70%",
+    "Medium."
+   ],
+   [
+    "Refine",
+    "Rename Facilities & Janitorial to Property / Institutional Maintenance for multifamily make-ready, hospitality, schools and facilities repair.",
+    "",
+    "High - closer to purchaser/use case."
+   ],
+   [
+    "Bridge",
+    "Separate wall patch/spackle from wood fillers/putties/glazing putty in the TAM build.",
+    "",
+    "High."
+   ],
+   [
+    "Confidence",
+    "Low remains appropriate until the $200M non-spackle add-on is sourced.",
+    "",
+    "High."
+   ],
+   [
+    "Consumer / DIY",
+    "Illustrative sensitivity",
+    "30-40%",
+    "Retail demand remains important, but residential jobs include professionals."
+   ],
+   [
+    "Construction / trades",
+    "Illustrative sensitivity",
+    "40-50%",
+    "Painters, remodelers, drywall and carpentry contractors."
+   ],
+   [
+    "Property / institutional maintenance",
+    "Illustrative sensitivity",
+    "10-15%",
+    "Multifamily turn, hospitality, schools, facilities."
+   ],
+   [
+    "Other / specialty",
+    "Illustrative sensitivity",
+    "5-10%",
+    "Wood repair and industrial touch-up depending on scope; auto only if TAM includes body filler."
+   ]
+  ],
+  "sources": [
+   [
+    "Future Market Insights - spackling paste market",
+    "https://www.futuremarketinsights.com/reports/spackling-paste-market"
+   ],
+   [
+    "DAP - patch and repair products",
+    "https://www.dap.com/products/patch-repair"
+   ],
+   [
+    "DAP - Alex Flex Flexible Spackling",
+    "https://www.dap.com/products/patch-repair/alex-flexflexible-spackling"
+   ],
+   [
+    "DAP - Alex Plus Spackling",
+    "https://www.dap.com/products/patch-repair/alex-plus-spackling"
+   ]
+  ]
+ },
+ {
+  "cat": "Removers (graffiti, adhesive, paint)",
+  "batch": 4,
+  "rank": 28,
+  "tam": 900,
+  "pro_tam": 495,
+  "pro": 0.55,
+  "assessment": "Challenge the current consumer mix and update regulatory context.",
+  "verdict": "correct",
+  "priority": "High - 2026 methylene chloride rules matter",
+  "read": "Challenge the current consumer mix and update regulatory context. The combined category is reasonable for a professional-brands map, but paint stripping, adhesive/mastic removal and graffiti removal behave differently.",
+  "suggest": "Update for the April 28, 2026 methylene chloride commercial-use prohibition. This is a real formulation/channel reset, not a generic long-term regulatory risk.",
+  "confidence": "Low",
+  "current": [
+   [
+    "Consumer / DIY",
+    40,
+    "Furniture/home refinishing; sticker/goo removal"
+   ],
+   [
+    "Construction & Contractor",
+    25,
+    "Painting/restoration; flooring mastic"
+   ],
+   [
+    "Facilities & Janitorial",
+    15,
+    "Graffiti, gum, adhesive residue"
+   ],
+   [
+    "Industrial MRO",
+    10,
+    "Industrial cleaning/removal"
+   ],
+   [
+    "Automotive & Fleet",
+    6,
+    "Body/refinish/removal"
+   ],
+   [
+    "Marine",
+    2,
+    "Marine stripping"
+   ],
+   [
+    "Other",
+    2,
+    "Aerospace/military"
+   ]
+  ],
+  "evidence": [
+   "The 40% DIY share looks high for the combined category. Grand View Research says residential DIY was 31.9% of global paint-remover revenue in 2025. Adhesive and graffiti remover submarkets include many professional-only products, which should pull the blended DIY share lower.",
+   "3M explicitly labels multiple adhesive remover products \"For industrial/occupational use only. Not for consumer sale or use.\" Sherwin-Williams positions Watch Dog graffiti remover as professional-strength for commercial assets such as road signs, transit vehicles, security doors, control boxes and facilities. Those examples support a larger pro mix than the current 55%.",
+   "Regulation is not just a future risk. EPA now prohibits most industrial/commercial uses of methylene chloride after April 28, 2026, including paint/coating removal and adhesive/caulk removal, with narrow continued-use exceptions under workplace controls and a limited furniture-refinishing extension through May 8, 2029.",
+   "That rule accelerates reformulation and may increase price/mix for safer alternatives. It also means historical market data containing legacy methylene chloride products may not map cleanly to the post-April-2026 market."
+  ],
+  "sugg": [
+   [
+    "Update",
+    "Rewrite methylene chloride commentary to reflect that most commercial/industrial uses are already prohibited as of April 28, 2026, not merely subject to future pressure.",
+    "",
+    "Very high - EPA final-rule timing."
+   ],
+   [
+    "Sensitivity",
+    "Test DIY at 25-35% and pro at 65-75% for the combined category.",
+    "DIY 25-35%; pro 65-75%",
+    "Medium-High - paint removers alone are ~32% residential DIY globally, while adhesive/graffiti removers skew professional."
+   ],
+   [
+    "Split",
+    "Show product-family sub-lines: paint/coating removers; adhesive/mastic/caulk removers; graffiti/gum/label removers; automotive/specialty removers.",
+    "",
+    "High."
+   ],
+   [
+    "Add context",
+    "Treat 2026-29 as a formulation transition period where low-VOC, benzyl alcohol/DBE/other alternative chemistries can gain share and pricing.",
+    "",
+    "Medium - direction strong, exact economics supplier-specific."
+   ],
+   [
+    "Confidence",
+    "Low remains appropriate until the ~$240M non-paint-remover add-on is independently sized.",
+    "",
+    "High."
+   ]
+  ],
+  "sources": [
+   [
+    "EPA - risk management for methylene chloride",
+    "https://www.epa.gov/assessing-and-managing-chemicals-under-tsca/risk-management-methylene-chloride"
+   ],
+   [
+    "EPA - 2024 methylene chloride compliance guide",
+    "https://nepis.epa.gov/Exe/ZyPURL.cgi?Dockey=P101B1AD.TXT"
+   ],
+   [
+    "Grand View Research - paint removers market",
+    "https://www.grandviewresearch.com/industry-analysis/paint-removers-market-report"
+   ],
+   [
+    "3M - Adhesive Remover",
+    "https://www.3m.com/3M/en_US/p/d/b40070711/"
+   ],
+   [
+    "Sherwin-Williams - Watch Dog graffiti remover",
+    "https://www.sherwin-williams.com/homeowners/products/watch-dog-smooth-surface-graffiti-remover"
+   ]
+  ]
+ },
+ {
+  "cat": "Penetrants",
+  "batch": 4,
+  "rank": 31,
+  "tam": 750,
+  "pro_tam": 487.5,
+  "pro": 0.65,
+  "assessment": "This category needs a rebuild of the TAM logic before the end-market percentages are trusted.",
+  "verdict": "correct",
+  "priority": "Very high - WD-40 anchor contains a factual/scope error",
+  "read": "This category needs a rebuild of the TAM logic before the end-market percentages are trusted. The current WD-40 anchor contains both a factual error and a scope error.",
+  "suggest": "Correct the WD-40 U.S. anchor immediately. FY2025 total WD-40 Company U.S. net sales were $210.2M, so the workbook's $230-260M estimate for U.S. Multi-Use alone cannot be correct. Decide whether this category is true penetrating oils or broader multi-use maintenance sprays.",
+  "confidence": "Low",
+  "current": [
+   [
+    "Consumer / DIY",
+    32,
+    "Retail/household"
+   ],
+   [
+    "Automotive & Fleet",
+    25,
+    "Repair, maintenance, fleet"
+   ],
+   [
+    "Industrial MRO",
+    20,
+    "Plants, machinery, maintenance"
+   ],
+   [
+    "Construction & Contractor",
+    8,
+    "Trades/jobsites"
+   ],
+   [
+    "Agriculture / Turf",
+    6,
+    "Equipment maintenance"
+   ],
+   [
+    "Plumbing",
+    4,
+    "Stuck hardware/fittings"
+   ],
+   [
+    "HVAC/R",
+    3,
+    "Service"
+   ],
+   [
+    "Marine",
+    2,
+    "Marine maintenance"
+   ]
+  ],
+  "evidence": [
+   "The strongest factual correction in Batch 4: WD-40 Company's FY2025 10-K reports total company U.S. net sales of $210.220M. The workbook estimates U.S. WD-40 Multi-Use alone at $230-260M. That cannot be true because it exceeds the company's entire U.S. revenue across all products.",
+   "The $224.811M Multi-Use figure in the 10-K is for the entire Americas segment, which includes the U.S., Canada and Latin America. It cannot be used as a U.S.-only penetrant anchor.",
+   "More fundamentally, WD-40 Multi-Use is not a pure penetrating oil. WD-40 itself markets it as a product that protects against rust/corrosion, penetrates stuck parts, displaces moisture and lubricates. Using its full sales as \"penetrant\" TAM double-counts functionality with lubricants and rust/corrosion control.",
+   "This is not an edge case: Fluid Film likewise describes the same product as a penetrant, lubricant and corrosion preventive. The map therefore needs a rule for assigning multifunction aerosol maintenance products to one category or allocating revenue by primary use."
+  ],
+  "sugg": [
+   [
+    "Correct now",
+    "Delete the $230-260M U.S. WD-40 Multi-Use estimate. Replace with the disclosed facts: Americas Multi-Use $224.8M; total company U.S. sales $210.2M in FY2025.",
+    "",
+    "Very high - SEC filing."
+   ],
+   [
+    "Decide scope",
+    "Choose one of two definitions: (A) \"True penetrating oils / rust release\" or (B) \"Multi-use maintenance sprays & penetrants.\" Do not mix the two.",
+    "",
+    "Very high."
+   ],
+   [
+    "Rebuild TAM",
+    "If using broad case B, estimate category from supplier/product-line sales and avoid counting the same WD-40/Fluid Film dollars again in lubricants or rust control. If using narrow case A, $750M is likely too high and should be rebuilt.",
+    "",
+    "High."
+   ],
+   [
+    "Sensitivity",
+    "Broad multi-use case: test ~50-60% pro / 40-50% consumer. Narrow true-penetrant case: test ~70-80% pro / 20-30% consumer.",
+    "Broad: ~50-60% pro / 40-50% consumer; Narrow: ~70-80% pro / 20-30% consumer",
+    "Medium - classification determines the answer."
+   ],
+   [
+    "Taxonomy",
+    "Keep Automotive/Fleet and Industrial MRO as major verticals, but add explicit maintenance-trades/equipment-service logic instead of treating every household use of WD-40 as penetrant demand.",
+    "",
+    "High."
+   ]
+  ],
+  "sources": [
+   [
+    "WD-40 Company FY2025 Form 10-K",
+    "https://www.sec.gov/Archives/edgar/data/105132/000010513225000067/wdfc-20250831.htm"
+   ],
+   [
+    "WD-40 - Multi-Use product positioning",
+    "https://www.wd40.com/"
+   ],
+   [
+    "WD-40 - industrial size Multi-Use",
+    "https://www.wd40.com/products/industrial-size/"
+   ],
+   [
+    "Fluid Film - aerosol and bulk technical data",
+    "https://www.fluid-film.com/products/fluid-film-aerosol-non-aerosol-bulk/"
+   ]
+  ]
+ },
+ {
+  "cat": "Rust & corrosion control",
+  "batch": 4,
+  "rank": 33,
+  "tam": 700,
+  "pro_tam": 420,
+  "pro": 0.6,
+  "assessment": "Keep Low confidence.",
+  "verdict": "keep",
+  "priority": "High - heavy overlap with penetrants/lubricants",
+  "read": "Keep Low confidence. The current order-of-magnitude is possible for packaged professional/consumer corrosion products, but the external sources span very different scopes and multifunction products create major overlap with penetrants and lubricants.",
+  "suggest": "",
+  "confidence": "Low",
+  "current": [
+   [
+    "Industrial MRO",
+    35,
+    "Plants/equipment preservation"
+   ],
+   [
+    "Consumer / DIY",
+    25,
+    "Retail rust converters/removers/protectants"
+   ],
+   [
+    "Automotive & Fleet",
+    15,
+    "Undercoating, chassis, maintenance"
+   ],
+   [
+    "Marine",
+    8,
+    "Saltwater corrosion"
+   ],
+   [
+    "Construction & Contractor",
+    7,
+    "Structural/field maintenance"
+   ],
+   [
+    "Agriculture / Turf",
+    5,
+    "Equipment"
+   ],
+   [
+    "Electrical",
+    5,
+    "Electrical/terminal protection"
+   ]
+  ],
+  "evidence": [
+   "Fact.MR's July 2026 work sizes the global acid-free rust remover market at only $270M in 2026, with MRO representing 35% of end users and retail 35% of sales channels. That is useful as a lower-scope cross-check, but it is only rust removal - not converters, preventive coatings, cavity waxes, underbody protectants and corrosion inhibitors.",
+   "Claude's $1.26B upper-bound logic comes from a broad global rust-converter/inhibitor market and then assumes roughly half is hand-held/packaged. That bridge is still assumption-heavy, so Low confidence is appropriate.",
+   "Fluid Film is direct evidence of category overlap: the product is simultaneously sold as corrosion prevention, lubrication and penetration, in aerosol, gallon, pail and drum formats, across auto, marine, agriculture, industrial and home use. Counting it fully in three TAMs would materially inflate the combined opportunity.",
+   "Aviation/aerospace and government/military deserve visibility. Fluid Film cites aviation/aircraft use and long-standing military/naval corrosion-control applications. Those customers differ economically from general Industrial MRO and can support premium, spec-driven products."
+  ],
+  "sugg": [
+   [
+    "Keep",
+    "Retain Low confidence and broad $0.45-1.3B range.",
+    "",
+    "High - external markets cover non-comparable product scopes."
+   ],
+   [
+    "Scope rule",
+    "Define what belongs here: rust converters/removers, temporary corrosion preventives, underbody/cavity protection, VCI/contact protectants, etc. Explicitly exclude anti-corrosive paints already in Paints & Coatings.",
+    "",
+    "Very high."
+   ],
+   [
+    "De-duplicate",
+    "Assign multifunction products such as Fluid Film to one primary category or allocate revenue once across functions. Apply the same rule to WD-40 and similar aerosols.",
+    "",
+    "Very high."
+   ],
+   [
+    "Taxonomy",
+    "Split Industrial MRO into General Manufacturing/Equipment Preservation and Aviation/Aerospace/Military where data permit; rename Construction to Infrastructure/Structural/Utility Maintenance.",
+    "",
+    "Medium-High."
+   ],
+   [
+    "Sensitivity",
+    "60% pro is plausible; test 55-70% depending whether retail rust removers/converters or industrial preservation/undercoating products dominate the defined scope.",
+    "55-70% pro",
+    "Medium."
+   ]
+  ],
+  "sources": [
+   [
+    "Fact.MR - acid-free rust removers, July 2026",
+    "https://www.factmr.com/media-release/2026/acid-free-rust-removers-market"
+   ],
+   [
+    "Fluid Film - products and applications",
+    "https://www.fluid-film.com/products/"
+   ],
+   [
+    "Fluid Film - aerosol/non-aerosol/bulk technical data",
+    "https://www.fluid-film.com/products/fluid-film-aerosol-non-aerosol-bulk/"
+   ],
+   [
+    "Fluid Film - company/application overview",
+    "https://www.fluid-film.com/"
+   ]
+  ]
+ }
+]

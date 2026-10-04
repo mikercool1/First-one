@@ -1,0 +1,27 @@
+{
+ "3": {
+  "takeaways": [
+   "The largest risk in this batch is category architecture, not arithmetic. Metalworking fluids are production-process chemistry, not primarily 'Industrial MRO'; concrete repair needs an infrastructure/public-works lens; and grease should separate manufacturing/OEM demand from fleet maintenance.",
+   "Revenue-stage consistency is becoming important. Published market estimates can differ by roughly 2x when one source measures manufacturer-level chemistry revenue and another captures a broader downstream/product set. Grease and metalworking fluids both show this issue clearly.",
+   "Overlap controls need to be explicit. Caulks/sealants can overlap roofing & waterproofing and firestop; adhesives can overlap anchoring/construction adhesives, epoxies, cyanoacrylates and PVC cements. The end-market mix is only meaningful if the TAM boundary follows the same exclusions.",
+   "Ice melt is structurally seasonal and weather-sensitive. A smooth CAGR is less informative than normalized winter severity, snowfall/ice-day exposure and 3-5 year demand averages.",
+   "Marine regulation needs a factual update: Washington's possible copper-antifouling restriction did not take effect in 2026; the state postponed it and will report again by June 30, 2029. California has instead enforced a copper leach-rate standard for recreational-vessel products since 2018.",
+   "Claude's core professional-vs-consumer instincts remain reasonably good in this batch. The highest-value fixes are structural: relabel metalworking fluids around manufacturing rather than MRO; expose infrastructure in concrete; reconcile manufacturer-vs-downstream TAM for grease; prevent category overlap in sealants/adhesives; normalize ice-melt weather; and correct the Washington marine-regulation assumption. None of these recommendations have been written back to the source workbook."
+  ]
+ },
+ "4": {
+  "takeaways": [
+   "The largest issue in this batch is category architecture. Solvents/dusters combine two unlike product markets, while penetrants and rust/corrosion products overlap materially with lubricants and each other.",
+   "Spill control is the cleanest external validation: current 2026 research puts the U.S. industrial absorbents market at about $1.09B in 2025, essentially on top of Claude's $1.08B.",
+   "Lab/cleanroom is directionally credible at $1.0B, but the published cleanroom-disinfectant anchor is $685M. The remaining roughly $315M of detergents/decontaminants is a meaningful unsourced bridge and should be labeled as such.",
+   "For patching/fillers and removers, consumer exposure looks somewhat overstated. Residential end use cannot be equated with DIY, and many adhesive/graffiti remover products are explicitly industrial/professional.",
+   "Regulatory language needs to be current as of 2026. Methylene chloride is now prohibited for most industrial/commercial uses after April 28, 2026; aerosol HFC limits do not, by themselves, force a transition away from HFC-152a because its GWP is below the 150 threshold.",
+   "Best validated: Spill Control & Absorbents. Claude's $1.08B TAM is essentially confirmed by a fresh 2026 U.S. market source.",
+   "Most important factual correction: Penetrants. The current WD-40 U.S. sales anchor is impossible relative to the company's disclosed total U.S. revenue and must be corrected before using it to derive market share/TAM.",
+   "Most important regulatory correction: Removers. Most commercial/industrial methylene chloride uses became prohibited on April 28, 2026, so this should be treated as a current market reset.",
+   "Most important taxonomy work: Solvents/Dusters and Lab/Cleanroom. Both headline buckets hide submarkets with very different end users and economics.",
+   "Most important cross-category control: establish a one-time revenue-assignment rule for multifunction maintenance products so penetrants, lubricants and corrosion control do not double count the same sales.",
+   "Method note: This memo is an outside-in research overlay. Suggested percentages are review ranges, not replacement values. The source workbook was not edited."
+  ]
+ }
+}

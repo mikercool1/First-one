@@ -1,0 +1,32 @@
+{
+ "1": {
+  "takeaways": [
+   "Biggest substantive issue: Paints/coatings. The architectural PRO/DIY split is very good, but automotive refinish appears under-allocated relative to the TAM scope.",
+   "Biggest channel issue: Pool chemicals/testing. Pool service/dealer/builder professionals should be a named core end market, not \"Other,\" and a higher professional-share sensitivity is warranted.",
+   "Biggest taxonomy issue: Pest/turf/ag. Structural pest management should be its own professional route-service channel; pro turf/landscape/golf should be distinguished from specialty agriculture.",
+   "Strongest existing work: Floor & carpet care. The 80% facility/janitorial orientation is well supported; the next step is sub-segmentation, not a wholesale recut.",
+   "General cleaners are also directionally strong, but food & beverage processing sanitation deserves a distinct analytical lens because of compliance, dosing, CIP/open-plant cleaning and service intensity.",
+   "This is an outside-in audit of end-market allocation, not a replacement market model. Suggested ranges are intentionally broad where public data do not map cleanly to Claude's exact product scope.",
+   "I prioritized current industry associations, SEC filings/company presentations and recent market research. Manufacturer pages were used mainly to understand customer/application structure, not to size a market.",
+   "A recurring issue across categories is taxonomy: purchaser, applicator, channel and physical end-use are sometimes mixed. Before forcing percentages to 100%, Claude should choose one consistent dimension for the end-market table and use a separate channel table if needed.",
+   "Cross-category overlap should be explicitly flagged. Examples: floor disinfectants vs. the separate Disinfectants category; concrete sealers vs. coatings/waterproofing; automotive refinish inside special-purpose coatings; pool/water test kits crossing into water treatment and HVAC/R.",
+   "Where a range is shown, it is a sensitivity for Claude to test against SKU/channel evidence. It is not a directive to overwrite the existing number."
+  ]
+ },
+ "2": {
+  "takeaways": [
+   "Scope consistency matters more than false precision. Several TAM anchors include factory/OEM or broad consumer demand, while the end-market table is organized around professional field users. That can mechanically distort pro share even if every individual percentage looks plausible.",
+   "'Facilities & Janitorial' is too broad in hygiene categories. Healthcare, education, foodservice, hospitality, BSC/commercial office and government have different chemistry, regulation, service models and willingness to pay.",
+   "'Other' should not hide strategic verticals. Controlled environments in wipes, OEM wood finishing in wood coatings, and food processing in disinfection are each large or economically distinctive enough to name.",
+   "Observed distributor SKU mix is useful evidence of channel presence, not revenue share. High-spec categories such as cleanroom wipes can generate many SKU variants and therefore look disproportionately large in a SKU-count view.",
+   "Wood finishes - Major challenge: Either add a 45-60% OEM/factory finishing lens or narrow the TAM. Current broad TAM + 15% OEM is internally inconsistent.",
+   "Hand cleaners / soaps / sanitizers - Challenge: 50% pro likely understates away-from-home institutional demand; add healthcare, foodservice and industrial/trades.",
+   "Disinfectants / sanitizers - Challenge taxonomy: Healthcare and food/contact sanitation should be explicit; professional share likely deserves 70-80% sensitivity for a pro-brand framing.",
+   "Roofing / waterproofing - Refine: Likely 85-90% pro/commercial; split new construction from reroof/restoration.",
+   "Wipes / wipers - Refine: Name controlled environments; revisit consumer share if mass consumer disinfecting wipes remain excluded.",
+   "Lubricants / oils - Mostly right: Keep overall mix but expose food processing and aviation/precision MRO.",
+   "Specialty janitorial - Mostly right: Keep ~90% pro but split the 78% Facilities bucket into real institutional verticals.",
+   "I would prioritize Claude's next edits as scope/taxonomy checks, not percentage replacement. Wood finishes is the clearest true mismatch. Hand hygiene and disinfectants need a more professional/institutional framing. Roofing likely needs a higher pro sensitivity. Wipes and lubricants mainly need better vertical labels. Specialty janitorial is directionally strong and mostly needs to be decomposed into actionable institutional end markets."
+  ]
+ }
+}

@@ -1,0 +1,1440 @@
+[
+ {
+  "cat": "Paints, primers & coatings",
+  "batch": 1,
+  "rank": 1,
+  "tam": 24300,
+  "pro_tam": 17000,
+  "pro": 0.7,
+  "assessment": "Challenge one bucket; otherwise strong",
+  "verdict": "challenge",
+  "priority": "",
+  "read": "Claude's architectural contractor / DIY split is impressively close to current ACA data. The main issue is scope consistency: the TAM build explicitly includes special-purpose coatings, and ACA places automotive refinish inside special-purpose. A 4% Automotive & Fleet bucket therefore looks too low if refinish remains in scope.",
+  "suggest": "Keep contractor about 42-46% and DIY about 21-24%. Explicitly carve automotive refinish about 11-14% and industrial maintenance/protective about 10-14%; use residual for traffic marking/aerosol/marine/other. Revisit Facilities to avoid double-counting contractor-applied maintenance paint.",
+  "confidence": "High",
+  "current": [
+   [
+    "Construction & Contractor",
+    45,
+    "Painting contractors, GCs; architectural contractor-applied share 63%"
+   ],
+   [
+    "Consumer / DIY",
+    22,
+    "37% of architectural is DIY"
+   ],
+   [
+    "Industrial MRO",
+    18,
+    "Industrial maintenance/protective, aerosol touch-up"
+   ],
+   [
+    "Facilities & Janitorial",
+    6,
+    "Facility managers, property maintenance"
+   ],
+   [
+    "Automotive & Fleet",
+    4,
+    "Undercoating, chassis/equipment paint (excl. OEM refinish)"
+   ],
+   [
+    "Other",
+    3,
+    "Agriculture equipment, utilities"
+   ],
+   [
+    "Marine",
+    2,
+    "Maintenance coatings for docks, workboats"
+   ]
+  ],
+  "evidence": [
+   "ACA reports architectural coatings at 46% of total U.S. coatings value in 2025 and expects 66% PRO / 34% DIY application in 2026. On Claude's architectural + special-purpose scope, that implies roughly 44% contractor-applied architectural and 22-23% DIY - essentially validating Claude's 45% / 22%.",
+   "ACA reports $3.16B of U.S. automotive refinish coatings in 2025. Relative to Claude's $24.3B point TAM, that alone is about 13%. Because ACA explicitly includes automotive refinish in special-purpose coatings, the current 4% Automotive & Fleet allocation is inconsistent unless refinish is intentionally excluded from the TAM.",
+   "ACA reports $2.67B of industrial maintenance/protective coatings in 2025, about 11% of Claude's category TAM. The current 18% Industrial MRO bucket may be absorbing aerosol / traffic-marking / other special-purpose coatings that should be made explicit.",
+   "Facilities & Janitorial is a legitimate purchaser/end-use lens, but it can overlap with both PRO architectural painting and protective maintenance. The taxonomy should choose purchaser, applicator or application consistently to avoid double counting."
+  ],
+  "sugg": [
+   [
+    "Construction & Contractor",
+    "Keep",
+    "42-46%",
+    "Strongly validated by ACA PRO architectural data."
+   ],
+   [
+    "Consumer / DIY",
+    "Keep",
+    "21-24%",
+    "Strongly validated by ACA DIY architectural data."
+   ],
+   [
+    "Industrial MRO",
+    "Split / likely lower",
+    "10-14% pure IM/protective",
+    "Use ACA industrial maintenance/protective as the core; park aerosol/traffic elsewhere."
+   ],
+   [
+    "Facilities & Janitorial",
+    "Review overlap",
+    "4-7%",
+    "Potential overlap with contractor/protective buckets."
+   ],
+   [
+    "Automotive & Fleet",
+    "Raise / clarify scope",
+    "11-14% if refinish is included",
+    "Automotive refinish is a major special-purpose market and should not disappear."
+   ],
+   [
+    "Other",
+    "Raise / redefine residual",
+    "4-8%",
+    "Explicitly include traffic marking and aerosol if full special-purpose TAM stays in scope."
+   ],
+   [
+    "Marine",
+    "Keep",
+    "2-4%",
+    "Low-single-digit placement is sensible."
+   ]
+  ],
+  "sources": [
+   [
+    "American Coatings Association / ChemQuest - State of the U.S. Paint and Coatings Industry 2026",
+    "https://www.paint.org/the-state-of-the-u-s-paint-and-coatings-industry-2026-geopolitics-on-steroids/"
+   ]
+  ]
+ },
+ {
+  "cat": "Automotive & fleet chemicals",
+  "batch": 1,
+  "rank": 2,
+  "tam": 9600,
+  "pro_tam": 3300,
+  "pro": 0.344,
+  "assessment": "Refine",
+  "verdict": "refine",
+  "priority": "",
+  "read": "The consumer-heavy framing is plausible for chemicals and appearance products, but chemical categories are much more balanced DIY/DIFM than the overall automotive aftermarket. IMR chemical-specific data show a near-even DIY/DIFM split across tracked chemical/service categories, with very large variation by product.",
+  "suggest": "Treat 55% Consumer / 38% Automotive & Fleet as directionally reasonable but a little DIY-heavy. Suggested sensitivity: Consumer about 48-55%, Automotive/Fleet about 40-47%; keep the small industrial/ag/marine buckets. Do not apply the overall aftermarket roughly 78/22 DIFM/DIY mix directly.",
+  "confidence": "Medium",
+  "current": [
+   [
+    "Consumer / DIY",
+    55,
+    "Retail car care, additives auto parts/mass"
+   ],
+   [
+    "Automotive & Fleet",
+    38,
+    "Dealers, independent shops, fleets, detailers, car washes"
+   ],
+   [
+    "Industrial MRO",
+    3,
+    "Plant vehicle/equipment upkeep"
+   ],
+   [
+    "Agriculture & Turf",
+    2,
+    "Farm equipment fuel treatments"
+   ],
+   [
+    "Marine",
+    2,
+    "Fuel stabilizers/cross-sold"
+   ]
+  ],
+  "evidence": [
+   "IMR's CCAMS tracks nearly 200 parts, chemicals and service categories separately. That is important here: automotive chemicals should not inherit the channel mix of the overall aftermarket.",
+   "IMR published a CCAMS summary showing automotive chemical parts & services near 52% DIY / 48% DIFM over the prior two years. The same summary shows gas treatment, windshield fluid and octane booster heavily DIY, while transmission/brake/engine flushes are heavily DIFM. This supports Claude's basic split but suggests professional usage may be modestly understated.",
+   "AAPEX/industry data show the overall aftermarket is roughly three-quarters DIFM. That is a useful boundary condition, not the right direct benchmark for this basket because appearance products and pour-in additives skew materially more DIY."
+  ],
+  "sugg": [
+   [
+    "Consumer / DIY",
+    "Keep / modestly lower",
+    "48-55%",
+    "Plausible for chemical-heavy basket; use sensitivity because product mix matters."
+   ],
+   [
+    "Automotive & Fleet",
+    "Modestly raise",
+    "40-47%",
+    "Service chemicals and flushes skew DIFM; pro channel may be understated."
+   ],
+   [
+    "Industrial MRO",
+    "Keep",
+    "2-4%",
+    "Small but real equipment/plant adjacency."
+   ],
+   [
+    "Agriculture & Turf",
+    "Keep",
+    "1-3%",
+    "Farm/off-road equipment adjacency."
+   ],
+   [
+    "Marine",
+    "Keep",
+    "1-3%",
+    "Fuel-stabilizer adjacency, still niche."
+   ]
+  ],
+  "sources": [
+   [
+    "IMR - Consumer Parts Category Research / CCAMS",
+    "https://www.automotiveresearch.com/research-topics/part-category-insights-consumers"
+   ],
+   [
+    "IMR company LinkedIn summary - automotive chemical DIY/DIFM",
+    "https://www.linkedin.com/posts/imr-inc-_diy-difm-imr-activity-7368711199598800898-nbHJ"
+   ],
+   [
+    "Auto Care Association - Auto Care Factbook",
+    "https://www.autocare.org/data-and-information/market-research/Auto-Care-Factbook"
+   ],
+   [
+    "AAPEX 2023 Automotive Aftermarket Industry Analysis",
+    "https://www.aapexshow.com/wp-content/uploads/2023/11/AAPEX23-0021_BR_MediaGuide_P4.pdf"
+   ]
+  ]
+ },
+ {
+  "cat": "Pest, turf & ag chemicals",
+  "batch": 1,
+  "rank": 3,
+  "tam": 5500,
+  "pro_tam": 3300,
+  "pro": 0.6,
+  "assessment": "Refine taxonomy; magnitude broadly plausible",
+  "verdict": "refine",
+  "priority": "",
+  "read": "The mix is directionally plausible once row-crop crop protection is excluded, but 'Facilities & Janitorial' is the wrong label for structural pest. Professional pest management is a large recurring route-service channel in its own right; professional turf/landscape/golf is also economically distinct from specialty agriculture.",
+  "suggest": "Rename/split: 'Professional Pest Management / Route Service' instead of Facilities & Janitorial; split 'Professional Turf / Landscape / Golf' from specialty ag/adjuvants where possible. Current 25% consumer is not obviously wrong, but confidence should stay medium because public product-spend splits are limited.",
+  "confidence": "Medium",
+  "current": [
+   [
+    "Agriculture & Turf",
+    45,
+    "Lawn & landscape, golf, sports turf, specialty ag adjuvants/indicators"
+   ],
+   [
+    "Facilities & Janitorial",
+    25,
+    "PMP structural pest service to commercial/residential buildings"
+   ],
+   [
+    "Consumer / DIY",
+    25,
+    "Big-box/retail pest and lawn"
+   ],
+   [
+    "Industrial MRO",
+    3,
+    "Plant/warehouse in-house pest programs"
+   ],
+   [
+    "Other",
+    2,
+    "Public health/mosquito districts"
+   ]
+  ],
+  "evidence": [
+   "NPMA reports $13.416B of U.S. structural pest control service revenue in 2025, with 16,565 firms; 81.4% have only one or two locations. Residential recurring revenue is 85.4%. That is a classic fragmented professional route-service end market, not generic janitorial.",
+   "NPMA reports 2024 pest-control product expenditures above $1B. This is not the whole Claude category, but it demonstrates that structural-pest chemical demand is economically meaningful enough to deserve a named end market.",
+   "SiteOne's model is built around professional landscape contractors, golf course superintendents and related technical support, reinforcing that professional turf/ornamental should be separated from specialty agriculture if the map is meant to inform commercial attractiveness.",
+   "The 25% DIY bucket remains plausible, but public current data do not cleanly split the exact scoped product universe. I would not force a new point estimate without SKU/channel work."
+  ],
+  "sugg": [
+   [
+    "Agriculture & Turf",
+    "Split / rename",
+    "40-50% combined",
+    "Separate pro turf/landscape/golf from specialty ag/adjuvants where possible."
+   ],
+   [
+    "Facilities & Janitorial",
+    "Rename",
+    "20-25%",
+    "Call it Professional Pest Management / Route Service."
+   ],
+   [
+    "Consumer / DIY",
+    "Keep",
+    "20-30%",
+    "Plausible; keep confidence medium."
+   ],
+   [
+    "Industrial MRO",
+    "Keep",
+    "2-5%",
+    "Many sites outsource pest service, so in-house is small."
+   ],
+   [
+    "Other",
+    "Keep",
+    "1-3%",
+    "Public health / mosquito control remains niche."
+   ]
+  ],
+  "sources": [
+   [
+    "NPMA - U.S. Pest Control Industry 2025",
+    "https://www.npmapestworld.org/your-business/latest-news/us-pest-control-industry-sustains-steady-growth-with-6-increase-in-2025/"
+   ],
+   [
+    "NPMA - U.S. Pest Control Industry 2024",
+    "https://www.npmapestworld.org/your-business/latest-news/us-pest-control-industry-shows-remarkable-resilience-with-nearly-8-growth-in-2024/"
+   ],
+   [
+    "SiteOne Landscape Supply - 2024 Annual Report",
+    "https://investors.siteone.com/~/media/Files/S/Siteone-IR/reports-and-presentations/2024-annual-report-web-ready.pdf"
+   ]
+  ]
+ },
+ {
+  "cat": "General cleaners & degreasers",
+  "batch": 1,
+  "rank": 4,
+  "tam": 4500,
+  "pro_tam": 3830,
+  "pro": 0.85,
+  "assessment": "Mostly agree; add end-market granularity",
+  "verdict": "keep",
+  "priority": "",
+  "read": "Claude's heavy Facilities + Industrial orientation is supported by current I&I/building-care research. The biggest missing lens is food & beverage processing sanitation, which behaves differently from generic Industrial MRO: higher compliance, dosing/service intensity, CIP/open-plant cleaning and recurring programmatic usage.",
+  "suggest": "Keep Facilities around 28-35% and Industrial/MRO broadly around 20-30%, but consider carving 8-12% of the total into a distinct Food & Beverage Processing / sanitation bucket (carved out, not additive). Automotive at 18% is possible but should be sensitivity-tested at roughly 12-18%.",
+  "confidence": "Medium-High",
+  "current": [
+   [
+    "Facilities & Janitorial",
+    32,
+    "Commercial buildings, schools, healthcare, hospitality"
+   ],
+   [
+    "Industrial MRO",
+    25,
+    "Plant maintenance, food & bev processing sanitation, metal fab"
+   ],
+   [
+    "Automotive & Fleet",
+    18,
+    "Shops, dealers, fleet/heavy equipment washing"
+   ],
+   [
+    "Consumer / DIY",
+    15,
+    "Retail pro-labeled (Simple Green/Purple Power/Krud Kutter)"
+   ],
+   [
+    "Construction & Contractor",
+    4,
+    "Contractor cleanup / surface cleaning"
+   ],
+   [
+    "Marine",
+    2,
+    "Marine/boatyard cleaning"
+   ],
+   [
+    "Agriculture & Turf",
+    2,
+    "Farm/equipment cleaning"
+   ],
+   [
+    "Other",
+    2,
+    "Other professional users"
+   ]
+  ],
+  "evidence": [
+   "Grand View's current U.S. building-care research reports a $4.53B U.S. market in 2025 with 70.4% contract-based sales and recurring use across healthcare, hospitality, offices, education and food service. That strongly supports Claude's large Facilities & Janitorial bucket.",
+   "Grand View's broader I&I research identifies manufacturing as the largest end-use and general-purpose cleaners as the largest product segment. That supports a large Industrial/MRO component.",
+   "Food & beverage processing sanitation is strategically different enough to break out. Diversey/Solenis sells dedicated CIP, open-plant cleaning, sanitizing, dosing/equipment and technical-service programs to food, beverage and dairy processors. Those characteristics often create stronger retention/specification dynamics than generic plant degreasing.",
+   "Automotive/fleet washing and shop degreasing are real, but 18% should be treated as a high-end sensitivity because broader I&I demand is dominated by facilities/manufacturing."
+  ],
+  "sugg": [
+   [
+    "Facilities & Janitorial",
+    "Keep",
+    "28-35%",
+    "Well supported by building-care and contract-procurement data."
+   ],
+   [
+    "Industrial MRO",
+    "Split",
+    "20-30% after carve-out",
+    "Keep large, but separate F&B sanitation from generic MRO."
+   ],
+   [
+    "Automotive & Fleet",
+    "Sensitivity-test",
+    "12-18%",
+    "Real submarket, but 18% may be high end."
+   ],
+   [
+    "Consumer / DIY",
+    "Keep",
+    "10-15%",
+    "Retail leakage of pro/heavy-duty brands is real."
+   ],
+   [
+    "Construction & Contractor",
+    "Keep",
+    "3-6%",
+    "Secondary but valid."
+   ],
+   [
+    "Marine",
+    "Keep",
+    "1-3%",
+    "Niche."
+   ],
+   [
+    "Agriculture & Turf",
+    "Keep",
+    "1-3%",
+    "Niche."
+   ],
+   [
+    "Other",
+    "Keep",
+    "1-3%",
+    "Residual only after taxonomy is cleaned."
+   ],
+   [
+    "[New lens] Food & Beverage Processing",
+    "Add distinct lens",
+    "8-12% carved out, not additive",
+    "Distinct compliance/service model; carve from Industrial/Facilities rather than adding to 100%."
+   ]
+  ],
+  "sources": [
+   [
+    "Grand View Research - I&I Cleaning Chemicals",
+    "https://www.grandviewresearch.com/industry-analysis/industrial-institutional-cleaning-chemicals-market"
+   ],
+   [
+    "Grand View Research - U.S. Building Care Chemicals",
+    "https://www.grandviewresearch.com/industry-analysis/us-building-care-chemicals-market-report"
+   ],
+   [
+    "Solenis / Diversey - Food & Beverage Production",
+    "https://www.solenis.com/en/products-and-services/food-and-beverage-production/"
+   ]
+  ]
+ },
+ {
+  "cat": "Pool & water testing",
+  "batch": 1,
+  "rank": 5,
+  "tam": 4190,
+  "pro_tam": 1890,
+  "pro": 0.451,
+  "assessment": "Challenge professional-channel sizing / taxonomy",
+  "verdict": "challenge",
+  "priority": "",
+  "read": "The 50% DIY view may overstate the end-user mix if 'end market' is meant to represent the economic buyer/channel. Pool Corp's customer base is overwhelmingly trade/professional, while Leslie's separately identifies a very large professional pool aftermarket. Claude's 'Other 20%' is really a core end market, not residual.",
+  "suggest": "Rename 'Other' to 'Pool Service / Dealer / Builder Professionals' and consider raising it to about 30-40%. Consumer/DIY could be about 35-45%; commercial/institutional pools about 15-22%; water/wastewater testing about 5-8%; HVAC/R about 2-4%. Pro/commercial share likely deserves a 50-60% sensitivity rather than about 45%.",
+  "confidence": "Medium",
+  "current": [
+   [
+    "Consumer / DIY",
+    50,
+    "Homeowners at Leslie's, big box, Amazon, local dealers"
+   ],
+   [
+    "Facilities & Janitorial",
+    22,
+    "Hotels, HOAs, clubs, municipal, fitness pools"
+   ],
+   [
+    "Other",
+    20,
+    "Residential pool service/builder pros buying for clients"
+   ],
+   [
+    "Water & Wastewater",
+    5,
+    "Test kits/reagents treatment operators"
+   ],
+   [
+    "HVAC/R",
+    3,
+    "Boiler/cooling tower test kits"
+   ]
+  ],
+  "evidence": [
+   "POOL Corp says it serves roughly 125,000 customers, the majority small businesses operating as independent contractors, professional pool servicers or specialty retailers. Its 2024 Investor Day estimated customer mix at 82% builder/sub/service professional, 14% commercial & other and 4% retailer. That is not chemical-only, but it is powerful evidence that the distribution ecosystem is trade-heavy.",
+   "Leslie's provides the balancing evidence: in residential pool aftermarket spend, it estimates roughly 70% DIY / 30% DIFM. Separately, it identifies a roughly $4.4B Professional Pool aftermarket consisting of service professionals and professional operators. In other words, DIY is large - but so is a stand-alone pro market.",
+   "The most obvious issue is taxonomic: service/builder professionals should never be called \"Other.\" They are a central end market and likely one of the most attractive ones for a professional-brands strategy.",
+   "I would not mechanically use POOL Corp's 82% customer mix as a chemical-share estimate because it includes equipment/builders and distribution-channel effects. Instead, use it to justify a pro-share sensitivity above Claude's current 45%."
+  ],
+  "sugg": [
+   [
+    "Consumer / DIY",
+    "Lower / sensitivity-test",
+    "35-45%",
+    "Large DIY base remains, but 50% looks high under buyer/end-market taxonomy."
+   ],
+   [
+    "Facilities & Janitorial",
+    "Rename / keep",
+    "15-22%",
+    "Call it Commercial / Institutional Pool Operators."
+   ],
+   [
+    "Other",
+    "Rename / raise",
+    "30-40%",
+    "Make Pool Service / Dealer / Builder Professionals a named core channel."
+   ],
+   [
+    "Water & Wastewater",
+    "Keep",
+    "5-8%",
+    "Reasonable testing adjacency."
+   ],
+   [
+    "HVAC/R",
+    "Keep",
+    "2-4%",
+    "Reasonable non-pool testing adjacency."
+   ]
+  ],
+  "sources": [
+   [
+    "POOL Corporation - 2025 Annual Report",
+    "https://www.sec.gov/Archives/edgar/data/0000945841/000094584126000079/a2025poolcorpannualreportp.pdf"
+   ],
+   [
+    "POOL Corp - 2024 Investor Day customer mix",
+    "https://ca.marketscreener.com/quote/stock/POOL-CORPORATION-10514/news/Pool-PoolCorp-2024-Investor-Day-Presentation-46233696/"
+   ],
+   [
+    "Leslie's - 2024 10-K",
+    "https://www.sec.gov/Archives/edgar/data/1821806/000095017024131476/lesl-20240928.htm"
+   ],
+   [
+    "Leslie's - 2025 10-K",
+    "https://www.sec.gov/Archives/edgar/data/1821806/000119312525323811/lesl-20251004.htm"
+   ]
+  ]
+ },
+ {
+  "cat": "Floor & carpet care",
+  "batch": 1,
+  "rank": 6,
+  "tam": 4000,
+  "pro_tam": 3520,
+  "pro": 0.88,
+  "assessment": "Agree; improve sub-segmentation",
+  "verdict": "keep",
+  "priority": "",
+  "read": "This is one of Claude's strongest mixes. Current market research shows a highly contract/professional supply model and demand concentrated in healthcare, retail, offices, education and other institutional facilities. 80% Facilities & Janitorial is directionally consistent.",
+  "suggest": "Keep the top-level mix largely intact. For usefulness, break Facilities/Janitorial into BSC/FM + food service + healthcare + education + retail/hospitality/office. Also note category overlap: current floor-care market studies include floor disinfectants, while Claude maps disinfectants separately.",
+  "confidence": "High",
+  "current": [
+   [
+    "Facilities & Janitorial",
+    80,
+    "Education, healthcare, retail/grocery, office, government; BSCs/in-house"
+   ],
+   [
+    "Consumer / DIY",
+    9,
+    "Pro-branded product at retail/rental machine chemicals"
+   ],
+   [
+    "Industrial MRO",
+    5,
+    "Warehouse/plant floors"
+   ],
+   [
+    "Construction & Contractor",
+    4,
+    "New-construction floor prep, concrete sealers"
+   ],
+   [
+    "Other",
+    2,
+    "Transit, stadiums"
+   ]
+  ],
+  "evidence": [
+   "Grand View estimates the U.S. floor-care chemicals market at exactly $4.00B in 2025, directly validating Claude's point TAM.",
+   "Contract-based supply represented 74% of the U.S. floor-care chemical market in 2025, and the report ties demand to outsourced facility management / contract cleaning across healthcare, retail, commercial offices and education. This strongly supports the 80% Facilities & Janitorial framing.",
+   "The useful refinement is within the 80%: food service, healthcare, education, retail/hospitality and office/BSC are commercially different customer sets. Splitting them will make the category more actionable without changing the high-level economics.",
+   "Important scope note: Grand View includes floor disinfectants inside floor care. Claude has a separate Disinfectants & Sanitizers category, so the TAM and mix should continue to strip or explicitly flag overlap to avoid double counting."
+  ],
+  "sugg": [
+   [
+    "Facilities & Janitorial",
+    "Keep / split internally",
+    "70-80%",
+    "Strongly supported; break into actionable institutional verticals."
+   ],
+   [
+    "Consumer / DIY",
+    "Keep",
+    "7-12%",
+    "Small retail tail is plausible."
+   ],
+   [
+    "Industrial MRO",
+    "Keep",
+    "4-7%",
+    "Warehouses/manufacturing are real users."
+   ],
+   [
+    "Construction & Contractor",
+    "Keep / scope-check",
+    "2-5%",
+    "Concrete sealers can overlap coatings/waterproofing."
+   ],
+   [
+    "Other",
+    "Keep",
+    "1-3%",
+    "Transit/stadiums could also be nested under institutional."
+   ]
+  ],
+  "sources": [
+   [
+    "Grand View Research - U.S. Floor Care Chemicals Market",
+    "https://www.grandviewresearch.com/industry-analysis/us-floor-care-chemicals-market-report"
+   ]
+  ]
+ },
+ {
+  "cat": "Wood finishes, waxes & polishes",
+  "batch": 2,
+  "rank": 7,
+  "tam": 3200,
+  "pro_tam": 1760,
+  "pro": 0.55,
+  "assessment": "Challenge - material scope / mix mismatch",
+  "verdict": "challenge",
+  "priority": "High",
+  "read": "Claude's end-market split does not match the TAM anchor. The TAM is built from the broad U.S. wood-coatings market, yet only 15% of the mix is assigned to cabinet/millwork/furniture refinishing and factory users. Current U.S./North American wood-coatings research indicates furniture + cabinetry alone is roughly 55-58% of demand, before flooring, doors and millwork.",
+  "suggest": "Claude should choose one of two internally consistent approaches: (1) keep the $3.2B broad wood-coatings TAM and materially raise OEM / factory-applied wood finishing; or (2) narrow the TAM to field-applied / professional / retail finishes and keep the current contractor/DIY-heavy mix. Do not leave a broad OEM-inclusive TAM paired with a 15% OEM bucket.",
+  "confidence": "High on direction; Medium on exact replacement percentages",
+  "current": [
+   [
+    "Construction & Contractor",
+    35,
+    "Flooring contractors, finish carpenters, cabinet installers"
+   ],
+   [
+    "Consumer / DIY",
+    35,
+    "Stains, poly, furniture polish via big-box"
+   ],
+   [
+    "Other",
+    15,
+    "Cabinet/millwork shops and furniture refinishers"
+   ],
+   [
+    "Facilities & Janitorial",
+    10,
+    "Wood floor maintenance, furniture polish"
+   ],
+   [
+    "Marine",
+    3,
+    "Spar varnish, teak oil"
+   ],
+   [
+    "Industrial MRO",
+    2,
+    "Misc."
+   ]
+  ],
+  "evidence": [
+   "Ken Research sizes the U.S. wood-coatings market at about $2.735B in 2025 and says furniture and cabinetry account for 58% of value. That directly conflicts with an end-market table that allocates only 15% to cabinet/millwork/furniture shops while using this broad market as the TAM anchor.",
+   "A 2026 European Coatings analysis reaches a similar conclusion from a different angle: in North America, cabinetry is about 40% of the wood-coatings market and furniture about 15% - roughly 55% combined. The article explains that furniture is lower in North America because much finished furniture is imported, while cabinetry is disproportionately domestic.",
+   "Bona's own market architecture is useful for taxonomy: it explicitly serves homeowners, professional flooring craftsmen, facilities and industrial manufacturing. That supports separating field-applied contractor refinishing from factory/OEM finishing rather than hiding both inside 'Other'.",
+   "If factory/OEM demand is retained, the pro/commercial share should almost certainly be materially above Claude's 55%, because factory finishing is commercial even though it is not a contractor channel."
+  ],
+  "sugg": [
+   [
+    "OEM / industrial wood finishing",
+    "Add / raise materially",
+    "45-60% if broad TAM retained",
+    "Furniture/cabinet/millwork/factory flooring is the missing major demand pool."
+   ],
+   [
+    "Construction / contractor refinishing",
+    "Lower if broad TAM retained",
+    "15-25%",
+    "Professional floor/refinish/finish-carpentry field work remains important."
+   ],
+   [
+    "Consumer / DIY",
+    "Lower if broad TAM retained",
+    "15-25%",
+    "Large retail channel, but cannot coexist at 35% with 55-58% furniture/cabinet OEM share."
+   ],
+   [
+    "Facilities / institutional floor care",
+    "Keep",
+    "5-10%",
+    "Valid lifecycle-maintenance end use."
+   ],
+   [
+    "Marine",
+    "Keep",
+    "2-4%",
+    "Spar/teak remains niche."
+   ],
+   [
+    "Alternative approach",
+    "Narrow scope instead",
+    "N/A",
+    "If Claude wants 35% contractor + 35% DIY, redefine TAM to field-applied finishes and exclude factory OEM coatings."
+   ]
+  ],
+  "sources": [
+   [
+    "Ken Research - U.S. Wood Coatings Market",
+    "https://www.kenresearch.com/us-wood-coatings-market"
+   ],
+   [
+    "European Coatings - Wood coatings: opportunities for growth",
+    "https://www.european-coatings.com/news/application-areas/wood-coatings-opportunities-for-growth/"
+   ],
+   [
+    "Bona - 2023 Sustainability Report / market and customers",
+    "https://www.bona.com/globalassets/shared/corporate/documents/sustainability-report-2023.pdf"
+   ],
+   [
+    "Bona - Professional flooring systems",
+    "https://www.bona.com/en-us/professional/"
+   ]
+  ]
+ },
+ {
+  "cat": "Wipes & wipers",
+  "batch": 2,
+  "rank": 8,
+  "tam": 2800,
+  "pro_tam": 2400,
+  "pro": 0.86,
+  "assessment": "Refine - scope and taxonomy more than total pro share",
+  "verdict": "refine",
+  "priority": "Medium",
+  "read": "The professional orientation is directionally right, but the current taxonomy obscures controlled environments and creates a scope tension: Claude's TAM anchor explicitly includes dry industrial wipers/rags and excludes mass-market consumer disinfecting wipes, yet the end-market table still gives Consumer / DIY 10% and puts healthcare/cleanroom/food processing into a generic 10% 'Other' bucket.",
+  "suggest": "Keep the category strongly professional, but pull controlled environments (pharma, semiconductor, biotech, medical device, labs) into a named end market and reduce the residual 'Other' bucket. If consumer disinfecting wipes truly remain excluded from TAM, consumer share should probably be a low-single-digit to mid-single-digit sensitivity rather than 10%.",
+  "confidence": "Medium",
+  "current": [
+   [
+    "Industrial MRO",
+    30,
+    "Plant maintenance, manufacturing, printing, surface prep"
+   ],
+   [
+    "Facilities & Janitorial",
+    20,
+    "Disinfecting/general wipes, dry wipers"
+   ],
+   [
+    "Automotive & Fleet",
+    15,
+    "Shop towels, hand and parts wipes"
+   ],
+   [
+    "Construction & Contractor",
+    10,
+    "Hand/tool wipes, painters, sealant cleanup"
+   ],
+   [
+    "Other",
+    10,
+    "Food processing, healthcare, cleanroom/electronics"
+   ],
+   [
+    "Consumer / DIY",
+    10,
+    "Retail cleaning and hand wipes under pro brands"
+   ],
+   [
+    "Electrical",
+    3,
+    "Splice/electrical-contact prep wipes"
+   ],
+   [
+    "Plumbing",
+    2,
+    "Pipe prep and cleanup"
+   ]
+  ],
+  "evidence": [
+   "Kimberly-Clark Professional's current wipe selector spans industrial/food production/automotive, healthcare, office/high-traffic/education/hospitality and controlled environments. Its Kimtech pre-saturated wipes specifically target pharmaceutical, high-tech, biotech and medical-device cleanrooms - a technically distinct, high-value end market.",
+   "Claude's own observed SKU mix is 54.6% Lab & Cleanroom. That is almost certainly not a revenue share - technical cleanroom lines generate many SKU variants - but it is strong evidence that controlled environments should not sit inside a generic 'Other' bucket.",
+   "The TAM build says consumer disinfecting wipes are excluded. If that scope is maintained, a 10% Consumer / DIY end market should be revisited because it likely mixes Scott shop towels / prosumer products with the mass consumer disinfection category Claude says is out of scope.",
+   "ISSA's 2025 market snapshot separately identifies dry wipers as one of the few cleaning/hygiene product groups showing modest sequential growth, supporting the idea that dry industrial wiping is a real category distinct from chemical wipes."
+  ],
+  "sugg": [
+   [
+    "Industrial MRO / manufacturing",
+    "Keep / modestly raise",
+    "30-35%",
+    "Core use case for the TAM anchor."
+   ],
+   [
+    "Facilities & Janitorial",
+    "Keep",
+    "15-20%",
+    "General-purpose and disinfecting use remains important."
+   ],
+   [
+    "Automotive & Fleet",
+    "Keep",
+    "10-15%",
+    "Shop towels and parts/hand wiping are core."
+   ],
+   [
+    "Controlled environments / life science / electronics",
+    "Add named bucket",
+    "10-18%",
+    "Carve from Other and some Industrial; high-spec, high-value demand."
+   ],
+   [
+    "Food processing / foodservice / healthcare",
+    "Split from Other",
+    "5-10% combined or separate",
+    "Important hygiene-driven applications."
+   ],
+   [
+    "Construction & Contractor",
+    "Keep / sensitivity",
+    "5-10%",
+    "Valid but probably not a primary demand pool."
+   ],
+   [
+    "Consumer / DIY",
+    "Likely lower if current TAM scope holds",
+    "3-7%",
+    "Consumer disinfecting wipes are explicitly excluded from TAM."
+   ]
+  ],
+  "sources": [
+   [
+    "Kimberly-Clark Professional - Wiping & Cleaning",
+    "https://www.kcprofessional.com/en-us/products/wiping-and-cleaning"
+   ],
+   [
+    "Kimberly-Clark Professional - Industries",
+    "https://www.kcprofessional.com/en-us/industries"
+   ],
+   [
+    "Kimberly-Clark Professional - Kimtech pre-saturated cleanroom wipes",
+    "https://www.kcprofessional.com/en-us/products/wiping-and-cleaning/controlled-environments/delicate-task-wet-wipes/kimtech-w4-wipers/06070"
+   ],
+   [
+    "ISSA - Q1 2025 Cleaning and Hygiene Market Snapshot",
+    "https://www.issa.com/articles/q1-2025-cleaning-and-hygiene-market-snapshot/"
+   ]
+  ]
+ },
+ {
+  "cat": "Roofing & waterproofing",
+  "batch": 2,
+  "rank": 9,
+  "tam": 2600,
+  "pro_tam": 2080,
+  "pro": 0.8,
+  "assessment": "Refine - likely even more professional than modeled",
+  "verdict": "refine",
+  "priority": "Medium",
+  "read": "Claude's core thesis is right: this is overwhelmingly a professional contractor/building-owner category. The 60% contractor + 15% facilities mix is sensible, but 17% Consumer / DIY looks somewhat high given that the TAM build includes commercial roof restoration coatings, liquid flashing and below-grade/deck waterproofing - all heavily professional applications.",
+  "suggest": "Sensitivity-test pro/commercial share at roughly 85-90% rather than 80%. More importantly, split 'Construction & Contractor' into new construction vs reroof/restoration/repair, because restoration demand is more recurring and less cyclical. Keep retail patch / RV / basement DIY as a real but smaller submarket.",
+  "confidence": "Medium",
+  "current": [
+   [
+    "Construction & Contractor",
+    60,
+    "Roofing and waterproofing contractors, new and reroof"
+   ],
+   [
+    "Consumer / DIY",
+    17,
+    "Retail roof patch, RV/mobile home coatings, basement waterproofers"
+   ],
+   [
+    "Facilities & Janitorial",
+    15,
+    "In-house maintenance of commercial/institutional roofs"
+   ],
+   [
+    "Industrial MRO",
+    6,
+    "Plant roofs, tanks"
+   ],
+   [
+    "Agriculture & Turf",
+    2,
+    "Metal barn roofs"
+   ]
+  ],
+  "evidence": [
+   "GAF's commercial coatings business is explicitly built around contractors, architects/design professionals and property managers/owners. Its liquid-applied coatings are positioned primarily as restoration / life-extension systems for existing commercial roofs, with contractor certification and long-term guarantees.",
+   "NRCA continues to run a dedicated quarterly reroofing market index across contractors and roof consultants, underscoring how economically important reroof/repair is as a distinct end market rather than just a subset of generic construction.",
+   "Retail DIY is clearly real - roof cements, patch cartridges, basement waterproofers and RV/mobile-home coatings - but it is a narrower slice of the broad TAM than the pro restoration and contractor-applied systems included in Claude's build.",
+   "For strategy, 'Facilities & Janitorial' should probably be relabeled Building Owners / Property & Facility Management. Janitorial buyers are generally not the decision maker for warranted roof restoration systems."
+  ],
+  "sugg": [
+   [
+    "Roofing/waterproofing contractors - reroof/restoration",
+    "Split out / emphasize",
+    "45-55%",
+    "Most attractive recurring repair/restoration channel."
+   ],
+   [
+    "Roofing/waterproofing contractors - new construction",
+    "Split out",
+    "15-20%",
+    "More cyclical and spec-driven."
+   ],
+   [
+    "Building owners / facilities / property management",
+    "Rename / keep",
+    "15-20%",
+    "Owner-driven maintenance programs and portfolio restoration."
+   ],
+   [
+    "Consumer / DIY",
+    "Likely lower",
+    "8-12%",
+    "Retail patching remains real but is narrower than full category scope."
+   ],
+   [
+    "Industrial / agriculture / specialty structures",
+    "Keep combined",
+    "5-8%",
+    "Plants, tanks, barns and specialty applications."
+   ]
+  ],
+  "sources": [
+   [
+    "GAF - Commercial Roof Coatings",
+    "https://www.gaf.com/en-us/roofing-materials/commercial-roofing-materials/coatings"
+   ],
+   [
+    "GAF - Commercial Roof Restoration",
+    "https://www.gaf.com/en-us/blog/commercial-roofing/restoring-a-commercial-roof-revitalize-your-roof-with-protective-roof-coatings-f2443128-7743-46f9-81fd-d9568ff8fc0c"
+   ],
+   [
+    "NRCA - Q2 2026 Reroofing Market Index",
+    "https://www.nrca.net/RoofingNews/results-are-in-from-the-latest-market-index-survey-for-reroofing.7-30-2026.13434/details/story"
+   ]
+  ]
+ },
+ {
+  "cat": "Lubricants & oils",
+  "batch": 2,
+  "rank": 10,
+  "tam": 2500,
+  "pro_tam": 2000,
+  "pro": 0.8,
+  "assessment": "Mostly agree - improve vertical resolution",
+  "verdict": "keep",
+  "priority": "Low-Medium",
+  "read": "Claude's 80% pro share and 40% Industrial MRO anchor look sensible for a small-pack specialty-lubricant category. The bigger opportunity is to expose high-value professional niches currently hidden inside Industrial MRO - especially food & beverage processing and aviation/defense/precision maintenance - because qualification, NSF registration and technical support can materially improve retention and pricing.",
+  "suggest": "Keep Industrial MRO as the largest bucket and keep Consumer / DIY around the current level, but carve Food & Beverage Processing and Aviation / Aerospace / Defense out of Industrial MRO. Also consider whether generic Facilities at 8% is a bit high relative to those technical verticals.",
+  "confidence": "Medium",
+  "current": [
+   [
+    "Industrial MRO",
+    40,
+    "Plant PM, conveyors, food plants"
+   ],
+   [
+    "Automotive & Fleet",
+    15,
+    "Shop aerosols, air-tool oil"
+   ],
+   [
+    "Consumer / DIY",
+    15,
+    "Big-box/hardware"
+   ],
+   [
+    "HVAC/R",
+    8,
+    "Vacuum-pump and compressor oils"
+   ],
+   [
+    "Facilities & Janitorial",
+    8,
+    "Doors, locks, equipment"
+   ],
+   [
+    "Construction & Contractor",
+    6,
+    "Equipment, door installers"
+   ],
+   [
+    "Agriculture & Turf",
+    5,
+    "Chain/implement"
+   ],
+   [
+    "Marine",
+    3,
+    "Marine"
+   ]
+  ],
+  "evidence": [
+   "CRC's current market architecture spans automotive, aviation, electrical & utility, food & beverage, general manufacturing, heavy truck, marine, mining, oil & gas and welding. That is a useful cross-check that the category is professionally diversified rather than simply 'industrial plus DIY'.",
+   "LPS/ITW positions its maintenance chemicals specifically across industrial, aerospace, military, contractor and energy facilities. LPS DETEX is a dedicated food-processing maintenance platform covering lubricants, penetrants, cleaners and greases with food-safety programs.",
+   "Food-grade lubrication is strategically important because NSF registration, audit requirements and supplier qualification create more specification / compliance stickiness than a generic multipurpose spray lubricant.",
+   "The observed map's Aviation MRO share is over 6% of listed SKUs. As with all observed SKU shares, it is not a revenue estimate, but it supports giving aviation/precision MRO a named vertical rather than leaving it invisible."
+  ],
+  "sugg": [
+   [
+    "Industrial MRO / manufacturing",
+    "Keep",
+    "35-45% before carve-outs",
+    "Core market remains dominant."
+   ],
+   [
+    "Food & Beverage Processing",
+    "Add named bucket",
+    "5-8% carved from Industrial",
+    "High-spec, recurring, NSF-driven submarket."
+   ],
+   [
+    "Aviation / aerospace / defense",
+    "Add named bucket",
+    "3-6% carved from Industrial",
+    "High-spec technical maintenance; supported by CRC/LPS positioning."
+   ],
+   [
+    "Automotive & Fleet",
+    "Keep",
+    "15-20%",
+    "Strong professional and heavy-truck channel."
+   ],
+   [
+    "Consumer / DIY",
+    "Keep",
+    "10-15%",
+    "WD-40/CRC/hardware creates meaningful prosumer demand."
+   ],
+   [
+    "HVAC/R",
+    "Keep",
+    "5-8%",
+    "Specialized compressor/vacuum-pump oils."
+   ],
+   [
+    "Facilities",
+    "Possibly lower",
+    "4-7%",
+    "Generic facility use is real but less differentiated than technical verticals."
+   ],
+   [
+    "Construction / Ag / Marine",
+    "Keep",
+    "~10-15% combined",
+    "Broad equipment-maintenance tail."
+   ]
+  ],
+  "sources": [
+   [
+    "CRC Industries - Industries",
+    "https://www.crcindustries.com/industries/"
+   ],
+   [
+    "CRC Industries - About Us",
+    "https://www.crcindustries.com/about-us/"
+   ],
+   [
+    "ITW Pro Brands - LPS",
+    "https://www.itwprobrands.com/brand/lps"
+   ],
+   [
+    "ITW Pro Brands - LPS DETEX Food Processing Maintenance",
+    "https://www.itwprobrands.com/brand/lps-detex"
+   ]
+  ]
+ },
+ {
+  "cat": "Hand cleaners, soaps & sanitizers",
+  "batch": 2,
+  "rank": 11,
+  "tam": 2500,
+  "pro_tam": 1250,
+  "pro": 0.5,
+  "assessment": "Challenge - pro share likely understated; category needs product/vertical split",
+  "verdict": "challenge",
+  "priority": "High",
+  "read": "The current 50% pro / 50% non-pro framing is probably too consumer-heavy for this category as defined in a professional-brands map. Away-from-home hand hygiene is a large recurring institutional business, while heavy-duty industrial hand cleaners are specifically sold into manufacturing, automotive and construction. Consumer retail is important, but it should not absorb 30% unless the TAM intentionally includes the full mass-market hand-soap/sanitizer universe.",
+  "suggest": "Increase the pro/commercial sensitivity to roughly 60-70% and replace the broad 35% Facilities bucket with actual verticals: healthcare; education/office/public/hospitality; foodservice; industrial/manufacturing; automotive/trades. Keep Consumer / DIY as a meaningful but explicitly defined retail channel. Also split ordinary washroom hand hygiene from heavy-duty industrial hand cleaner because the economics and buyers differ.",
+  "confidence": "Medium",
+  "current": [
+   [
+    "Facilities & Janitorial",
+    35,
+    "Washroom soap and sanitizer in commercial buildings, healthcare, schools"
+   ],
+   [
+    "Consumer / DIY",
+    30,
+    "Retail sanitizer and auto-aisle hand cleaners"
+   ],
+   [
+    "Industrial MRO",
+    13,
+    "Manufacturing plants, printing, food processing"
+   ],
+   [
+    "Automotive & Fleet",
+    12,
+    "Service bays, dealerships, fleet shops"
+   ],
+   [
+    "Construction & Contractor",
+    5,
+    "Job-site waterless cleaners and wipes"
+   ],
+   [
+    "Plumbing",
+    2,
+    "Trade-specific cleaners"
+   ],
+   [
+    "Other",
+    2,
+    "Agriculture, marine, misc."
+   ],
+   [
+    "Electrical",
+    1,
+    "Compound cleanup"
+   ]
+  ],
+  "evidence": [
+   "Kline's March 2026 U.S. away-from-home hand-hygiene update identifies strong demand across healthcare, building service contractors, industrial facilities, foodservice, retailers, education, hospitality and office buildings. Those are core commercial channels, not a niche tail.",
+   "Mordor's 2026 U.S. hand-sanitizer analysis estimates commercial end use at 59.83% of 2025 revenue. Sanitizer is only one product within Claude's broader hand-care scope, but this is a strong signal that a 50% total pro share may be too low.",
+   "Kline previously sized professional-use U.S. I&I hand care at nearly $1.5B in 2015 and identified hospitals as the largest end-use segment. Even allowing for age, that supports a substantial professional base before considering later sanitizer adoption.",
+   "SC Johnson Professional's heavy-duty products are explicitly designed for industrial, automotive and construction users, confirming that heavy-duty hand cleaners should not be lumped with generic restroom soap/sanitizer demand."
+  ],
+  "sugg": [
+   [
+    "Healthcare",
+    "Add named bucket",
+    "15-20%",
+    "High-frequency, protocol-driven hand hygiene."
+   ],
+   [
+    "Education / office / public / hospitality",
+    "Split from Facilities",
+    "20-25%",
+    "Core away-from-home dispenser/refill base."
+   ],
+   [
+    "Foodservice",
+    "Add named bucket",
+    "8-12%",
+    "Hand hygiene tied to food-safety protocols."
+   ],
+   [
+    "Industrial / manufacturing",
+    "Keep / raise visibility",
+    "10-15%",
+    "Includes heavy-duty skin cleansing and washroom hygiene."
+   ],
+   [
+    "Automotive / fleet / trades",
+    "Keep combined",
+    "10-15%",
+    "Mechanic/construction heavy-duty hand cleaner is a distinct use case."
+   ],
+   [
+    "Consumer / DIY",
+    "Likely lower if professional scope is intended",
+    "20-30%",
+    "Retain only with explicit TAM scope."
+   ],
+   [
+    "Pro/commercial share",
+    "Raise sensitivity",
+    "60-70%",
+    "More consistent with current commercial sanitizer and away-from-home evidence."
+   ]
+  ],
+  "sources": [
+   [
+    "Kline - U.S. Away-From-Home Hand Hygiene Market Trends (2026)",
+    "https://klinegroup.com/professional-cleaning/us-away-from-home-hand-hygiene-market/"
+   ],
+   [
+    "Mordor Intelligence - U.S. Hand Sanitizer Market",
+    "https://www.mordorintelligence.com/industry-reports/united-states-hand-sanitizer-market"
+   ],
+   [
+    "Kline - U.S. I&I Hand Care",
+    "https://klinegroup.com/professional-cleaning/hand-care-drives-the-us-industrial-and-institutional-cleaners-industry/"
+   ],
+   [
+    "SC Johnson Professional - Heavy Duty Hand Cleaners",
+    "https://www.scjp.com/en-us/heavy-duty-hand-cleaners"
+   ],
+   [
+    "SC Johnson Professional - Industrial",
+    "https://www.scjp.com/en-us/industrial"
+   ]
+  ]
+ },
+ {
+  "cat": "Specialty janitorial cleaners",
+  "batch": 2,
+  "rank": 12,
+  "tam": 2100,
+  "pro_tam": 1890,
+  "pro": 0.9,
+  "assessment": "Agree on pro share; refine the 78% facilities bucket",
+  "verdict": "keep",
+  "priority": "Low-Medium",
+  "read": "Claude is directionally right that this is an overwhelmingly professional market. The issue is analytical usefulness: 78% in 'Facilities & Janitorial' hides the verticals that actually determine product mix, service intensity, infection-control needs, distributor route density and willingness to pay.",
+  "suggest": "Keep the ~90% pro share, but break Facilities & Janitorial into healthcare, education/government, BSC/commercial office, hospitality/retail/transport and foodservice. Also move government/transit/stadiums out of 'Other' - they are core institutional facilities, not residual demand.",
+  "confidence": "High on taxonomy; Medium on exact vertical percentages",
+  "current": [
+   [
+    "Facilities & Janitorial",
+    78,
+    "Offices, education, healthcare, hospitality, retail, BSCs"
+   ],
+   [
+    "Industrial MRO",
+    8,
+    "Plant restrooms, break rooms, food-plant specialty"
+   ],
+   [
+    "Consumer / DIY",
+    8,
+    "Pro brands in club/hardware/online"
+   ],
+   [
+    "Other",
+    4,
+    "Government, transit, stadiums"
+   ],
+   [
+    "Automotive & Fleet",
+    2,
+    "Dealership showrooms, glass"
+   ]
+  ],
+  "evidence": [
+   "ISSA's 2023 distributor survey illustrates how diverse the professional demand base is: education was the most frequently cited primary vertical, followed by BSCs, with healthcare, government, industrial/manufacturing, hospitality, commercial facilities and food service all significant. The survey is not a revenue-share table, but it strongly argues against one monolithic 'Facilities' bucket.",
+   "Grand View estimates healthcare alone represented about 26% of the broad U.S. commercial cleaning-products market in 2024. The scope is broader than Claude's specialty-chemicals bucket, so the percentage should not be copied directly, but healthcare clearly deserves its own vertical.",
+   "Diversey's institutional portfolio is likewise organized around healthcare, food service, retail/grocery, BSCs, education and hospitality, reinforcing that these verticals have different chemistry, dosing and service needs.",
+   "Claude's 8% Consumer / DIY is plausible as a prosumer leakage estimate, but because this category is explicitly 'specialty janitorial,' I would sensitivity-test consumer closer to 3-5% and leave the rest inside pro verticals."
+  ],
+  "sugg": [
+   [
+    "Facilities & Janitorial",
+    "Keep total concept, split internally",
+    "~75-85%",
+    "Do not change total dramatically; expose verticals."
+   ],
+   [
+    "Healthcare",
+    "Add sub-vertical",
+    "Material",
+    "High compliance and infection-control intensity."
+   ],
+   [
+    "Education / government",
+    "Add sub-vertical",
+    "Material",
+    "Large institutional footprint and bid/spec dynamics."
+   ],
+   [
+    "BSC / commercial office",
+    "Add sub-vertical",
+    "Material",
+    "Route density and contract cleaning purchasing."
+   ],
+   [
+    "Hospitality / retail / transportation",
+    "Add sub-vertical",
+    "Material",
+    "High-traffic cleaning frequency."
+   ],
+   [
+    "Foodservice",
+    "Add sub-vertical",
+    "Material",
+    "Kitchen/restroom/FOH cleaning and food-safety requirements."
+   ],
+   [
+    "Industrial MRO",
+    "Keep",
+    "5-10%",
+    "Plant sanitation and specialty facility use."
+   ],
+   [
+    "Consumer / DIY",
+    "Sensitivity-test lower",
+    "3-8%",
+    "Probably secondary in a specialty janitorial definition."
+   ],
+   [
+    "Other government/transit/stadiums",
+    "Eliminate as Other",
+    "N/A",
+    "Reclassify into institutional verticals."
+   ]
+  ],
+  "sources": [
+   [
+    "ISSA - 2023 Cleaning Industry Distribution Survey",
+    "https://www.issa.com/wp-content/uploads/2024/08/Dist-Survey-Sept-Oct-23-7.59.13-AM.pdf"
+   ],
+   [
+    "Grand View Research - U.S. Commercial Cleaning Products Market",
+    "https://www.grandviewresearch.com/industry-analysis/us-commercial-cleaning-products-market-report"
+   ],
+   [
+    "Diversey / Solenis - Building Care Solutions",
+    "https://www.solenis.com/en/products-and-services/commercial-cleaning/building-care-and-floor-care/building-care-solutions/"
+   ],
+   [
+    "Diversey - 2023 Sustainability Report",
+    "https://sustainability.solenis.com/globalassets/resources/sustainability--regulatory-library/diversey-sustainability-report-2023.pdf"
+   ]
+  ]
+ },
+ {
+  "cat": "Disinfectants & sanitizers",
+  "batch": 2,
+  "rank": 13,
+  "tam": 2000,
+  "pro_tam": 1300,
+  "pro": 0.65,
+  "assessment": "Challenge taxonomy; modestly raise pro sensitivity",
+  "verdict": "challenge",
+  "priority": "High",
+  "read": "Claude has the right major demand pools, but 40% Facilities + 20% Other (foodservice/F&B processing) is too coarse and hides the highest-value regulated verticals. Current market research consistently identifies healthcare and HORECA/foodservice as major end uses, while EPA itself distinguishes hospital-type disinfectants, general-use disinfectants and food-contact sanitizers. Consumer at 30% is defensible only if the TAM truly includes mass-market household products.",
+  "suggest": "Break out Healthcare, HORECA/Foodservice, Food & Beverage Processing, Commercial/Institutional, Controlled Environment/Labs and Consumer. Sensitivity-test pro/commercial share at roughly 70-80% for a professional-brands market map; retain 65% only if the $2.0B TAM includes a broad mass-retail household disinfectant universe.",
+  "confidence": "Medium-High on vertical structure; Medium on exact shares",
+  "current": [
+   [
+    "Facilities & Janitorial",
+    40,
+    "BSCs, offices, schools, hospitality, healthcare EVS"
+   ],
+   [
+    "Consumer / DIY",
+    30,
+    "Retail disinfectant sprays/wipes/concentrates"
+   ],
+   [
+    "Other",
+    20,
+    "Food service and food & beverage processing sanitation"
+   ],
+   [
+    "Industrial MRO",
+    5,
+    "Plant break rooms, locker rooms"
+   ],
+   [
+    "Automotive & Fleet",
+    3,
+    "Fleet cab, transit, ambulance"
+   ],
+   [
+    "Construction & Contractor",
+    2,
+    "Restoration / remediation contractors"
+   ]
+  ],
+  "evidence": [
+   "EPA's antimicrobial-pesticide framework itself separates hospital-type disinfectants, general-use disinfectants and food-contact sanitizers used in dairies, food-processing plants and eating/drinking establishments. Those are economically and regulatorily different end markets and should not be collapsed into Facilities + Other.",
+   "Grand View's 2026 global surface-disinfectant analysis identifies HORECA as the largest end-use at 21.3% in 2025 and describes hospitals/labs, households, educational facilities, transportation and food processing as substantial demand centers. North America is characterized by high institutional procurement and professional-cleaning penetration.",
+   "Mordor's January 2026 analysis puts hospitals/clinics at about 25% of global end-user revenue and direct institutional sales at 54.6%. Again, not a U.S.-only share to copy mechanically, but it supports a strong institutional/professional bias.",
+   "For a professional-brands strategy, healthcare and food/contact sanitation are much more actionable than a broad 'Facilities' label because efficacy claims, dwell times, EPA registrations, compatibility, training and auditability drive specification."
+  ],
+  "sugg": [
+   [
+    "Healthcare / acute & non-acute",
+    "Add named bucket",
+    "20-25%",
+    "High regulation and recurring infection-prevention spend."
+   ],
+   [
+    "Commercial / institutional incl. education/BSC/public",
+    "Refine Facilities",
+    "20-25%",
+    "Offices, schools, public venues and managed facilities."
+   ],
+   [
+    "HORECA / foodservice",
+    "Split from Other",
+    "12-18%",
+    "High-frequency food-contact/non-food-contact sanitation."
+   ],
+   [
+    "Food & Beverage Processing",
+    "Split from Other",
+    "5-10%",
+    "Plant sanitation and food-contact compliance."
+   ],
+   [
+    "Consumer / household",
+    "Sensitivity-test",
+    "20-30%",
+    "30% works only with broad mass-retail TAM scope."
+   ],
+   [
+    "Labs / pharma / controlled environment",
+    "Add named bucket",
+    "5-10%",
+    "High-spec disinfection and cleanroom use."
+   ],
+   [
+    "Transport / restoration / auto / other",
+    "Residual",
+    "3-7%",
+    "Useful tail after major verticals are exposed."
+   ],
+   [
+    "Pro/commercial share",
+    "Raise sensitivity",
+    "70-80%",
+    "For a professional-brands framing; otherwise retain 65% with explicit broad consumer scope."
+   ]
+  ],
+  "sources": [
+   [
+    "U.S. EPA - What are Antimicrobial Pesticides?",
+    "https://www.epa.gov/pesticide-registration/what-are-antimicrobial-pesticides"
+   ],
+   [
+    "U.S. EPA - Selected EPA-Registered Disinfectants",
+    "https://www.epa.gov/pesticide-registration/selected-epa-registered-disinfectants"
+   ],
+   [
+    "Grand View Research - Surface Disinfectant Market",
+    "https://www.grandviewresearch.com/industry-analysis/surface-disinfectant-market"
+   ],
+   [
+    "Mordor Intelligence - Surface Disinfectant Market",
+    "https://www.mordorintelligence.com/industry-reports/surface-disinfectant-market"
+   ],
+   [
+    "Grand View Research - U.S. Surface Disinfectant Market",
+    "https://www.grandviewresearch.com/horizon/outlook/surface-disinfectant-market/united-states"
+   ]
+  ]
+ }
+]
