@@ -475,18 +475,19 @@ async function saveRev(id, raw) {
   } catch (e) { toast(e?.code === "permission_denied" || e?.code === "not_granted" ? "You can view but not edit" : "Couldn't save the revenue"); }
 }
 
-/* ---------- Engine: a simple LBO on any roll-up ----------
-   Entry: each business at its revenue × margin (25% unless set) × entry multiple (13× unless set). Synergies from the
-   deal screen (cross-sell gross profit, price, procurement), each switchable. Debt = leverage (5.5×) × synergized
-   EBITDA. Fees: deal fees on enterprise value, debt fees on the debt. Projection: revenue grows (6%), margin expands
-   (25 bps a year), synergies grow with revenue. Exit at a multiple (18×) of exit-year EBITDA (year 3). Debt is held
-   flat (no cash sweep), so the returns come from EBITDA growth and multiple expansion, a conservative simplification. */
-const ENG_DEF = { lev: 5.5, mult: 13, margin: 0.25, g: 0.06, mx: 0.0025, exitX: 18, exitY: 3, dealFee: 0.02, debtFee: 0.0225, syn: true, synXs: true, synPr: true, synPc: true };
+/* ---------- Engine: an LBO on any roll-up, bought at once or built over time ----------
+   Each business is bought at its EBITDA (revenue × margin, 25% unless set) × a multiple: 13× at entry, 10× for an
+   add-on bought later, unless set. Debt = leverage (5.5×) × synergized EBITDA, for the entry deal and again for each
+   add-on on its own EBITDA plus the synergies it brings (never more than its price); the rest is equity, and fees go on top (2% of EV, 2.25% of
+   debt). Synergies come from the deal screen for the set owned at that point, each lever switchable, and phase in over
+   two years from each close (50% then 100%). Revenue grows 6% a year and margins 25 bps. Cash flow (EBITDA × cash
+   conversion, less interest) pays debt down. Exit at a multiple of exit-year EBITDA; equity = exit EV less net debt.
+   A business bought in year k counts from year k+1. IRR is on the dated equity cash flows. */
+const ENG_DEF = { lev: 5.5, mult: 13, addX: 10, margin: 0.25, g: 0.06, mx: 0.0025, exitX: 18, exitY: 3, dealFee: 0.02, debtFee: 0.0225, syn: true, synXs: true, synPr: true, synPc: true, phase: 2, cash: true, rate: 0.08, conv: 0.6 };
 const eng = () => (ui.eng ??= { ...ENG_DEF, ...store.get("eng", {}), per: store.get("engper", {}) });
 const engSave = () => { const E = eng(); const { per, ...rest } = E; store.set("eng", rest); store.set("engper", per); };
-function engIds() {
-  const E = eng();
-  if (E.src && E.src !== "cur") { const r = ROLLS.find(x => x.id === E.src); if (r) return (r.ids || []).filter(id => CO.has(id)); }
+function engIds(src = eng().src) {
+  if (src && src !== "cur") { const r = ROLLS.find(x => x.id === src); if (r) return (r.ids || []).filter(id => CO.has(id)); }
   return ui.roll.filter(id => CO.has(id));
 }
 function engSyn(ids) {
@@ -496,36 +497,61 @@ function engSyn(ids) {
   loadProduct(); const PC = procCalc(ids), proc = PC && PC.M.length >= 2 ? PC.T.tot : 0;
   return { xs, vol: xs * (ui.gm ?? 0.65), price, proc, scen: PC?.T.scen };
 }
+function irrOf(cf) {  // cf: [[year, amount]]; bisection on NPV
+  const npv = r => cf.reduce((a, [t, v]) => a + v / (1 + r) ** t, 0);
+  let lo = -0.99, hi = 10; if (npv(lo) * npv(hi) > 0) return null;
+  for (let i = 0; i < 200; i++) { const m = (lo + hi) / 2; if (npv(lo) * npv(m) <= 0) hi = m; else lo = m; }
+  return (lo + hi) / 2;
+}
 function engCalc(ids, over = {}) {
-  const E = { ...eng(), ...over }, per = E.per || {};
-  const biz = ids.map(id => { const c = CO.get(id), p = per[id] || {}, rev = num(c.rev) || 0, m = p.m ?? E.margin, x = p.x ?? E.mult, eb = rev * m; return { c, rev, m, x, eb, ev: eb * x, own: p.m !== undefined || p.x !== undefined }; });
-  const rev0 = biz.reduce((a, b) => a + b.rev, 0), eb0 = biz.reduce((a, b) => a + b.eb, 0), ev = biz.reduce((a, b) => a + b.ev, 0);
-  const S = over.S || engSyn(ids), syn = E.syn ? (E.synXs ? S.vol : 0) + (E.synPr ? S.price : 0) + (E.synPc ? S.proc : 0) : 0;
-  const ebPF = eb0 + syn, debt = E.lev * ebPF, fees = ev * E.dealFee + debt * E.debtFee, eq = ev + fees - debt;
-  const m0 = rev0 ? eb0 / rev0 : 0, years = [];
-  for (let t = 0; t <= Math.max(5, E.exitY); t++) { const r = rev0 * (1 + E.g) ** t, m = m0 + E.mx * t, s = syn * (1 + E.g) ** t; years.push({ t, r, m, base: r * m, s, eb: r * m + s }); }
-  const ex = years[E.exitY], exitEV = ex.eb * E.exitX, exitEq = exitEV - debt, moic = eq > 0 ? exitEq / eq : null, irr = moic && moic > 0 ? moic ** (1 / E.exitY) - 1 : null;
-  return { E, biz, rev0, eb0, ev, S, syn, ebPF, debt, fees, eq, years, ex, exitEV, exitEq, moic, irr, gain: exitEq - eq };
+  const E = { ...eng(), ...over }, per = E.per || {}, SC = over.SC || new Map(), X = E.exitY, T = Math.max(5, X), G = t => (1 + E.g) ** t;
+  const biz = ids.map(id => { const c = CO.get(id), p = per[id] || {}, rev = num(c.rev) || 0, y = Math.max(0, Math.min(X - 1, p.y ?? 0)), m = p.m ?? E.margin, x = p.x ?? (y ? E.addX : E.mult);
+    const ebAt = t => rev * G(t) * (m + E.mx * t); return { c, rev, y, m, x, ebAt, eb: ebAt(y), ev: ebAt(y) * x, own: p.m !== undefined || p.x !== undefined }; });
+  const synOf = set => { const k = set.map(b => b.c.id).sort().join(","); if (!SC.has(k)) SC.set(k, engSyn(set.map(b => b.c.id))); return SC.get(k); };
+  const S = synOf(biz), on = s => E.syn ? (E.synXs ? s.vol : 0) + (E.synPr ? s.price : 0) + (E.synPc ? s.proc : 0) : 0;
+  const ks = [...new Set(biz.map(b => b.y))].sort((a, b) => a - b);
+  let prev = 0; const deals = ks.map(k => { const set = biz.filter(b => b.y <= k), now = biz.filter(b => b.y === k), rs = on(synOf(set)), inc = rs - prev; prev = rs;
+    const eb = now.reduce((a, b) => a + b.eb, 0), ev = now.reduce((a, b) => a + b.ev, 0), incK = inc * G(k), debt = Math.min(E.lev * (eb + incK), ev), fees = ev * E.dealFee + debt * E.debtFee;
+    return { k, now, eb, ev, inc, incK, debt, fees, eq: ev + fees - debt }; });
+  const ramp = d => E.phase ? Math.min(1, d / E.phase) : 1;
+  const years = []; let nd = 0;
+  for (let t = 0; t <= T; t++) {
+    const own = biz.filter(b => t === 0 ? b.y === 0 : b.y < t), r = own.reduce((a, b) => a + b.rev * G(t), 0), base = own.reduce((a, b) => a + b.ebAt(t), 0);
+    const s = t === 0 ? deals[0].incK : deals.filter(d => d.k < t).reduce((a, d) => a + d.inc * ramp(t - d.k) * G(t), 0);
+    const buy = deals.find(d => d.k === t && t > 0), int = t && E.cash ? nd * E.rate : 0, fcf = t && E.cash ? (base + s) * E.conv - int : 0;
+    nd = t === 0 ? deals[0].debt : nd + (buy ? buy.debt : 0) - fcf;
+    years.push({ t, r, base, s, eb: base + s, pf: base + s + (buy ? buy.eb + buy.incK : 0), m: r ? base / r : 0, buy, int, fcf, nd });
+  }
+  const ex = years[X], exitEV = ex.eb * E.exitX, exitEq = exitEV - ex.nd, eqIn = deals.reduce((a, d) => a + d.eq, 0);
+  const moic = eqIn > 0 ? exitEq / eqIn : null, irr = eqIn > 0 && exitEq > 0 ? irrOf([...deals.map(d => [d.k, -d.eq]), [X, exitEq]]) : null;
+  const d0 = deals[0], rev0 = biz.reduce((a, b) => a + b.rev, 0), eb0 = biz.reduce((a, b) => a + b.ebAt(0), 0);
+  return { E, biz, deals, S, rev0, eb0, ev: deals.reduce((a, d) => a + d.ev, 0), ev0: d0.ev, syn: on(S), ebPF: d0.eb + d0.incK, debt: d0.debt, fees: deals.reduce((a, d) => a + d.fees, 0), eq: eqIn, eq0: d0.eq,
+    years, ex, exitEV, exitEq, moic, irr, gain: exitEq - eqIn, built: deals.length > 1 };
 }
 function viewEngine() {
   const E = eng(), ids = engIds(), saved = ROLLS.slice().sort((a, b) => String(a.name).localeCompare(String(b.name)));
   const src = `<select id="engsrc" aria-label="Roll-up to model"><option value="cur" ${!E.src || E.src === "cur" ? "selected" : ""}>Current roll-up selection (${ui.roll.filter(id => CO.has(id)).length})</option>${saved.map(r => `<option value="${esc(r.id)}" ${E.src === r.id ? "selected" : ""}>${esc(r.name || "Untitled")} (${(r.ids || []).length})</option>`).join("")}</select>`;
-  const head = `<div class="page-h"><div class="grow"><div class="lbl">Simple LBO</div><h1>Engine</h1><p>Buy the roll-up, lever it on synergized EBITDA, grow it and sell it. Pick a roll-up, then change any input; nothing here changes the roll-up itself.</p></div></div>
-  <div class="bar"><span class="lbl">Model</span>${src}<a class="tog" href="#rollup">Edit the roll-up →</a><button class="tog" type="button" data-act="engreset">Reset to base case</button></div>`;
+  const head = `<div class="page-h"><div class="grow"><div class="lbl">LBO · buy and build</div><h1>Engine</h1><p>Buy the roll-up at once or build it over time, lever it on synergized EBITDA, pay debt down, grow it and sell it. Pick a roll-up, then change any input; nothing here changes the roll-up itself.</p></div></div>
+  <div class="bar"><span class="lbl">Model</span>${src}<a class="tog" href="#rollup">Edit the roll-up →</a><a class="tog" href="#compare">Compare roll-ups →</a><button class="tog" type="button" data-act="engreset">Reset to base case</button>${ids.length ? `<button class="tog" type="button" data-act="engxlsx">Excel ↓</button><button class="tog" type="button" data-act="engpdf">Memo PDF ↓</button>` : ""}</div>`;
   if (!ids.length) return head + `<section class="panel"><div class="body"><p class="muted" style="margin:0">No companies in this roll-up. Build one on the <a href="#rollup">Roll-up</a> tab, or pick a saved roll-up above.</p></div></section>`;
-  const R = engCalc(ids), inp = (k, v, step, w = 80, unit = "") => `<input data-eng="${k}" type="number" step="${step}" value="${v}" style="width:${w}px;text-align:right">${unit ? `<span class="faint">${unit}</span>` : ""}`;
+  const SC = new Map(), R = engCalc(ids, { SC }), inp = (k, v, step, w = 80, unit = "") => `<input data-eng="${k}" type="number" step="${step}" value="${v}" style="width:${w}px;text-align:right">${unit ? `<span class="faint">${unit}</span>` : ""}`;
   const pc = v => +(v * 100).toFixed(2);
   const field = (l, html, note = "") => `<label class="engf"><span class="lbl">${l}</span><span>${html}</span>${note ? `<small class="faint">${note}</small>` : ""}</label>`;
   const assumptions = `<section class="panel"><header><h2>Assumptions</h2><span class="sp"></span><span class="lbl">Base case in brackets</span></header><div class="body enggrid">
     ${field("EBITDA margin", inp("margin", pc(E.margin), 0.5, 70, "%"), "Each business unless set below (25%)")}
-    ${field("Entry multiple", inp("mult", E.mult, 0.5, 70, "×"), "EV / EBITDA per business (13×)")}
-    ${field("Leverage", inp("lev", E.lev, 0.25, 70, "×"), "Debt / synergized EBITDA (5.5×)")}
+    ${field("Entry multiple", inp("mult", E.mult, 0.5, 70, "×"), "Businesses bought at entry (13×)")}
+    ${field("Add-on multiple", inp("addX", E.addX, 0.5, 70, "×"), "Businesses bought later (10×)")}
+    ${field("Leverage", inp("lev", E.lev, 0.25, 70, "×"), "Debt / synergized EBITDA, each deal (5.5×)")}
     ${field("Revenue growth", inp("g", pc(E.g), 0.5, 70, "% a year"), "(6%)")}
     ${field("Margin expansion", inp("mx", Math.round(E.mx * 10000), 5, 70, "bps a year"), "(25 bps)")}
+    ${field("Synergy phase-in", `<select data-eng="phase">${[[0, "Day one"], [1, "1 year"], [2, "2 years"], [3, "3 years"]].map(([v, l]) => `<option value="${v}" ${v === E.phase ? "selected" : ""}>${l}</option>`).join("")}</select>`, "From each close (2 years: 50%, then 100%)")}
+    ${field("Interest rate", inp("rate", pc(E.rate), 0.25, 70, "%"), "On net debt (8%)")}
+    ${field("Cash conversion", inp("conv", pc(E.conv), 5, 70, "% of EBITDA"), "After tax, capex, working capital (60%)")}
     ${field("Exit multiple", inp("exitX", E.exitX, 0.5, 70, "×"), "(18×)")}
-    ${field("Exit year", `<select data-eng="exitY">${[2, 3, 4, 5].map(y => `<option ${y === E.exitY ? "selected" : ""}>${y}</option>`).join("")}</select>`, "(year 3)")}
+    ${field("Exit year", `<select data-eng="exitY">${[2, 3, 4, 5, 6, 7].map(y => `<option ${y === E.exitY ? "selected" : ""}>${y}</option>`).join("")}</select>`, "(year 3)")}
     ${field("Deal fees", inp("dealFee", pc(E.dealFee), 0.25, 70, "% of EV"), "(2%)")}
     ${field("Debt fees", inp("debtFee", pc(E.debtFee), 0.25, 70, "% of debt"), "(2.25%)")}
+    <label class="engf"><span class="lbl">Debt paydown</span><span><input type="checkbox" data-engc="cash" ${E.cash ? "checked" : ""}> Cash flow pays down debt</span><small class="faint">Off: debt held flat, no interest</small></label>
   </div></section>`;
   const synRow = (k, l, v, note) => `<tr${!E.syn || !E[k] ? ' class="faint"' : ""}><td><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-engc="${k}" ${E[k] ? "checked" : ""} ${E.syn ? "" : "disabled"}> ${l}</label></td><td class="r num">${fmtM1(v)}</td><td class="faint">${note}</td></tr>`;
   const synergies = `<section class="panel"><header><h2>Synergies</h2><span class="sp"></span><label class="lbl" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-engc="syn" ${E.syn ? "checked" : ""}> From the deal screen</label></header>
@@ -533,40 +559,194 @@ function viewEngine() {
     ${synRow("synXs", "Cross-sell gross profit", R.S.vol, `${fmtM(R.S.xs)} of cross-sell revenue at ${capLbl()} × ${Math.round((ui.gm ?? 0.65) * 100)}% gross margin (set on Roll-up → Platform)`)}
     ${synRow("synPr", "Price", R.S.price, "Each member's price lever, 100% to EBITDA")}
     ${synRow("synPc", "Procurement", R.S.proc, `${esc(PSCEN[R.S.scen || "d1"]?.l || "")} scenario, 100% to EBITDA (set on Roll-up → Procurement)`)}
-    <tr class="tot"><td><b>Synergies counted</b></td><td class="r num"><b>${fmtM1(R.syn)}</b></td><td class="faint">${R.eb0 ? `${(R.syn / R.eb0 * 100).toFixed(0)}% on top of standalone EBITDA` : ""}</td></tr></tbody></table></div>`}</section>`;
-  const bizT = `<section class="panel"><header><h2>What you're buying</h2><span class="sp"></span><span class="lbl">Revenue is shared with the CRM · margin and multiple per business</span></header><div class="tw"><table><thead><tr><th>Business</th><th class="r">Revenue</th><th class="r">Margin</th><th class="r">EBITDA</th><th class="r">Multiple</th><th class="r">Price (EV)</th></tr></thead><tbody>
-    ${R.biz.map(b => `<tr><td><a href="#c.${esc(b.c.id)}"><b>${esc(b.c.name)}</b></a>${b.own ? ` <button class="linkbtn faint" type="button" data-act="engperreset" data-id="${esc(b.c.id)}" title="Back to the defaults">reset</button>` : ""}</td><td class="r num">${revCell(b.c)}</td>
+    <tr class="tot"><td><b>Run-rate synergies, whole roll-up</b></td><td class="r num"><b>${fmtM1(R.syn)}</b></td><td class="faint">${R.eb0 ? `${(R.syn / R.eb0 * 100).toFixed(0)}% on top of standalone EBITDA` : ""}${E.phase ? ` · phased in over ${E.phase} year${E.phase > 1 ? "s" : ""} from each close` : " · from day one"}</td></tr></tbody></table></div>`}</section>`;
+  const yOpt = b => `<select data-engy="${esc(b.c.id)}" aria-label="When ${esc(b.c.name)} is bought">${Array.from({ length: E.exitY }, (_, k) => `<option value="${k}" ${k === b.y ? "selected" : ""}>${k ? "Year " + k : "Entry"}</option>`).join("")}</select>`;
+  const bizT = `<section class="panel"><header><h2>What you're buying</h2><span class="sp"></span><span class="lbl">When, at what margin and multiple · revenue shared with the CRM</span></header>
+    <div class="bar" style="margin:10px 14px 0"><button class="tog" type="button" data-act="engstagger" aria-pressed="${R.built}">Buy and build: largest at entry, one add-on a year</button><button class="tog" type="button" data-act="engallentry" aria-pressed="${!R.built}">All at entry</button></div>
+    <div class="tw"><table><thead><tr><th>Business</th><th>Bought</th><th class="r">Revenue today</th><th class="r">Margin</th><th class="r">EBITDA when bought</th><th class="r">Multiple</th><th class="r">Price (EV)</th></tr></thead><tbody>
+    ${R.biz.slice().sort((a, b) => a.y - b.y || b.rev - a.rev).map(b => `<tr><td><a href="#c.${esc(b.c.id)}"><b>${esc(b.c.name)}</b></a>${b.own ? ` <button class="linkbtn faint" type="button" data-act="engperreset" data-id="${esc(b.c.id)}" title="Back to the defaults">reset</button>` : ""}</td><td>${yOpt(b)}</td><td class="r num">${revCell(b.c)}</td>
       <td class="r"><input data-engm="${esc(b.c.id)}" type="number" step="0.5" value="${pc(b.m)}" style="width:64px;text-align:right"><span class="faint">%</span></td><td class="r num">${fmtM1(b.eb)}</td>
       <td class="r"><input data-engx="${esc(b.c.id)}" type="number" step="0.5" value="${b.x}" style="width:64px;text-align:right"><span class="faint">×</span></td><td class="r num">${fmtM(b.ev)}</td></tr>`).join("")}
-    <tr class="tot"><td><b>Combined</b></td><td class="r num"><b>${fmtM(R.rev0)}</b></td><td class="r num">${R.rev0 ? (R.eb0 / R.rev0 * 100).toFixed(1) + "%" : "—"}</td><td class="r num"><b>${fmtM1(R.eb0)}</b></td><td class="r num">${R.eb0 ? (R.ev / R.eb0).toFixed(1) + "×" : "—"}</td><td class="r num"><b>${fmtM(R.ev)}</b></td></tr>
+    <tr class="tot"><td><b>Total</b></td><td></td><td class="r num"><b>${fmtM(R.rev0)}</b></td><td class="r num">${R.rev0 ? (R.eb0 / R.rev0 * 100).toFixed(1) + "%" : "—"}</td><td class="r num"><b>${fmtM1(R.biz.reduce((a, b) => a + b.eb, 0))}</b></td><td class="r num">${(() => { const e = R.biz.reduce((a, b) => a + b.eb, 0); return e ? (R.ev / e).toFixed(1) + "×" : "—"; })()}</td><td class="r num"><b>${fmtM(R.ev)}</b></td></tr>
     </tbody></table></div>${R.biz.some(b => !b.rev) ? `<div class="body faint" style="padding-top:6px">No revenue for ${R.biz.filter(b => !b.rev).map(b => esc(b.c.name)).join(", ")}: click the revenue to add it.</div>` : ""}</section>`;
-  const su = `<section class="panel"><header><h2>Sources and uses</h2></header><div class="tw"><table><tbody>
-    <tr><td>Purchase price (EV)</td><td class="r num">${fmtM(R.ev)}</td><td class="faint">${R.eb0 ? (R.ev / R.eb0).toFixed(1) + "× standalone EBITDA" : ""} · ${R.ebPF ? (R.ev / R.ebPF).toFixed(1) + "× synergized" : ""}</td></tr>
-    <tr><td>Deal fees</td><td class="r num">${fmtM1(R.ev * R.E.dealFee)}</td><td class="faint">${pc(R.E.dealFee)}% of EV</td></tr>
-    <tr><td>Debt fees</td><td class="r num">${fmtM1(R.debt * R.E.debtFee)}</td><td class="faint">${pc(R.E.debtFee)}% of debt</td></tr>
-    <tr class="tot"><td><b>Total uses</b></td><td class="r num"><b>${fmtM(R.ev + R.fees)}</b></td><td></td></tr>
-    <tr><td>Debt</td><td class="r num">${fmtM(R.debt)}</td><td class="faint">${R.E.lev}× synergized EBITDA of ${fmtM1(R.ebPF)}</td></tr>
-    <tr class="tot"><td><b>Equity required</b></td><td class="r num"><b>${fmtM(R.eq)}</b></td><td class="faint">${R.ev + R.fees ? pct(R.eq / (R.ev + R.fees)) + " of total uses" : ""}</td></tr>
-  </tbody></table></div></section>`;
-  const Y = R.years.slice(0, Math.max(R.E.exitY, 3) + 1);
-  const proj = `<section class="panel"><header><h2>Projection</h2><span class="sp"></span><span class="lbl">Synergies grow with revenue · debt held flat</span></header><div class="tw"><table><thead><tr><th></th>${Y.map(y => `<th class="r">${y.t === 0 ? "Entry" : "Year " + y.t}${y.t === R.E.exitY ? " · exit" : ""}</th>`).join("")}</tr></thead><tbody>
-    <tr><td>Revenue</td>${Y.map(y => `<td class="r num">${fmtM(y.r)}</td>`).join("")}</tr>
-    <tr><td>EBITDA margin</td>${Y.map(y => `<td class="r num">${(y.m * 100).toFixed(2)}%</td>`).join("")}</tr>
+  const su = `<section class="panel"><header><h2>Sources and uses</h2><span class="sp"></span><span class="lbl">${R.built ? "Each deal" : "At entry"}</span></header><div class="tw"><table><thead><tr><th>Deal</th><th class="r">Price (EV)</th><th class="r">Fees</th><th class="r">Debt</th><th class="r">Equity</th><th class="r">Effective multiple</th></tr></thead><tbody>
+    ${R.deals.map(d => `<tr><td><b>${d.k ? "Year " + d.k : "Entry"}</b><br><span class="faint" style="font-size:12px">${d.now.map(b => esc(b.c.name.replace(/\s*\(.*\)$/, ""))).join(", ")}</span></td><td class="r num">${fmtM(d.ev)}</td><td class="r num">${fmtM1(d.fees)}</td><td class="r num">${fmtM(d.debt)}</td><td class="r num">${fmtM(d.eq)}</td>
+      <td class="r num" title="Price over EBITDA plus the synergies this deal adds">${d.eb + d.incK ? (d.ev / (d.eb + d.incK)).toFixed(1) + "×" : "—"}</td></tr>`).join("")}
+    ${R.deals.length > 1 ? `<tr class="tot"><td><b>Total</b></td><td class="r num"><b>${fmtM(R.ev)}</b></td><td class="r num">${fmtM1(R.fees)}</td><td class="r num">${fmtM(R.deals.reduce((a, d) => a + d.debt, 0))}</td><td class="r num"><b>${fmtM(R.eq)}</b></td><td></td></tr>` : ""}
+  </tbody></table></div><div class="body faint" style="padding-top:6px;font-size:12.5px">Debt is ${R.E.lev}× each deal's EBITDA plus the run-rate synergies it adds, capped at its price; effective multiple is price over the same.</div></section>`;
+  const Y = R.years.slice(0, R.E.exitY + 1);
+  const proj = `<section class="panel"><header><h2>Projection</h2><span class="sp"></span><span class="lbl">${E.cash ? `Cash flow pays down debt at ${pc(E.rate)}% interest` : "Debt held flat"}${E.phase ? ` · synergies phase in over ${E.phase} yr` : ""}</span></header><div class="tw"><table><thead><tr><th></th>${Y.map(y => `<th class="r">${y.t === 0 ? "Entry" : "Year " + y.t}${y.t === R.E.exitY ? " · exit" : ""}</th>`).join("")}</tr></thead><tbody>
+    <tr><td>Revenue owned</td>${Y.map(y => `<td class="r num">${fmtM(y.r)}</td>`).join("")}</tr>
     <tr><td>Standalone EBITDA</td>${Y.map(y => `<td class="r num">${fmtM1(y.base)}</td>`).join("")}</tr>
-    <tr><td>Synergies</td>${Y.map(y => `<td class="r num">${fmtM1(y.s)}</td>`).join("")}</tr>
+    <tr><td>Synergies${Y[0].s ? " <span class='faint'>(entry: run-rate)</span>" : ""}</td>${Y.map(y => `<td class="r num">${fmtM1(y.s)}</td>`).join("")}</tr>
     <tr class="tot"><td><b>EBITDA</b></td>${Y.map(y => `<td class="r num"><b>${fmtM1(y.eb)}</b></td>`).join("")}</tr>
-    <tr><td>Net debt / EBITDA</td>${Y.map(y => `<td class="r num">${y.eb ? (R.debt / y.eb).toFixed(1) + "×" : "—"}</td>`).join("")}</tr>
+    ${R.built ? `<tr><td>Add-ons bought (EV)</td>${Y.map(y => `<td class="r num">${y.buy ? fmtM(y.buy.ev) : "—"}</td>`).join("")}</tr>` : ""}
+    ${E.cash ? `<tr><td>Interest</td>${Y.map(y => `<td class="r num">${y.t ? fmtM1(y.int) : "—"}</td>`).join("")}</tr><tr><td>Free cash flow to debt</td>${Y.map(y => `<td class="r num">${y.t ? fmtM1(y.fcf) : "—"}</td>`).join("")}</tr>` : ""}
+    <tr><td>Net debt, year end</td>${Y.map(y => `<td class="r num">${fmtM(y.nd)}</td>`).join("")}</tr>
+    <tr><td>Net debt / EBITDA${R.built ? ` <span class="faint">(pro forma for that year's deals)</span>` : ""}</td>${Y.map(y => `<td class="r num">${y.pf ? (y.nd / y.pf).toFixed(1) + "×" : "—"}</td>`).join("")}</tr>
   </tbody></table></div></section>`;
   const sens = (() => { const xs = [R.E.exitX - 4, R.E.exitX - 2, R.E.exitX, R.E.exitX + 2].filter(v => v > 0), ys = [2, 3, 4, 5];
     return `<section class="panel"><header><h2>MOIC sensitivity</h2><span class="sp"></span><span class="lbl">Exit multiple × exit year</span></header><div class="tw"><table><thead><tr><th>Exit multiple</th>${ys.map(y => `<th class="r">Year ${y}</th>`).join("")}</tr></thead><tbody>
-    ${xs.map(x => `<tr><td><b>${x}×</b></td>${ys.map(y => { const r = engCalc(ids, { exitX: x, exitY: y, S: R.S }); const hi = x === R.E.exitX && y === R.E.exitY; return `<td class="r num"${hi ? ' style="background:var(--accent-soft, rgba(242,183,5,.15));font-weight:700"' : ""}>${r.moic !== null ? r.moic.toFixed(2) + "×" : "—"}</td>`; }).join("")}</tr>`).join("")}
+    ${xs.map(x => `<tr><td><b>${x}×</b></td>${ys.map(y => { const r = engCalc(ids, { exitX: x, exitY: y, SC }); const hi = x === R.E.exitX && y === R.E.exitY; return `<td class="r num"${hi ? ' style="background:var(--accent-soft, rgba(242,183,5,.15));font-weight:700"' : ""}>${r.moic !== null ? r.moic.toFixed(2) + "×" : "—"}</td>`; }).join("")}</tr>`).join("")}
     </tbody></table></div></section>`; })();
-  const out = `<div class="gauges"><div class="gauge"><b>${fmtM(R.ev)}</b><span class="lbl">Purchase price</span></div><div class="gauge"><b>${fmtM(R.debt)}</b><span class="lbl">Debt · ${R.E.lev}× synergized</span></div>
-    <div class="gauge"><b>${fmtM(R.eq)}</b><span class="lbl">Equity required</span></div><div class="gauge"><b>${fmtM(R.exitEq)}</b><span class="lbl">Exit equity · year ${R.E.exitY} at ${R.E.exitX}×</span></div>
+  const out = `<div class="gauges"><div class="gauge"><b>${fmtM(R.ev)}</b><span class="lbl">${R.built ? "Total purchase price" : "Purchase price"}</span></div><div class="gauge"><b>${fmtM(R.debt)}</b><span class="lbl">Debt at entry · ${R.E.lev}× synergized</span></div>
+    <div class="gauge"><b>${fmtM(R.eq)}</b><span class="lbl">Equity required${R.built ? ` · ${fmtM(R.eq0)} at entry` : ""}</span></div><div class="gauge"><b>${fmtM(R.exitEq)}</b><span class="lbl">Exit equity · year ${R.E.exitY} at ${R.E.exitX}×</span></div>
     <div class="gauge g"><b>${R.moic !== null ? R.moic.toFixed(2) + "×" : "—"}</b><span class="lbl">MOIC</span></div><div class="gauge g"><b>${R.irr !== null ? (R.irr * 100).toFixed(1) + "%" : "—"}</b><span class="lbl">IRR</span></div>
     <div class="gauge"><b>${fmtM(R.gain)}</b><span class="lbl">Total return (profit)</span></div></div>`;
   return head + out + `<div class="grid2">${assumptions}${synergies}</div>${bizT}<div class="grid2">${su}${sens}</div>${proj}
-  <div class="note">Simplified on purpose: debt is held flat (no cash sweep, no interest), so equity value at exit is exit EV less entry debt. Margins and multiples are estimates you set; revenue comes from the market map or what you've set here or in the CRM.</div>`;
+  <div class="note">No taxes or working capital beyond the cash-conversion rate, no transaction costs beyond the fees, and no integration costs. Margins and multiples are estimates you set; revenue comes from the market map or what you've set here or in the CRM.</div>`;
+}
+
+/* ---------- compare roll-ups: saved roll-ups (and the current selection) side by side ----------
+   Platform, value and EBITDA upside as on the Roll-up tab; returns from the Engine at its current settings. */
+function rollSummary(ids) {
+  const X = rollupCalc(ids), rev = X.M.reduce((a, x) => a + (num(x.c.rev) || 0), 0), xs = X.M.reduce((a, x) => a + (val(x.gainUsd, x.gainDemo) || 0), 0);
+  const price = rollPriceCalc(ids).mem.reduce((a, m) => a + (m.lever || 0), 0);
+  loadProduct(); const PC = procCalc(ids), proc = PC && PC.M.length >= 2 ? PC.T.tot : 0, gm = ui.gm ?? 0.65;
+  const R = engCalc(ids);
+  return { ids, n: ids.length, rev, nb: X.M.reduce((a, x) => a + (reachIndex().byOwner.get(x.c.id) || []).length, 0), doors: X.union.size, sharedP: X.union.size ? X.shared / X.union.size : null,
+    xs, price, proc, eb: xs * gm + price + proc, ebP: rev ? (xs * gm + price + proc) / rev : null, R };
+}
+function viewCompare() {
+  const cur = ui.roll.filter(id => CO.has(id)), opts = [...(cur.length ? [{ id: "cur", name: "Current selection", ids: cur }] : []), ...ROLLS.slice().sort((a, b) => String(b.at).localeCompare(String(a.at))).map(r => ({ id: r.id, name: r.name || "Untitled", ids: (r.ids || []).filter(id => CO.has(id)) }))].filter(o => o.ids.length);
+  ui.cmp ??= opts.slice(0, 4).map(o => o.id);
+  const sel = opts.filter(o => ui.cmp.includes(o.id));
+  const head = `<a class="back" href="#rollup">← Roll-up</a><div class="page-h"><div class="grow"><div class="lbl">Roll-ups side by side</div><h1>Compare</h1><p>Your saved roll-ups and the current selection: size, reach, the value levers, the EBITDA upside and the returns at the Engine's settings. Best in each row is marked.</p></div></div>
+  <div class="bar">${opts.map(o => `<button class="tog" type="button" data-act="cmptog" data-id="${esc(o.id)}" aria-pressed="${ui.cmp.includes(o.id)}">${esc(o.name)} <span class="faint">${o.ids.length}</span></button>`).join("") || `<span class="faint">No roll-ups yet: build one on the <a href="#rollup">Roll-up</a> tab and save it.</span>`}</div>`;
+  if (!sel.length) return head + (opts.length ? `<section class="panel"><div class="body faint">Pick roll-ups above to compare.</div></section>` : "");
+  const S = sel.map(o => ({ o, s: rollSummary(o.ids) }));
+  const gm = ui.gm ?? 0.65, E = eng();
+  const row = (l, f, fmt, best = "max", note = "") => { const v = S.map(x => f(x.s)), ok = v.filter(x => x !== null && x !== undefined && !isNaN(x)), b = best && ok.length > 1 ? (best === "max" ? Math.max(...ok) : Math.min(...ok)) : null;
+    return `<tr><td>${l}${note ? `<br><span class="faint" style="font-size:11.5px">${note}</span>` : ""}</td>${v.map(x => `<td class="r num"${b !== null && x === b ? ' style="background:color-mix(in srgb, var(--good) 22%, transparent);font-weight:700"' : ""}>${x === null || x === undefined || isNaN(x) ? "—" : fmt(x)}</td>`).join("")}</tr>`; };
+  const sec = t => `<tr><td colspan="${S.length + 1}" class="lbl" style="padding-top:14px">${t}</td></tr>`;
+  const p1 = v => (v * 100).toFixed(1) + "%", x2 = v => v.toFixed(2) + "×";
+  return head + `<section class="panel"><div class="tw"><table><thead><tr><th></th>${S.map(({ o }) => `<th class="r" style="min-width:150px;white-space:normal"><a href="#rollup:${esc(o.ids.join(","))}">${esc(o.name)}</a><br><button class="linkbtn faint" type="button" data-act="cmpeng" data-id="${esc(o.id)}">Model in Engine →</button></th>`).join("")}</tr></thead><tbody>
+    <tr><td>Members</td>${S.map(({ o }) => `<td class="r" style="font-size:12.5px;white-space:normal">${o.ids.map(id => `<a href="#c.${esc(id)}">${esc(CO.get(id).name.replace(/\s*\(.*\)$/, ""))}</a>`).join(", ")}</td>`).join("")}</tr>
+    ${sec("Platform")}
+    ${row("Combined revenue", s => s.rev, fmtM)}${row("Brands", s => s.nb, v => v)}${row("Doors combined", s => s.doors, v => v)}${row("Doors shared by 2+", s => s.sharedP, pct, null)}
+    ${sec("Value levers · a year")}
+    ${row("Cross-sell revenue", s => s.xs, fmtM, "max", capLbl())}${row("Price", s => s.price, fmtM1)}${row("Procurement", s => s.proc, fmtM1, "max", PSCEN[ui.pscen || "d1"].l + " scenario")}
+    ${row("EBITDA upside", s => s.eb, fmtM1, "max", `Cross-sell at ${Math.round(gm * 100)}% GM + price + procurement`)}${row("EBITDA upside, % of revenue", s => s.ebP, p1)}
+    ${sec("Returns · Engine settings")}
+    ${row("Purchase price", s => s.R.ev, fmtM, null)}${row("Equity required", s => s.R.eq, fmtM, "min")}${row("Exit equity", s => s.R.exitEq, fmtM)}
+    ${row("MOIC", s => s.R.moic, x2, "max", `Exit year ${E.exitY} at ${E.exitX}×`)}${row("IRR", s => s.R.irr, p1)}${row("Profit", s => s.R.gain, fmtM)}
+  </tbody></table></div></section>
+  <div class="note">Returns use the Engine's current assumptions, including when each business is bought; change them on the <a href="#engine">Engine</a> tab. Cross-sell, price and procurement follow the settings on the Roll-up tab.</div>`;
+}
+
+/* ---------- exports: the Engine model to Excel, a roll-up memo and a company one-pager as PDF ----------
+   The libraries load from cdnjs on first use; files go to the viewer through the downloads capability, which asks
+   them to confirm. Figures are values at the time of export ($M unless marked). */
+const LIBS = { xlsx: "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js", pdf: "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", pdfT: "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" };
+const libP = new Map();
+const lib = k => libP.get(k) || libP.set(k, new Promise((ok, no) => { const s = document.createElement("script"); s.src = LIBS[k]; s.onload = ok; s.onerror = () => { libP.delete(k); no(new Error("Couldn't load the " + k + " library")); }; document.head.append(s); })).get(k);
+const plain = h => { const d = document.createElement("div"); d.innerHTML = String(h ?? ""); return d.textContent.replace(/\s+/g, " ").trim(); };
+const ownTxt = c => plain(ownerLine(c).replace("</span>", ": </span>"));
+const fileName = (s, ext) => String(s).replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, " ").slice(0, 80) + "." + ext;
+async function saveFile(name, data) {
+  const dl = window.claude?.use ? await window.claude.use("downloads").catch(() => null) : null;
+  if (!dl) { toast("Downloads aren't available in this view."); return; }
+  try { await dl.save({ filename: name, data }); } catch (e) { if (e?.code === "declined") return; toast(e?.code === "rate_limited" ? "A save is already waiting for you." : "Couldn't save the file."); }
+}
+async function exporting(label, fn) {
+  toast(label + "…");
+  try { await fn(); } catch (e) { toast(e?.message || "Export failed."); }
+}
+function engRollName(src = eng().src) { return src && src !== "cur" ? (ROLLS.find(r => r.id === src)?.name || "Roll-up") : "Current roll-up"; }
+async function engXlsx() {
+  const ids = engIds(); if (!ids.length) return;
+  await lib("xlsx"); const X = window.XLSX, SC = new Map(), R = engCalc(ids, { SC }), E = R.E, name = engRollName(), Y = R.years.slice(0, E.exitY + 1);
+  const r1 = v => v === null || v === undefined || isNaN(v) ? null : Math.round(v * 10) / 10;
+  const wb = X.utils.book_new();
+  const add = (title, rows, widths) => { const ws = X.utils.aoa_to_sheet(rows); ws["!cols"] = widths.map(w => ({ wch: w })); X.utils.book_append_sheet(wb, ws, title); };
+  add("Summary", [[name + " · Engine model"], ["Exported " + new Date().toISOString().slice(0, 10) + " from Probrands · $M unless marked · values, not formulas"], [],
+    ["Purchase price", r1(R.ev)], ["Debt at entry", r1(R.debt)], ["Equity required", r1(R.eq)], ["Equity at entry", r1(R.eq0)], ["Exit equity", r1(R.exitEq)], ["Profit", r1(R.gain)],
+    ["MOIC (x)", R.moic === null ? null : Math.round(R.moic * 100) / 100], ["IRR (%)", R.irr === null ? null : Math.round(R.irr * 1000) / 10], [],
+    ["Run-rate synergies", r1(R.syn)], ["Cross-sell gross profit", r1(R.S.vol)], ["Price", r1(R.S.price)], ["Procurement", r1(R.S.proc)]], [34, 16]);
+  add("Assumptions", [["Assumption", "Value", "Unit"], ["EBITDA margin", E.margin * 100, "%"], ["Entry multiple", E.mult, "x"], ["Add-on multiple", E.addX, "x"], ["Leverage", E.lev, "x synergized EBITDA"],
+    ["Revenue growth", E.g * 100, "% a year"], ["Margin expansion", E.mx * 10000, "bps a year"], ["Synergy phase-in", E.phase, "years"], ["Synergies counted", E.syn ? [E.synXs && "cross-sell", E.synPr && "price", E.synPc && "procurement"].filter(Boolean).join(", ") : "none", ""],
+    ["Cross-sell gross margin", (ui.gm ?? 0.65) * 100, "%"], ["Debt paydown from cash flow", E.cash ? "yes" : "no", ""], ["Interest rate", E.rate * 100, "%"], ["Cash conversion", E.conv * 100, "% of EBITDA"],
+    ["Exit multiple", E.exitX, "x"], ["Exit year", E.exitY, ""], ["Deal fees", E.dealFee * 100, "% of EV"], ["Debt fees", E.debtFee * 100, "% of debt"]], [30, 12, 20]);
+  add("Businesses", [["Business", "Owner", "Bought (year)", "Revenue today", "Margin (%)", "EBITDA when bought", "Multiple (x)", "Price (EV)"],
+    ...R.biz.map(b => [b.c.name, ownTxt(b.c), b.y, r1(b.rev), r1(b.m * 100), r1(b.eb), b.x, r1(b.ev)])], [34, 30, 12, 14, 10, 18, 12, 12]);
+  add("Deals", [["Deal", "Businesses", "Price (EV)", "Fees", "Debt", "Equity", "Effective multiple (x)"],
+    ...R.deals.map(d => [d.k ? "Year " + d.k : "Entry", d.now.map(b => b.c.name).join("; "), r1(d.ev), r1(d.fees), r1(d.debt), r1(d.eq), d.eb + d.incK ? Math.round(d.ev / (d.eb + d.incK) * 10) / 10 : null])], [10, 50, 12, 10, 12, 12, 20]);
+  add("Projection", [["", ...Y.map(y => y.t ? "Year " + y.t : "Entry")], ["Revenue owned", ...Y.map(y => r1(y.r))], ["Standalone EBITDA", ...Y.map(y => r1(y.base))], ["Synergies", ...Y.map(y => r1(y.s))], ["EBITDA", ...Y.map(y => r1(y.eb))],
+    ["Add-ons bought (EV)", ...Y.map(y => y.buy ? r1(y.buy.ev) : null)], ["Interest", ...Y.map(y => y.t ? r1(y.int) : null)], ["Free cash flow to debt", ...Y.map(y => y.t ? r1(y.fcf) : null)], ["Net debt, year end", ...Y.map(y => r1(y.nd))],
+    ["Net debt / EBITDA (x)", ...Y.map(y => y.pf ? Math.round(y.nd / y.pf * 10) / 10 : null)]], [24, ...Y.map(() => 12)]);
+  const xs = [E.exitX - 4, E.exitX - 2, E.exitX, E.exitX + 2].filter(v => v > 0), ys = [2, 3, 4, 5];
+  add("Sensitivity", [["MOIC (x) · exit multiple down, exit year across", ...ys.map(y => "Year " + y)], ...xs.map(x => [x + "x", ...ys.map(y => { const r = engCalc(ids, { exitX: x, exitY: y, SC }); return r.moic === null ? null : Math.round(r.moic * 100) / 100; })])], [40, 10, 10, 10, 10]);
+  const buf = X.write(wb, { type: "array", bookType: "xlsx" });
+  await saveFile(fileName(name + " Engine model", "xlsx"), new Blob([buf]));
+}
+async function pdfKit() { await lib("pdf"); await lib("pdfT"); return window.jspdf.jsPDF; }
+function pdfStart(J, title, sub) {
+  const doc = new J({ unit: "pt", format: "letter" }), W = doc.internal.pageSize.getWidth();
+  doc.setFillColor(242, 183, 5); doc.rect(0, 0, W, 10, "F");
+  doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.setTextColor(20, 18, 9); doc.text(doc.splitTextToSize(title, W - 80), 40, 44);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(110, 106, 96); doc.text(doc.splitTextToSize(sub, W - 80), 40, 62);
+  return { doc, W, y: 84 };
+}
+function pdfH(P, t) { if (P.y > 700) { P.doc.addPage(); P.y = 50; } P.doc.setFont("helvetica", "bold"); P.doc.setFontSize(11); P.doc.setTextColor(20, 18, 9); P.doc.text(t.toUpperCase(), 40, P.y); P.y += 8; }
+function pdfP(P, t, size = 9.5) { if (!t) return; P.doc.setFont("helvetica", "normal"); P.doc.setFontSize(size); P.doc.setTextColor(40, 38, 34); const ls = P.doc.splitTextToSize(t, P.W - 80); if (P.y + ls.length * 12 > 750) { P.doc.addPage(); P.y = 50; } P.doc.text(ls, 40, P.y + 4); P.y += ls.length * size * 1.25 + 10; }
+function pdfT(P, head, body, opts = {}) {
+  const { styles, ...rest } = opts;
+  P.doc.autoTable({ startY: P.y, head: head ? [head] : undefined, body, theme: "grid", margin: { left: 40, right: 40 }, styles: { fontSize: P.fs || 8.5, cellPadding: P.pad ?? 3.5, lineColor: [210, 206, 196], lineWidth: 0.5, textColor: [30, 28, 24], ...styles },
+    headStyles: { fillColor: [20, 18, 9], textColor: [242, 183, 5], fontStyle: "bold" }, ...rest });
+  P.y = P.doc.lastAutoTable.finalY + (P.gap ?? 18);
+}
+function pdfEnd(P, note) {
+  const n = P.doc.getNumberOfPages();
+  for (let i = 1; i <= n; i++) { P.doc.setPage(i); P.doc.setFont("helvetica", "normal"); P.doc.setFontSize(7.5); P.doc.setTextColor(140, 136, 126); P.doc.text(`Probrands deal screen · ${new Date().toISOString().slice(0, 10)} · ${note} · page ${i} of ${n}`, 40, P.doc.internal.pageSize.getHeight() - 24); }
+  return P.doc.output("blob");
+}
+const pdfX = v => v === null || v === undefined || isNaN(v) ? "-" : v.toFixed(2) + "x";
+const pdfPct = v => v === null || v === undefined || isNaN(v) ? "-" : (v * 100).toFixed(1) + "%";
+async function rollPdf(ids, name) {
+  ids = ids.filter(id => CO.has(id)); if (!ids.length) return;
+  const J = await pdfKit(), SC = new Map(), R = engCalc(ids, { SC }), E = R.E, S = rollSummary(ids), gm = ui.gm ?? 0.65;
+  const P = pdfStart(J, name + ": roll-up memo", `${ids.length} companies · ${fmtM(S.rev)} combined revenue · returns at the Engine's settings (exit year ${E.exitY} at ${E.exitX}x) · $M unless marked`);
+  pdfT(P, ["Combined revenue", "EBITDA upside", "Purchase price", "Equity required", "MOIC", "IRR"], [[fmtM(S.rev), fmtM1(S.eb), fmtM(R.ev), fmtM(R.eq), pdfX(R.moic), pdfPct(R.irr)]], { styles: { fontSize: 11, halign: "center", cellPadding: 6 } });
+  pdfH(P, "The companies");
+  pdfT(P, ["Company", "Owner", "Revenue", "DNA", "Doors", "Bought", "Margin", "Multiple", "Price (EV)"], R.biz.slice().sort((a, b) => a.y - b.y || b.rev - a.rev).map(b => [b.c.name, ownTxt(b.c), b.rev ? fmtM(b.rev) : "-", dnaOf(b.c).score, reachOf(b.c).carried?.size ?? "-", b.y ? "Year " + b.y : "Entry", (b.m * 100).toFixed(1) + "%", b.x + "x", fmtM(b.ev)]));
+  pdfH(P, "Value levers, a year");
+  pdfT(P, ["Lever", "Amount", "Basis"], [["Cross-sell revenue", fmtM(S.xs), `Doors members open for each other, at ${plain(capLbl())}`], ["Cross-sell gross profit", fmtM1(S.xs * gm), `${Math.round(gm * 100)}% gross margin`],
+    ["Price", fmtM1(S.price), "Each member's price lever, to the bottom line"], ["Procurement", fmtM1(S.proc), `${PSCEN[ui.pscen || "d1"].l} scenario: shared packaging, raw materials and freight`], ["EBITDA upside", fmtM1(S.eb), S.rev ? (S.eb / S.rev * 100).toFixed(1) + "% of combined revenue" : ""]],
+    { columnStyles: { 1: { halign: "right" } } });
+  pdfH(P, "Sources and uses");
+  pdfT(P, ["Deal", "Businesses", "Price (EV)", "Fees", "Debt", "Equity"], [...R.deals.map(d => [d.k ? "Year " + d.k : "Entry", d.now.map(b => b.c.name.replace(/\s*\(.*\)$/, "")).join(", "), fmtM(d.ev), fmtM1(d.fees), fmtM(d.debt), fmtM(d.eq)]),
+    ...(R.deals.length > 1 ? [["Total", "", fmtM(R.ev), fmtM1(R.fees), fmtM(R.deals.reduce((a, d) => a + d.debt, 0)), fmtM(R.eq)]] : [])]);
+  const Y = R.years.slice(0, E.exitY + 1);
+  pdfH(P, "Projection");
+  pdfT(P, ["", ...Y.map(y => y.t ? "Year " + y.t : "Entry")], [["Revenue owned", ...Y.map(y => fmtM(y.r))], ["EBITDA", ...Y.map(y => fmtM1(y.eb))], ["of which synergies", ...Y.map(y => fmtM1(y.s))],
+    ...(E.cash ? [["Free cash flow to debt", ...Y.map(y => y.t ? fmtM1(y.fcf) : "-")]] : []), ["Net debt, year end", ...Y.map(y => fmtM(y.nd))], ["Net debt / EBITDA", ...Y.map(y => y.pf ? (y.nd / y.pf).toFixed(1) + "x" : "-")]]);
+  const xs = [E.exitX - 4, E.exitX - 2, E.exitX, E.exitX + 2].filter(v => v > 0), ys = [2, 3, 4, 5];
+  pdfH(P, "MOIC by exit multiple and year");
+  pdfT(P, ["Exit multiple", ...ys.map(y => "Year " + y)], xs.map(x => [x + "x", ...ys.map(y => pdfX(engCalc(ids, { exitX: x, exitY: y, SC }).moic))]));
+  const adds = addonCands(ids, 8);
+  if (adds.length) { pdfH(P, "Best next add-ons"); pdfT(P, ["Company", "Owner", "Revenue", "EBITDA added", "Effective multiple"], adds.map(k => [k.c.name, ownTxt(k.c), k.c.rev ? fmtM(k.c.rev) : "-", fmtM1(k.eb), k.effX ? k.effX.toFixed(1) + "x" : "-"])); }
+  pdfH(P, "Assumptions");
+  pdfP(P, `Margin ${(E.margin * 100).toFixed(1)}% and multiple ${E.mult}x at entry (${E.addX}x for later add-ons) unless set per business; debt ${E.lev}x each deal's EBITDA plus the synergies it adds; growth ${(E.g * 100).toFixed(1)}% a year; margin +${Math.round(E.mx * 10000)} bps a year; synergies ${E.phase ? `phase in over ${E.phase} year${E.phase > 1 ? "s" : ""}` : "from day one"}; ${E.cash ? `cash flow at ${(E.conv * 100).toFixed(0)}% of EBITDA less ${(E.rate * 100).toFixed(2)}% interest pays down debt` : "debt held flat"}; fees ${(E.dealFee * 100).toFixed(2)}% of EV and ${(E.debtFee * 100).toFixed(2)}% of debt. Revenue is the market map's estimate or what has been set; cross-sell, price and procurement come from the deal screen and are estimates.`, 8.5);
+  await saveFile(fileName(name + " roll-up memo", "pdf"), pdfEnd(P, "estimates from public data, not investment advice"));
+}
+async function coPdf(id) {
+  const c = CO.get(id); if (!c) return;
+  const J = await pdfKit(), dt = DT.get(id) || {}, d = dnaOf(c), r = reachOf(c), hy = holdYrs(c), bs = (reachIndex().byOwner.get(id) || []).slice().sort((a, b) => (b.skus || 0) - (a.skus || 0));
+  const P = Object.assign(pdfStart(J, c.name, [ownTxt(c), c.hq, c.web?.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")].filter(Boolean).join(" · ")), { fs: 8, pad: 2.6, gap: 14 });
+  pdfP(P, dt.what || c.blunt, 9);
+  const top = (o, n) => Object.entries(o || {}).sort((a, b) => b[1] - a[1]), share = (o, n) => { const xs = top(o), t = xs.reduce((a, x) => a + x[1], 0); return xs.slice(0, n).map(([k, v]) => `${k} ${Math.round(v / t * 100)}%`).join(", ") || "-"; };
+  pdfT(P, null, [["Owner", c.otype + (c.oclass === "pe" && c.sponsor ? " · " + c.sponsor : "")], ...(c.pe_year ? [["PE entry", `${c.pe_year}${hy !== null ? ` (${hy} yr hold)` : ""}${c.pe_ev ? " · EV " + fmtM(c.pe_ev) : ""}`]] : []),
+    ["Revenue", `${c.rev ? fmtM(c.rev) : "-"}${c.revEdited ? " (set by you)" : c.rev_year ? ` (${c.rev_year}${c.size_conf ? ", " + c.size_conf + " confidence" : ""})` : ""}`], ...(c.prorev ? [["Pro revenue", fmtM(c.prorev)]] : []),
+    ...(c.emp ? [["Employees", Math.round(c.emp).toLocaleString()]] : []), ["DNA score", `${d.score} of 100${d.out ? " · out of scope" : ""}`], ["Model", c.model || "-"],
+    ["Brands · SKUs · distributors", `${bs.length} · ${(c.skus || 0).toLocaleString()} · ${r.carried?.size ?? 0}`]], { columnStyles: { 0: { fontStyle: "bold", cellWidth: 150 } } });
+  pdfH(P, "Where it plays");
+  pdfT(P, null, [["Categories", share(c.mix?.cat, 6)], ["End markets", share(c.mix?.mkt, 6)], ["Package formats", share(c.mix?.fmt, 5)], ["Biggest distributors", [...(r.carried || [])].sort((x, y) => (r.fit.get(y)?.w || 0) - (r.fit.get(x)?.w || 0)).slice(0, 10).map(n => n.replace(/\s*\(.*\)$/, "")).join(", ") || "-"]], { columnStyles: { 0: { fontStyle: "bold", cellWidth: 150 } } });
+  if (bs.length) { pdfH(P, `Brands (${bs.length}${bs.length > 10 ? ", largest 10" : ""})`); pdfT(P, ["Brand", "Main category", "SKUs", "Distributors", "Price position"], bs.slice(0, 10).map(b => [b.name, b.ncat || "-", b.skus || 0, (b.dists || []).length, (() => { const pp = pricePos(b.id); return pp ? pp.ix.toFixed(2) + "x like-for-like" : b.price?.pos || "-"; })()])); }
+  const deals = DEALS.filter(x => x.acq_id === id || x.tgt_id === id).sort((a, b) => String(b.date || b.year || "").localeCompare(String(a.date || a.year || "")));
+  if (deals.length) { pdfH(P, "Deals"); pdfT(P, ["Date", "Acquirer", "Target", "Type", "Value"], deals.slice(0, 6).map(x => [x.date || x.year || "", x.acquirer || "", x.target || "", x.type || "", x.value ? fmtM(x.value) : "-"])); }
+  const adds = addonCands([id], 3);
+  if (adds.length) { pdfH(P, "Add-ons that fit it best"); pdfT(P, ["Company", "Owner", "Revenue", "EBITDA added", "Effective multiple"], adds.map(k => [k.c.name, ownTxt(k.c), k.c.rev ? fmtM(k.c.rev) : "-", fmtM1(k.eb), k.effX ? k.effX.toFixed(1) + "x" : "-"])); }
+  await saveFile(fileName(c.name + " one-pager", "pdf"), pdfEnd(P, "estimates from public data and the distributor scrape"));
 }
 
 /* ---------- show-all toggles and cross-links ----------
@@ -671,14 +851,14 @@ function route() {
   if (h.startsWith("d.")) return { v: "dist", id: h.slice(2) };
   if (h.startsWith("s.")) return { v: "strategy", id: h.slice(2) };
   if (h.startsWith("rollup")) { const ids = h.split(":")[1]; if (ids !== undefined) { ui.roll = ids.split(",").filter(x => CO.has(x) || !loaded); store.set("roll", ui.roll); } return { v: "rollup" }; }
-  if (["engine", "screen", "consolidators", "mix", "brands", "cats", "dists", "reach", "pricing", "premium", "ems", "product"].includes(h)) return { v: h };
+  if (["engine", "compare", "screen", "consolidators", "mix", "brands", "cats", "dists", "reach", "pricing", "premium", "ems", "product"].includes(h)) return { v: h };
   if (h.startsWith("em.")) return { v: "em", id: h.slice(3) };
   if (h.startsWith("fmt.")) return { v: "fmt", id: h.slice(4) };
   if (h.startsWith("rm.")) return { v: "rm", id: h.slice(3) };
   return { v: "screen" };
 }
 function chrome(r) {
-  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v === "cat" ? "cats" : r.v === "price" || r.v === "premium" ? "pricing" : r.v === "em" ? "ems" : r.v === "fmt" ? "mix" : r.v === "rm" ? "product" : r.v === "dist" ? "dists" : r.v === "strategy" ? "screen" : r.v) ? "page" : "false"));
+  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (r.v === "company" ? "screen" : r.v === "brand" ? "brands" : r.v === "cat" ? "cats" : r.v === "price" || r.v === "premium" ? "pricing" : r.v === "em" ? "ems" : r.v === "fmt" ? "mix" : r.v === "rm" ? "product" : r.v === "compare" ? "rollup" : r.v === "dist" ? "dists" : r.v === "strategy" ? "screen" : r.v) ? "page" : "false"));
   const counts = {}; for (const c of list()) counts[ownKey(c)] = (counts[ownKey(c)] || 0) + 1;
   $("#ownChips").innerHTML = OWN.map(([k, l]) => `<button class="chip" type="button" data-own="${k}" aria-pressed="${ui.own.has(k)}">${l}<small>${counts[k] || 0}</small></button>`).join("");
   $("#nBrands").textContent = BR.size || "";
@@ -768,7 +948,7 @@ function viewCompany(id) {
   const brands = dt.brands || [];
   const busy = ui.busy[id];
   return `<a class="back" href="#screen">← The screen</a>
-  <div class="bar" style="margin:-4px 0 12px"><a class="tog" href="#s.${esc(id)}">Strategy →</a>${ROLLS.filter(r => (r.ids || []).includes(id)).map(r => `<a class="tog" href="#rollup:${esc(r.ids.join(","))}">In “${esc(r.name)}” →</a>`).join("")}${ui.roll.includes(id) ? `<a class="tog" href="#rollup">In your roll-up (${ui.roll.length}) →</a>` : `<a class="tog" href="#rollup:${esc([...ui.roll, id].join(","))}">Add to roll-up${ui.roll.length ? ` (${ui.roll.length})` : ""} +</a>`}</div>
+  <div class="bar" style="margin:-4px 0 12px"><a class="tog" href="#s.${esc(id)}">Strategy →</a><button class="tog" type="button" data-act="copdf" data-id="${esc(id)}">One-pager PDF ↓</button>${ROLLS.filter(r => (r.ids || []).includes(id)).map(r => `<a class="tog" href="#rollup:${esc(r.ids.join(","))}">In “${esc(r.name)}” →</a>`).join("")}${ui.roll.includes(id) ? `<a class="tog" href="#rollup">In your roll-up (${ui.roll.length}) →</a>` : `<a class="tog" href="#rollup:${esc([...ui.roll, id].join(","))}">Add to roll-up${ui.roll.length ? ` (${ui.roll.length})` : ""} +</a>`}</div>
   <section class="nameplate">
     <div><div>${ownerLine(c)}${c.verified ? "" : ` <span class="unv">· owner unverified</span>`}</div>
       <h1>${esc(c.name)}</h1>
@@ -1885,6 +2065,9 @@ function viewReach() {
    (3+ brands on that shelf) but don't carry it. Valued at the member's revenue per weighted door x the capture rate,
    like headroom on the Whitespace page. Category overlap is the cosine of two owners' SKU mix by category. */
 const cosine = (a = {}, b = {}) => { let d = 0, x = 0, y = 0; for (const k in a) { x += a[k] ** 2; if (b[k]) d += a[k] * b[k]; } for (const k in b) y += b[k] ** 2; return x && y ? d / Math.sqrt(x * y) : 0; };
+/* One company's cross-sell gain is capped at half its revenue: a company the scrape finds on few doors has a high
+   revenue per door, which would otherwise turn a long list of new doors into more than it sells today. */
+const XS_CAP = 0.5, xsCap = (c, v) => { const r = num(c.rev); return r ? Math.min(v, r * XS_CAP) : v; };
 function rollupCalc(ids) {
   const M = ids.map(id => CO.get(id)).filter(Boolean).map(c => ({ c, r: reachOf(c) }));
   const union = new Set(M.flatMap(x => [...x.r.carried]));
@@ -1893,8 +2076,8 @@ function rollupCalc(ids) {
   for (const x of M) {
     x.gain = [...union].filter(d => !x.r.carried.has(d) && x.r.fit.has(d)).map(d => { const f = x.r.fit.get(d); return { d, w: f.w, rtw: f.rtw, p: rt.get(focused, f.nat, f.prv), prv: f.prv, from: M.filter(y => y !== x && y.r.carried.has(d)).map(y => y.c) }; }).sort((a, b) => b.w * b.p - a.w * a.p);
     x.gainW = x.gain.reduce((a, g) => a + g.w, 0);
-    x.gainUsd = x.r.rpd ? x.gain.reduce((a, g) => a + x.r.rpdAt(g.d) * g.w, 0) : null;
-    x.gainDemo = x.r.rpd ? x.gain.reduce((a, g) => a + x.r.rpdAt(g.d) * g.w * g.p, 0) : null;
+    x.gainUsd = x.r.rpd ? xsCap(x.c, x.gain.reduce((a, g) => a + x.r.rpdAt(g.d) * g.w, 0)) : null;
+    x.gainDemo = x.r.rpd ? xsCap(x.c, x.gain.reduce((a, g) => a + x.r.rpdAt(g.d) * g.w * g.p, 0)) : null;
   }
   const matrix = M.map(x => M.map(y => x === y ? null : [...y.r.carried].filter(d => !x.r.carried.has(d) && x.r.fit.has(d)).length));
   const overlap = M.map(x => M.map(y => x === y ? null : cosine(x.c.mix?.cat, y.c.mix?.cat)));
@@ -1902,7 +2085,12 @@ function rollupCalc(ids) {
   for (const x of M) for (const b of R.byOwner.get(x.c.id) || []) for (const r of rivalsOf(b)) { const y = M.find(m => m !== x && m.c.id === r.owner_id); if (y && x.c.id < y.c.id) h2h.push([b, r]); }
   return { M, union, shared: [...cnt.values()].filter(n => n > 1).length, matrix, overlap, h2h, focused };
 }
-function addonCands(ids, limit = 12) {
+/* Next add-ons, ranked by the EBITDA each would add to this roll-up: cross-sell both ways at the gross margin set on
+   the Platform tab, plus the procurement savings it adds (the roll-up's savings with it, less without it), plus its own
+   price lever. Cross-sell is worked out for every eligible owner; the procurement step only for the best 40 by
+   cross-sell or category overlap. Effective multiple = what you'd pay (revenue × Engine margin × add-on multiple) over
+   its EBITDA plus what it adds. */
+function addonCands(ids, limit = 15) {
   const base = rollupCalc(ids), inSet = new Set(ids), union = base.union;
   const size = base.M.reduce((a, x) => a + (num(x.c.rev) || 0), 0);  // an add-on is no bigger than the platform it joins
   const out = [];
@@ -1913,15 +2101,37 @@ function addonCands(ids, limit = 12) {
     const rz = reachOf(z); if (!rz.carried?.size) continue;
     const rt = demoRates(), focused = base.M.reduce((a, x) => a + (reachIndex().byOwner.get(x.c.id) || []).length, 0) + (reachIndex().byOwner.get(z.id) || []).length <= 6;
     let givesW$ = 0, givesD$ = 0, givesN = 0, gives$ok = true;
-    for (const x of base.M) { const ds = [...rz.carried].filter(n => !x.r.carried.has(n) && x.r.fit.has(n)); givesN += ds.length; if (x.r.rpd) { givesW$ += ds.reduce((a, n) => a + x.r.rpdAt(n) * x.r.fit.get(n).w, 0); givesD$ += ds.reduce((a, n) => { const f = x.r.fit.get(n); return a + x.r.rpdAt(n) * f.w * rt.get(focused, f.nat, f.prv); }, 0); } else if (ds.length) gives$ok = false; }
+    for (const x of base.M) { const ds = [...rz.carried].filter(n => !x.r.carried.has(n) && x.r.fit.has(n)); givesN += ds.length; if (x.r.rpd) {  // what it adds to each member, within that member's cap
+      const room = v => Math.max(0, xsCap(x.c, (x.gainUsd ?? 0) + v) - (x.gainUsd ?? 0)), roomD = v => Math.max(0, xsCap(x.c, (x.gainDemo ?? 0) + v) - (x.gainDemo ?? 0));
+      givesW$ += room(ds.reduce((a, n) => a + x.r.rpdAt(n) * x.r.fit.get(n).w, 0)); givesD$ += roomD(ds.reduce((a, n) => { const f = x.r.fit.get(n); return a + x.r.rpdAt(n) * f.w * rt.get(focused, f.nat, f.prv); }, 0)); } else if (ds.length) gives$ok = false; }
     const getsDs = [...union].filter(n => !rz.carried.has(n) && rz.fit.has(n));
-    const gets$ = rz.rpd ? getsDs.reduce((a, n) => a + rz.rpdAt(n) * rz.fit.get(n).w, 0) : null;
-    const getsD$ = rz.rpd ? getsDs.reduce((a, n) => { const f = rz.fit.get(n); return a + rz.rpdAt(n) * f.w * rt.get(focused, f.nat, f.prv); }, 0) : null;
+    const gets$ = rz.rpd ? xsCap(z, getsDs.reduce((a, n) => a + rz.rpdAt(n) * rz.fit.get(n).w, 0)) : null;
+    const getsD$ = rz.rpd ? xsCap(z, getsDs.reduce((a, n) => { const f = rz.fit.get(n); return a + rz.rpdAt(n) * f.w * rt.get(focused, f.nat, f.prv); }, 0)) : null;
     const ov = Math.max(0, ...base.M.map(x => cosine(x.c.mix?.cat, z.mix?.cat)));
     const total$ = givesW$ + (gets$ || 0), totalD = givesD$ + (getsD$ || 0);
-    out.push({ c: z, d, givesN, gives$: givesW$, gives$ok, getsN: getsDs.length, gets$, ov, total$, totalD, value: val(total$, totalD), doors: givesN + getsDs.length });
+    out.push({ c: z, d, givesN, gives$: givesW$, gives$ok, getsN: getsDs.length, gets$, ov, total$, totalD, value: val(total$, totalD), doors: givesN + getsDs.length, shared: [...rz.carried].filter(n => union.has(n)).length });
   }
-  return out.sort((a, b) => (b.value || 0) - (a.value || 0) || b.doors - a.doors).slice(0, limit);
+  loadProduct(); const gm = ui.gm ?? 0.65, E = eng(), P0 = procCalc(ids), p0 = P0 ? P0.T.tot : 0;
+  const by = (f, n) => out.slice().sort(f).slice(0, n);
+  const short = new Set([...by((a, b) => (b.value || 0) - (a.value || 0) || b.doors - a.doors, 25), ...by((a, b) => b.ov - a.ov, 15).filter(k => num(k.c.rev))]);
+  for (const k of short) {
+    const P1 = procCalc([...ids, k.c.id]); k.proc = P1 ? Math.max(0, P1.T.tot - p0) : 0;
+    k.price = rollPriceCalc([k.c.id]).mem[0].lever || 0; k.xsGP = (k.value || 0) * gm;
+    k.eb = k.xsGP + k.proc + k.price;
+    const rev = num(k.c.rev); k.effX = rev ? rev * E.margin * E.addX / (rev * E.margin + k.eb) : null;
+  }
+  return [...short].sort((a, b) => b.eb - a.eb || b.doors - a.doors).slice(0, limit);
+}
+function addonPanel(ids) {
+  const cand = addonCands(ids), gm = ui.gm ?? 0.65, E = eng();
+  return `<section class="panel" id="addons"><header><h2>Best next add-ons</h2><span class="sp"></span><span class="lbl">Ranked by the EBITDA each adds · PE, family, ESOP and private owners · DNA 45+ · no bigger than the platform</span></header>
+  <div class="tw"><table><thead><tr><th>Company</th><th class="r">DNA</th><th class="r">Revenue</th><th class="r" title="Doors it opens for the roll-up · doors the roll-up opens for it">Doors opened</th><th class="r" title="Distributors it already shares with the roll-up">Shared doors</th><th class="r">Cross-sell GP</th><th class="r">Procurement</th><th class="r">Price</th><th class="r">EBITDA added</th><th class="r" title="Price at the Engine's margin and add-on multiple, over its EBITDA plus what it adds">Effective multiple</th><th></th></tr></thead><tbody>
+  ${cand.map(k => `<tr><td><b><a href="#c.${esc(k.c.id)}">${esc(k.c.name)}</a></b><br><small class="faint">${ownerLine(k.c)}</small></td><td class="r"><span class="score ${k.d.band} num" style="font-size:16px">${k.d.score}</span></td>
+    <td class="r num">${k.c.rev ? fmtM(k.c.rev) : "—"}</td><td class="r num">${k.givesN} · ${k.getsN}</td><td class="r num">${k.shared}</td><td class="r num">${k.xsGP ? fmtM1(k.xsGP) : "—"}</td><td class="r num">${k.proc ? fmtM1(k.proc) : "—"}</td><td class="r num">${k.price ? fmtM1(k.price) : "—"}</td>
+    <td class="r num"><b>${fmtM1(k.eb)}</b></td><td class="r num">${k.effX ? k.effX.toFixed(1) + "×" : "—"}</td>
+    <td><button class="tog" type="button" data-act="radd" data-id="${esc(k.c.id)}">Add +</button></td></tr>`).join("") || `<tr><td colspan="11" class="faint">No candidates found.</td></tr>`}
+  </tbody></table></div>
+  <div class="body faint" style="padding-top:6px;font-size:12.5px">Cross-sell both ways at ${capLbl()} × ${Math.round(gm * 100)}% gross margin; procurement is what the roll-up saves with it less without it (${esc(PSCEN[ui.pscen || "d1"].l)} scenario); price is its own lever. Each company's cross-sell is capped at half its revenue. Effective multiple: revenue × ${Math.round(E.margin * 100)}% margin × ${E.addX}× (Engine settings) over its EBITDA plus what it adds. Companies without revenue show cross-sell doors only.</div></section>`;
 }
 function viewRollup() {
   const ids = ui.roll.filter(id => CO.has(id));
@@ -1931,7 +2141,7 @@ function viewRollup() {
   const head = `<div class="page-h"><div class="grow"><div class="lbl">Build a platform</div><h1>Roll-up</h1>
     <p>Pick the companies you'd put together to see the cross-sell, the overlaps, the pricing ladder and the procurement savings, and the best next add-ons.</p>
     <details style="margin:8px 0 0;max-width:68ch"><summary class="lbl" style="cursor:pointer">How it's worked out</summary><p style="margin:6px 0 0;font-size:13.5px;color:var(--ink-2)">For each company, the cross-sell doors are distributors another member already sells to that stock its categories but don't carry it yet, valued at its own revenue per door times the rate multi-brand owners actually achieve on doors like that (higher where rivals already sell and in the category's native channels; higher for focused platforms). Category overlap shows whether the members sell the same things (head-to-head) or complement each other (a broader bag for the same distributors). The best next add-ons are ranked by the cross-sell they'd bring and get.</p></details></div></div>
-  <div class="bar"><input class="search" id="rq" type="search" placeholder="Add a company or brand…" value="${esc(ui.rq)}" aria-label="Add a company">${capSel}${ids.length ? `<button class="tog" type="button" data-act="rclear">Clear</button>` : ""}</div>
+  <div class="bar"><input class="search" id="rq" type="search" placeholder="Add a company or brand…" value="${esc(ui.rq)}" aria-label="Add a company">${capSel}${ids.length ? `<button class="tog" type="button" data-act="rclear">Clear</button><button class="tog" type="button" data-act="rollpdf">Memo PDF ↓</button><a class="tog" href="#compare">Compare →</a>` : ""}</div>
   ${hits.length ? `<div class="bar">${hits.map(c => `<button class="tog" type="button" data-act="radd" data-id="${esc(c.id)}">+ ${esc(c.name)} <span class="faint">${dnaOf(c).score}</span></button>`).join("")}</div>` : ""}
   ${ids.length ? `<div class="bar">${ids.map(id => `<span class="tag" style="font-size:12px;padding:4px 8px">${esc(CO.get(id).name)} <button type="button" data-act="rdel" data-id="${esc(id)}" aria-label="Remove ${esc(CO.get(id).name)}" style="color:var(--ink-3);margin-left:4px">✕</button></span>`).join("")}</div>` : ""}`;
   if (!ids.length) {
@@ -1941,7 +2151,6 @@ function viewRollup() {
   const X = rollupCalc(ids), M = X.M;
   const rev = M.reduce((a, x) => a + (num(x.c.rev) || 0), 0), xs = M.reduce((a, x) => a + (val(x.gainUsd, x.gainDemo) || 0), 0);
   const nb = M.reduce((a, x) => a + (reachIndex().byOwner.get(x.c.id) || []).length, 0);
-  const cand = addonCands(ids);
   const short = c => esc(c.name.replace(/\s*\(.*\)$/, "").replace(/,? (Inc|LLC|Corp|Corporation|Co|Company)\.?$/i, ""));
   const heat = (v, f) => `<td class="r num" style="background:color-mix(in srgb, var(--accent) ${Math.round(f * 55)}%, transparent)">${v}</td>`;
   const heatPct = v => v === null ? `<td class="faint">—</td>` : `<td class="r num" style="background:color-mix(in srgb, var(--mid) ${Math.round(v * 60)}%, transparent)">${Math.round(v * 100)}%</td>`;
@@ -1972,12 +2181,7 @@ function viewRollup() {
   </div>` : ""}
   ${X.h2h.length ? `<section class="panel"><header><h2>Head-to-head brands</h2><span class="sp"></span><span class="lbl">${X.h2h.length} pairs that compete today: rationalize or position</span></header><div class="body">${X.h2h.slice(0, 30).map(([a, b]) => `<span class="tag" style="font-size:11.5px"><a href="#b.${esc(a.id)}">${esc(a.name)}</a> vs <a href="#b.${esc(b.id)}">${esc(b.name)}</a></span>`).join("")}</div></section>` : ""}
 `}
-  <section class="panel"><header><h2>Best next add-ons</h2><span class="sp"></span><span class="lbl">PE, family, ESOP and private owners · DNA 45+ · no bigger than the platform · ranked by cross-sell both ways</span></header>
-  <div class="tw"><table><thead><tr><th>Company</th><th class="r">DNA</th><th class="r">Revenue</th><th class="r">Doors it opens for you</th><th class="r">Doors you open for it</th><th class="r">Cross-sell</th><th class="r">Category overlap</th><th></th></tr></thead><tbody>
-  ${cand.map(k => `<tr><td><b><a href="#c.${esc(k.c.id)}">${esc(k.c.name)}</a></b><br><small class="faint">${ownerLine(k.c)}</small></td><td class="r"><span class="score ${k.d.band} num" style="font-size:16px">${k.d.score}</span></td>
-    <td class="r num">${k.c.rev ? fmtM(k.c.rev) : "—"}</td><td class="r num">${k.givesN}</td><td class="r num">${k.getsN}</td><td class="r num">${k.total$ ? fmtM(k.value) : "—"}</td><td class="r num">${Math.round(k.ov * 100)}%</td>
-    <td><button class="tog" type="button" data-act="radd" data-id="${esc(k.c.id)}">Add +</button></td></tr>`).join("") || `<tr><td colspan="8" class="faint">No candidates found.</td></tr>`}
-  </tbody></table></div></section>
+  ${addonPanel(ids)}
   ${rollPlanPanel(ids)}
   ${ratesPanel()}
   ${savedRollsPanel(ids)}
@@ -2114,7 +2318,7 @@ function rollWsView(ids, X) {
 function savedRollsPanel(ids) {
   const key = [...ids].sort().join(",");
   if (!ROLLS.length) return "";
-  return `<section class="panel"><header><h2>Saved roll-ups</h2><span class="sp"></span><span class="lbl">${ROLLS.length} · shared with everyone who can open this page</span></header>
+  return `<section class="panel"><header><h2>Saved roll-ups</h2><span class="sp"></span><span class="lbl">${ROLLS.length} · shared with everyone who can open this page · <a href="#compare">compare them →</a></span></header>
   <div class="tw"><table><thead><tr><th>Name</th><th>Members</th><th class="r">Saved</th><th></th></tr></thead><tbody>
   ${ROLLS.slice().sort((a, b) => String(b.at).localeCompare(String(a.at))).map(r => { const on = [...(r.ids || [])].sort().join(",") === key; return `<tr${on ? ' style="background:var(--panel-2)"' : ""}><td><b><a href="#rollup:${esc((r.ids || []).join(","))}">${esc(r.name)}</a></b>${on ? ` <span class="tag tri">Open</span>` : ""}</td>
     <td style="font-size:13px">${(r.ids || []).map(id => esc(CO.get(id)?.name.replace(/\s*\(.*\)$/, "") || id)).join(", ")}</td><td class="r num faint">${esc(String(r.at || "").slice(0, 10))}</td>
@@ -2805,7 +3009,7 @@ function render() {
   chrome(r);
   if (!loaded) { if (dbState === "off") app.innerHTML = `<div class="empty"><h2>Not connected</h2><p>Probrands keeps the market map in a shared database that loads when this page is opened in Claude while signed in.</p></div>`; return; }
   const y = scrollY;
-  app.innerHTML = r.v === "engine" ? viewEngine() : r.v === "rm" ? viewRm(r.id) : r.v === "fmt" ? viewFmt(r.id) : r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "ems" ? viewEms() : r.v === "product" ? viewProduct() : r.v === "em" ? viewEm(r.id) : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "mix" ? viewMix() : viewScreen();
+  app.innerHTML = r.v === "engine" ? viewEngine() : r.v === "compare" ? viewCompare() : r.v === "rm" ? viewRm(r.id) : r.v === "fmt" ? viewFmt(r.id) : r.v === "company" ? viewCompany(r.id) : r.v === "brand" ? viewBrand(r.id) : r.v === "brands" ? viewBrands() : r.v === "cats" ? viewCats() : r.v === "dists" ? viewDists() : r.v === "reach" ? viewReach() : r.v === "pricing" ? viewPricing() : r.v === "ems" ? viewEms() : r.v === "product" ? viewProduct() : r.v === "em" ? viewEm(r.id) : r.v === "premium" ? viewPremium() : r.v === "price" ? viewPrice(r.id) : r.v === "rollup" ? viewRollup() : r.v === "strategy" ? viewStrategy(r.id) : r.v === "dist" ? viewDist(r.id) : r.v === "cat" ? viewCat(r.id) : r.v === "consolidators" ? viewConsolidators() : r.v === "mix" ? viewMix() : viewScreen();
   if (render.last === location.hash) scrollTo(0, y); else scrollTo(0, 0);
   render.last = location.hash;
 }
@@ -2883,7 +3087,15 @@ document.addEventListener("click", e => {
     else if (act === "revcancel") { ui.revEdit = null; render(); }
     else if (act === "revreset") saveRev(a.dataset.id, null);
     else if (act === "engreset") { const src = eng().src; ui.eng = { ...ENG_DEF, src, per: {} }; engSave(); render(); }
-    else if (act === "engperreset") { delete eng().per[a.dataset.id]; engSave(); render(); }
+    else if (act === "engperreset") { const p = eng().per[a.dataset.id]; eng().per[a.dataset.id] = p?.y ? { y: p.y } : undefined; if (!eng().per[a.dataset.id]) delete eng().per[a.dataset.id]; engSave(); render(); }
+    else if (act === "engxlsx") exporting("Building the Excel model", engXlsx);
+    else if (act === "engpdf") exporting("Building the memo", () => rollPdf(engIds(), engRollName()));
+    else if (act === "rollpdf") exporting("Building the memo", () => rollPdf(ui.roll, (() => { const k = [...ui.roll].sort().join(","); return ROLLS.find(r => [...(r.ids || [])].sort().join(",") === k)?.name || "Current roll-up"; })()));
+    else if (act === "copdf") exporting("Building the one-pager", () => coPdf(a.dataset.id));
+    else if (act === "cmptog") { const id = a.dataset.id; ui.cmp = ui.cmp.includes(id) ? ui.cmp.filter(x => x !== id) : [...ui.cmp, id]; render(); }
+    else if (act === "cmpeng") { eng().src = a.dataset.id; engSave(); location.hash = "engine"; }
+    else if (act === "engstagger" || act === "engallentry") { const E = eng(), ids = engIds().slice().sort((x, y) => (num(CO.get(y).rev) || 0) - (num(CO.get(x).rev) || 0));
+      ids.forEach((id, i) => { const y = act === "engallentry" ? 0 : Math.min(i, E.exitY - 1); E.per[id] = { ...(E.per[id] || {}), y }; if (!y) delete E.per[id].y; if (!Object.keys(E.per[id]).length) delete E.per[id]; }); engSave(); render(); }
     else if (act === "pscen") { ui.pscen = a.dataset.v; render(); }
     else if (act === "psmall") { ui.psmall = ui.psmall === false; render(); }
     else if (act === "ppos") { ui.pp.pos = ui.pp.pos === a.dataset.v ? "" : a.dataset.v; ui.pp.limit = 100; render(); }
@@ -2929,8 +3141,9 @@ document.addEventListener("toggle", e => { const k = e.target?.dataset?.k; if (k
 document.addEventListener("change", e => {
   { const t = e.target, E = ui.eng ? eng() : null;
     if (t.id === "engsrc") { eng().src = t.value; engSave(); render(); return; }
-    if (E && t.dataset.eng) { const k = t.dataset.eng, v = parseFloat(t.value); if (!isNaN(v)) { E[k] = ["margin", "g", "dealFee", "debtFee"].includes(k) ? v / 100 : k === "mx" ? v / 10000 : k === "exitY" ? Math.round(v) : v; engSave(); } render(); return; }
+    if (E && t.dataset.eng) { const k = t.dataset.eng, v = parseFloat(t.value); if (!isNaN(v)) { E[k] = ["margin", "g", "dealFee", "debtFee", "rate", "conv"].includes(k) ? v / 100 : k === "mx" ? v / 10000 : k === "exitY" || k === "phase" ? Math.round(v) : v; engSave(); } render(); return; }
     if (E && (t.dataset.engm || t.dataset.engx)) { const id = t.dataset.engm || t.dataset.engx, v = parseFloat(t.value); E.per[id] = { ...(E.per[id] || {}) }; if (!isNaN(v)) { if (t.dataset.engm) E.per[id].m = v / 100; else E.per[id].x = v; } engSave(); render(); return; }
+    if (E && t.dataset.engy) { const id = t.dataset.engy; E.per[id] = { ...(E.per[id] || {}), y: +t.value }; if (!E.per[id].y) delete E.per[id].y; engSave(); render(); return; }
     if (E && t.dataset.engc) { E[t.dataset.engc] = t.checked; engSave(); render(); return; } }
   if (e.target.id === "rgm") { ui.gm = +e.target.value; render(); }
   if (e.target.id === "fam") { ui.fam = e.target.value; render(); }
